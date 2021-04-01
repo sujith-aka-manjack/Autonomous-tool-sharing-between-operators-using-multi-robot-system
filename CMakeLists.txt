@@ -52,3 +52,7 @@ add_subdirectory(loop_functions)
 
 # Descend into the embedding directory
 # add_subdirectory(embedding)
+
+# Custom e-puck model
+add_subdirectory(epuckpos)
+

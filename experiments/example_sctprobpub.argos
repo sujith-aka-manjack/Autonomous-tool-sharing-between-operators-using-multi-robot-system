@@ -62,9 +62,9 @@
       <position method="uniform" min="-2,-2,0" max="2,2,0" />
       <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
       <entity quantity="2" max_trials="100">
-        <e-puck id="ep" rab_range="4" rab_data_size="10">
+        <e-puck_pos id="ep" rab_range="4" rab_data_size="10">
           <controller config="ec" />
-        </e-puck>
+        </e-puck_pos>
       </entity>
     </distribute>
 
