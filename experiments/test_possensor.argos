@@ -16,8 +16,8 @@
   <!-- *************** -->
   <controllers>
 
-    <example_sctprobpub_controller id="ec"
-                                        library="build/controllers/example_sctprobpub/libexample_sctprobpub.so">
+    <test_possensor_controller id="ec"
+                                        library="build/controllers/test_possensor/libtest_possensor.so">
       <actuators>
         <differential_steering implementation="default" />
         <range_and_bearing implementation="default" />
@@ -28,7 +28,7 @@
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
       <params velocity="5" />
-    </example_sctprobpub_controller>
+    </test_possensor_controller>
 
   </controllers>
 
