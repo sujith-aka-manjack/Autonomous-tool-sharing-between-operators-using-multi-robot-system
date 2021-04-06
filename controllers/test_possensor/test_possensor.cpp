@@ -33,6 +33,9 @@ void CExampleSCTProbPub::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_c, &CExampleSCTProbPub::callback_c, NULL, NULL);
     sct->add_callback(this, EV__b, NULL, &CExampleSCTProbPub::check__b, NULL);
 
+    // /* Initialize PID parameters */
+    // pid_rotate = new PID(0.1, m_fWheelVelocity, -m_fWheelVelocity, 10, 0, 0);
+
     Reset();
 }
 
@@ -57,20 +60,31 @@ void CExampleSCTProbPub::Reset() {
 
 void CExampleSCTProbPub::ControlStep() {
 
-    std::cout << m_pcPosSens->GetReading().Position << std::endl;
+    // std::cout << m_pcPosSens->GetReading().Position << std::endl;
+    std::cout << m_pcPosSens->GetReading().Orientation << std::endl;
 
-    get_messages();
-    update_sensors();
+    CRadians cZAngle, cYAngle, cXAngle;
+    
 
-    /* Init new message */
-    msg = CByteArray(10, 255);
-    msg_index = 0;
+    // double turn_angle = pid_rotate->calculate(10, 11);  // TODO: Change input to radians
 
-    /* Run the generator player */
-    sct->run_step();
+    // std::cout << turn_angle << std::endl;
 
-    /* Set message to send */
-    m_pcRABAct->SetData(msg);
+    // m_pcWheels->SetLinearVelocity(turn_angle, -turn_angle);
+
+    // get_messages();
+    // update_sensors();
+
+    // /* Init new message */
+    // msg = CByteArray(10, 255);
+    // msg_index = 0;
+
+    // /* Run the generator player */
+    // sct->run_step();
+
+    // /* Set message to send */
+    // m_pcRABAct->SetData(msg);
+
 }
 
 /****************************************/

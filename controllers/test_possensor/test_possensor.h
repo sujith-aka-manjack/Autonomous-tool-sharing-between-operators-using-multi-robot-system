@@ -33,7 +33,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
-#include "pid.h"
+// #include "pid.h"
+#include <Eigen/Dense>
 
 #include <map>
 
@@ -108,6 +109,10 @@ private:
 
     /* Controller */
     SCT* sct;
+
+    // /* PID for movement */
+    // PID* pid_rotate;
+    // PID* pid_forward;
 
     /*
     * The following variables are used as parameters for the
