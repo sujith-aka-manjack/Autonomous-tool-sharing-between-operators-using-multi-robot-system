@@ -27,7 +27,13 @@
         <proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
-      <params velocity="5" />
+      <!-- <params velocity="5" /> -->
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="10" />
+      </params>
     </leader_controller>
 
     <follower_controller id="ef"
@@ -138,10 +144,20 @@
   <!-- * Visualization * -->
   <!-- ****************** -->
   <visualization>
+    <!--
+        This shows how to add customized key management
+        using the qt user functions.
+        Check 'argos3 -q qt-opengl' for more help.
+    -->
     <qt-opengl>
+      <user_functions library="build/loop_functions/manualcontrol_loop_functions/libmanualcontrol_loop_functions"
+                      label="manualcontrol_qtuser_functions" />
       <camera>
+        <!-- <placements>
+          <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+        </placements> -->
         <placements>
-          <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="150" />
+          <placement index="0" position="-2.1613,-0.00803263,1.63896" look_at="-1.30419,-0.0096157,1.12382" up="0.515138,-0.000951462,0.857107" lens_focal_length="50" />
         </placements>
       </camera>
     </qt-opengl>

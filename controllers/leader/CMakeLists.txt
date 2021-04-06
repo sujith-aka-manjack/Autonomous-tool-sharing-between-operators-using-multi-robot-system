@@ -1,4 +1,4 @@
-add_library(leader MODULE 
+add_library(leader SHARED 
   leader.h 
   leader.cpp 
   SCT.h 

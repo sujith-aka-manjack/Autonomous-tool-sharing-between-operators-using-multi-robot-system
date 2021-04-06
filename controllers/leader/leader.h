@@ -49,6 +49,31 @@ class CLeader : public CCI_Controller {
 
 public:
 
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
+
+public:
+
     /* Class constructor. */
     CLeader();
 
@@ -83,6 +108,30 @@ public:
     */
     virtual void Destroy() {}
 
+    /*
+    * Sets the selected flag on this robot.
+    * When selected, a robot follows the control vector.
+    */
+    void Select();
+
+    /*
+    * Unsets the selected flag on this robot.
+    * When unselected, a robot stays still.
+    */
+    void Deselect();
+
+    /*
+    * Sets the control vector.
+    */
+    void SetControlVector(const CVector2& c_control);
+
+protected:
+
+    /*
+    * Gets a direction vector as input and transforms it into wheel actuation.
+    */
+   void SetWheelSpeedsFromVector(const CVector2& c_heading);
+
 private:
 
     /* Pointer to the differential steering actuator */
@@ -95,6 +144,15 @@ private:
     CCI_RangeAndBearingSensor* m_pcRABSens;
     /* Pointer to the positioning sensor */
     CCI_PositioningSensor* m_pcPosSens;
+
+    /* The turning parameters */
+    SWheelTurningParams m_sWheelTurningParams;
+
+    /* Flag to know whether this robot is selected */
+    bool m_bSelected;
+
+    /* The control vector */
+    CVector2 m_cControl;
 
     /* Outgoing message */
     CByteArray msg;
@@ -110,7 +168,7 @@ private:
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
     /* Wheel speed. */
-    Real m_fWheelVelocity;
+    // Real m_fWheelVelocity;
 
 
     /* Receive messages from neighboring robots */
