@@ -72,7 +72,13 @@ void CLeader::ControlStep() {
     msg = CByteArray(10, 255);
     msg_index = 0;
 
-    /* Send its orientation */
+    /* Set its state to msg */
+    msg[msg_index++] = 0; // Leader = 0, Follower = 1
+
+    /* Set its team to msg */
+    msg[msg_index++] = 0; // Leader1 = 0; Leader2 = 1;
+
+    /* Set its orientation to msg */
     CRadians cZAngle, cYAngle, cXAngle;
     m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
     float n_angle = cZAngle.GetValue(); // Get angle in radians and store as float

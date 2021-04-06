@@ -101,16 +101,29 @@ void CFollower::get_messages() {
 
     if(! tMsgs.empty()) {
 
-        /* Receive leader orientation */
-        std::vector<char> val(4);
-        for(size_t i = 0; i < 4; ++i) {
-            // std::cout << tMsgs[0].Data[i] << std::endl;
-            val[i] = tMsgs[0].Data[i];
+        for(size_t i = 0; i < tMsgs.size(); ++i) {
+
+            size_t msg_index = 0;
+
+            /* Get robot state */
+            size_t r_state = tMsgs[i].Data[msg_index++];
+
+            /* Get robot state */
+            size_t r_team = tMsgs[i].Data[msg_index++];
+
+            /* If Leader, get orientation */
+            if(r_state == 0) {
+                
+                std::vector<char> val(4);
+                for(size_t j = 0; j < 4; ++j) {
+                    // std::cout << tMsgs[0].Data[i] << std::endl;
+                    val[j] = tMsgs[i].Data[msg_index++];
+                }
+
+                float leader_n = *reinterpret_cast<float*>(&val[0]);
+                std::cout << "[F1] " << leader_n << std::endl;
+            }
         }
-
-        float leader_n = *reinterpret_cast<float*>(&val[0]);
-        std::cout << "[F1] " << leader_n << std::endl;
-
 
         // for(size_t i = 0; i < tMsgs.size(); ++i) {
         //     // size_t j = 0;
