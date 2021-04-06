@@ -34,7 +34,6 @@
 
 #include "SCT.h"
 // #include "pid.h"
-#include <Eigen/Dense>
 
 #include <map>
 

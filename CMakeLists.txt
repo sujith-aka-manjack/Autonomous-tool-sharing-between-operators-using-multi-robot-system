@@ -38,11 +38,8 @@ include(ARGoSCheckQTOpenGL)
 # Find Lua
 find_package(Lua REQUIRED)
 
-# Look for eigen library
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-
 # Set ARGoS include dir
-include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
 # Set ARGoS link dir
 link_directories(${ARGOS_LIBRARY_DIRS})
