@@ -7,10 +7,11 @@
  * determine its next action in each timestep.
  *
  * This controller is meant to be used with the XML files:
- *    experiments/simple_sctprobpub.argos
+ *    experiments/leader_follower.argos
  * 
- * This example has been modified from the epuck_obstacleavoidance example in
- * https://github.com/ilpincy/argos3-examples/blob/master/controllers/epuck_obstacleavoidance/epuck_obstacleavoidance.h
+ * This example has been modified from the following examples provided at argos3-examples: https://github.com/ilpincy/argos3-examples/
+ *   - argos3-examples/controllers/epuck_obstacleavoidance/
+ *   - argos3-examples/controllers/footbot_manualcontrol/
  */
 
 #ifndef LEADER_H
@@ -132,6 +133,21 @@ protected:
     */
    void SetWheelSpeedsFromVector(const CVector2& c_heading);
 
+    /* 
+    * Receive messages from neighboring robots.
+    */
+    void GetMessages();
+
+    /* 
+    * Update sensor readings.
+    */
+    void UpdateSensors();
+
+    /*
+    * Print robot id.
+    */
+    void PrintName();
+
 private:
 
     /* Pointer to the differential steering actuator */
@@ -169,14 +185,6 @@ private:
     */
     /* Wheel speed. */
     // Real m_fWheelVelocity;
-
-
-    /* Receive messages from neighboring robots */
-    void get_messages();
-
-    /* Update sensor readings */
-    void update_sensors();
-
     
 };
 

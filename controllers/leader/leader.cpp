@@ -80,21 +80,6 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    // std::cout << m_pcPosSens->GetReading().Position << std::endl;
-    // std::cout << m_pcPosSens->GetReading().Orientation << std::endl;
-
-    // CRadians cZAngle, cYAngle, cXAngle;
-    
-
-    // double turn_angle = pid_rotate->calculate(10, 11);  // TODO: Change input to radians
-
-    // std::cout << turn_angle << std::endl;
-
-    // m_pcWheels->SetLinearVelocity(turn_angle, -turn_angle);
-
-    // get_messages();
-    // update_sensors();
-
     /* Init new message */
     msg = CByteArray(10, 255);
     msg_index = 0;
@@ -109,7 +94,7 @@ void CLeader::ControlStep() {
     CRadians cZAngle, cYAngle, cXAngle;
     m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
     float n_angle = cZAngle.GetValue(); // Get angle in radians and store as float
-    std::cout << "[L] " << n_angle << std::endl;
+    // std::cout << "[L] " << n_angle << std::endl;
 
     unsigned char* value_ptr = reinterpret_cast<unsigned char*>(&n_angle);  // Convert float to 4 bytes
     for(int i = 0; i < sizeof(float); i++) {
@@ -222,7 +207,7 @@ void CLeader::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 /****************************************/
 /****************************************/
 
-void CLeader::get_messages() {
+void CLeader::GetMessages() {
 
     /* Reset all public event occurances */
     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
@@ -249,10 +234,17 @@ void CLeader::get_messages() {
     // }
 }
 
-void CLeader::update_sensors() {}
+/****************************************/
+/****************************************/
+
+void CLeader::UpdateSensors() {}
 
 /****************************************/
 /****************************************/
+
+void CLeader::PrintName() {
+    std::cout << "[" << this->GetId() << "] ";
+}
 
 /*
  * This statement notifies ARGoS of the existence of the controller.

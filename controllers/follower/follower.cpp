@@ -2,14 +2,59 @@
 #include "follower.h"
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
+#include <argos3/core/utility/logging/argos_log.h>
+
+/****************************************/
+/****************************************/
+
+void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
+   try {
+      TurningMechanism = NO_TURN;
+      CDegrees cAngle;
+      GetNodeAttribute(t_node, "hard_turn_angle_threshold", cAngle);
+      HardTurnOnAngleThreshold = ToRadians(cAngle);
+      GetNodeAttribute(t_node, "soft_turn_angle_threshold", cAngle);
+      SoftTurnOnAngleThreshold = ToRadians(cAngle);
+      GetNodeAttribute(t_node, "no_turn_angle_threshold", cAngle);
+      NoTurnAngleThreshold = ToRadians(cAngle);
+      GetNodeAttribute(t_node, "max_speed", MaxSpeed);
+   }
+   catch(CARGoSException& ex) {
+      THROW_ARGOSEXCEPTION_NESTED("Error initializing controller wheel turning parameters.", ex);
+   }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
+   try {
+      GetNodeAttribute(t_node, "target_distance", TargetDistance);
+      GetNodeAttribute(t_node, "gain", Gain);
+      GetNodeAttribute(t_node, "exponent", Exponent);
+   }
+   catch(CARGoSException& ex) {
+      THROW_ARGOSEXCEPTION_NESTED("Error initializing controller flocking parameters.", ex);
+   }
+}
+
+/****************************************/
+/****************************************/
+
+/*
+ * This function is a generalization of the Lennard-Jones potential
+ */
+Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distance) {
+   Real fNormDistExp = ::pow(TargetDistance / f_distance, Exponent);
+   return -Gain / f_distance * (fNormDistExp * fNormDistExp - fNormDistExp);
+}
 
 /****************************************/
 /****************************************/
 
 CFollower::CFollower() :
     m_pcWheels(NULL),
-    m_pcProximity(NULL),
-    m_fWheelVelocity(2.5f) {}
+    m_pcProximity(NULL){}
 
 /****************************************/
 /****************************************/
@@ -22,12 +67,19 @@ void CFollower::Init(TConfigurationNode& t_node) {
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
     m_pcPosSens   = GetSensor  <CCI_PositioningSensor           >("positioning"       );
-    
-    /* Parse the configuration file */
-    GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
-    // /* Initialize PID parameters */
-    // pid_rotate = new PID(0.1, m_fWheelVelocity, -m_fWheelVelocity, 10, 0, 0);
+    /*
+    * Parse the config file
+    */
+    try {
+        /* Wheel turning */
+        m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
+        /* Flocking-related */
+        m_sFlockingParams.Init(GetNode(t_node, "flocking"));
+    }
+    catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
+    }
 
     Reset();
 }
@@ -53,53 +105,13 @@ void CFollower::Reset() {
 
 void CFollower::ControlStep() {
 
-    // std::cout << m_pcPosSens->GetReading().Position << std::endl;
-    // std::cout << m_pcPosSens->GetReading().Orientation << std::endl;    
-
-    // double turn_angle = pid_rotate->calculate(10, 11);  // TODO: Change input to radians
-
-    // std::cout << turn_angle << std::endl;
-
-
-    // get_messages();
-    // update_sensors();
-
-    // std::cout << m_pcPosSens->GetReading().Orientation << std::endl;
-
-    // CRadians cZAngle, cYAngle, cXAngle;
-    // m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
-    // std::cout << cZAngle << std::endl;
-
-    // m_pcWheels->SetLinearVelocity(1, -1);
-
     /* Init new message */
     msg = CByteArray(10, 255);
     msg_index = 0;
 
-    get_messages();
+    GetMessages();
 
-    /* Calculate flocking vectors */
-    CVector2 vec_align = alignment();
-    print_name();
-    std::cout << "align: " << vec_align << std::endl;
-
-    CVector2 vec_attract = cohesion();
-    print_name();
-    std::cout << "att: " << vec_attract << std::endl;
-
-    CVector2 vec_repel = repulsion();
-    print_name();
-    std::cout << "repel: " << vec_repel << std::endl;
-
-    /* Combine vectors */
-    CVector2 vec_sum = vec_align + vec_attract + vec_repel;
-    print_name();
-    std::cout << "sum: " << vec_sum << std::endl;
-
-    flock(vec_sum);
-
-    // /* Run the generator player */
-    // sct->run_step();
+    SetWheelSpeedsFromVector(leaderVec);
 
     /* Set message to send */
     m_pcRABAct->SetData(msg);
@@ -109,7 +121,78 @@ void CFollower::ControlStep() {
 /****************************************/
 /****************************************/
 
-void CFollower::get_messages() {
+void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
+    /* Get the heading angle */
+    CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
+    /* Get the length of the heading vector */
+    Real fHeadingLength = c_heading.Length();
+    /* Clamp the speed so that it's not greater than MaxSpeed */
+    Real fBaseAngularWheelSpeed = Min<Real>(fHeadingLength, m_sWheelTurningParams.MaxSpeed);
+    /* State transition logic */
+    if(m_sWheelTurningParams.TurningMechanism == SWheelTurningParams::HARD_TURN) {
+        if(Abs(cHeadingAngle) <= m_sWheelTurningParams.SoftTurnOnAngleThreshold) {
+            m_sWheelTurningParams.TurningMechanism = SWheelTurningParams::SOFT_TURN;
+        }
+    }
+    if(m_sWheelTurningParams.TurningMechanism == SWheelTurningParams::SOFT_TURN) {
+        if(Abs(cHeadingAngle) > m_sWheelTurningParams.HardTurnOnAngleThreshold) {
+            m_sWheelTurningParams.TurningMechanism = SWheelTurningParams::HARD_TURN;
+        }
+        else if(Abs(cHeadingAngle) <= m_sWheelTurningParams.NoTurnAngleThreshold) {
+            m_sWheelTurningParams.TurningMechanism = SWheelTurningParams::NO_TURN;
+        }
+    }
+    if(m_sWheelTurningParams.TurningMechanism == SWheelTurningParams::NO_TURN) {
+        if(Abs(cHeadingAngle) > m_sWheelTurningParams.HardTurnOnAngleThreshold) {
+            m_sWheelTurningParams.TurningMechanism = SWheelTurningParams::HARD_TURN;
+        }
+        else if(Abs(cHeadingAngle) > m_sWheelTurningParams.NoTurnAngleThreshold) {
+            m_sWheelTurningParams.TurningMechanism = SWheelTurningParams::SOFT_TURN;
+        }
+    }
+    /* Wheel speeds based on current turning state */
+    Real fSpeed1, fSpeed2;
+    switch(m_sWheelTurningParams.TurningMechanism) {
+        case SWheelTurningParams::NO_TURN: {
+            /* Just go straight */
+            fSpeed1 = fBaseAngularWheelSpeed;
+            fSpeed2 = fBaseAngularWheelSpeed;
+            break;
+        }
+        case SWheelTurningParams::SOFT_TURN: {
+            /* Both wheels go straight, but one is faster than the other */
+            Real fSpeedFactor = (m_sWheelTurningParams.HardTurnOnAngleThreshold - Abs(cHeadingAngle)) / m_sWheelTurningParams.HardTurnOnAngleThreshold;
+            fSpeed1 = fBaseAngularWheelSpeed - fBaseAngularWheelSpeed * (1.0 - fSpeedFactor);
+            fSpeed2 = fBaseAngularWheelSpeed + fBaseAngularWheelSpeed * (1.0 - fSpeedFactor);
+            break;
+        }
+        case SWheelTurningParams::HARD_TURN: {
+            /* Opposite wheel speeds */
+            fSpeed1 = -m_sWheelTurningParams.MaxSpeed;
+            fSpeed2 =  m_sWheelTurningParams.MaxSpeed;
+            break;
+        }
+    }
+    /* Apply the calculated speeds to the appropriate wheels */
+    Real fLeftWheelSpeed, fRightWheelSpeed;
+    if(cHeadingAngle > CRadians::ZERO) {
+        /* Turn Left */
+        fLeftWheelSpeed  = fSpeed1;
+        fRightWheelSpeed = fSpeed2;
+    }
+    else {
+        /* Turn Right */
+        fLeftWheelSpeed  = fSpeed2;
+        fRightWheelSpeed = fSpeed1;
+    }
+    /* Finally, set the wheel speeds */
+    m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::GetMessages() {
 
     /* Reset all public event occurances */
     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
@@ -127,24 +210,36 @@ void CFollower::get_messages() {
 
             /* Get robot state */
             size_t r_state = tMsgs[i].Data[index++];
-
             /* Get robot team */
             size_t r_team = tMsgs[i].Data[index++];
 
             /* If Leader, get orientation */
             if(r_state == 0) {
                 
-                std::vector<char> val(4);
-                for(size_t j = 0; j < 4; ++j) {
-                    // std::cout << tMsgs[0].Data[i] << std::endl;
-                    val[j] = tMsgs[i].Data[index++];
+                CVector2 cAccum;
+                Real fLJ;
+
+                /*
+                * Take the blob distance and angle
+                * With the distance, calculate the Lennard-Jones interaction force
+                * Form a 2D vector with the interaction force and the angle
+                * Sum such vector to the accumulator
+                */
+                /* Calculate LJ */
+                fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
+                /* Sum to accumulator */
+                cAccum += CVector2(fLJ,
+                                   tMsgs[i].HorizontalBearing);
+
+                /* Clamp the length of the vector to the max speed */
+                if(cAccum.Length() > m_sWheelTurningParams.MaxSpeed) {
+                    cAccum.Normalize();
+                    cAccum *= m_sWheelTurningParams.MaxSpeed;
                 }
 
-                leader_n = *reinterpret_cast<float*>(&val[0]);
-                std::cout << "[F1] " << leader_n << std::endl;
+                leaderVec = cAccum;
+                std::cout << leaderVec << std::endl;
 
-                leader_range = tMsgs[i].Range;
-                leader_bearing = tMsgs[i].HorizontalBearing;
             }
         }
     }
@@ -155,54 +250,15 @@ void CFollower::get_messages() {
     // }
 }
 
-void CFollower::update_sensors() {}
+/****************************************/
+/****************************************/
 
-CVector2 CFollower::alignment() {
-    return CVector2(1, CRadians(leader_n));
-}
+void CFollower::UpdateSensors() {}
 
-CVector2 CFollower::cohesion() {
-    CVector2 vec;
+/****************************************/
+/****************************************/
 
-    if(leader_range > thres_attract) {
-        vec.FromPolarCoordinates(1, leader_bearing);
-    }
-
-    return vec;
-}
-
-CVector2 CFollower::repulsion() {
-    CVector2 vec;
-
-    if(leader_range < thres_repel) {
-        vec.FromPolarCoordinates(1, -leader_bearing);
-    }
-
-    return vec;
-}
-
-void CFollower::flock(CVector2 vec) {
-    print_name();
-    std::cout << vec.Angle().GetAbsoluteValue() << std::endl;
-    print_name();
-    std::cout << vec.Length() << std::endl;
-
-    if (vec.Length() >= 1) {
-        if (vec.Angle().GetAbsoluteValue() > 3.14/8) {
-            print_name();
-            std::cout << "rotate" << std::endl;
-        } else {
-            print_name();
-            std::cout << "stop, small angle" << std::endl;
-        }
-    } else {
-        print_name();
-        std::cout << "stop, short vec" << std::endl;
-    }
-    
-}
-
-void CFollower::print_name() {
+void CFollower::PrintName() {
     std::cout << "[" << this->GetId() << "] ";
 }
 

@@ -7,10 +7,11 @@
  * determine its next action in each timestep.
  *
  * This controller is meant to be used with the XML files:
- *    experiments/simple_sctprobpub.argos
+ *    experiments/leader_follower.argos
  * 
- * This example has been modified from the epuck_obstacleavoidance example in
- * https://github.com/ilpincy/argos3-examples/blob/master/controllers/epuck_obstacleavoidance/epuck_obstacleavoidance.h
+ * This example has been modified from the following examples provided at argos3-examples: https://github.com/ilpincy/argos3-examples/
+ *   - argos3-examples/controllers/epuck_obstacleavoidance/
+ *   - argos3-examples/controllers/footbot_flocking/
  */
 
 #ifndef FOLLOWER_H
@@ -49,6 +50,59 @@ class CFollower : public CCI_Controller {
 
 public:
 
+    /*
+    * The following variables are used as parameters for
+    * turning during navigation. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><wheel_turning>
+    * section.
+    */
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
+
+    /*
+    * The following variables are used as parameters for
+    * flocking interaction. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * section.
+    */
+    struct SFlockingInteractionParams {
+        /* Target robot-robot distance in cm */
+        Real TargetDistance;
+        /* Gain of the Lennard-Jones potential */
+        Real Gain;
+        /* Exponent of the Lennard-Jones potential */
+        Real Exponent;
+
+        void Init(TConfigurationNode& t_node);
+        Real GeneralizedLennardJones(Real f_distance);
+    };
+
+public:
+
     /* Class constructor. */
     CFollower();
 
@@ -83,6 +137,28 @@ public:
     */
     virtual void Destroy() {}
 
+protected:
+
+    /*
+    * Gets a direction vector as input and transforms it into wheel actuation.
+    */
+    void SetWheelSpeedsFromVector(const CVector2& c_heading);
+
+    /* 
+    * Receive messages from neighboring robots.
+    */
+    void GetMessages();
+
+    /* 
+    * Update sensor readings.
+    */
+    void UpdateSensors();
+
+    /*
+    * Print robot id.
+    */
+    void PrintName();
+
 private:
 
     /* Pointer to the differential steering actuator */
@@ -96,21 +172,20 @@ private:
     /* Pointer to the positioning sensor */
     CCI_PositioningSensor* m_pcPosSens;
 
+    /* The turning parameters. */
+    SWheelTurningParams m_sWheelTurningParams;
+    /* The flocking interaction parameters. */
+    SFlockingInteractionParams m_sFlockingParams;
+
+    /* Vector to leader position */
+    CVector2 leaderVec;
+
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
     std::map<size_t, bool> pub_events;
-
-    /* Flocking parameters (cm) */
-    Real thres_repel = 15;
-    Real thres_attract = 20;
-
-    /* Leader orientation */
-    float leader_n;
-    Real leader_range;
-    CRadians leader_bearing;
 
     /*
     * The following variables are used as parameters for the
@@ -121,22 +196,6 @@ private:
     /* Wheel speed. */
     Real m_fWheelVelocity;
 
-    /* Receive messages from neighboring robots */
-    void get_messages();
-
-    /* Update sensor readings */
-    void update_sensors();
-
-    /* Flocking functions */
-    CVector2 alignment();
-
-    CVector2 cohesion();
-
-    CVector2 repulsion();
-
-    void flock(CVector2 vec);
-
-    void print_name();
 };
 
 #endif

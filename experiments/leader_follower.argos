@@ -27,7 +27,6 @@
         <proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
-      <!-- <params velocity="5" /> -->
       <params>
         <wheel_turning hard_turn_angle_threshold="90"
                        soft_turn_angle_threshold="70"
@@ -47,7 +46,15 @@
         <proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
-      <params velocity="5" />
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="5" />
+        <flocking target_distance="15"
+                  gain="1000"
+                  exponent="2" />
+      </params>
     </follower_controller>
 
   </controllers>
