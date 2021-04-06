@@ -134,6 +134,10 @@ private:
     CVector2 cohesion();
 
     CVector2 repulsion();
+
+    void flock(CVector2 vec);
+
+    void print_name();
 };
 
 #endif

@@ -78,15 +78,25 @@ void CFollower::ControlStep() {
 
     get_messages();
 
-
+    /* Calculate flocking vectors */
     CVector2 vec_align = alignment();
-    std::cout << vec_align << std::endl;
+    print_name();
+    std::cout << "align: " << vec_align << std::endl;
 
     CVector2 vec_attract = cohesion();
-    std::cout << vec_attract << std::endl;
+    print_name();
+    std::cout << "att: " << vec_attract << std::endl;
 
     CVector2 vec_repel = repulsion();
-    std::cout << vec_repel << std::endl;
+    print_name();
+    std::cout << "repel: " << vec_repel << std::endl;
+
+    /* Combine vectors */
+    CVector2 vec_sum = vec_align + vec_attract + vec_repel;
+    print_name();
+    std::cout << "sum: " << vec_sum << std::endl;
+
+    flock(vec_sum);
 
     // /* Run the generator player */
     // sct->run_step();
@@ -169,6 +179,31 @@ CVector2 CFollower::repulsion() {
     }
 
     return vec;
+}
+
+void CFollower::flock(CVector2 vec) {
+    print_name();
+    std::cout << vec.Angle().GetAbsoluteValue() << std::endl;
+    print_name();
+    std::cout << vec.Length() << std::endl;
+
+    if (vec.Length() >= 1) {
+        if (vec.Angle().GetAbsoluteValue() > 3.14/8) {
+            print_name();
+            std::cout << "rotate" << std::endl;
+        } else {
+            print_name();
+            std::cout << "stop, small angle" << std::endl;
+        }
+    } else {
+        print_name();
+        std::cout << "stop, short vec" << std::endl;
+    }
+    
+}
+
+void CFollower::print_name() {
+    std::cout << "[" << this->GetId() << "] ";
 }
 
 /****************************************/
