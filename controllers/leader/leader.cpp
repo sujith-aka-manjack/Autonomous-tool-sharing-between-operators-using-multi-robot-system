@@ -117,7 +117,11 @@ void CLeader::ControlStep() {
         // std::cout << value_ptr[i] << std::endl;
     }
 
-    SetWheelSpeedsFromVector(m_cControl);
+    /* Follow the control vector only if selected */
+    if(m_bSelected)
+        SetWheelSpeedsFromVector(m_cControl);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
     /* Set message to send */
     m_pcRABAct->SetData(msg);
