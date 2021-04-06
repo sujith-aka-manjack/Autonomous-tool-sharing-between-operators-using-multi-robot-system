@@ -5,3 +5,6 @@ add_subdirectory(example_sctprob)
 add_subdirectory(example_sctpub)
 add_subdirectory(example_sctprobpub)
 add_subdirectory(test_possensor)
+add_subdirectory(leader)
+add_subdirectory(follower)
+

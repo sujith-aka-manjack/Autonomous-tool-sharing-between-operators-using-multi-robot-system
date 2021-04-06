@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system threads="0" />
+    <experiment length="0"
+                ticks_per_second="10"
+                random_seed="124" />
+  </framework>
+
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <leader_controller id="el"
+                                        library="build/controllers/leader/libleader.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <positioning implementation="default" />
+        <proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+      </sensors>
+      <params velocity="5" />
+    </leader_controller>
+
+    <follower_controller id="ef"
+                                        library="build/controllers/follower/libfollower.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <positioning implementation="default" />
+        <proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+      </sensors>
+      <params velocity="5" />
+    </follower_controller>
+
+  </controllers>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="6, 6, 1" center="0,0,0.5">
+
+    <box id="wall_north" size="4,0.1,0.5" movable="false">
+      <body position="0,2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="4,0.1,0.5" movable="false">
+      <body position="0,-2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,4,0.5" movable="false">
+      <body position="2,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,4,0.5" movable="false">
+      <body position="-2,0,0" orientation="0,0,0" />
+    </box>
+
+    <!--
+        You can distribute entities randomly. Here, we distribute
+        10 e-pucks in this way:
+        - the position is uniformly distributed
+        on the ground, in the square whose corners are (-2,-2) and (2,2)
+        - the orientations are non-zero only when rotating around Z and chosen
+        from a gaussian distribution, whose mean is zero degrees and
+        standard deviation is 360 degrees.
+    -->
+    <!-- <distribute>
+      <position method="uniform" min="-2,-2,0" max="2,2,0" />
+      <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
+      <entity quantity="1" max_trials="100">
+        <e-puck id="ep" rab_range="4" rab_data_size="10">
+          <controller config="ec" />
+        </e-puck>
+      </entity>
+    </distribute> -->
+
+    <e-puck id="leader" rab_range="4" rab_data_size="10">
+      <controller config="el" />
+      <body position="0.5,0.5,0" orientation="-90,0,0" />
+    </e-puck>
+
+    <e-puck id="follower1" rab_range="4" rab_data_size="10">
+      <controller config="ef" />
+      <body position="0.5,-0.5,0" orientation="0,0,0" />
+    </e-puck>
+
+    <!--
+        We distribute 5 boxes uniformly in position and rotation around Z.
+    -->
+    <!-- <distribute>
+      <position method="uniform" min="-2,-2,0" max="2,2,0" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="5" max_trials="100">
+        <box id="b" size="0.3,0.3,0.5" movable="false" />
+      </entity>
+    </distribute> -->
+
+    <!--
+        We distribute cylinders uniformly in position and with
+        constant rotation (rotating a cylinder around Z does not
+        matter)
+    -->
+    <!-- <distribute>
+      <position method="uniform" min="-2,-2,0" max="2,2,0" />
+      <orientation method="constant" values="0,0,0" />
+      <entity quantity="5" max_trials="100">
+        <cylinder id="c" height="0.5" radius="0.15" movable="false" />
+      </entity>
+    </distribute> -->
+
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media>
+    <range_and_bearing id="rab" />
+    <led id="light" />
+  </media>
+
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+        </placements>
+      </camera>
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>
