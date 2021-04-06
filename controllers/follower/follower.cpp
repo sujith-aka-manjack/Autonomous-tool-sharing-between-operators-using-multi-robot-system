@@ -78,6 +78,16 @@ void CFollower::ControlStep() {
 
     get_messages();
 
+
+    CVector2 vec_align = alignment();
+    std::cout << vec_align << std::endl;
+
+    CVector2 vec_attract = cohesion();
+    std::cout << vec_attract << std::endl;
+
+    CVector2 vec_repel = repulsion();
+    std::cout << vec_repel << std::endl;
+
     // /* Run the generator player */
     // sct->run_step();
 
@@ -103,13 +113,13 @@ void CFollower::get_messages() {
 
         for(size_t i = 0; i < tMsgs.size(); ++i) {
 
-            size_t msg_index = 0;
+            size_t index = 0;
 
             /* Get robot state */
-            size_t r_state = tMsgs[i].Data[msg_index++];
+            size_t r_state = tMsgs[i].Data[index++];
 
-            /* Get robot state */
-            size_t r_team = tMsgs[i].Data[msg_index++];
+            /* Get robot team */
+            size_t r_team = tMsgs[i].Data[index++];
 
             /* If Leader, get orientation */
             if(r_state == 0) {
@@ -117,29 +127,16 @@ void CFollower::get_messages() {
                 std::vector<char> val(4);
                 for(size_t j = 0; j < 4; ++j) {
                     // std::cout << tMsgs[0].Data[i] << std::endl;
-                    val[j] = tMsgs[i].Data[msg_index++];
+                    val[j] = tMsgs[i].Data[index++];
                 }
 
-                float leader_n = *reinterpret_cast<float*>(&val[0]);
+                leader_n = *reinterpret_cast<float*>(&val[0]);
                 std::cout << "[F1] " << leader_n << std::endl;
+
+                leader_range = tMsgs[i].Range;
+                leader_bearing = tMsgs[i].HorizontalBearing;
             }
         }
-
-        // for(size_t i = 0; i < tMsgs.size(); ++i) {
-        //     // size_t j = 0;
-        //     // while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
-        //     //     unsigned char event = tMsgs[i].Data[j];
-        //     //     pub_events[event] = true;   // If a public event has occured, set it to true
-        //     //     j++;
-        //     // }
-        //     std::cout << tMsgs[i].Data << std::endl;
-
-        //     // float test = *reinterpret_cast<float*>(&tMsgs[i]);
-
-
-        //     std::cout << tMsgs[i].Range << std::endl;
-        //     std::cout << tMsgs[i].HorizontalBearing << std::endl;
-        // }
     }
 
     // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
@@ -149,6 +146,30 @@ void CFollower::get_messages() {
 }
 
 void CFollower::update_sensors() {}
+
+CVector2 CFollower::alignment() {
+    return CVector2(1, CRadians(leader_n));
+}
+
+CVector2 CFollower::cohesion() {
+    CVector2 vec;
+
+    if(leader_range > thres_attract) {
+        vec.FromPolarCoordinates(1, leader_bearing);
+    }
+
+    return vec;
+}
+
+CVector2 CFollower::repulsion() {
+    CVector2 vec;
+
+    if(leader_range < thres_repel) {
+        vec.FromPolarCoordinates(1, -leader_bearing);
+    }
+
+    return vec;
+}
 
 /****************************************/
 /****************************************/

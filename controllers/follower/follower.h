@@ -33,7 +33,6 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
-// #include "pid.h"
 #include <Eigen/Dense>
 
 #include <map>
@@ -105,9 +104,14 @@ private:
     /* Incoming message buffer (occurances of public uncontrollable events) */
     std::map<size_t, bool> pub_events;
 
-    // /* PID for movement */
-    // PID* pid_rotate;
-    // PID* pid_forward;
+    /* Flocking parameters (cm) */
+    Real thres_repel = 15;
+    Real thres_attract = 20;
+
+    /* Leader orientation */
+    float leader_n;
+    Real leader_range;
+    CRadians leader_bearing;
 
     /*
     * The following variables are used as parameters for the
@@ -118,15 +122,18 @@ private:
     /* Wheel speed. */
     Real m_fWheelVelocity;
 
-    /*
-    * SCT callbacks
-    */
-
     /* Receive messages from neighboring robots */
     void get_messages();
 
     /* Update sensor readings */
     void update_sensors();
+
+    /* Flocking functions */
+    CVector2 alignment();
+
+    CVector2 cohesion();
+
+    CVector2 repulsion();
 };
 
 #endif

@@ -113,15 +113,14 @@ private:
     /* Wheel speed. */
     Real m_fWheelVelocity;
 
-    /*
-    * SCT callbacks
-    */
 
     /* Receive messages from neighboring robots */
     void get_messages();
 
     /* Update sensor readings */
     void update_sensors();
+
+    
 };
 
 #endif
