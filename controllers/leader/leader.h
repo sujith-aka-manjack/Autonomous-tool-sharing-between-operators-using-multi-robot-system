@@ -126,11 +126,6 @@ public:
 
 protected:
 
-    /*
-    * Gets a direction vector as input and transforms it into wheel actuation.
-    */
-   void SetWheelSpeedsFromVector(const CVector2& c_heading);
-
     /* 
     * Receive messages from neighboring robots.
     */
@@ -140,6 +135,11 @@ protected:
     * Update sensor readings.
     */
     void UpdateSensors();
+
+    /*
+    * Gets a direction vector as input and transforms it into wheel actuation.
+    */
+    void SetWheelSpeedsFromVector(const CVector2& c_heading);
 
     /*
     * Print robot id.
@@ -166,7 +166,14 @@ private:
     /* The control vector */
     CVector2 m_cControl;
 
-    /* The team ID, which is the number of the leader ID (e.g. L1 -> 1) */
+    /* Robot state */
+    enum RobotState {
+        LEADER = 0,
+        FOLLOWER,
+        CHAIN
+    };
+
+    /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     size_t teamID;
 
     /* Outgoing message */

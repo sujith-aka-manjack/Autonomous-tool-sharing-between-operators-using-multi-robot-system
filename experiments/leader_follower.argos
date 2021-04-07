@@ -97,14 +97,24 @@
       </entity>
     </distribute> -->
 
-    <e-puck id="L1" rab_range="0.3" rab_data_size="10">
+    <e-puck id="L1" rab_range="1.0" rab_data_size="10">
       <controller config="el" />
-      <body position="0,0.11,0" orientation="90,0,0" />
+      <body position="0,0.1,0" orientation="90,0,0" />
     </e-puck>
 
-    <e-puck id="F1" rab_range="0.3" rab_data_size="10">
+    <e-puck id="F1" rab_range="1.0" rab_data_size="10">
       <controller config="ef" />
       <body position="0,-0.1,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F2" rab_range="1.0" rab_data_size="10">
+      <controller config="ef" />
+      <body position="-0.1,0,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F3" rab_range="1.0" rab_data_size="10">
+      <controller config="ef" />
+      <body position="-0.2,0.1,0" orientation="0,0,0" />
     </e-puck>
 
     <!--
@@ -165,7 +175,7 @@
           <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
         </placements> -->
         <placements>
-          <placement index="0" position="-2.1613,-0.00803263,1.63896" look_at="-1.30419,-0.0096157,1.12382" up="0.515138,-0.000951462,0.857107" lens_focal_length="50" />
+          <placement index="0" position="-1.13679,0.00582551,2.45548" look_at="-0.704207,0.00502653,1.55389" up="0.901591,-0.00166523,0.432586" lens_focal_length="50" />
         </placements>
       </camera>
     </qt-opengl>

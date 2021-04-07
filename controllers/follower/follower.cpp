@@ -116,13 +116,136 @@ void CFollower::ControlStep() {
     msg = CByteArray(10, 255);
     msg_index = 0;
 
+    /* Set its state in msg */
+    msg[msg_index++] = FOLLOWER;
+    /* Set team ID in msg */
+    msg[msg_index++] = teamID;
+
+    /* Reset flocking vectors */
+    leaderVec = CVector2();
+    teamVec = CVector2();
+    otherVec = CVector2();
+
+    teammateSeen = 0;
+
+    /* Process messages */
     GetMessages();
 
-    SetWheelSpeedsFromVector(leaderVec);
+    /* Calculate overall vector */
+    leaderVec = GetLeaderFlockingVector(leaderVec);
+    teamVec = GetTeamFlockingVector(teamVec);
+    CVector2 sumVec = leaderVec + teamVec;
+
+    /* Set Wheel Speed */
+    SetWheelSpeedsFromVector(sumVec);
 
     /* Set message to send */
     m_pcRABAct->SetData(msg);
 
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::GetMessages() {
+
+    /* Reset all public event occurances */
+    for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+        itr->second = false;
+    }
+
+    /* Get RAB messages from nearby e-pucks */
+    const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
+
+    if(! tMsgs.empty()) {
+
+        for(size_t i = 0; i < tMsgs.size(); ++i) {
+
+            size_t index = 0;
+
+            /* Get robot state */
+            size_t r_state = tMsgs[i].Data[index++];
+            /* Get team ID */
+            size_t r_team = tMsgs[i].Data[index++];
+
+            if(r_team == teamID) {
+                if(r_state == LEADER) {
+                    /*
+                    * Take the blob distance and angle
+                    * With the distance, calculate the Lennard-Jones interaction force
+                    * Form a 2D vector with the interaction force and the angle
+                    * Sum such vector to the accumulator
+                    */
+                    /* Calculate LJ */
+                    Real fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
+                    /* Sum to accumulator */
+                    leaderVec += CVector2(fLJ,
+                                          tMsgs[i].HorizontalBearing);
+
+                } else if(r_state == FOLLOWER) {
+                    /* Calculate LJ */
+                    Real fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
+                    /* Sum to accumulator */
+                    teamVec += CVector2(fLJ,
+                                        tMsgs[i].HorizontalBearing);
+                    /* Increment the teammate seen counter */
+                    ++teammateSeen;
+                }
+            } else {
+                // AVOID
+            }
+        }
+    }
+
+    // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+    //     std::cout << "key = " << itr->first           // print key
+    //               << ", val = " << itr->second << "\n";    // print value
+    // }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::UpdateSensors() {}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetLeaderFlockingVector(const CVector2& vec) {
+    /* Clamp the length of the vector to the max speed */
+    if(vec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        CVector2 resVec = vec;
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+        return resVec;
+    }
+    return CVector2();
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetTeamFlockingVector(const CVector2& vec) {
+    if(teammateSeen > 0) {
+        CVector2 resVec = vec;
+        /* Divide the accumulator by the number of blobs seen */
+        resVec /= teammateSeen;
+        /* Clamp the length of the vector to the max speed */
+        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+            resVec.Normalize();
+            resVec *= m_sWheelTurningParams.MaxSpeed;
+        }
+        return resVec;
+    }
+    return CVector2();
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetOtherRepulsionVector(const CVector2& vec) {
+    
+    return CVector2();
 }
 
 /****************************************/
@@ -195,72 +318,6 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Finally, set the wheel speeds */
     m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
 }
-
-/****************************************/
-/****************************************/
-
-void CFollower::GetMessages() {
-
-    /* Reset all public event occurances */
-    for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-        itr->second = false;
-    }
-
-    /* Get RAB messages from nearby e-pucks */
-    const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
-
-    if(! tMsgs.empty()) {
-
-        for(size_t i = 0; i < tMsgs.size(); ++i) {
-
-            size_t index = 0;
-
-            /* Get robot state */
-            size_t r_state = tMsgs[i].Data[index++];
-            /* Get robot team */
-            size_t r_team = tMsgs[i].Data[index++];
-
-            /* If Leader, get orientation */
-            if(r_state == 0) {
-                
-                CVector2 cAccum;
-                Real fLJ;
-
-                /*
-                * Take the blob distance and angle
-                * With the distance, calculate the Lennard-Jones interaction force
-                * Form a 2D vector with the interaction force and the angle
-                * Sum such vector to the accumulator
-                */
-                /* Calculate LJ */
-                fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
-                /* Sum to accumulator */
-                cAccum += CVector2(fLJ,
-                                   tMsgs[i].HorizontalBearing);
-
-                /* Clamp the length of the vector to the max speed */
-                if(cAccum.Length() > m_sWheelTurningParams.MaxSpeed) {
-                    cAccum.Normalize();
-                    cAccum *= m_sWheelTurningParams.MaxSpeed;
-                }
-
-                leaderVec = cAccum;
-                std::cout << leaderVec << std::endl;
-
-            }
-        }
-    }
-
-    // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-    //     std::cout << "key = " << itr->first           // print key
-    //               << ", val = " << itr->second << "\n";    // print value
-    // }
-}
-
-/****************************************/
-/****************************************/
-
-void CFollower::UpdateSensors() {}
 
 /****************************************/
 /****************************************/

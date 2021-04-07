@@ -137,11 +137,6 @@ public:
 
 protected:
 
-    /*
-    * Gets a direction vector as input and transforms it into wheel actuation.
-    */
-    void SetWheelSpeedsFromVector(const CVector2& c_heading);
-
     /* 
     * Receive messages from neighboring robots.
     */
@@ -151,6 +146,26 @@ protected:
     * Update sensor readings.
     */
     void UpdateSensors();
+
+    /* 
+    * Gets a direction vector as input and clamp the length of the leader vector.
+    */
+    CVector2 GetLeaderFlockingVector(const CVector2& vec);
+
+    /* 
+    * Gets a direction vector as input and calculate the average team vector.
+    */
+    CVector2 GetTeamFlockingVector(const CVector2& vec);
+
+    /* 
+    * Gets a direction vector as input and calculate the average vector to avoid others.
+    */
+    CVector2 GetOtherRepulsionVector(const CVector2& vec);
+
+    /*
+    * Gets a direction vector as input and transforms it into wheel actuation.
+    */
+    void SetWheelSpeedsFromVector(const CVector2& c_heading);
 
     /*
     * Print robot id.
@@ -173,11 +188,25 @@ private:
     /* The flocking interaction parameters. */
     SFlockingInteractionParams m_sFlockingParams;
 
-    /* Current team id */
+    /* Robot state */
+    enum RobotState {
+        LEADER = 0,
+        FOLLOWER,
+        CHAIN
+    };
+
+    /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     size_t teamID;
 
-    /* Vector to leader position */
+    /* Flocking vector to leader */
     CVector2 leaderVec;
+    /* Flocking vector to teammate */
+    CVector2 teamVec;
+    /* Repulsion vector to other robots */
+    CVector2 otherVec;
+
+    /* Count the number of msgs received from Followers in the same team */
+    size_t teammateSeen;
 
     /* Outgoing message */
     CByteArray msg;

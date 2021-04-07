@@ -84,9 +84,8 @@ void CLeader::ControlStep() {
     msg = CByteArray(10, 255);
     msg_index = 0;
 
-    /* Set its state (Leader) in msg */
-    msg[msg_index++] = 0; // Leader = 0, Follower = 1
-
+    /* Set its state in msg */
+    msg[msg_index++] = LEADER;
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
 
@@ -123,6 +122,41 @@ void CLeader::Deselect() {
 void CLeader::SetControlVector(const CVector2& c_control) {
    m_cControl = c_control;
 }
+
+/****************************************/
+/****************************************/
+
+void CLeader::GetMessages() {
+
+    /* Reset all public event occurances */
+    for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+        itr->second = false;
+    }
+
+    /* Get RAB messages from nearby e-pucks */
+    const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
+
+    if(! tMsgs.empty()) {
+        for(size_t i = 0; i < tMsgs.size(); ++i) {
+            size_t j = 0;
+            while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
+                unsigned char event = tMsgs[i].Data[j];
+                pub_events[event] = true;   // If a public event has occured, set it to true
+                j++;
+            }
+        }
+    }
+
+    // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+    //     std::cout << "key = " << itr->first           // print key
+    //               << ", val = " << itr->second << "\n";    // print value
+    // }
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::UpdateSensors() {}
 
 /****************************************/
 /****************************************/
@@ -191,41 +225,6 @@ void CLeader::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Finally, set the wheel speeds */
     m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
 }
-
-/****************************************/
-/****************************************/
-
-void CLeader::GetMessages() {
-
-    /* Reset all public event occurances */
-    for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-        itr->second = false;
-    }
-
-    /* Get RAB messages from nearby e-pucks */
-    const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
-
-    if(! tMsgs.empty()) {
-        for(size_t i = 0; i < tMsgs.size(); ++i) {
-            size_t j = 0;
-            while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
-                unsigned char event = tMsgs[i].Data[j];
-                pub_events[event] = true;   // If a public event has occured, set it to true
-                j++;
-            }
-        }
-    }
-
-    // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-    //     std::cout << "key = " << itr->first           // print key
-    //               << ", val = " << itr->second << "\n";    // print value
-    // }
-}
-
-/****************************************/
-/****************************************/
-
-void CLeader::UpdateSensors() {}
 
 /****************************************/
 /****************************************/
