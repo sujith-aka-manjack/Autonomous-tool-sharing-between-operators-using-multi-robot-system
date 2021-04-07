@@ -185,8 +185,10 @@ private:
 
     /* The turning parameters. */
     SWheelTurningParams m_sWheelTurningParams;
-    /* The flocking interaction parameters. */
-    SFlockingInteractionParams m_sFlockingParams;
+    /* The flocking interaction parameters between teammates. */
+    SFlockingInteractionParams m_sTeamFlockingParams;
+    /* The flocking interaction parameters between leader. */
+    SFlockingInteractionParams m_sLeaderFlockingParams;
 
     /* Robot state */
     enum RobotState {

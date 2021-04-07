@@ -76,7 +76,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         /* Wheel turning */
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
         /* Flocking-related */
-        m_sFlockingParams.Init(GetNode(t_node, "flocking"));
+        m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
+        m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
         /* Initial team ID */
         GetNodeAttribute(GetNode(t_node, "team"), "leader", leader_str);
         
@@ -135,9 +136,18 @@ void CFollower::ControlStep() {
     leaderVec = GetLeaderFlockingVector(leaderVec);
     teamVec = GetTeamFlockingVector(teamVec);
     CVector2 sumVec = leaderVec + teamVec;
+    
+    if(this->GetId() == "F1") {
+        std::cout << "leader: " << leaderVec.Length() << std::endl;
+        std::cout << "team: " << teamVec.Length() << std::endl;
+        std::cout << "sum: " << sumVec.Length() << std::endl;
+    }
 
     /* Set Wheel Speed */
-    SetWheelSpeedsFromVector(sumVec);
+    if(sumVec.Length() > 0.0f)
+        SetWheelSpeedsFromVector(sumVec);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
     /* Set message to send */
     m_pcRABAct->SetData(msg);
@@ -177,14 +187,14 @@ void CFollower::GetMessages() {
                     * Sum such vector to the accumulator
                     */
                     /* Calculate LJ */
-                    Real fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
+                    Real fLJ = m_sLeaderFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
                     /* Sum to accumulator */
                     leaderVec += CVector2(fLJ,
                                           tMsgs[i].HorizontalBearing);
 
                 } else if(r_state == FOLLOWER) {
                     /* Calculate LJ */
-                    Real fLJ = m_sFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
+                    Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
                     /* Sum to accumulator */
                     teamVec += CVector2(fLJ,
                                         tMsgs[i].HorizontalBearing);
@@ -212,11 +222,13 @@ void CFollower::UpdateSensors() {}
 /****************************************/
 
 CVector2 CFollower::GetLeaderFlockingVector(const CVector2& vec) {
-    /* Clamp the length of the vector to the max speed */
-    if(vec.Length() > m_sWheelTurningParams.MaxSpeed) {
+    if(vec.Length() > 0.0f) {
         CVector2 resVec = vec;
-        resVec.Normalize();
-        resVec *= m_sWheelTurningParams.MaxSpeed;
+        /* Clamp the length of the vector to the max speed */
+        if(vec.Length() > m_sWheelTurningParams.MaxSpeed) {
+            resVec.Normalize();
+            resVec *= m_sWheelTurningParams.MaxSpeed;
+        }
         return resVec;
     }
     return CVector2();

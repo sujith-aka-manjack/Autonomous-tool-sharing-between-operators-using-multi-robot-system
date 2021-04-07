@@ -24,7 +24,7 @@
       </actuators>
       <sensors>
         <positioning implementation="default" />
-        <proximity implementation="default" show_rays="true" />
+        <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
       <params>
@@ -43,15 +43,18 @@
       </actuators>
       <sensors>
         <positioning implementation="default" />
-        <proximity implementation="default" show_rays="true" />
+        <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
       <params>
         <wheel_turning hard_turn_angle_threshold="90"
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
-                       max_speed="5" />
-        <flocking target_distance="15"
+                       max_speed="8" />
+        <leader_flocking target_distance="15"
+                  gain="1000"
+                  exponent="2" />
+        <team_flocking target_distance="15"
                   gain="1000"
                   exponent="2" />
         <team leader="L1" />
