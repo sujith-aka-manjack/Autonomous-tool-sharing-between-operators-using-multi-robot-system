@@ -67,7 +67,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
 
-    std::string leader_str;
+    std::string leaderStr;
 
     /*
     * Parse the config file
@@ -79,14 +79,15 @@ void CFollower::Init(TConfigurationNode& t_node) {
         m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
         /* Initial team ID */
-        GetNodeAttribute(GetNode(t_node, "team"), "leader", leader_str);
-        
+        GetNodeAttribute(GetNode(t_node, "team"), "leader", leaderStr);
+        /* Chain formation threshold */
+        GetNodeAttribute(GetNode(t_node, "team"), "chain_threshold", chainThreshold);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
 
-    std::stringstream ss(leader_str.substr(1));
+    std::stringstream ss(leaderStr.substr(1));
     ss >> teamID;
 
     Reset();
@@ -122,30 +123,39 @@ void CFollower::ControlStep() {
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
 
-    /* Reset flocking vectors */
+    /* Reset flocking variables */
     leaderVec = CVector2();
-    teamVec = CVector2();
-    otherVec = CVector2();
+    teamVecs.clear();
+    otherVecs.clear();
 
-    teammateSeen = 0;
+    /* Reset chain formation variables */
+    chainVecs.clear();
 
     /* Process messages */
     GetMessages();
 
-    /* Calculate overall vector */
-    leaderVec = GetLeaderFlockingVector(leaderVec);
-    teamVec = GetTeamFlockingVector(teamVec);
-    CVector2 sumVec = leaderVec + teamVec;
-    
-    if(this->GetId() == "F1") {
-        std::cout << "leader: " << leaderVec.Length() << std::endl;
-        std::cout << "team: " << teamVec.Length() << std::endl;
-        std::cout << "sum: " << sumVec.Length() << std::endl;
-    }
+    /*** FLOCK ***/
+
+    /* Calculate overall force applied to the robot */
+    CVector2 leaderForce = GetLeaderFlockingVector();
+    CVector2 teamForce = GetTeamFlockingVector();
+    CVector2 sumForce = leaderForce + teamForce;
+
+    /*** CHAIN ***/
+
+    /* Check leader distance with chain (including other leader) */
+    CheckJoinChain();
+
+    /* DEBUGGING */
+    // if(this->GetId() == "F1") {
+    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
+    //     std::cout << "team: " << teamForce.Length() << std::endl;
+    //     std::cout << "sum: " << sumForce.Length() << std::endl;
+    // }
 
     /* Set Wheel Speed */
-    if(sumVec.Length() > 0.0f)
-        SetWheelSpeedsFromVector(sumVec);
+    if(sumForce.Length() > 0.0f)
+        SetWheelSpeedsFromVector(sumForce);
     else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
@@ -180,27 +190,19 @@ void CFollower::GetMessages() {
 
             if(r_team == teamID) {
                 if(r_state == LEADER) {
-                    /*
-                    * Take the blob distance and angle
-                    * With the distance, calculate the Lennard-Jones interaction force
-                    * Form a 2D vector with the interaction force and the angle
-                    * Sum such vector to the accumulator
-                    */
-                    /* Calculate LJ */
-                    Real fLJ = m_sLeaderFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
-                    /* Sum to accumulator */
-                    leaderVec += CVector2(fLJ,
-                                          tMsgs[i].HorizontalBearing);
-
+                    leaderVec = CVector2(tMsgs[i].Range,
+                                         tMsgs[i].HorizontalBearing);
                 } else if(r_state == FOLLOWER) {
-                    /* Calculate LJ */
-                    Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(tMsgs[i].Range);
-                    /* Sum to accumulator */
-                    teamVec += CVector2(fLJ,
-                                        tMsgs[i].HorizontalBearing);
-                    /* Increment the teammate seen counter */
-                    ++teammateSeen;
+                    teamVecs.push_back(CVector2(tMsgs[i].Range, 
+                                                tMsgs[i].HorizontalBearing));
                 }
+            } else if(r_state == CHAIN || r_state == LEADER) {
+                /* Store chain positions */
+                chainVecs.push_back(CVector2(tMsgs[i].Range, 
+                                             tMsgs[i].HorizontalBearing));
+                
+                //AVOID
+
             } else {
                 // AVOID
             }
@@ -221,41 +223,59 @@ void CFollower::UpdateSensors() {}
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetLeaderFlockingVector(const CVector2& vec) {
-    if(vec.Length() > 0.0f) {
-        CVector2 resVec = vec;
-        /* Clamp the length of the vector to the max speed */
-        if(vec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
-        }
-        return resVec;
-    }
-    return CVector2();
-}
-
-/****************************************/
-/****************************************/
-
-CVector2 CFollower::GetTeamFlockingVector(const CVector2& vec) {
-    if(teammateSeen > 0) {
-        CVector2 resVec = vec;
-        /* Divide the accumulator by the number of blobs seen */
-        resVec /= teammateSeen;
+CVector2 CFollower::GetLeaderFlockingVector() {
+    CVector2 resVec;
+    if(leaderVec.Length() > 0.0f) {
+        /*
+        * Take the blob distance and angle
+        * With the distance, calculate the Lennard-Jones interaction force
+        * Form a 2D vector with the interaction force and the angle
+        * Sum such vector to the accumulator
+        */
+        /* Calculate LJ */
+        Real fLJ = m_sLeaderFlockingParams.GeneralizedLennardJones(leaderVec.Length());
+        /* Sum to accumulator */
+        resVec += CVector2(fLJ,
+                           leaderVec.Angle());
         /* Clamp the length of the vector to the max speed */
         if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
             resVec.Normalize();
             resVec *= m_sWheelTurningParams.MaxSpeed;
         }
-        return resVec;
     }
-    return CVector2();
+    return resVec;
 }
 
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetOtherRepulsionVector(const CVector2& vec) {
+CVector2 CFollower::GetTeamFlockingVector() {
+    CVector2 resVec;
+    Real teammateSeen = teamVecs.size();
+    if(teammateSeen > 0) {
+
+        for(int i = 0; i < teamVecs.size(); ++i) {
+            /* Calculate LJ */
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(teamVecs[i].Length());
+            /* Sum to accumulator */
+            resVec += CVector2(fLJ,
+                               teamVecs[i].Angle());
+        }
+        /* Divide the accumulator by the number of blobs seen */
+        resVec /= teamVecs.size();
+        /* Clamp the length of the vector to the max speed */
+        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+            resVec.Normalize();
+            resVec *= m_sWheelTurningParams.MaxSpeed;
+        }
+    }
+    return resVec;
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetOtherRepulsionVector() {
     
     return CVector2();
 }
@@ -329,6 +349,35 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     }
     /* Finally, set the wheel speeds */
     m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::CheckJoinChain() {
+    
+    /* For each chain position, check whether the distance between the leader and the chain
+    exceeds the threshold. */
+    if(!chainVecs.empty()) {
+        Real minDistLeaderChain = 10000000; // Minimum distance between the leader and the closest chain detected (init 100km)
+
+        for(int i = 0; i < chainVecs.size(); ++i) {
+            CVector2 diff = leaderVec - chainVecs[i];
+            Real dist = diff.Length();
+            if(dist < minDistLeaderChain)
+                minDistLeaderChain = dist;
+        
+        }
+
+        PrintName();
+        std::cout << minDistLeaderChain << std::endl;
+
+        /* If closest chain is far from leader, become a chain robot */
+        if(minDistLeaderChain > chainThreshold) {
+            std::cout << "FORM CHAIN" << std::endl;
+
+        }
+    }
 }
 
 /****************************************/

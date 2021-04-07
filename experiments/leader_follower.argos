@@ -57,7 +57,8 @@
         <team_flocking target_distance="15"
                   gain="1000"
                   exponent="2" />
-        <team leader="L1" />
+        <team leader="L1" 
+              chain_threshold="70" />
       </params>
     </follower_controller>
 
@@ -102,7 +103,12 @@
 
     <e-puck id="L1" rab_range="1.0" rab_data_size="10">
       <controller config="el" />
-      <body position="0,0.1,0" orientation="90,0,0" />
+      <body position="0,0.1,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="L2" rab_range="1.0" rab_data_size="10">
+      <controller config="el" />
+      <body position="0.2,0,0" orientation="0,0,0" />
     </e-puck>
 
     <e-puck id="F1" rab_range="1.0" rab_data_size="10">

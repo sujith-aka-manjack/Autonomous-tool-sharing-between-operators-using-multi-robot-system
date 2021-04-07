@@ -148,24 +148,31 @@ protected:
     void UpdateSensors();
 
     /* 
-    * Gets a direction vector as input and clamp the length of the leader vector.
+    * Get a flocking vector between itself and the leader.
     */
-    CVector2 GetLeaderFlockingVector(const CVector2& vec);
+    CVector2 GetLeaderFlockingVector();
 
     /* 
-    * Gets a direction vector as input and calculate the average team vector.
+    * Get a flocking vector between itself and the other followers in the same team.
     */
-    CVector2 GetTeamFlockingVector(const CVector2& vec);
+    CVector2 GetTeamFlockingVector();
 
     /* 
-    * Gets a direction vector as input and calculate the average vector to avoid others.
+    * Get a flocking vector between itself and the other robots not in the same team.
     */
-    CVector2 GetOtherRepulsionVector(const CVector2& vec);
+    CVector2 GetOtherRepulsionVector();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
     */
     void SetWheelSpeedsFromVector(const CVector2& c_heading);
+
+    /*
+    * Find the distance between the leader and the closest chain robot or other leader detected.
+    * If distance between the leader and the chain or other leader exceeds chainThreshold, 
+    * become a chain robot.
+    */
+    void CheckJoinChain();
 
     /*
     * Print robot id.
@@ -200,15 +207,14 @@ private:
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     size_t teamID;
 
-    /* Flocking vector to leader */
+    /* Vector to leader */
     CVector2 leaderVec;
-    /* Flocking vector to teammate */
-    CVector2 teamVec;
-    /* Repulsion vector to other robots */
-    CVector2 otherVec;
-
-    /* Count the number of msgs received from Followers in the same team */
-    size_t teammateSeen;
+    /* Vector to teammate */
+    std::vector<CVector2> teamVecs;
+    /* Vector to other robots */
+    std::vector<CVector2> otherVecs;
+    /* Vector to chain members */
+    std::vector<CVector2> chainVecs;
 
     /* Outgoing message */
     CByteArray msg;
@@ -223,6 +229,8 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
+    /* Chain formation threshold */
+    Real chainThreshold;
 
 };
 
