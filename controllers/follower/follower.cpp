@@ -76,6 +76,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
         /* Flocking-related */
         m_sFlockingParams.Init(GetNode(t_node, "flocking"));
+        /* Initial leader id */
+        GetNodeAttribute(GetNode(t_node, "team"), "leader", leaderID);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);

@@ -196,6 +196,9 @@ private:
     /* Wheel speed. */
     Real m_fWheelVelocity;
 
+    /* Current leader's id */
+    std::string leaderID;
+
 };
 
 #endif

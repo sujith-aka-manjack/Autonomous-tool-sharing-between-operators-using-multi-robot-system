@@ -54,6 +54,7 @@
         <flocking target_distance="15"
                   gain="1000"
                   exponent="2" />
+        <team leader="L1" />
       </params>
     </follower_controller>
 
@@ -96,7 +97,7 @@
       </entity>
     </distribute> -->
 
-    <e-puck id="L" rab_range="0.3" rab_data_size="10">
+    <e-puck id="L1" rab_range="0.3" rab_data_size="10">
       <controller config="el" />
       <body position="0,0.11,0" orientation="90,0,0" />
     </e-puck>
