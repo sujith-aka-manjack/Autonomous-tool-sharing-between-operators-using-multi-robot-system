@@ -52,6 +52,10 @@ void CLeader::Init(TConfigurationNode& t_node) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
 
+    /* Get team ID from leader ID */
+    std::stringstream ss(GetId().substr(1));
+    ss >> teamID;
+
     Reset();
 }
 
@@ -80,11 +84,11 @@ void CLeader::ControlStep() {
     msg = CByteArray(10, 255);
     msg_index = 0;
 
-    /* Set its state to msg */
+    /* Set its state (Leader) in msg */
     msg[msg_index++] = 0; // Leader = 0, Follower = 1
 
-    /* Set its team to msg */
-    msg[msg_index++] = 0; // Leader1 = 0; Leader2 = 1;
+    /* Set team ID in msg */
+    msg[msg_index++] = teamID;
 
     /* Follow the control vector only if selected */
     if(m_bSelected)

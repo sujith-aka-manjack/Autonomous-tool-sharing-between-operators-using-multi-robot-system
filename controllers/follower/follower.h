@@ -173,6 +173,9 @@ private:
     /* The flocking interaction parameters. */
     SFlockingInteractionParams m_sFlockingParams;
 
+    /* Current team id */
+    size_t teamID;
+
     /* Vector to leader position */
     CVector2 leaderVec;
 
@@ -189,8 +192,6 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
-    /* Current leader's id */
-    std::string leaderID;
 
 };
 

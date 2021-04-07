@@ -166,6 +166,9 @@ private:
     /* The control vector */
     CVector2 m_cControl;
 
+    /* The team ID, which is the number of the leader ID (e.g. L1 -> 1) */
+    size_t teamID;
+
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
