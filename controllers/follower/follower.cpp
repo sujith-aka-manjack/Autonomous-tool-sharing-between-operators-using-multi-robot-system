@@ -66,6 +66,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
+    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds");
 
     std::string leaderStr;
 
@@ -375,7 +376,9 @@ void CFollower::CheckJoinChain() {
         /* If closest chain is far from leader, become a chain robot */
         if(minDistLeaderChain > chainThreshold) {
             std::cout << "FORM CHAIN" << std::endl;
-
+            m_pcLEDs->SetAllColors(CColor::RED);
+        } else {
+            m_pcLEDs->SetAllColors(CColor::BLACK);
         }
     }
 }
