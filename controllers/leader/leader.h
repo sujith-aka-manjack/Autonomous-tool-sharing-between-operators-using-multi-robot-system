@@ -30,8 +30,6 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 /* Definition of the range-and-bearing sensor */
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
-/* Definition of the positioning sensor */
-#include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
 
@@ -158,8 +156,6 @@ private:
     CCI_RangeAndBearingActuator* m_pcRABAct;
     /* Pointer to the range-and-bearing sensor */
     CCI_RangeAndBearingSensor* m_pcRABSens;
-    /* Pointer to the positioning sensor */
-    CCI_PositioningSensor* m_pcPosSens;
 
     /* The turning parameters */
     SWheelTurningParams m_sWheelTurningParams;
@@ -183,8 +179,6 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
-    /* Wheel speed. */
-    // Real m_fWheelVelocity;
     
 };
 

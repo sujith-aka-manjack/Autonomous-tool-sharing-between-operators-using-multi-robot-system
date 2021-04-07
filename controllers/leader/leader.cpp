@@ -40,10 +40,6 @@ void CLeader::Init(TConfigurationNode& t_node) {
     m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
-    m_pcPosSens   = GetSensor  <CCI_PositioningSensor           >("positioning"       );
-    
-    /* Parse the configuration file */
-    // GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
     /*
     * Parse the config file
@@ -89,18 +85,6 @@ void CLeader::ControlStep() {
 
     /* Set its team to msg */
     msg[msg_index++] = 0; // Leader1 = 0; Leader2 = 1;
-
-    /* Set its orientation to msg */
-    CRadians cZAngle, cYAngle, cXAngle;
-    m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
-    float n_angle = cZAngle.GetValue(); // Get angle in radians and store as float
-    // std::cout << "[L] " << n_angle << std::endl;
-
-    unsigned char* value_ptr = reinterpret_cast<unsigned char*>(&n_angle);  // Convert float to 4 bytes
-    for(int i = 0; i < sizeof(float); i++) {
-        msg[msg_index++] = value_ptr[i];
-        // std::cout << value_ptr[i] << std::endl;
-    }
 
     /* Follow the control vector only if selected */
     if(m_bSelected)

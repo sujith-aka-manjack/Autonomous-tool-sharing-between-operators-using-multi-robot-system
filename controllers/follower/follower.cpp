@@ -66,7 +66,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
-    m_pcPosSens   = GetSensor  <CCI_PositioningSensor           >("positioning"       );
 
     /*
     * Parse the config file
