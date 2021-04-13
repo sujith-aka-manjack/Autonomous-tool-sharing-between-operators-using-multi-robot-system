@@ -70,8 +70,6 @@ public:
         callback[event].callback    = std::bind(clbk, p, _1);
         callback[event].check_input = std::bind(ci, p, _1);
         callback[event].data        = data;
-            std::cout << "Hi" << std::endl;
-
     }
 
     /* Run the generator player to execute the next action */

@@ -115,10 +115,9 @@ void CFollower::Reset() {
 
 void CFollower::ControlStep() {
 
-    /* Init new message */
+    /*** MESSAGE INIT ***/
     msg = CByteArray(10, 255);
     msg_index = 0;
-
     /* Set its state in msg */
     msg[msg_index++] = FOLLOWER;
     /* Set team ID in msg */

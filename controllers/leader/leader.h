@@ -9,7 +9,7 @@
  * This controller is meant to be used with the XML files:
  *    experiments/leader_follower.argos
  * 
- * This example has been modified from the following examples provided at argos3-examples: https://github.com/ilpincy/argos3-examples/
+ * This example has been modified from the following examples provided in argos3-examples: https://github.com/ilpincy/argos3-examples/
  *   - argos3-examples/controllers/epuck_obstacleavoidance/
  *   - argos3-examples/controllers/footbot_manualcontrol/
  */
