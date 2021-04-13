@@ -7,4 +7,4 @@ add_subdirectory(example_sctprobpub)
 add_subdirectory(test_possensor)
 add_subdirectory(leader)
 add_subdirectory(follower)
-
+add_subdirectory(follower2)

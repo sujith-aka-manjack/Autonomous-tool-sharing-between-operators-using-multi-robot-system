@@ -1,5 +1,5 @@
 /* Include the controller definition */
-#include "follower.h"
+#include "follower2.h"
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/core/utility/logging/argos_log.h>
@@ -7,7 +7,7 @@
 /****************************************/
 /****************************************/
 
-void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
+void CFollower2::SWheelTurningParams::Init(TConfigurationNode& t_node) {
    try {
       TurningMechanism = NO_TURN;
       CDegrees cAngle;
@@ -27,7 +27,7 @@ void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
+void CFollower2::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
    try {
       GetNodeAttribute(t_node, "target_distance", TargetDistance);
       GetNodeAttribute(t_node, "gain", Gain);
@@ -44,7 +44,7 @@ void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
 /*
  * This function is a generalization of the Lennard-Jones potential
  */
-Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distance) {
+Real CFollower2::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distance) {
    Real fNormDistExp = ::pow(TargetDistance / f_distance, Exponent);
    return -Gain / f_distance * (fNormDistExp * fNormDistExp - fNormDistExp);
 }
@@ -52,21 +52,21 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_dista
 /****************************************/
 /****************************************/
 
-CFollower::CFollower() :
+CFollower2::CFollower2() :
     m_pcWheels(NULL),
     m_pcProximity(NULL){}
 
 /****************************************/
 /****************************************/
 
-CFollower::~CFollower() {
+CFollower2::~CFollower2() {
     delete sct;
 }
 
 /****************************************/
 /****************************************/
 
-void CFollower::Init(TConfigurationNode& t_node) {
+void CFollower2::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
@@ -102,16 +102,16 @@ void CFollower::Init(TConfigurationNode& t_node) {
     * Init SCT Controller
     */
     sct = new SCTProb();
-    sct->add_callback(this, EV_flock, &CFollower::Callback_Flock, NULL, NULL);
-    // sct->add_callback(this, EV_stop, &CFollower::Callback_Stop, NULL, NULL);
-    // sct->add_callback(this, EV_joinLeader, &CFollower::Callback_JoinLeader, NULL, NULL);
-    // sct->add_callback(this, EV_joinChain, &CFollower::Callback_JoinChain, NULL, NULL);
-    // sct->add_callback(this, EV_wait, &CFollower::Callback_Wait, NULL, NULL);
+    sct->add_callback(this, EV_flock, &CFollower2::Callback_Flock, NULL, NULL);
+    // sct->add_callback(this, EV_stop, &CFollower2::Callback_Stop, NULL, NULL);
+    // sct->add_callback(this, EV_joinLeader, &CFollower2::Callback_JoinLeader, NULL, NULL);
+    // sct->add_callback(this, EV_joinChain, &CFollower2::Callback_JoinChain, NULL, NULL);
+    // sct->add_callback(this, EV_wait, &CFollower2::Callback_Wait, NULL, NULL);
 
-    // sct->add_callback(this, EV_leaderNear, NULL, &CFollower::Check_LeaderNear, NULL);
-    // sct->add_callback(this, EV_leaderFar, NULL, &CFollower::Check_LeaderFar, NULL);
-    // sct->add_callback(this, EV_singleChain, NULL, &CFollower::Check_SingleChain, NULL);
-    // sct->add_callback(this, EV_multiChain, NULL, &CFollower::Check_MultiChain, NULL);
+    // sct->add_callback(this, EV_leaderNear, NULL, &CFollower2::Check_LeaderNear, NULL);
+    // sct->add_callback(this, EV_leaderFar, NULL, &CFollower2::Check_LeaderFar, NULL);
+    // sct->add_callback(this, EV_singleChain, NULL, &CFollower2::Check_SingleChain, NULL);
+    // sct->add_callback(this, EV_multiChain, NULL, &CFollower2::Check_MultiChain, NULL);
 
     Reset();
 }
@@ -119,7 +119,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::Reset() {
+void CFollower2::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
@@ -132,7 +132,7 @@ void CFollower::Reset() {
 /****************************************/
 /****************************************/
 
-void CFollower::ControlStep() {
+void CFollower2::ControlStep() {
 
     /*** MESSAGE INIT ***/
     msg = CByteArray(10, 255);
@@ -186,7 +186,7 @@ void CFollower::ControlStep() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetMessages() {
+void CFollower2::GetMessages() {
 
     /* Get RAB messages from nearby e-pucks */
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
@@ -232,12 +232,12 @@ void CFollower::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CFollower::UpdateSensors() {}
+void CFollower2::UpdateSensors() {}
 
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetLeaderFlockingVector() {
+CVector2 CFollower2::GetLeaderFlockingVector() {
     CVector2 resVec;
     if(leaderVec.Length() > 0.0f) {
         /*
@@ -263,7 +263,7 @@ CVector2 CFollower::GetLeaderFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetTeamFlockingVector() {
+CVector2 CFollower2::GetTeamFlockingVector() {
     CVector2 resVec;
     Real teammateSeen = teamVecs.size();
     if(teammateSeen > 0) {
@@ -289,7 +289,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetOtherRepulsionVector() {
+CVector2 CFollower2::GetOtherRepulsionVector() {
     
     return CVector2();
 }
@@ -297,7 +297,7 @@ CVector2 CFollower::GetOtherRepulsionVector() {
 /****************************************/
 /****************************************/
 
-void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
+void CFollower2::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Get the heading angle */
     CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
     /* Get the length of the heading vector */
@@ -368,7 +368,7 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 /****************************************/
 /****************************************/
 
-void CFollower::CheckJoinChain() {
+void CFollower2::CheckJoinChain() {
     
     /* For each chain position, check whether the distance between the leader and the chain
     exceeds the threshold. */
@@ -384,6 +384,7 @@ void CFollower::CheckJoinChain() {
         }
 
         PrintName();
+        std::cout << "hey" << std::endl;
         std::cout << minDistLeaderChain << std::endl;
 
         /* If closest chain is far from leader, become a chain robot */
@@ -399,47 +400,47 @@ void CFollower::CheckJoinChain() {
 /****************************************/
 /****************************************/
 
-void CFollower::PrintName() {
+void CFollower2::PrintName() {
     std::cout << "[" << this->GetId() << "] ";
 }
 
 /****************************************/
 /****************************************/
 
-void CFollower::Callback_Flock(void* data) {
+void CFollower2::Callback_Flock(void* data) {
 
 }
 
-// void CFollower::Callback_Stop(void* data) {
+// void CFollower2::Callback_Stop(void* data) {
     
 // }
 
-// void CFollower::Callback_JoinLeader(void* data) {
+// void CFollower2::Callback_JoinLeader(void* data) {
     
 // }
 
-// void CFollower::Callback_JoinChain(void* data) {
+// void CFollower2::Callback_JoinChain(void* data) {
     
 // }
 
-// void CFollower::Callback_Wait(void* data) {}
+// void CFollower2::Callback_Wait(void* data) {}
 
 // /****************************************/
 // /****************************************/
 
-// unsigned char CFollower::Check_LeaderNear(void* data) {
+// unsigned char CFollower2::Check_LeaderNear(void* data) {
 //     return 0;
 // }
 
-// unsigned char CFollower::Check_LeaderFar(void* data) {
+// unsigned char CFollower2::Check_LeaderFar(void* data) {
 //     return 0;
 // }
 
-// unsigned char CFollower::Check_SingleChain(void* data) {
+// unsigned char CFollower2::Check_SingleChain(void* data) {
 //     return 0;
 // }
 
-// unsigned char CFollower::Check_MultiChain(void* data) {
+// unsigned char CFollower2::Check_MultiChain(void* data) {
 //     return 0;
 // }
 
@@ -453,4 +454,4 @@ void CFollower::Callback_Flock(void* data) {
  * controller class to instantiate.
  * See also the configuration files for an example of how this is used.
  */
-REGISTER_CONTROLLER(CFollower, "follower_controller")
+REGISTER_CONTROLLER(CFollower2, "follower2_controller")

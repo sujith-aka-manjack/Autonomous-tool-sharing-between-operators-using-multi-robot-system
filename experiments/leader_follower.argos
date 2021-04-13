@@ -16,24 +16,7 @@
   <!-- *************** -->
   <controllers>
 
-    <leader_controller id="el"
-                                        library="build/controllers/leader/libleader.so">
-      <actuators>
-        <differential_steering implementation="default" />
-        <range_and_bearing implementation="default" />
-      </actuators>
-      <sensors>
-        <positioning implementation="default" />
-        <proximity implementation="default" show_rays="false" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
-      </sensors>
-      <params>
-        <wheel_turning hard_turn_angle_threshold="90"
-                       soft_turn_angle_threshold="70"
-                       no_turn_angle_threshold="10"
-                       max_speed="10" />
-      </params>
-    </leader_controller>
+    <!-- Controllers that use SCT -->
 
     <follower_controller id="ef"
                                         library="build/controllers/follower/libfollower.so">
@@ -62,6 +45,27 @@
               chain_threshold="70" />
       </params>
     </follower_controller>
+
+    <!-- Controllers that do NOT use SCT -->
+
+    <leader_controller id="el"
+                                        library="build/controllers/leader/libleader.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <positioning implementation="default" />
+        <proximity implementation="default" show_rays="false" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="10" />
+      </params>
+    </leader_controller>
 
   </controllers>
 

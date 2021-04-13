@@ -14,8 +14,8 @@
  *   - argos3-examples/controllers/footbot_flocking/
  */
 
-#ifndef FOLLOWER_H
-#define FOLLOWER_H
+#ifndef FOLLOWER2_H
+#define FOLLOWER2_H
 
 /*
  * Include some necessary headers.
@@ -44,7 +44,7 @@ using namespace argos;
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */
-class CFollower : public CCI_Controller {
+class CFollower2 : public CCI_Controller {
 
 public:
 
@@ -102,10 +102,10 @@ public:
 public:
 
     /* Class constructor. */
-    CFollower();
+    CFollower2();
 
     /* Class destructor. */
-    virtual ~CFollower();
+    virtual ~CFollower2();
 
     /*
     * This function initializes the controller.
