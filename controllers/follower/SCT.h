@@ -59,12 +59,7 @@ public:
     template<typename Class>
     void add_callback(Class* p, unsigned char event, void (Class::*clbk)( void* ), void* empty_ci, void* data) {
         using namespace std::placeholders; //for _1, _2, _3...
-        std::cout << "test" << std::endl;
-        std::cout << clbk << std::endl;
-        std::cout << p << std::endl;
-
         callback[event].callback    = std::bind(clbk, p, _1);
-        std::cout << "test2" << std::endl;
         callback[event].check_input = nullptr;
         callback[event].data        = data;
     }
@@ -89,6 +84,8 @@ public:
 
     /* Run the generator player to execute the next action */
     virtual void run_step();
+
+    virtual void print_current_state();
 
 protected:
 

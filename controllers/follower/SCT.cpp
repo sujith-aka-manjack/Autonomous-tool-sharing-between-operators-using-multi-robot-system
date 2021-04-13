@@ -27,6 +27,10 @@ void SCT::run_step(){
     }
 }
 
+void SCT::print_current_state() {
+    std::cout << "sup [" << sup_current_state[0] << "," << sup_current_state[1] << "]" << std::endl;
+}
+
 unsigned char SCT::input_read( unsigned char ev ){
     if( ev < NUM_EVENTS && callback[ ev ].check_input != NULL )
         return callback[ ev ].check_input( callback[ ev ].data );

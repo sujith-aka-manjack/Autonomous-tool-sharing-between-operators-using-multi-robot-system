@@ -103,15 +103,15 @@ void CFollower::Init(TConfigurationNode& t_node) {
     */
     sct = new SCTProb();
     sct->add_callback(this, EV_flock, &CFollower::Callback_Flock, NULL, NULL);
-    // sct->add_callback(this, EV_stop, &CFollower::Callback_Stop, NULL, NULL);
-    // sct->add_callback(this, EV_joinLeader, &CFollower::Callback_JoinLeader, NULL, NULL);
-    // sct->add_callback(this, EV_joinChain, &CFollower::Callback_JoinChain, NULL, NULL);
-    // sct->add_callback(this, EV_wait, &CFollower::Callback_Wait, NULL, NULL);
+    sct->add_callback(this, EV_stop, &CFollower::Callback_Stop, NULL, NULL);
+    sct->add_callback(this, EV_joinLeader, &CFollower::Callback_JoinLeader, NULL, NULL);
+    sct->add_callback(this, EV_joinChain, &CFollower::Callback_JoinChain, NULL, NULL);
+    sct->add_callback(this, EV_wait, &CFollower::Callback_Wait, NULL, NULL);
 
-    // sct->add_callback(this, EV_leaderNear, NULL, &CFollower::Check_LeaderNear, NULL);
-    // sct->add_callback(this, EV_leaderFar, NULL, &CFollower::Check_LeaderFar, NULL);
-    // sct->add_callback(this, EV_singleChain, NULL, &CFollower::Check_SingleChain, NULL);
-    // sct->add_callback(this, EV_multiChain, NULL, &CFollower::Check_MultiChain, NULL);
+    sct->add_callback(this, EV_leaderNear, NULL, &CFollower::Check_LeaderNear, NULL);
+    sct->add_callback(this, EV_leaderFar, NULL, &CFollower::Check_LeaderFar, NULL);
+    sct->add_callback(this, EV_singleChain, NULL, &CFollower::Check_SingleChain, NULL);
+    sct->add_callback(this, EV_multiChain, NULL, &CFollower::Check_MultiChain, NULL);
 
     Reset();
 }
@@ -155,15 +155,15 @@ void CFollower::ControlStep() {
 
     /*** FLOCK ***/
 
-    /* Calculate overall force applied to the robot */
-    CVector2 leaderForce = GetLeaderFlockingVector();
-    CVector2 teamForce = GetTeamFlockingVector();
-    CVector2 sumForce = leaderForce + teamForce;
+    // /* Calculate overall force applied to the robot */
+    // CVector2 leaderForce = GetLeaderFlockingVector();
+    // CVector2 teamForce = GetTeamFlockingVector();
+    // CVector2 sumForce = leaderForce + teamForce;
 
     /*** CHAIN ***/
 
     /* Check leader distance with chain (including other leader) */
-    CheckJoinChain();
+    // CheckJoinChain();
 
     /* DEBUGGING */
     // if(this->GetId() == "F1") {
@@ -172,11 +172,24 @@ void CFollower::ControlStep() {
     //     std::cout << "sum: " << sumForce.Length() << std::endl;
     // }
 
-    /* Set Wheel Speed */
-    if(sumForce.Length() > 0.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    // /* Set Wheel Speed */
+    // if(sumForce.Length() > 0.0f)
+    //     SetWheelSpeedsFromVector(sumForce);
+    // else
+    //     m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+
+    sct->print_current_state();
+    sct->run_step();
+
+    // TODO: apply actions, which may have changed due to the SCT output
+
+    // Decide whether to communicate depending on current state (switch between follower and chain)
+
+    // Decide whether to actuate wheels (switch between states flock, stop)
+
+
+
+
 
     /* Set message to send */
     m_pcRABAct->SetData(msg);
@@ -407,41 +420,79 @@ void CFollower::PrintName() {
 /****************************************/
 
 void CFollower::Callback_Flock(void* data) {
+    /* Calculate overall force applied to the robot */
+    CVector2 leaderForce = GetLeaderFlockingVector();
+    CVector2 teamForce = GetTeamFlockingVector();
+    CVector2 sumForce = leaderForce + teamForce;
 
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 0.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 }
 
-// void CFollower::Callback_Stop(void* data) {
+void CFollower::Callback_Stop(void* data) {
+    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+}
+
+void CFollower::Callback_JoinLeader(void* data) {
     
-// }
+}
 
-// void CFollower::Callback_JoinLeader(void* data) {
+void CFollower::Callback_JoinChain(void* data) {
     
-// }
+}
 
-// void CFollower::Callback_JoinChain(void* data) {
-    
-// }
+void CFollower::Callback_Wait(void* data) {}
 
-// void CFollower::Callback_Wait(void* data) {}
+/****************************************/
+/****************************************/
 
-// /****************************************/
-// /****************************************/
+unsigned char CFollower::Check_LeaderNear(void* data) {
+    return 0;
+}
 
-// unsigned char CFollower::Check_LeaderNear(void* data) {
-//     return 0;
-// }
+unsigned char CFollower::Check_LeaderFar(void* data) {
+    /* Check leader distance with chain (including other leader) */
 
-// unsigned char CFollower::Check_LeaderFar(void* data) {
-//     return 0;
-// }
+    /* For each chain position, check whether the distance between the leader and the chain
+    exceeds the threshold. */
+    if(!chainVecs.empty()) {
+        Real minDistLeaderChain = 10000000; // Minimum distance between the leader and the closest chain detected (init 100km)
 
-// unsigned char CFollower::Check_SingleChain(void* data) {
-//     return 0;
-// }
+        for(int i = 0; i < chainVecs.size(); ++i) {
+            CVector2 diff = leaderVec - chainVecs[i];
+            Real dist = diff.Length();
+            if(dist < minDistLeaderChain)
+                minDistLeaderChain = dist;
+        
+        }
 
-// unsigned char CFollower::Check_MultiChain(void* data) {
-//     return 0;
-// }
+        PrintName();
+        std::cout << "Checking leader far" << std::endl;
+        std::cout << minDistLeaderChain << std::endl;
+
+        // /* If closest chain is far from leader, become a chain robot */
+        // if(minDistLeaderChain > chainThreshold) {
+        //     std::cout << "FORM CHAIN" << std::endl;
+        //     m_pcLEDs->SetAllColors(CColor::RED);
+        // } else {
+        //     m_pcLEDs->SetAllColors(CColor::BLACK);
+        // }
+        return minDistLeaderChain > chainThreshold;
+    }
+
+    return 0;
+}
+
+unsigned char CFollower::Check_SingleChain(void* data) {
+    return 0;
+}
+
+unsigned char CFollower::Check_MultiChain(void* data) {
+    return 0;
+}
 
 /*
  * This statement notifies ARGoS of the existence of the controller.
