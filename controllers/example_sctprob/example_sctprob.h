@@ -50,7 +50,7 @@ public:
 
     /* Class destructor. */
     virtual ~CExampleSCTProb() {
-        std::cout << "total_a: " << total_a << ", total_b: " << total_b << std::endl;
+        std::cout << "total_a: " << total_a << ", total_b: " << total_b << ", total_c: " << total_c << ", total_d: " << total_d << std::endl;
     }
 
     /*
@@ -93,7 +93,7 @@ private:
     CCI_RangeAndBearingSensor* m_pcRABSens;
 
     /* Controller */
-    SCT* sct;
+    SCTProb* sct;
 
     /*
     * The following variables are used as parameters for the
@@ -111,14 +111,19 @@ private:
     /* Callbacks */
     void callback_a(void* data);
     void callback_b(void* data);
+    void callback_c(void* data);
+    void callback_d(void* data);
 
     /* Sensors (event detectors) */
-    unsigned char check_c(void* data);
-    unsigned char check_d(void* data);
 
-    int c, d;
 
-    int total_a = 0, total_b = 0;
+    /* Variable probability update callbacks */
+    float check_prob_c(void* data);
+    float check_prob_d(void* data);
+
+    int total_a = 0, total_b = 0, total_c = 0, total_d = 0;
+
+    size_t time = 0;
 
     /* Update sensor readings */
     void update_sensors();

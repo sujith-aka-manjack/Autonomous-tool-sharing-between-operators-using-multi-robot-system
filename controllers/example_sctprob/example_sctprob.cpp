@@ -29,8 +29,11 @@ void CExampleSCTProb::Init(TConfigurationNode& t_node) {
     sct = new SCTProb();
     sct->add_callback(this, EV_a, &CExampleSCTProb::callback_a, NULL, NULL);
     sct->add_callback(this, EV_b, &CExampleSCTProb::callback_b, NULL, NULL);
-    sct->add_callback(this, EV_c, NULL, &CExampleSCTProb::check_c, NULL);
-    sct->add_callback(this, EV_d, NULL, &CExampleSCTProb::check_d, NULL);
+    sct->add_callback(this, EV_c, &CExampleSCTProb::callback_c, NULL, NULL);
+    sct->add_callback(this, EV_d, &CExampleSCTProb::callback_d, NULL, NULL);
+
+    sct->add_variable_prob(this, 0, 1, EV_c, &CExampleSCTProb::check_prob_c, NULL);
+    sct->add_variable_prob(this, 0, 1, EV_d, &CExampleSCTProb::check_prob_d, NULL);
 
 }
 
@@ -44,14 +47,14 @@ void CExampleSCTProb::ControlStep() {
     /* Run the generator player */
     sct->run_step();
 
+    ++time;
 }
 
 /****************************************/
 /****************************************/
 
 void CExampleSCTProb::update_sensors() {
-    c = 1;
-    d = 0;
+
 }
 
 /* Callback function for controllable events */
@@ -65,15 +68,26 @@ void CExampleSCTProb::callback_b(void* data) {
     total_b++;
 }
 
-/* Callback function for uncontrollable events */
-unsigned char CExampleSCTProb::check_c(void* data) {
-    if(c > 0) { return 1; }
-    return 0;
+void CExampleSCTProb::callback_c(void* data) {
+    std::cout << "[" << this->GetId() << "] c" << std::endl;
+    total_c++;
 }
 
-unsigned char CExampleSCTProb::check_d(void* data) {
-    if(d > 0) { return 1; }
-    return 0;
+void CExampleSCTProb::callback_d(void* data) {
+    std::cout << "[" << this->GetId() << "] d" << std::endl;
+    total_d++;
+}
+
+/* Callback function for uncontrollable events */
+
+
+/* Callback function for updating variable probabilities */
+float CExampleSCTProb::check_prob_c(void* data) {
+    return time/1000.;
+}
+
+float CExampleSCTProb::check_prob_d(void* data) {
+    return 1 - time/1000.;
 }
 
 /****************************************/

@@ -5,13 +5,6 @@
 /****************************************/
 
 SCT::SCT(){
-    unsigned char i;
-    for(i=0; i<NUM_EVENTS; i++){
-        callback[i].callback    = NULL;
-        callback[i].check_input = NULL;
-        callback[i].data        = NULL;
-    }
-
     std::srand(std::time(nullptr));
 }
 
@@ -187,8 +180,32 @@ SCTProb::SCTProb(){}
 
 SCTProb::~SCTProb(){}
 
-void SCTProb::set_event_prob( unsigned char supervisor, unsigned long int state, unsigned char event, float prob ) {
-    // TODO: Implement
+void SCTProb::run_step(){
+    update_input(); // Get all uncontrollable events
+    update_prob();  // Update variable probabilities
+    unsigned char event;
+
+    /* Apply all the uncontrollable events */
+    while ( get_next_uncontrollable( &event ) ){
+        make_transition( event );
+        exec_callback( event );
+    }
+
+    /* Apply the chosen controllable event */
+    if( get_next_controllable( &event ) ){  /* Find and pick a controllable event (CE) */
+        make_transition( event );
+        exec_callback( event );
+    }
+}
+
+void SCTProb::update_prob() {
+    // TODO: Run each callback function to update variable probabilities
+
+    for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
+        float prob = itr->second.check_input(NULL);
+        std::cout << prob << std::endl;
+    }
+
 }
 
 unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {
