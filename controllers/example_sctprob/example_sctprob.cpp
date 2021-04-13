@@ -83,11 +83,15 @@ void CExampleSCTProb::callback_d(void* data) {
 
 /* Callback function for updating variable probabilities */
 float CExampleSCTProb::check_prob_c(void* data) {
-    return time/1000.;
+    float prob = time/1000.;
+    if(prob > 1){ prob = 1.; }
+    return prob;
 }
 
 float CExampleSCTProb::check_prob_d(void* data) {
-    return 1 - time/1000.;
+    float prob = 1 - time/1000.;
+    if(prob < 0){ prob = 0.; }
+    return prob;
 }
 
 /****************************************/

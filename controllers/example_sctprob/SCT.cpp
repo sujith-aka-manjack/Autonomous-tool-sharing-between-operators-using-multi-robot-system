@@ -199,13 +199,39 @@ void SCTProb::run_step(){
 }
 
 void SCTProb::update_prob() {
-    // TODO: Run each callback function to update variable probabilities
-
+    /* Run each callback function to update variable probabilities */
     for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
+        /* Obtain new probability */
         float prob = itr->second.check_input(NULL);
-        std::cout << prob << std::endl;
-    }
 
+        /* Get current state and transition probabilities */
+        unsigned char position = get_state_position(itr->second.supervisor,
+                                                    itr->second.state);
+
+        unsigned char position_prob = get_state_position_prob(itr->second.supervisor,
+                                                              itr->second.state);
+        
+        size_t num_transitions = sup_data[position];
+        position++;
+        position_prob++;
+        
+        for(size_t i = 0; i < num_transitions; i++) {
+            unsigned char event = sup_data[position];
+            
+            /* Check if we have reached the desired event */
+            if(event == itr->second.event)
+                break;
+
+            /* Move to the next event */
+            position += 3;
+            /* Move to the next event probability, only if it was a controllable event */
+            if(ev_controllable[event])
+                position_prob++;
+        }
+
+        /* Set new probability */
+        sup_data_prob[position_prob] = prob;
+    }
 }
 
 unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {

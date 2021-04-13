@@ -124,6 +124,9 @@ protected:
 /* Structure to store variable probability update functions */
 struct Pcallback {
     std::function<float(void* data)> check_input;
+    unsigned char supervisor;
+    unsigned char state;
+    unsigned char event;
     void* data;
 };
 
@@ -142,8 +145,10 @@ public:
     void add_variable_prob(Class* p, unsigned char sup, unsigned char state, unsigned char event, float (Class::*ci)( void* ), void* data) {
         using namespace std::placeholders; //for _1, _2, _3...
         std::string key = std::to_string(sup) + '-' + std::to_string(state) + '-' + std::to_string(event);
-        // std::cout << key << std::endl;
         variable_prob_callback[key].check_input = std::bind(ci, p, _1);
+        variable_prob_callback[key].supervisor  = sup;
+        variable_prob_callback[key].state       = state;
+        variable_prob_callback[key].event       = event;
         variable_prob_callback[key].data        = data;
     }
 
