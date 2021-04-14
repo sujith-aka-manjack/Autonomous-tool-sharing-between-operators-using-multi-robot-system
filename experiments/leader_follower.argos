@@ -181,7 +181,7 @@
         using the qt user functions.
         Check 'argos3 -q qt-opengl' for more help.
     -->
-    <qt-opengl>
+    <qt-opengl autoplay="true">
       <user_functions library="build/loop_functions/manualcontrol_loop_functions/libmanualcontrol_loop_functions"
                       label="manualcontrol_qtuser_functions" />
       <camera>

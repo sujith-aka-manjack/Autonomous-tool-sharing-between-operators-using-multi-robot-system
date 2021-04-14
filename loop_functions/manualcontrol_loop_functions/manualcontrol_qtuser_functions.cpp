@@ -1,5 +1,4 @@
 #include "manualcontrol_qtuser_functions.h"
-#include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <QKeyEvent>
 
 /****************************************/
@@ -17,6 +16,9 @@ CManualControlQTUserFunctions::CManualControlQTUserFunctions() :
    m_punPressedKeys[DIRECTION_BACKWARD] = 0;
    m_punPressedKeys[DIRECTION_LEFT]     = 0;
    m_punPressedKeys[DIRECTION_RIGHT]    = 0;
+
+   /* Register function to draw entity name */
+   RegisterUserFunction<CManualControlQTUserFunctions,CEPuckEntity>(&CManualControlQTUserFunctions::Draw);
 }
 
 /****************************************/
@@ -143,6 +145,19 @@ void CManualControlQTUserFunctions::SetDirectionFromKeyEvent() {
        CVector2(0.0f, LRDirection));
    /* Set direction */
    m_pcController->SetControlVector(cDir);
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
+   /* The position of the text is expressed wrt the reference point of the footbot
+    * For a foot-bot, the reference point is the center of its base.
+    * See also the description in
+    * $ argos3 -q foot-bot
+    */
+   DrawText(CVector3(0.0, 0.0, 0.3),   // position
+            c_entity.GetId().c_str()); // text
 }
 
 /****************************************/

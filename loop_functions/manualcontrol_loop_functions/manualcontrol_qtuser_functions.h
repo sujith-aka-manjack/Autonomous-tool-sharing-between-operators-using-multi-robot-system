@@ -14,6 +14,7 @@
 #define MANUALCONTROL_QTUSER_FUNCTIONS_H
 
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_user_functions.h>
+#include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <controllers/leader/leader.h>
 
 using namespace argos;
@@ -59,6 +60,8 @@ public:
     * @param c_entity The deselected entity.
     */
    virtual void EntityDeselected(CEntity& c_entity);
+
+   void Draw(CEPuckEntity& c_entity);
 
 private:
 
