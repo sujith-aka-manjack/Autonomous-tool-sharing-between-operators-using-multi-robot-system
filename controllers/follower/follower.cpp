@@ -102,16 +102,16 @@ void CFollower::Init(TConfigurationNode& t_node) {
     * Init SCT Controller
     */
     sct = new SCTProb();
-    sct->add_callback(this, EV_flock, &CFollower::Callback_Flock, NULL, NULL);
-    sct->add_callback(this, EV_stop, &CFollower::Callback_Stop, NULL, NULL);
+    sct->add_callback(this, EV_flock,      &CFollower::Callback_Flock,      NULL, NULL);
+    sct->add_callback(this, EV_stop,       &CFollower::Callback_Stop,       NULL, NULL);
     sct->add_callback(this, EV_joinLeader, &CFollower::Callback_JoinLeader, NULL, NULL);
-    sct->add_callback(this, EV_joinChain, &CFollower::Callback_JoinChain, NULL, NULL);
-    sct->add_callback(this, EV_wait, &CFollower::Callback_Wait, NULL, NULL);
+    sct->add_callback(this, EV_joinChain,  &CFollower::Callback_JoinChain,  NULL, NULL);
+    sct->add_callback(this, EV_wait,       &CFollower::Callback_Wait,       NULL, NULL);
 
-    sct->add_callback(this, EV_leaderNear, NULL, &CFollower::Check_LeaderNear, NULL);
-    sct->add_callback(this, EV_leaderFar, NULL, &CFollower::Check_LeaderFar, NULL);
-    sct->add_callback(this, EV_singleChain, NULL, &CFollower::Check_SingleChain, NULL);
-    sct->add_callback(this, EV_multiChain, NULL, &CFollower::Check_MultiChain, NULL);
+    sct->add_callback(this, EV_leaderNear,  &CFollower::Callback_LeaderNear, &CFollower::Check_LeaderNear,  NULL);
+    sct->add_callback(this, EV_leaderFar,   &CFollower::Callback_LeaderFar,  &CFollower::Check_LeaderFar,   NULL);
+    sct->add_callback(this, EV_singleChain, NULL,                            &CFollower::Check_SingleChain, NULL);
+    sct->add_callback(this, EV_multiChain,  NULL,                            &CFollower::Check_MultiChain,  NULL);
 
     Reset();
 }
@@ -182,36 +182,30 @@ void CFollower::ControlStep() {
     // Decide whether to communicate depending on current state (switch between follower and chain)
     switch(currentState) {
         case RobotState::FOLLOWER: {
-            switch(currentMoveType) {
-                case MoveType::FLOCK: {
-                    Flock();
-                    break;
-                }
-                case MoveType::STOP: {
-                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-                    break;
-                }
-            }
             break;
         }
         case RobotState::CHAIN: {
-            switch(currentMoveType) {
-                case MoveType::FLOCK: {
-                    std::cout << "State is CHAIN, but tried to FLOCK. Something went wrong." << std::endl;
-                    break;
-                }
-                case MoveType::STOP: {
-                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-                    break;
-                }
-            }
             
             // Set connecting targets to message
             // msg[msg_index++] = connectingTargets[0];
             // msg[msg_index++] = connectingTargets[1];
+            break;
+
         }
         case RobotState::LEADER: {
+            PrintName();
             std::cout << "State is LEADER. Something went wrong." << std::endl;
+            break;
+        }
+    }
+
+    switch(currentMoveType) {
+        case MoveType::FLOCK: {
+            Flock();
+            break;
+        }
+        case MoveType::STOP: {
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
             break;
         }
     }
@@ -466,11 +460,11 @@ void CFollower::Flock() {
     CVector2 sumForce = leaderForce + teamForce;
 
     /* DEBUGGING */
-    // if(this->GetId() == "F1") {
-    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
-    //     std::cout << "team: " << teamForce.Length() << std::endl;
-    //     std::cout << "sum: " << sumForce.Length() << std::endl;
-    // }
+    if(this->GetId() == "F1") {
+        std::cout << "leader: " << leaderForce.Length() << std::endl;
+        std::cout << "team: " << teamForce.Length() << std::endl;
+        std::cout << "sum: " << sumForce.Length() << std::endl;
+    }
 
     /* Set Wheel Speed */
     if(sumForce.Length() > 0.0f)
@@ -539,6 +533,14 @@ void CFollower::Callback_JoinChain(void* data) {
 }
 
 void CFollower::Callback_Wait(void* data) {}
+
+void CFollower::Callback_LeaderNear(void* data) {
+    m_pcLEDs->SetAllColors(CColor::BLACK);
+}
+
+void CFollower::Callback_LeaderFar(void* data) {
+    m_pcLEDs->SetAllColors(CColor::RED);
+}
 
 /****************************************/
 /****************************************/

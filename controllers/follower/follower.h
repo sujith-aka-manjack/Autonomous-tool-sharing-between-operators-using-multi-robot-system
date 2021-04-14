@@ -190,6 +190,8 @@ protected:
     virtual void Callback_JoinLeader(void* data);
     virtual void Callback_JoinChain(void* data);
     virtual void Callback_Wait(void* data);
+    virtual void Callback_LeaderNear(void* data);
+    virtual void Callback_LeaderFar(void* data);
 
     virtual unsigned char Check_LeaderNear(void* data);
     virtual unsigned char Check_LeaderFar(void* data);
