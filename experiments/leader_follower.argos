@@ -53,6 +53,7 @@
       <actuators>
         <differential_steering implementation="default" />
         <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
         <positioning implementation="default" />
@@ -181,7 +182,7 @@
         using the qt user functions.
         Check 'argos3 -q qt-opengl' for more help.
     -->
-    <qt-opengl autoplay="true">
+    <qt-opengl autoplay="false">
       <user_functions library="build/loop_functions/manualcontrol_loop_functions/libmanualcontrol_loop_functions"
                       label="manualcontrol_qtuser_functions" />
       <camera>

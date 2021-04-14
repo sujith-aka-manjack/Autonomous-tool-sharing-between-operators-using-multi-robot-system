@@ -40,6 +40,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
+    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds");
 
     /*
     * Parse the config file
@@ -55,6 +56,9 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /* Get team ID from leader ID */
     std::stringstream ss(GetId().substr(1));
     ss >> teamID;
+
+    /* Set LED color */
+    m_pcLEDs->SetAllColors(CColor::BLUE);
 
     Reset();
 }

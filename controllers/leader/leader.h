@@ -30,6 +30,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 /* Definition of the range-and-bearing sensor */
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
+/* Definition of the LEDs actuator */
+#include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
 #include "SCT.h"
 
@@ -156,6 +158,8 @@ private:
     CCI_RangeAndBearingActuator* m_pcRABAct;
     /* Pointer to the range-and-bearing sensor */
     CCI_RangeAndBearingSensor* m_pcRABSens;
+    /* Pointer to the LEDs actuator */
+    CCI_LEDsActuator* m_pcLEDs;
 
     /* The turning parameters */
     SWheelTurningParams m_sWheelTurningParams;
