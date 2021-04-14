@@ -167,14 +167,14 @@ private:
     CVector2 m_cControl;
 
     /* Robot state */
-    enum RobotState {
+    enum class RobotState {
         LEADER = 0,
         FOLLOWER,
         CHAIN
-    };
+    } currentState = RobotState::LEADER;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
-    size_t teamID;
+    UInt8 teamID;
 
     /* Outgoing message */
     CByteArray msg;

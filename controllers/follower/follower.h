@@ -140,7 +140,7 @@ protected:
     /* 
     * Receive messages from neighboring robots.
     */
-    virtual void GetMessages();
+    virtual void ReceiveMsg();
 
     /* 
     * Update sensor readings.
@@ -161,6 +161,11 @@ protected:
     * Get a flocking vector between itself and the other robots not in the same team.
     */
     virtual CVector2 GetOtherRepulsionVector();
+
+    /*
+    * Move wheels according to flocking vector
+    */
+    virtual void Flock();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
@@ -215,23 +220,34 @@ private:
     SCTProb* sct;
 
     /* Robot state */
-    enum RobotState {
+    enum class RobotState {
         LEADER = 0,
         FOLLOWER,
         CHAIN
-    };
+    } currentState = RobotState::FOLLOWER;
+
+    /* MoveType */
+    enum MoveType {
+        STOP = 0,
+        FLOCK
+    } currentMoveType;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
-    size_t teamID;
+    UInt8 teamID;
 
     /* Vector to leader */
     CVector2 leaderVec;
     /* Vector to teammate */
     std::vector<CVector2> teamVecs;
-    /* Vector to other robots */
-    std::vector<CVector2> otherVecs;
     /* Vector to chain members */
     std::vector<CVector2> chainVecs;
+    /* Vector to other robots */
+    std::vector<CVector2> otherVecs;
+
+    /* Sensor reading results */
+    Real LCDistance;                  // Leader-Chain distance
+    std::string connectingTargets[2]; // Furthest two entities it is connecting while in the FOLLOWER state
+    bool isSingleChain;               // No other CHAIN robot connects the same furthest two entities
 
     /* Outgoing message */
     CByteArray msg;

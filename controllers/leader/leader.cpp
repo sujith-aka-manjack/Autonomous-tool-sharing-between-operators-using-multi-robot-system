@@ -84,7 +84,7 @@ void CLeader::ControlStep() {
     msg = CByteArray(10, 255);
     msg_index = 0;
     /* Set its state in msg */
-    msg[msg_index++] = LEADER;
+    msg[msg_index++] = static_cast<UInt8>(currentState);
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
 

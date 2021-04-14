@@ -134,13 +134,13 @@ void CFollower::Reset() {
 
 void CFollower::ControlStep() {
 
-    /*** MESSAGE INIT ***/
+    /*-----------------*/
+    /* Reset variables */
+    /*-----------------*/
+
+    /* Create new msg */
     msg = CByteArray(10, 255);
     msg_index = 0;
-    /* Set its state in msg */
-    msg[msg_index++] = FOLLOWER;
-    /* Set team ID in msg */
-    msg[msg_index++] = teamID;
 
     /* Reset flocking variables */
     leaderVec = CVector2();
@@ -150,48 +150,75 @@ void CFollower::ControlStep() {
     /* Reset chain formation variables */
     chainVecs.clear();
 
-    /* Process messages */
-    GetMessages();
+    /*----------------------*/
+    /* Receive new messages */
+    /*----------------------*/
+    ReceiveMsg();
 
-    /*** FLOCK ***/
+    /*------------------------*/
+    /* Update sensor readings */
+    /*------------------------*/
+    UpdateSensors();
 
-    // /* Calculate overall force applied to the robot */
-    // CVector2 leaderForce = GetLeaderFlockingVector();
-    // CVector2 teamForce = GetTeamFlockingVector();
-    // CVector2 sumForce = leaderForce + teamForce;
-
-    /*** CHAIN ***/
-
-    /* Check leader distance with chain (including other leader) */
-    // CheckJoinChain();
-
-    /* DEBUGGING */
-    // if(this->GetId() == "F1") {
-    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
-    //     std::cout << "team: " << teamForce.Length() << std::endl;
-    //     std::cout << "sum: " << sumForce.Length() << std::endl;
-    // }
-
-    // /* Set Wheel Speed */
-    // if(sumForce.Length() > 0.0f)
-    //     SetWheelSpeedsFromVector(sumForce);
-    // else
-    //     m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-
-    sct->print_current_state();
+    /*--------------------*/
+    /* Run SCT controller */
+    /*--------------------*/
+    
     sct->run_step();
 
-    // TODO: apply actions, which may have changed due to the SCT output
+    PrintName();
+    sct->print_current_state();
+    std::cout << ", R: " << static_cast<int>(currentState) << std::endl;
+
+    /*-----------------------------*/
+    /* Implement action to perform */
+    /*-----------------------------*/
+
+    /* Set current state in msg */
+    msg[msg_index++] = static_cast<UInt8>(currentState);
+    /* Set current team ID in msg */
+    msg[msg_index++] = teamID;
 
     // Decide whether to communicate depending on current state (switch between follower and chain)
+    switch(currentState) {
+        case RobotState::FOLLOWER: {
+            switch(currentMoveType) {
+                case MoveType::FLOCK: {
+                    Flock();
+                    break;
+                }
+                case MoveType::STOP: {
+                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                    break;
+                }
+            }
+            break;
+        }
+        case RobotState::CHAIN: {
+            switch(currentMoveType) {
+                case MoveType::FLOCK: {
+                    std::cout << "State is CHAIN, but tried to FLOCK. Something went wrong." << std::endl;
+                    break;
+                }
+                case MoveType::STOP: {
+                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                    break;
+                }
+            }
+            
+            // Set connecting targets to message
+            // msg[msg_index++] = connectingTargets[0];
+            // msg[msg_index++] = connectingTargets[1];
+        }
+        case RobotState::LEADER: {
+            std::cout << "State is LEADER. Something went wrong." << std::endl;
+            break;
+        }
+    }
 
-    // Decide whether to actuate wheels (switch between states flock, stop)
-
-
-
-
-
-    /* Set message to send */
+    /*--------------*/
+    /* Send message */
+    /*--------------*/
     m_pcRABAct->SetData(msg);
 
 }
@@ -199,39 +226,53 @@ void CFollower::ControlStep() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetMessages() {
+void CFollower::ReceiveMsg() {
 
     /* Get RAB messages from nearby e-pucks */
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
 
-    if(! tMsgs.empty()) {
-
+    if( !tMsgs.empty()) {
         for(size_t i = 0; i < tMsgs.size(); ++i) {
 
             size_t index = 0;
 
             /* Get robot state */
-            size_t r_state = tMsgs[i].Data[index++];
+            RobotState r_state = static_cast<RobotState>(tMsgs[i].Data[index++]);
             /* Get team ID */
-            size_t r_team = tMsgs[i].Data[index++];
+            UInt8 r_team = tMsgs[i].Data[index++];
 
+            /* Message from team member */
             if(r_team == teamID) {
-                if(r_state == LEADER) {
+                /* Message from leader */
+                if(r_state == RobotState::LEADER) {
                     leaderVec = CVector2(tMsgs[i].Range,
                                          tMsgs[i].HorizontalBearing);
-                } else if(r_state == FOLLOWER) {
+                } 
+                /* Message from follower */
+                else if(r_state == RobotState::FOLLOWER) {
                     teamVecs.push_back(CVector2(tMsgs[i].Range, 
                                                 tMsgs[i].HorizontalBearing));
                 }
-            } else if(r_state == CHAIN || r_state == LEADER) {
-                /* Store chain positions */
+            } 
+            /* Message from chain robot */
+            else if(r_state == RobotState::CHAIN) {
+                /* Store position */
                 chainVecs.push_back(CVector2(tMsgs[i].Range, 
                                              tMsgs[i].HorizontalBearing));
                 
-                //AVOID
-
-            } else {
-                // AVOID
+                // Store two furthest members it connects to
+            } 
+            /* Message from other leader */
+            else if(r_state == RobotState::LEADER) {
+                /* Store position (other leader is also part of the chain) */
+                chainVecs.push_back(CVector2(tMsgs[i].Range, 
+                                             tMsgs[i].HorizontalBearing));
+            }
+            /* Message from other follower */
+            else {
+                /* Store position */
+                otherVecs.push_back(CVector2(tMsgs[i].Range, 
+                                             tMsgs[i].HorizontalBearing));
             }
         }
     }
@@ -245,7 +286,44 @@ void CFollower::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CFollower::UpdateSensors() {}
+void CFollower::UpdateSensors() {
+
+    /* Check leader distance with chain (including other leader) */
+
+    /* For each chain position, check whether the distance between the leader and the chain
+    exceeds the threshold. */
+    if(!chainVecs.empty()) {
+        LCDistance = INFINITY; // Minimum distance between the leader and the closest chain detected
+
+        for(int i = 0; i < chainVecs.size(); ++i) {
+            CVector2 diff = leaderVec - chainVecs[i];
+            Real dist = diff.Length();
+            if(dist < LCDistance)
+                LCDistance = dist;
+        }
+
+        // PrintName();
+        // std::cout << "Checking leader far" << std::endl;
+        // std::cout << minDistLeaderChain << std::endl;
+
+        // /* If closest chain is far from leader, become a chain robot */
+        // if(minDistLeaderChain > chainThreshold) {
+        //     std::cout << "FORM CHAIN" << std::endl;
+        //     m_pcLEDs->SetAllColors(CColor::RED);
+        // } else {
+        //     m_pcLEDs->SetAllColors(CColor::BLACK);
+        // }
+    }
+
+
+
+    // Find two furthest chain entities it connects to
+
+
+    // Check if only single chain, store to var
+    isSingleChain;
+    
+}
 
 /****************************************/
 /****************************************/
@@ -381,6 +459,29 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 /****************************************/
 /****************************************/
 
+void CFollower::Flock() {
+    /* Calculate overall force applied to the robot */
+    CVector2 leaderForce = GetLeaderFlockingVector();
+    CVector2 teamForce = GetTeamFlockingVector();
+    CVector2 sumForce = leaderForce + teamForce;
+
+    /* DEBUGGING */
+    // if(this->GetId() == "F1") {
+    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
+    //     std::cout << "team: " << teamForce.Length() << std::endl;
+    //     std::cout << "sum: " << sumForce.Length() << std::endl;
+    // }
+
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 0.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::CheckJoinChain() {
     
     /* For each chain position, check whether the distance between the leader and the chain
@@ -419,29 +520,22 @@ void CFollower::PrintName() {
 /****************************************/
 /****************************************/
 
-void CFollower::Callback_Flock(void* data) {
-    /* Calculate overall force applied to the robot */
-    CVector2 leaderForce = GetLeaderFlockingVector();
-    CVector2 teamForce = GetTeamFlockingVector();
-    CVector2 sumForce = leaderForce + teamForce;
+/* Callback functions (Controllable events) */
 
-    /* Set Wheel Speed */
-    if(sumForce.Length() > 0.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+void CFollower::Callback_Flock(void* data) {
+    currentMoveType = MoveType::FLOCK;
 }
 
 void CFollower::Callback_Stop(void* data) {
-    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_JoinLeader(void* data) {
-    
+    currentState = RobotState::FOLLOWER;
 }
 
 void CFollower::Callback_JoinChain(void* data) {
-    
+    currentState = RobotState::CHAIN;
 }
 
 void CFollower::Callback_Wait(void* data) {}
@@ -449,49 +543,22 @@ void CFollower::Callback_Wait(void* data) {}
 /****************************************/
 /****************************************/
 
+/* Callback functions (Uncontrollable events) */
+
 unsigned char CFollower::Check_LeaderNear(void* data) {
-    return 0;
+    return LCDistance < chainThreshold;
 }
 
 unsigned char CFollower::Check_LeaderFar(void* data) {
-    /* Check leader distance with chain (including other leader) */
-
-    /* For each chain position, check whether the distance between the leader and the chain
-    exceeds the threshold. */
-    if(!chainVecs.empty()) {
-        Real minDistLeaderChain = 10000000; // Minimum distance between the leader and the closest chain detected (init 100km)
-
-        for(int i = 0; i < chainVecs.size(); ++i) {
-            CVector2 diff = leaderVec - chainVecs[i];
-            Real dist = diff.Length();
-            if(dist < minDistLeaderChain)
-                minDistLeaderChain = dist;
-        
-        }
-
-        PrintName();
-        std::cout << "Checking leader far" << std::endl;
-        std::cout << minDistLeaderChain << std::endl;
-
-        // /* If closest chain is far from leader, become a chain robot */
-        // if(minDistLeaderChain > chainThreshold) {
-        //     std::cout << "FORM CHAIN" << std::endl;
-        //     m_pcLEDs->SetAllColors(CColor::RED);
-        // } else {
-        //     m_pcLEDs->SetAllColors(CColor::BLACK);
-        // }
-        return minDistLeaderChain > chainThreshold;
-    }
-
-    return 0;
+    return LCDistance >= chainThreshold;
 }
 
 unsigned char CFollower::Check_SingleChain(void* data) {
-    return 0;
+    return isSingleChain;
 }
 
 unsigned char CFollower::Check_MultiChain(void* data) {
-    return 0;
+    return isSingleChain == 0;
 }
 
 /*
