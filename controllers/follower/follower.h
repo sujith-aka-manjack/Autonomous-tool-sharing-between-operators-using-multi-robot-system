@@ -48,59 +48,6 @@ class CFollower : public CCI_Controller {
 
 public:
 
-    /*
-    * The following variables are used as parameters for
-    * turning during navigation. You can set their value
-    * in the <parameters> section of the XML configuration
-    * file, under the
-    * <controllers><footbot_flocking_controller><parameters><wheel_turning>
-    * section.
-    */
-    struct SWheelTurningParams {
-        /*
-        * The turning mechanism.
-        * The robot can be in three different turning states.
-        */
-        enum ETurningMechanism
-        {
-            NO_TURN = 0, // go straight
-            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
-            HARD_TURN    // wheels are turning with opposite speeds
-        } TurningMechanism;
-        /*
-        * Angular thresholds to change turning state.
-        */
-        CRadians HardTurnOnAngleThreshold;
-        CRadians SoftTurnOnAngleThreshold;
-        CRadians NoTurnAngleThreshold;
-        /* Maximum wheel speed */
-        Real MaxSpeed;
-
-        void Init(TConfigurationNode& t_tree);
-    };
-
-    /*
-    * The following variables are used as parameters for
-    * flocking interaction. You can set their value
-    * in the <parameters> section of the XML configuration
-    * file, under the
-    * <controllers><footbot_flocking_controller><parameters><flocking>
-    * section.
-    */
-    struct SFlockingInteractionParams {
-        /* Target robot-robot distance in cm */
-        Real TargetDistance;
-        /* Gain of the Lennard-Jones potential */
-        Real Gain;
-        /* Exponent of the Lennard-Jones potential */
-        Real Exponent;
-
-        void Init(TConfigurationNode& t_node);
-        Real GeneralizedLennardJones(Real f_distance);
-    };
-
-public:
-
     /* Class constructor. */
     CFollower();
 
@@ -197,6 +144,59 @@ protected:
     virtual unsigned char Check_LeaderFar(void* data);
     virtual unsigned char Check_SingleChain(void* data);
     virtual unsigned char Check_MultiChain(void* data);
+
+private:
+
+    /*
+    * The following variables are used as parameters for
+    * turning during navigation. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><wheel_turning>
+    * section.
+    */
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
+
+    /*
+    * The following variables are used as parameters for
+    * flocking interaction. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * section.
+    */
+    struct SFlockingInteractionParams {
+        /* Target robot-robot distance in cm */
+        Real TargetDistance;
+        /* Gain of the Lennard-Jones potential */
+        Real Gain;
+        /* Exponent of the Lennard-Jones potential */
+        Real Exponent;
+
+        void Init(TConfigurationNode& t_node);
+        Real GeneralizedLennardJones(Real f_distance);
+    };
 
 private:
 

@@ -61,7 +61,10 @@ public:
     */
    virtual void EntityDeselected(CEntity& c_entity);
 
-   void Draw(CEPuckEntity& c_entity);
+   /**
+    * Draws the entity ID above the e-puck.
+    */
+   virtual void Draw(CEPuckEntity& c_entity);
 
 private:
 

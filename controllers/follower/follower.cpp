@@ -95,6 +95,10 @@ void CFollower::Init(TConfigurationNode& t_node) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
 
+    /* Set leader ID as team ID */
+    if(leaderStr[0] != 'L') {
+        THROW_ARGOSEXCEPTION("Non-leader name passed to follower. Leader name must be 'L<num>' format.");
+    }
     std::stringstream ss(leaderStr.substr(1));
     ss >> teamID;
 

@@ -151,10 +151,9 @@ void CManualControlQTUserFunctions::SetDirectionFromKeyEvent() {
 /****************************************/
 
 void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
-   /* The position of the text is expressed wrt the reference point of the footbot
-    * For a foot-bot, the reference point is the center of its base.
+   /* The position of the text is expressed wrt the reference point of the e-puck
     * See also the description in
-    * $ argos3 -q foot-bot
+    * $ argos3 -q e-puck
     */
    DrawText(CVector3(0.0, 0.0, 0.3),   // position
             c_entity.GetId().c_str()); // text

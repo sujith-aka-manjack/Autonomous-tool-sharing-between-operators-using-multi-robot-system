@@ -50,31 +50,6 @@ class CLeader : public CCI_Controller {
 
 public:
 
-    struct SWheelTurningParams {
-        /*
-        * The turning mechanism.
-        * The robot can be in three different turning states.
-        */
-        enum ETurningMechanism
-        {
-            NO_TURN = 0, // go straight
-            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
-            HARD_TURN    // wheels are turning with opposite speeds
-        } TurningMechanism;
-        /*
-        * Angular thresholds to change turning state.
-        */
-        CRadians HardTurnOnAngleThreshold;
-        CRadians SoftTurnOnAngleThreshold;
-        CRadians NoTurnAngleThreshold;
-        /* Maximum wheel speed */
-        Real MaxSpeed;
-
-        void Init(TConfigurationNode& t_tree);
-    };
-
-public:
-
     /* Class constructor. */
     CLeader();
 
@@ -147,6 +122,31 @@ protected:
     * Print robot id.
     */
     void PrintName();
+
+private:
+
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
 
 private:
 
