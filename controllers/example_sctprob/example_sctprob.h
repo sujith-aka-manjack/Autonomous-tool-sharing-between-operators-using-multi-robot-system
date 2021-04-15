@@ -29,6 +29,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 /* Definition of the range-and-bearing sensor */
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
+/* Definition of the LEDs actuator */
+#include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
 #include "SCT.h"
 
@@ -50,7 +52,7 @@ public:
 
     /* Class destructor. */
     virtual ~CExampleSCTProb() {
-        std::cout << "total_a: " << total_a << ", total_b: " << total_b << ", total_c: " << total_c << ", total_d: " << total_d << std::endl;
+        std::cout << "total_a: " << total_a << ", total_b: " << total_b << std::endl;
     }
 
     /*
@@ -91,6 +93,8 @@ private:
     CCI_RangeAndBearingActuator* m_pcRABAct;
     /* Pointer to the range-and-bearing sensor */
     CCI_RangeAndBearingSensor* m_pcRABSens;
+    /* Pointer to the LEDs actuator */
+    CCI_LEDsActuator* m_pcLEDs;
 
     /* Controller */
     SCTProb* sct;
@@ -111,17 +115,15 @@ private:
     /* Callbacks */
     void callback_a(void* data);
     void callback_b(void* data);
-    void callback_c(void* data);
-    void callback_d(void* data);
 
     /* Sensors (event detectors) */
 
 
     /* Variable probability update callbacks */
-    float check_prob_c(void* data);
-    float check_prob_d(void* data);
+    float check_prob_a(void* data);
+    float check_prob_b(void* data);
 
-    int total_a = 0, total_b = 0, total_c = 0, total_d = 0;
+    int total_a = 0, total_b = 0;
 
     size_t time = 0;
 

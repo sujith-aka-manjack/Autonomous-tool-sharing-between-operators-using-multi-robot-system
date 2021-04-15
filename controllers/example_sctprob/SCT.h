@@ -10,17 +10,13 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 4
+#define NUM_EVENTS 2
 #define NUM_SUPERVISORS 1
 
 /* Event Info */
 #define EV_a 0
 
 #define EV_b 1
-
-#define EV_c 2
-
-#define EV_d 3
 
 /* Structure to store member functions */
 struct Scallback {
@@ -108,12 +104,12 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[4] = { 1,1,1,1 };
-    const unsigned char     sup_events[1][4] = { { 1,1,1,1 } };
+    const unsigned char     ev_controllable[2] = { 1,1 };
+    const unsigned char     sup_events[1][2] = { { 1,1 } };
     const unsigned long int sup_init_state[1]     = { 0 };
-    unsigned long int       sup_current_state[1]  = { 0 };
+    unsigned long int       sup_current_state[1]  = { 0 };    
     const unsigned long int sup_data_pos[1] = { 0 };
-    const unsigned char     sup_data[ 14 ] = { 2,EV_a,0,0,EV_b,0,1,2,EV_c,0,1,EV_d,0,0 };
+    const unsigned char     sup_data[ 7 ] = { 2,EV_a,0,0,EV_b,0,0 };
 
 };
 
@@ -174,9 +170,9 @@ protected:
 
     /* Probability info of supervisors */
     const unsigned long int prob_variable_pos[1] = { 0 };
-    const unsigned char     prob_variable[ 6 ] = { 2,0,0,2,1,1 };
+    const unsigned char     prob_variable[ 3 ] = { 2,1,1 };
     const unsigned long int sup_data_prob_pos[1] = { 0 };
-    float                   sup_data_prob[ 6 ] = { 2,0.50000000,0.50000000,2,1,1 };
+    float                   sup_data_prob[ 3 ] = { 2,1,1 };
 
 };
 

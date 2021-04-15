@@ -21,6 +21,7 @@
       <actuators>
         <differential_steering implementation="default" />
         <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
         <proximity implementation="default" show_rays="true" />
@@ -106,7 +107,7 @@
   <!-- ********* -->
   <media>
     <range_and_bearing id="rab" />
-    <led id="light" />
+    <led id="leds" />
   </media>
 
   <!-- ****************** -->
@@ -116,7 +117,8 @@
     <qt-opengl>
       <camera>
         <placements>
-          <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+          <!-- <placement index="0" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" /> -->
+          <placement index="0" position="-1.63291,-1.14531,1.35235" look_at="-1.31158,-1.23986,0.410111" up="0.903918,-0.265971,0.334951" lens_focal_length="100" />
         </placements>
       </camera>
     </qt-opengl>
