@@ -41,6 +41,12 @@
  */
 using namespace argos;
 
+struct Message {
+    std::string id;
+    CVector2 direction;
+    std::array<std::string, 2> connections;
+};
+
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */
@@ -118,13 +124,6 @@ protected:
     * Gets a direction vector as input and transforms it into wheel actuation.
     */
     virtual void SetWheelSpeedsFromVector(const CVector2& c_heading);
-
-    /*
-    * Find the distance between the leader and the closest chain robot or other leader detected.
-    * If distance between the leader and the chain or other leader exceeds chainThreshold, 
-    * become a chain robot.
-    */
-    virtual void CheckJoinChain();
 
     /*
     * Print robot id.
@@ -237,19 +236,26 @@ private:
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
 
-    /* Vector to leader */
-    CVector2 leaderVec;
-    /* Vector to teammate */
-    std::vector<CVector2> teamVecs;
-    /* Vector to chain members */
-    std::vector<CVector2> chainVecs;
-    /* Vector to other robots */
-    std::vector<CVector2> otherVecs;
+    // /* Vector to leader */
+    // CVector2 leaderVec;
+    // /* Vector to teammate */
+    // std::vector<CVector2> teamVecs;
+    // /* Vector to chain members */
+    // std::vector<CVector2> chainVecs;
+    // /* Vector to other robots */
+    // std::vector<CVector2> otherVecs;
+
+    /* Messages received from nearby robots */
+    Message leaderMsg;
+    std::vector<Message> teamMsgs;
+    std::vector<Message> chainMsgs;
+    std::vector<Message> otherLeaderMsgs;
+    std::vector<Message> otherTeamMsgs;
 
     /* Sensor reading results */
-    Real LCDistance;                  // Leader-Chain distance
-    std::string connectingTargets[2]; // Furthest two entities it is connecting while in the FOLLOWER state
-    bool isSingleChain;               // No other CHAIN robot connects the same furthest two entities
+    Real LCDistance; // Leader-Chain distance
+    std::vector<std::string> connectingTargets; // Used to store two furthest entities it is connecting while in the CHAIN state
+    size_t identicalChain;  // Number of nearby chains that have the same connnecting targets (i.e. furthest two chain entities)
 
     /* Outgoing message */
     CByteArray msg;

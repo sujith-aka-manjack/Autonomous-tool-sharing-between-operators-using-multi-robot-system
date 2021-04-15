@@ -54,8 +54,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     }
 
     /* Get team ID from leader ID */
-    std::stringstream ss(GetId().substr(1));
-    ss >> teamID;
+    teamID = stoi(GetId().substr(1));
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(CColor::BLUE);
