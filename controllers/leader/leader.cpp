@@ -88,6 +88,9 @@ void CLeader::ControlStep() {
     msg_index = 0;
     /* Set its state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
+    /* Set sender ID in msg */
+    std::string id = this->GetId();
+    msg[msg_index++] = stoi(id.substr(1));  // For leader, ID = teamID
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
 

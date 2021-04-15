@@ -136,11 +136,13 @@ protected:
     virtual void Callback_JoinLeader(void* data);
     virtual void Callback_JoinChain(void* data);
     virtual void Callback_Wait(void* data);
-    virtual void Callback_LeaderNear(void* data);
-    virtual void Callback_LeaderFar(void* data);
+    virtual void Callback_LCNear(void* data);
+    virtual void Callback_LCFar(void* data);
 
     virtual unsigned char Check_LeaderNear(void* data);
     virtual unsigned char Check_LeaderFar(void* data);
+    virtual unsigned char Check_LCNear(void* data);
+    virtual unsigned char Check_LCFar(void* data);
     virtual unsigned char Check_SingleChain(void* data);
     virtual unsigned char Check_MultiChain(void* data);
 
@@ -236,15 +238,6 @@ private:
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
 
-    // /* Vector to leader */
-    // CVector2 leaderVec;
-    // /* Vector to teammate */
-    // std::vector<CVector2> teamVecs;
-    // /* Vector to chain members */
-    // std::vector<CVector2> chainVecs;
-    // /* Vector to other robots */
-    // std::vector<CVector2> otherVecs;
-
     /* Messages received from nearby robots */
     Message leaderMsg;
     std::vector<Message> teamMsgs;
@@ -268,7 +261,8 @@ private:
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
     /* Chain formation threshold */
-    Real chainThreshold;
+    Real toChainThreshold;
+    Real toFollowThreshold;
 
 };
 

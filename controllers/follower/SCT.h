@@ -10,8 +10,8 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 9
-#define NUM_SUPERVISORS 2
+#define NUM_EVENTS 11
+#define NUM_SUPERVISORS 3
 
 /* Event Info */
 #define EV_flock 0
@@ -24,13 +24,17 @@
 
 #define EV_wait 4
 
-#define EV_multiChain 5
+#define EV_LCNear 5
 
-#define EV_singleChain 6
+#define EV_leaderNear 6
 
 #define EV_leaderFar 7
 
-#define EV_leaderNear 8
+#define EV_LCFar 8
+
+#define EV_multiChain 9
+
+#define EV_singleChain 10
 
 /* Structure to store member functions */
 struct Scallback {
@@ -120,13 +124,13 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[9] = { 1,1,1,1,1,0,0,0,0 };
-    const unsigned char     sup_events[2][9] = { { 1,1,1,1,1,0,0,0,0 },{ 0,0,1,1,1,1,1,1,1 } };
-    const unsigned long int sup_init_state[2]     = { 0,0 };
-    unsigned long int       sup_current_state[2]  = { 0,0 };    
-    const unsigned long int sup_data_pos[2] = { 0,19 };
-    const unsigned char     sup_data[ 96 ] = { 1,EV_flock,0,1,1,EV_joinChain,0,2,1,EV_stop,0,3,2,EV_joinLeader,0,0,EV_wait,0,3,4,EV_multiChain,0,0,EV_singleChain,0,0,EV_leaderFar,0,1,EV_leaderNear,0,0,5,EV_multiChain,0,1,EV_singleChain,0,1,EV_leaderFar,0,1,EV_leaderNear,0,0,EV_joinChain,0,2,4,EV_multiChain,0,3,EV_singleChain,0,2,EV_leaderFar,0,2,EV_leaderNear,0,4,6,EV_joinLeader,0,0,EV_multiChain,0,3,EV_singleChain,0,2,EV_leaderFar,0,3,EV_leaderNear,0,4,EV_wait,0,3,5,EV_joinLeader,0,0,EV_multiChain,0,4,EV_singleChain,0,4,EV_leaderFar,0,2,EV_leaderNear,0,4 };
-
+    const unsigned char     ev_controllable[11] = { 1,1,1,1,1,0,0,0,0,0,0 };
+    const unsigned char     sup_events[3][11] = { { 1,1,1,1,1,0,0,0,0,0,0 },{ 0,0,1,1,0,1,1,1,1,0,0 },{ 0,0,1,1,1,0,1,1,0,1,1 } };
+    const unsigned long int sup_init_state[3]     = { 0,0,0 };
+    unsigned long int       sup_current_state[3]  = { 0,0,0 };    
+    const unsigned long int sup_data_pos[3] = { 0,19,77 };
+    const unsigned char     sup_data[ 141 ] = { 1,EV_flock,0,1,1,EV_joinChain,0,2,1,EV_stop,0,3,2,EV_joinLeader,0,0,EV_wait,0,3,4,EV_LCNear,0,0,EV_leaderNear,0,0,EV_leaderFar,0,0,EV_LCFar,0,1,5,EV_LCNear,0,0,EV_leaderNear,0,1,EV_leaderFar,0,1,EV_joinChain,0,2,EV_LCFar,0,1,4,EV_LCNear,0,2,EV_leaderNear,0,3,EV_leaderFar,0,2,EV_LCFar,0,2,5,EV_joinLeader,0,0,EV_LCNear,0,3,EV_leaderNear,0,3,EV_leaderFar,0,2,EV_LCFar,0,3,5,EV_multiChain,0,0,EV_leaderNear,0,0,EV_singleChain,0,0,EV_leaderFar,0,0,EV_joinChain,0,1,4,EV_multiChain,0,2,EV_leaderNear,0,3,EV_singleChain,0,1,EV_leaderFar,0,1,6,EV_joinLeader,0,0,EV_multiChain,0,2,EV_leaderNear,0,3,EV_singleChain,0,1,EV_leaderFar,0,2,EV_wait,0,2,5,EV_joinLeader,0,0,EV_multiChain,0,3,EV_leaderNear,0,3,EV_singleChain,0,3,EV_leaderFar,0,1 };
+    
 };
 
 /****************************************/
@@ -185,10 +189,10 @@ protected:
     std::unordered_map<std::string, Pcallback> variable_prob_callback;
 
     /* Probability info of supervisors */
-    const unsigned long int prob_variable_pos[2] = { 0,9 };
-    const unsigned char     prob_variable[ 18 ] = { 1,0,1,0,1,0,2,0,0,0,1,0,0,2,0,0,1,0 };
-    const unsigned long int sup_data_prob_pos[2] = { 0,9 };
-    float                   sup_data_prob[ 18 ] = { 1,1,1,1,1,1,2,1,1,0,1,1,0,2,0.10000000,0.90000000,1,1 };
+    const unsigned long int prob_variable_pos[3] = { 0,9,15 };
+    const unsigned char     prob_variable[ 23 ] = { 1,0,1,0,1,0,2,0,0,0,1,0,0,1,0,1,0,0,2,0,0,1,0};
+    const unsigned long int sup_data_prob_pos[3] = { 0,9,15 };
+    float                   sup_data_prob[ 23 ] = { 1,1,1,1,1,1,2,0.50000000,0.50000000,0,1,1,0,1,1,1,1,0,2,0.10000000,0.90000000,1,1 };
 
 };
 

@@ -89,7 +89,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         /* Initial team ID */
         GetNodeAttribute(GetNode(t_node, "team"), "leader", leaderStr);
         /* Chain formation threshold */
-        GetNodeAttribute(GetNode(t_node, "team"), "chain_threshold", chainThreshold);
+        GetNodeAttribute(GetNode(t_node, "team"), "to_chain_threshold", toChainThreshold);
+        GetNodeAttribute(GetNode(t_node, "team"), "to_follow_threshold", toFollowThreshold);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -111,10 +112,12 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_joinChain,  &CFollower::Callback_JoinChain,  NULL, NULL);
     sct->add_callback(this, EV_wait,       &CFollower::Callback_Wait,       NULL, NULL);
 
-    sct->add_callback(this, EV_leaderNear,  &CFollower::Callback_LeaderNear, &CFollower::Check_LeaderNear,  NULL);
-    sct->add_callback(this, EV_leaderFar,   &CFollower::Callback_LeaderFar,  &CFollower::Check_LeaderFar,   NULL);
-    sct->add_callback(this, EV_singleChain, NULL,                            &CFollower::Check_SingleChain, NULL);
-    sct->add_callback(this, EV_multiChain,  NULL,                            &CFollower::Check_MultiChain,  NULL);
+    sct->add_callback(this, EV_leaderNear,  NULL, &CFollower::Check_LeaderNear,  NULL);
+    sct->add_callback(this, EV_leaderFar,   NULL, &CFollower::Check_LeaderFar,   NULL);
+    sct->add_callback(this, EV_LCNear,      NULL, &CFollower::Check_LCNear,      NULL);
+    sct->add_callback(this, EV_LCFar,       NULL, &CFollower::Check_LCFar,       NULL);
+    sct->add_callback(this, EV_singleChain, NULL, &CFollower::Check_SingleChain, NULL);
+    sct->add_callback(this, EV_multiChain,  NULL, &CFollower::Check_MultiChain,  NULL);
 
     Reset();
 }
@@ -137,6 +140,8 @@ void CFollower::Reset() {
 
 void CFollower::ControlStep() {
 
+    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+
     /*-----------------*/
     /* Reset variables */
     /*-----------------*/
@@ -146,10 +151,6 @@ void CFollower::ControlStep() {
     msg_index = 0;
 
     /* Reset flocking variables */
-    // leaderVec = CVector2();
-    // teamVecs.clear();
-    // otherVecs.clear();
-
     leaderMsg = Message();
     teamMsgs.clear();
     chainMsgs.clear();
@@ -159,8 +160,6 @@ void CFollower::ControlStep() {
     /* Reset chain information */
     connectingTargets.clear();
     identicalChain = 0;
-
-    // chainVecs.clear();
 
     /*----------------------*/
     /* Receive new messages */
@@ -178,9 +177,9 @@ void CFollower::ControlStep() {
     
     sct->run_step();
 
-    PrintName();
+    // PrintName();
     sct->print_current_state();
-    std::cout << ", R: " << static_cast<int>(currentState) << std::endl;
+    std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -188,28 +187,32 @@ void CFollower::ControlStep() {
 
     /* Set current state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
+    /* Set sender ID in msg */
+    std::string id = this->GetId();
+    msg[msg_index++] = stoi(id.substr(1));
     /* Set current team ID in msg */
     msg[msg_index++] = teamID;
 
     // Decide whether to communicate depending on current state (switch between follower and chain)
     switch(currentState) {
         case RobotState::FOLLOWER: {
-            PrintName();
-            std::cout << " FOLLOWER" << std::endl;
+            std::cout << "State: FOLLOWER" << std::endl;
+            m_pcLEDs->SetAllColors(CColor::BLACK);
             break;
         }
         case RobotState::CHAIN: {
-            PrintName();
-            std::cout << " CHAIN" << std::endl;
+            std::cout << "State: CHAIN" << std::endl;
+            m_pcLEDs->SetAllColors(CColor::RED);
+
+            /* Set furthest two chain entity info to message */
             for(int i = 0; i < connectingTargets.size(); i++) {
-                msg[msg_index++] = connectingTargets[i][0];    // First character of ID, 'L' or 'F'
+                msg[msg_index++] = connectingTargets[i][0];    // First character of ID
                 msg[msg_index++] = stoi(connectingTargets[i].substr(1));    // ID number
             }
             break;
         }
         case RobotState::LEADER: {
-            PrintName();
-            std::cout << "State is LEADER. Something went wrong." << std::endl;
+            std::cout << "State: LEADER. Something went wrong." << std::endl;
             break;
         }
     }
@@ -245,15 +248,12 @@ void CFollower::ReceiveMsg() {
 
             size_t index = 0;
 
-            /* Get robot state */
+            /* Get robot's state */
             RobotState r_state = static_cast<RobotState>(tMsgs[i].Data[index++]);
-            /* Get team ID */
+            /* Get robot's id */
+            std::string r_id = std::to_string(tMsgs[i].Data[index++]);
+            /* Get robot's team ID */
             UInt8 r_team = tMsgs[i].Data[index++];
-
-            // PrintName();
-            // std::cout << "myteam=" << teamID;
-            // std::cout << " rteam=" << r_team;
-            // std::cout << " rstate=" << static_cast<UInt8>(r_state) << std::endl;
 
             /* Message from team */
             if(r_team == teamID) {
@@ -261,14 +261,14 @@ void CFollower::ReceiveMsg() {
                 if(r_state == RobotState::LEADER) {
                     /* Store position */
                     leaderMsg = Message();
-                    leaderMsg.id = 'L' + std::to_string(r_team);
+                    leaderMsg.id = 'L' + r_id;
                     leaderMsg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
                 } 
                 /* Message from follower */
                 else if(r_state == RobotState::FOLLOWER) {
                     /* Store position */
                     Message msg = Message();
-                    msg.id = 'F' + std::to_string(r_team);
+                    msg.id = 'F' + r_id;
                     msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
                     teamMsgs.push_back(msg);
                 }
@@ -279,7 +279,7 @@ void CFollower::ReceiveMsg() {
                 if(r_state == RobotState::LEADER) {
                     /* Store position (other leader is also part of the chain) */
                     Message msg = Message();
-                    msg.id = 'L' + std::to_string(r_team);
+                    msg.id = 'L' + r_id;
                     msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
                     otherLeaderMsgs.push_back(msg);   
                 }
@@ -287,7 +287,7 @@ void CFollower::ReceiveMsg() {
                 else if(r_state == RobotState::FOLLOWER) {
                     /* Store position */
                     Message msg = Message();
-                    msg.id = 'F' + std::to_string(r_team);
+                    msg.id = 'F' + r_id;
                     msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
                     otherTeamMsgs.push_back(msg); 
                 }
@@ -295,11 +295,9 @@ void CFollower::ReceiveMsg() {
 
             /* Message from chain robot */
             if(r_state == RobotState::CHAIN) {
-                std::cout << "Message from CHAIN" << std::endl;
-
                 /* Store position */
                 Message msg = Message();
-                msg.id = 'F' + std::to_string(r_team);
+                msg.id = 'F' + r_id;
                 msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
                 /* Store which chain entities the other chain robot is connected to */
@@ -308,7 +306,7 @@ void CFollower::ReceiveMsg() {
                     std::string chainID = (static_cast<RobotState>(tMsgs[i].Data[index++]) == RobotState::CHAIN) ? "F" : "L";
                     chainID += std::to_string(tMsgs[i].Data[index++]);
                     msg.connections[j++] = chainID;
-                    // std::cout << msg.connections[j-1] << std::endl;
+                    std::cout << msg.connections[j-1] << std::endl;
                 }
 
                 chainMsgs.push_back(msg);
@@ -324,13 +322,15 @@ void CFollower::UpdateSensors() {
 
     /* Check leader distance with chain (including other leader) */
 
-    std::cout << "chainMsg=" << chainMsgs.size() << ", otherLMsg=" << otherLeaderMsgs.size() << std::endl;
+    std::cout << "chainMsg  = " << chainMsgs.size() << std::endl;
+    std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
 
-    /* Combine messages from chain entities */
+    /* Combine messages from chain entities (other leader and robots in CHAIN state) */
     std::vector<Message> combinedChainMsgs(chainMsgs);
     combinedChainMsgs.insert(std::end(combinedChainMsgs),
                              std::begin(otherLeaderMsgs),
                              std::end(otherLeaderMsgs));
+    // combinedChainMsgs.push_back(leaderMsg);
     
     if(!combinedChainMsgs.empty()) {
         Real minLCDist = __FLT_MAX__;   // Minimum distance between the leader and the closest chain detected
@@ -360,22 +360,25 @@ void CFollower::UpdateSensors() {
         }
 
         LCDistance = minLCDist;
-        PrintName();
-        std::cout << LCDistance << std::endl;
+        std::cout << "L-C Distance = " << LCDistance << std::endl;
 
         if(maxDist1 > 0) {
             connectingTargets.push_back(chain1);
-            PrintName();
-            std::cout << " ct1=" << connectingTargets[0] << ", ";
+            std::cout << "connected to (1) = " << chain1 << std::endl;
         }
         if(maxDist2 > 0) {
             connectingTargets.push_back(chain2);
-            PrintName();
-            std::cout << " ct2=" << connectingTargets[1];
+            std::cout << "connected to (2) = " << chain2 << std::endl;
         }
-        std::cout << std::endl;
     }
     
+    // TODO: Count number of identical chains
+    // Found its furthest connections.
+    // Now loop through list of other chain robots and count how many have the same connections.
+
+    // Need to separate the process of 
+    // 1) finding distance between leader and chain and 
+    // 2) finding closest chain entities (leader is not part of chain)
     
 }
 
@@ -546,28 +549,34 @@ void CFollower::PrintName() {
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_Flock(void* data) {
+    std::cout << "Action: Flock" <<std::endl;
     currentMoveType = MoveType::FLOCK;
 }
 
 void CFollower::Callback_Stop(void* data) {
+    std::cout << "Action: Stop" <<std::endl;
     currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_JoinLeader(void* data) {
+    std::cout << "Action: JoinLeader" <<std::endl;
     currentState = RobotState::FOLLOWER;
 }
 
 void CFollower::Callback_JoinChain(void* data) {
+    std::cout << "Action: JoinChain" <<std::endl;
     currentState = RobotState::CHAIN;
 }
 
-void CFollower::Callback_Wait(void* data) {}
+void CFollower::Callback_Wait(void* data) {
+    std::cout << "Action: Wait" <<std::endl;
+}
 
-void CFollower::Callback_LeaderNear(void* data) {
+void CFollower::Callback_LCNear(void* data) {
     m_pcLEDs->SetAllColors(CColor::BLACK);
 }
 
-void CFollower::Callback_LeaderFar(void* data) {
+void CFollower::Callback_LCFar(void* data) {
     m_pcLEDs->SetAllColors(CColor::RED);
 }
 
@@ -577,18 +586,32 @@ void CFollower::Callback_LeaderFar(void* data) {
 /* Callback functions (Uncontrollable events) */
 
 unsigned char CFollower::Check_LeaderNear(void* data) {
-    return LCDistance < chainThreshold;
+    std::cout << "Event: " << (leaderMsg.direction.Length() < toFollowThreshold) << " - leaderNear" <<std::endl;
+    return leaderMsg.direction.Length() < toFollowThreshold;
 }
 
 unsigned char CFollower::Check_LeaderFar(void* data) {
-    return LCDistance >= chainThreshold;
+    std::cout << "Event: " << (leaderMsg.direction.Length() >= toFollowThreshold) << " - leaderFar" <<std::endl;
+    return leaderMsg.direction.Length() >= toFollowThreshold;
+}
+
+unsigned char CFollower::Check_LCNear(void* data) {
+    std::cout << "Event: " << (LCDistance < toChainThreshold) << " - LCNear" <<std::endl;
+    return LCDistance < toChainThreshold;
+}
+
+unsigned char CFollower::Check_LCFar(void* data) {
+    std::cout << "Event: " << (LCDistance >= toChainThreshold) << " - LCFar" <<std::endl;
+    return LCDistance >= toChainThreshold;
 }
 
 unsigned char CFollower::Check_SingleChain(void* data) {
+    std::cout << "Event: " << (identicalChain == 1) << " - SingleChain" <<std::endl;
     return identicalChain == 1;
 }
 
 unsigned char CFollower::Check_MultiChain(void* data) {
+    std::cout << "Event: " << (identicalChain > 1) << " - MultiChain" <<std::endl;
     return identicalChain > 1;
 }
 
