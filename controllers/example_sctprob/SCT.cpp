@@ -182,7 +182,7 @@ SCTProb::~SCTProb(){}
 
 void SCTProb::run_step(){
     update_input(); // Get all uncontrollable events
-    update_prob();  // Update variable probabilities
+    // update_prob();  // Update variable probabilities
     unsigned char event;
 
     /* Apply all the uncontrollable events */
@@ -198,50 +198,65 @@ void SCTProb::run_step(){
     }
 }
 
-void SCTProb::update_prob() {
-    /* Run each callback function to update variable probabilities */
-    for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
-        /* Obtain new probability */
-        float prob = itr->second.check_input(NULL);
+// void SCTProb::update_prob() {
+//     /* Run each callback function to update variable probabilities */
+//     for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
+//         /* Obtain new probability */
+//         float prob = itr->second.check_input(NULL);
 
-        /* Get current state and transition probabilities */
-        unsigned char position = get_state_position(itr->second.supervisor,
-                                                    itr->second.state);
+//         /* Get current state and transition probabilities */
+//         unsigned char position = get_state_position(itr->second.supervisor,
+//                                                     itr->second.state);
 
-        unsigned char position_prob = get_state_position_prob(itr->second.supervisor,
-                                                              itr->second.state);
+//         unsigned char position_prob = get_state_position_prob(itr->second.supervisor,
+//                                                               itr->second.state);
         
-        size_t num_transitions = sup_data[position];
-        position++;
-        position_prob++;
+//         size_t num_transitions = sup_data[position];
+//         position++;
+//         position_prob++;
         
-        for(size_t i = 0; i < num_transitions; i++) {
-            unsigned char event = sup_data[position];
+//         for(size_t i = 0; i < num_transitions; i++) {
+//             unsigned char event = sup_data[position];
             
-            /* Check if we have reached the desired event */
-            if(event == itr->second.event)
-                break;
+//             /* Check if we have reached the desired event */
+//             if(event == itr->second.event)
+//                 break;
 
-            /* Move to the next event */
-            position += 3;
-            /* Move to the next event probability, only if it was a controllable event */
-            if(ev_controllable[event])
-                position_prob++;
-        }
+//             /* Move to the next event */
+//             position += 3;
+//             /* Move to the next event probability, only if it was a controllable event */
+//             if(ev_controllable[event])
+//                 position_prob++;
+//         }
 
-        /* Set new probability */
-        sup_data_prob[position_prob] = prob;
-    }
-}
+//         /* Set new probability */
+//         sup_data_prob[position_prob] = prob;
+//     }
+// }
 
 unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {
     unsigned long int s, en;
+    unsigned long int position      = sup_data_pos[ supervisor ];
     unsigned long int prob_position = sup_data_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
     for(s=0; s<state; s++){                                             /* Keep iterating until the state is reached */
-        en            =  sup_data_prob[prob_position];                  /* The number of probabilities in the state */
-        prob_position += en + 1;                                        /* Next event's probability position */
+        en            =  sup_data[position];                            /* The number of transitions in the state */
+        prob_position += en;                                            /* Next event's probability position */
     }
     return prob_position;
+}
+
+unsigned long int SCTProb::get_state_position_var_prob( unsigned char supervisor, unsigned long int state ) {
+    unsigned long int s, t, en, pn;
+    unsigned long int position          = sup_data_pos[ supervisor ];
+    unsigned long int var_prob_position = sup_data_var_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
+    for(s=0; s<state; s++){                                                     /* Keep iterating until the state is reached */
+        en = sup_data[position];                                                /* The number of transitions in the state */
+        for(t=0; t<en; t++){                                                    
+            pn = sup_data_var_prob[var_prob_position];                          /* The number of variable probabilities in the state */
+            var_prob_position += pn + 1;                                        /* Next event's variable probability position */
+        }
+    }
+    return var_prob_position;
 }
 
 unsigned char SCTProb::get_next_controllable( unsigned char *event ) {

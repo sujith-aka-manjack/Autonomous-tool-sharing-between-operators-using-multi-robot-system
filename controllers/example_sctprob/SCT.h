@@ -18,6 +18,11 @@
 
 #define EV_b 1
 
+/* Variable Probability Info */
+#define PROB_x 0
+
+#define PROB_y 1
+
 /* Structure to store member functions */
 struct Scallback {
     std::function<void(void* data)> callback;
@@ -109,7 +114,7 @@ protected:
     const unsigned long int sup_init_state[1]     = { 0 };
     unsigned long int       sup_current_state[1]  = { 0 };    
     const unsigned long int sup_data_pos[1] = { 0 };
-    const unsigned char     sup_data[ 7 ] = { 2,EV_a,0,0,EV_b,0,0 };
+    const unsigned char     sup_data[ 11 ] = { 1,EV_a,0,1,2,EV_a,0,1,EV_b,0,0 };
 
 };
 
@@ -154,10 +159,13 @@ public:
 protected:
 
     /* Get new variable probabilities from the robot */
-    virtual void update_prob();
+    // virtual void update_prob();
 
-    /* Given the supervisor and its state, return the position of the current state's probabilities in the data structure */
+    /* Given the supervisor and its state, return the position of the current state's fixed probabilities in the data structure */
     virtual unsigned long int get_state_position_prob( unsigned char supervisor, unsigned long int state );
+
+    /* Given the supervisor and its state, return the position of the current state's variable probabilities in the data structure */
+    virtual unsigned long int get_state_position_var_prob( unsigned char supervisor, unsigned long int state );
 
     /* Choose a controllale event from the list of enabled controllable events using probabilities */
     virtual unsigned char get_next_controllable( unsigned char *event );
@@ -169,11 +177,26 @@ protected:
     std::unordered_map<std::string, Pcallback> variable_prob_callback;
 
     /* Probability info of supervisors */
-    const unsigned long int prob_variable_pos[1] = { 0 };
-    const unsigned char     prob_variable[ 3 ] = { 2,1,1 };
-    const unsigned long int sup_data_prob_pos[1] = { 0 };
-    float                   sup_data_prob[ 3 ] = { 2,1,1 };
+    // const unsigned long int prob_variable_pos[1] = { 0 };
+    // const unsigned char     prob_variable[ 3 ] = { 2,1,1 };
+    
+    // const unsigned long int sup_data_prob_pos[1] = { 0 };
+    // const float             sup_data_prob[ 3 ] = { 2,1,1 }; //{1.0, 1.0};
 
+    // const unsigned long int sup_data_prob_var_pos[1] = { 0 };
+
+    // const unsigned long int sup_data_prob_var [  ] = { #var_prob, PROB_x, PROB_y, ... }
+
+    // // 1 * PROB_x * PROB_y = 1*0.1*0.9
+
+    // float var = [0.1, 0.9, 0.7, ...]
+
+    const unsigned long int sup_data_prob_pos[1] = { 0 };
+    const float             sup_data_prob[ 3 ] = { 0.50000000,1,1 };
+
+    const unsigned long int sup_data_var_prob_pos[1] = { 0 };
+    const unsigned char     sup_data_var_prob[ 7 ] = { 1,PROB_y,2,PROB_x,PROB_y,1,PROB_x };
+    float                   current_var_prob[ 2 ] = { 1,1 };
 };
 
 #endif
