@@ -10,13 +10,16 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 2
+#define NUM_EVENTS 3
 #define NUM_SUPERVISORS 1
 
 /* Event Info */
 #define EV_a 0
 
-#define EV_b 1
+#define EV_c 1
+
+#define EV_b 2
+
 
 /* Variable Probability Info */
 #define PROB_x 0
@@ -109,12 +112,12 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[2] = { 1,1 };
-    const unsigned char     sup_events[1][2] = { { 1,1 } };
+    const unsigned char     ev_controllable[3] = { 1,0,1 };
+    const unsigned char     sup_events[1][3] = { { 1,1,1 } };
     const unsigned long int sup_init_state[1]     = { 0 };
     unsigned long int       sup_current_state[1]  = { 0 };    
     const unsigned long int sup_data_pos[1] = { 0 };
-    const unsigned char     sup_data[ 11 ] = { 1,EV_a,0,1,2,EV_a,0,1,EV_b,0,0 };
+    const unsigned char     sup_data[ 17 ] = { 2,EV_a,0,1,EV_c,0,0,3,EV_a,0,1,EV_c,0,1,EV_b,0,0 };
 
 };
 
@@ -192,11 +195,10 @@ protected:
     // float var = [0.1, 0.9, 0.7, ...]
 
     const unsigned long int sup_data_prob_pos[1] = { 0 };
-    const float             sup_data_prob[ 3 ] = { 0.50000000,1,1 };
-
+    const float             sup_data_prob[ 5 ] = { 1,0.50000000,2,1.00000000,1.00000000 };
     const unsigned long int sup_data_var_prob_pos[1] = { 0 };
     const unsigned char     sup_data_var_prob[ 7 ] = { 1,PROB_y,2,PROB_x,PROB_y,1,PROB_x };
-    float                   current_var_prob[ 2 ] = { 1,1 };
+    float                   current_var_prob[2] = { 1,1 };
 };
 
 #endif
