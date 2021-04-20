@@ -27,6 +27,16 @@ void SCT::run_step(){
     }
 }
 
+void SCT::print_current_state() {
+    std::cout << "sup [";
+    for(size_t i = 0; i < NUM_SUPERVISORS; i++) {
+        std::cout << sup_current_state[i];
+        if(i < NUM_SUPERVISORS - 1)
+            std::cout << ",";
+    }
+    std::cout << "]";
+}
+
 unsigned char SCT::input_read( unsigned char ev ){
     if( ev < NUM_EVENTS && callback[ ev ].check_input != NULL )
         return callback[ ev ].check_input( callback[ ev ].data );
@@ -250,6 +260,10 @@ unsigned long int SCTProb::get_state_position_var_prob( unsigned char supervisor
     unsigned long int var_prob_position = sup_data_var_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
     for(s=0; s<state; s++){                                                     /* Keep iterating until the state is reached */
         en = sup_data_prob[prob_position];                                      /* The number of controllable events in the state */
+        if(en == 0) {                                                           /* If there are no controllabel events, go to the next state */
+            var_prob_position++;
+            continue;
+        }                                                        
         for(t=0; t<en; t++){                                                    
             pn = sup_data_var_prob[var_prob_position];                          /* The number of variable probabilities in the state */
             var_prob_position += pn + 1;                                        /* Next event's variable probability position */
@@ -264,6 +278,12 @@ unsigned char SCTProb::get_next_controllable( unsigned char *event ) {
     float prob_sum = get_active_controllable_events_prob( events );
     if( prob_sum > 0.0001 ){                /* If at least one event is enabled do */
         random_value = (float) rand() / RAND_MAX * prob_sum;   /* Pick a random index (event) */
+
+        std::cout << "prob_sum " << prob_sum << std::endl;
+        std::cout << "rand_val " << random_value << std::endl;
+        for(i=0; i<NUM_EVENTS; i++)
+            std::cout << "events[" << i << "] " << events[i] << std::endl;
+
         for(i=0; i<NUM_EVENTS; i++){
             random_sum += events[i];        /* Add probability of each event until the random value is reached */
             if( (random_value < random_sum) && ev_controllable[ i ] ){
@@ -309,6 +329,7 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
         position_var_prob = get_state_position_var_prob(i, sup_current_state[i]);
         num_transitions = sup_data[position];
         position++;
+        position_prob++;
 
         /* Enable all events that have a transition from the current state */
         while(num_transitions--){
@@ -318,12 +339,32 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
             if( ev_controllable[ event ] && sup_events[i][ event ] ){
                 ev_disable[ event ] = 0;
                 events[ event ] *= sup_data_prob[position_prob];    /* Cumulatively multiply the event's probability from all supervisors */
-                // If variable prob exists, multiply them one at a time
-                // for( j=0; j<sup_data_var_prob[position_var_prob]; j++ ){    // 
-                //     var_prob = sup_data_var_prob_pos[position_var_prob];
-                //     events[ event ] *= 
-                // }
+                
+                std::cout << "\nsup_data_prob[" << position_prob << "] " << sup_data_prob[position_prob] << std::endl;
+                std::cout << "events[" << std::to_string(event) << "] " << events[event] << std::endl;
+                std::cout << "sup_data_var_prob[" << position_var_prob << "] " << std::to_string(sup_data_var_prob[position_var_prob]) << std::endl;
+
+                unsigned long int num_var_prob = sup_data_var_prob[position_var_prob];
+
+                /* If variable prob exists, multiply them one at a time */
+                for( j=0; j<num_var_prob; j++ ){
+                    position_var_prob++;
+                    
+                    std::cout << "sup_data_var_prob[" << position_var_prob << "] " << std::to_string(sup_data_var_prob[position_var_prob]) << std::endl;
+
+                    unsigned char var_prob = sup_data_var_prob[position_var_prob];
+
+                    std::cout << "var_prob " << std::to_string(var_prob) << std::endl;
+                    std::cout << "position_var_prob " << position_var_prob << std::endl;
+                    std::cout << "current_var_prob[" << std::to_string(var_prob) << "] " << current_var_prob[var_prob] << std::endl;
+
+                    events[ event ] *= current_var_prob[var_prob];
+                }
+
+                std::cout << "events[" << std::to_string(event) << "] " << events[event] << std::endl;
+
                 position_prob++;
+                position_var_prob++;
             }
             position += 3;
         }

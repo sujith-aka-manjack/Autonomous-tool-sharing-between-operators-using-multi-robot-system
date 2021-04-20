@@ -79,6 +79,8 @@ public:
     /* Run the generator player to execute the next action */
     virtual void run_step();
 
+    virtual void print_current_state();
+
 protected:
 
     /* Return whether an uncontrollable event has occured */
@@ -198,7 +200,7 @@ protected:
     const float             sup_data_prob[ 5 ] = { 1,0.50000000,2,1.00000000,1.00000000 };
     const unsigned long int sup_data_var_prob_pos[1] = { 0 };
     const unsigned char     sup_data_var_prob[ 7 ] = { 1,PROB_y,2,PROB_x,PROB_y,1,PROB_x };
-    float                   current_var_prob[2] = { 1,1 };
+    float                   current_var_prob[2] = { 0.1,0.9 };
 };
 
 #endif

@@ -30,10 +30,10 @@ void CExampleSCTProb::Init(TConfigurationNode& t_node) {
     sct = new SCTProb();
     sct->add_callback(this, EV_a, &CExampleSCTProb::callback_a, NULL, NULL);
     sct->add_callback(this, EV_b, &CExampleSCTProb::callback_b, NULL, NULL);
+    sct->add_callback(this, EV_c, NULL, &CExampleSCTProb::check_c, NULL);
 
-    sct->add_variable_prob(this, 0, 0, EV_a, &CExampleSCTProb::check_prob_a, NULL);
-    sct->add_variable_prob(this, 0, 0, EV_b, &CExampleSCTProb::check_prob_b, NULL);
-
+    sct->print_current_state();
+    std::cout << std::endl;
 }
 
 /****************************************/
@@ -41,10 +41,15 @@ void CExampleSCTProb::Init(TConfigurationNode& t_node) {
 
 void CExampleSCTProb::ControlStep() {
 
+    std::cout << "\n-------------" << std::endl;
+
     update_sensors();
 
     /* Run the generator player */
     sct->run_step();
+
+    sct->print_current_state();
+    std::cout << std::endl;
 
     ++time;
 }
@@ -58,34 +63,36 @@ void CExampleSCTProb::update_sensors() {
 
 /* Callback function for controllable events */
 void CExampleSCTProb::callback_a(void* data) {
-    std::cout << "[" << this->GetId() << "] ON" << std::endl;
+    std::cout << "ON" << std::endl;
     total_a++;
     m_pcLEDs->SetAllColors(CColor::RED);
 }
 
 void CExampleSCTProb::callback_b(void* data) {
-    std::cout << "[" << this->GetId() << "] OFF" << std::endl;
+    std::cout << "OFF" << std::endl;
     total_b++;
     m_pcLEDs->SetAllColors(CColor::BLACK);
 }
 
 /* Callback function for uncontrollable events */
-
+unsigned char CExampleSCTProb::check_c(void* data) {
+    return 1;
+}
 
 /* Callback function for updating variable probabilities */
-float CExampleSCTProb::check_prob_a(void* data) {
-    float prob = time/1000.;
-    // std::cout << "prob_a = " << prob << std::endl;
-    if(prob > 1){ prob = 1.; }
-    return prob;
-}
+// float CExampleSCTProb::check_prob_a(void* data) {
+//     float prob = time/1000.;
+//     // std::cout << "prob ON = " << prob << std::endl;
+//     if(prob > 1){ prob = 1.; }
+//     return prob;
+// }
 
-float CExampleSCTProb::check_prob_b(void* data) {
-    float prob = 1 - time/1000.;
-    // std::cout << "prob_b = " << prob << std::endl;
-    if(prob < 0){ prob = 0.; }
-    return prob;
-}
+// float CExampleSCTProb::check_prob_b(void* data) {
+//     float prob = 1 - time/1000.;
+//     // std::cout << "prob OFF = " << prob << std::endl;
+//     if(prob < 0){ prob = 0.; }
+//     return prob;
+// }
 
 /****************************************/
 /****************************************/

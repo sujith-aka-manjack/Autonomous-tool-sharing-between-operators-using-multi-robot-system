@@ -117,14 +117,13 @@ private:
     void callback_b(void* data);
 
     /* Sensors (event detectors) */
-
+    unsigned char check_c(void* data);
 
     /* Variable probability update callbacks */
-    float check_prob_a(void* data);
-    float check_prob_b(void* data);
+    // float check_prob_a(void* data);
+    // float check_prob_b(void* data);
 
     int total_a = 0, total_b = 0;
-
     size_t time = 0;
 
     /* Update sensor readings */
