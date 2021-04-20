@@ -190,59 +190,9 @@ SCTProb::SCTProb(){}
 
 SCTProb::~SCTProb(){}
 
-void SCTProb::run_step(){
-    update_input(); // Get all uncontrollable events
-    // update_prob();  // Update variable probabilities
-    unsigned char event;
-
-    /* Apply all the uncontrollable events */
-    while ( get_next_uncontrollable( &event ) ){
-        make_transition( event );
-        exec_callback( event );
-    }
-
-    /* Apply the chosen controllable event */
-    if( get_next_controllable( &event ) ){  /* Find and pick a controllable event (CE) */
-        make_transition( event );
-        exec_callback( event );
-    }
+void SCTProb::set_prob( unsigned char var_prob, float prob ) {
+    current_var_prob[var_prob] = prob;
 }
-
-// void SCTProb::update_prob() {
-//     /* Run each callback function to update variable probabilities */
-//     for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
-//         /* Obtain new probability */
-//         float prob = itr->second.check_input(NULL);
-
-//         /* Get current state and transition probabilities */
-//         unsigned char position = get_state_position(itr->second.supervisor,
-//                                                     itr->second.state);
-
-//         unsigned char position_prob = get_state_position_prob(itr->second.supervisor,
-//                                                               itr->second.state);
-        
-//         size_t num_transitions = sup_data[position];
-//         position++;
-//         position_prob++;
-        
-//         for(size_t i = 0; i < num_transitions; i++) {
-//             unsigned char event = sup_data[position];
-            
-//             /* Check if we have reached the desired event */
-//             if(event == itr->second.event)
-//                 break;
-
-//             /* Move to the next event */
-//             position += 3;
-//             /* Move to the next event probability, only if it was a controllable event */
-//             if(ev_controllable[event])
-//                 position_prob++;
-//         }
-
-//         /* Set new probability */
-//         sup_data_prob[position_prob] = prob;
-//     }
-// }
 
 unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {
     unsigned long int s, en;
@@ -349,7 +299,7 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
                 /* If variable prob exists, multiply them one at a time */
                 for( j=0; j<num_var_prob; j++ ){
                     position_var_prob++;
-                    
+
                     std::cout << "sup_data_var_prob[" << position_var_prob << "] " << std::to_string(sup_data_var_prob[position_var_prob]) << std::endl;
 
                     unsigned char var_prob = sup_data_var_prob[position_var_prob];

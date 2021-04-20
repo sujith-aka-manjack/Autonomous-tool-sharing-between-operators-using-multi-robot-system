@@ -127,15 +127,6 @@ protected:
 /*               SCTProb                */
 /****************************************/
 
-/* Structure to store variable probability update functions */
-struct Pcallback {
-    std::function<float(void* data)> check_input;
-    unsigned char supervisor;
-    unsigned char state;
-    unsigned char event;
-    void* data;
-};
-
 class SCTProb : virtual public SCT {
 
 public:
@@ -146,25 +137,10 @@ public:
     /* Class destructor */
     ~SCTProb();
 
-    /* Add callback function for updating variable probabilities */
-    template<typename Class>
-    void add_variable_prob(Class* p, unsigned char sup, unsigned char state, unsigned char event, float (Class::*ci)( void* ), void* data) {
-        using namespace std::placeholders; //for _1, _2, _3...
-        std::string key = std::to_string(sup) + '-' + std::to_string(state) + '-' + std::to_string(event);
-        variable_prob_callback[key].check_input = std::bind(ci, p, _1);
-        variable_prob_callback[key].supervisor  = sup;
-        variable_prob_callback[key].state       = state;
-        variable_prob_callback[key].event       = event;
-        variable_prob_callback[key].data        = data;
-    }
-
-    /* Run the generator player to execute the next action */
-    virtual void run_step();
+    /* Update variable probability */
+    virtual void set_prob( unsigned char var_prob, float prob );
 
 protected:
-
-    /* Get new variable probabilities from the robot */
-    // virtual void update_prob();
 
     /* Given the supervisor and its state, return the position of the current state's fixed probabilities in the data structure */
     virtual unsigned long int get_state_position_prob( unsigned char supervisor, unsigned long int state );
@@ -177,25 +153,8 @@ protected:
 
     /* Return all the enabled controllable event probabilities */
     virtual float get_active_controllable_events_prob( float *events );
-    
-    /* Map of callback functions for updating variable probabilities */
-    std::unordered_map<std::string, Pcallback> variable_prob_callback;
 
     /* Probability info of supervisors */
-    // const unsigned long int prob_variable_pos[1] = { 0 };
-    // const unsigned char     prob_variable[ 3 ] = { 2,1,1 };
-    
-    // const unsigned long int sup_data_prob_pos[1] = { 0 };
-    // const float             sup_data_prob[ 3 ] = { 2,1,1 }; //{1.0, 1.0};
-
-    // const unsigned long int sup_data_prob_var_pos[1] = { 0 };
-
-    // const unsigned long int sup_data_prob_var [  ] = { #var_prob, PROB_x, PROB_y, ... }
-
-    // // 1 * PROB_x * PROB_y = 1*0.1*0.9
-
-    // float var = [0.1, 0.9, 0.7, ...]
-
     const unsigned long int sup_data_prob_pos[1] = { 0 };
     const float             sup_data_prob[ 5 ] = { 1,0.50000000,2,1.00000000,1.00000000 };
     const unsigned long int sup_data_var_prob_pos[1] = { 0 };

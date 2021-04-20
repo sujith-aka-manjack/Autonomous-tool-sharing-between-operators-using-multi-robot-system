@@ -45,6 +45,9 @@ void CExampleSCTProb::ControlStep() {
 
     update_sensors();
 
+    /* Update variable probability */
+    sct->set_prob(PROB_x, 0.2);
+
     /* Run the generator player */
     sct->run_step();
 
