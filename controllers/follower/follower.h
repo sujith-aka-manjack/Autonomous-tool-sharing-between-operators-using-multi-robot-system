@@ -44,7 +44,7 @@ using namespace argos;
 struct Message {
     std::string id;
     CVector2 direction;
-    std::array<std::string, 2> connections;
+    std::vector<std::string> connections;
 };
 
 /*

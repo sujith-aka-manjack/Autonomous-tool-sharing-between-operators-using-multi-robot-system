@@ -4,6 +4,8 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/core/utility/logging/argos_log.h>
 
+#include <algorithm>
+
 /****************************************/
 /****************************************/
 
@@ -244,7 +246,7 @@ void CFollower::ReceiveMsg() {
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
 
     if( !tMsgs.empty()) {
-        for(size_t i = 0; i < tMsgs.size(); ++i) {
+        for(int i = 0; i < tMsgs.size(); i++) {
 
             size_t index = 0;
 
@@ -301,14 +303,14 @@ void CFollower::ReceiveMsg() {
                 msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
                 /* Store which chain entities the other chain robot is connected to */
-                size_t j = 0;
-                while(tMsgs[i].Data[index] != 255) {
-                    std::string chainID = (static_cast<RobotState>(tMsgs[i].Data[index++]) == RobotState::CHAIN) ? "F" : "L";
-                    chainID += std::to_string(tMsgs[i].Data[index++]);
-                    msg.connections[j++] = chainID;
-                    std::cout << msg.connections[j-1] << std::endl;
+                while(tMsgs[i].Data[index] != 255) {    // Check if data exists
+                    std::string chainID;
+                    chainID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    msg.connections.push_back(chainID);
                 }
-
+                
+                sort(std::begin(msg.connections), std::end(msg.connections));
                 chainMsgs.push_back(msg);
             } 
         }
@@ -325,61 +327,78 @@ void CFollower::UpdateSensors() {
     std::cout << "chainMsg  = " << chainMsgs.size() << std::endl;
     std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
 
-    /* Combine messages from chain entities (other leader and robots in CHAIN state) */
+    /* Combine messages received from chain entities (chain robot and other leaders) */
     std::vector<Message> combinedChainMsgs(chainMsgs);
     combinedChainMsgs.insert(std::end(combinedChainMsgs),
                              std::begin(otherLeaderMsgs),
                              std::end(otherLeaderMsgs));
-    // combinedChainMsgs.push_back(leaderMsg);
     
-    if(!combinedChainMsgs.empty()) {
-        Real minLCDist = __FLT_MAX__;   // Minimum distance between the leader and the closest chain detected
-        std::string chain1, chain2; // IDs of the two furthest chain entities
-        Real maxDist1 = 0, maxDist2 = 0;
-        for(int i = 0; i < combinedChainMsgs.size(); ++i) {
-            /* For each chain position, check whether the distance between the leader and the chain
-            exceeds the threshold. */
-            CVector2 diff = leaderMsg.direction - combinedChainMsgs[i].direction;
-            Real LCDist = diff.Length();
-            if(LCDist < minLCDist)
-                minLCDist = LCDist;
+    
+    /* Check the shortest distance from the chain to the team leader */
+    /* Event: LCNear, LCFar */
+    if(currentState == RobotState::FOLLOWER) {
 
-            if(currentState == RobotState::CHAIN) {
-                /* Keep track of the two chain entities that are furthest from itself */
-                Real dist = combinedChainMsgs[i].direction.Length();
-                if(dist > maxDist1) {
-                    chain2 = chain1;
-                    maxDist2 = maxDist1;
-                    chain1 = combinedChainMsgs[i].id;
-                    maxDist1 = dist;
-                } else if(dist > maxDist2) {
-                    chain2 = combinedChainMsgs[i].id;
-                    maxDist2 = dist;
-                }
+        Real minLCDist = __FLT_MAX__;
+
+        if(leaderMsg.direction.Length() > 0.0f) {
+            
+            for(int i = 0; i < combinedChainMsgs.size(); i++) {
+                CVector2 diff = leaderMsg.direction - combinedChainMsgs[i].direction;
+                Real LCDist = diff.Length();
+                if(LCDist < minLCDist)
+                    minLCDist = LCDist;
+            }
+        }
+        LCDistance = minLCDist;
+        std::cout << "L-C Distance = " << LCDistance << std::endl;
+    }
+
+    /* Check the furthest two chain entities this robot is currently connected to, including its team leader */
+    /* Event: singleChain, multiChain */
+    else if(currentState == RobotState::CHAIN) {
+
+        /* Add message from team leader */
+        if(leaderMsg.direction.Length() > 0.0f)
+            combinedChainMsgs.push_back(leaderMsg);
+
+        /* Find the ID and distance of the two furthest chain entities */
+        std::string chain1, chain2;
+        Real maxDist1 = 0, maxDist2 = 0;
+        for(int i = 0; i < combinedChainMsgs.size(); i++) {
+            Real dist = combinedChainMsgs[i].direction.Length();
+            if(dist > maxDist1) {
+                chain2 = chain1;
+                maxDist2 = maxDist1;
+                chain1 = combinedChainMsgs[i].id;
+                maxDist1 = dist;
+            } else if(dist > maxDist2) {
+                chain2 = combinedChainMsgs[i].id;
+                maxDist2 = dist;
             }
         }
 
-        LCDistance = minLCDist;
-        std::cout << "L-C Distance = " << LCDistance << std::endl;
-
-        if(maxDist1 > 0) {
+        if(maxDist1 > 0)
             connectingTargets.push_back(chain1);
-            std::cout << "connected to (1) = " << chain1 << std::endl;
-        }
-        if(maxDist2 > 0) {
+        if(maxDist2 > 0)
             connectingTargets.push_back(chain2);
-            std::cout << "connected to (2) = " << chain2 << std::endl;
+
+        std::sort(std::begin(connectingTargets), std::end(connectingTargets));
+
+        for(int i = 0; i < connectingTargets.size(); i++)
+            std::cout << "connected to (" << i+1 << ") = " << connectingTargets[i] << std::endl;
+
+        /* Count the number of other chain robots that have the same furthest connected pair */
+        std::vector<std::string> otherTargets;
+        for(int i = 0; i < chainMsgs.size(); i++) {
+            otherTargets = chainMsgs[i].connections;
+
+            for(int j = 0; j < otherTargets.size(); j++)
+                std::cout << "otherTargets[" << j << "] " << otherTargets[j] << std::endl;
+
+            if(connectingTargets == otherTargets)
+                identicalChain++;
         }
     }
-    
-    // TODO: Count number of identical chains
-    // Found its furthest connections.
-    // Now loop through list of other chain robots and count how many have the same connections.
-
-    // Need to separate the process of 
-    // 1) finding distance between leader and chain and 
-    // 2) finding closest chain entities (leader is not part of chain)
-    
 }
 
 /****************************************/
@@ -416,7 +435,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
     Real teammateSeen = teamMsgs.size();
     if(teammateSeen > 0) {
 
-        for(int i = 0; i < teamMsgs.size(); ++i) {
+        for(int i = 0; i < teamMsgs.size(); i++) {
             /* Calculate LJ */
             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(teamMsgs[i].direction.Length());
             /* Sum to accumulator */
@@ -586,33 +605,57 @@ void CFollower::Callback_LCFar(void* data) {
 /* Callback functions (Uncontrollable events) */
 
 unsigned char CFollower::Check_LeaderNear(void* data) {
-    std::cout << "Event: " << (leaderMsg.direction.Length() < toFollowThreshold) << " - leaderNear" <<std::endl;
-    return leaderMsg.direction.Length() < toFollowThreshold;
+    if(currentState == RobotState::CHAIN && leaderMsg.direction.Length() > 0.0f) {
+        std::cout << "Event: " << (leaderMsg.direction.Length() < toFollowThreshold) << " - leaderNear" << std::endl;
+        return leaderMsg.direction.Length() < toFollowThreshold;
+    }
+    std::cout << "Event: " << 0 << " - leaderNear" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_LeaderFar(void* data) {
-    std::cout << "Event: " << (leaderMsg.direction.Length() >= toFollowThreshold) << " - leaderFar" <<std::endl;
-    return leaderMsg.direction.Length() >= toFollowThreshold;
+    if(currentState == RobotState::CHAIN && leaderMsg.direction.Length() > 0.0f) {
+        std::cout << "Event: " << (leaderMsg.direction.Length() >= toFollowThreshold) << " - leaderFar" << std::endl;
+        return leaderMsg.direction.Length() >= toFollowThreshold;
+    }
+    std::cout << "Event: " << 0 << " - leaderFar" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_LCNear(void* data) {
-    std::cout << "Event: " << (LCDistance < toChainThreshold) << " - LCNear" <<std::endl;
-    return LCDistance < toChainThreshold;
+    if(currentState == RobotState::FOLLOWER && LCDistance != __FLT_MAX__) {
+        std::cout << "Event: " << (LCDistance < toChainThreshold) << " - LCNear" << std::endl;
+        return LCDistance < toChainThreshold;
+    }
+    std::cout << "Event: " << 0 << " - LCNear" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_LCFar(void* data) {
-    std::cout << "Event: " << (LCDistance >= toChainThreshold) << " - LCFar" <<std::endl;
-    return LCDistance >= toChainThreshold;
+    if(currentState == RobotState::FOLLOWER && LCDistance != __FLT_MAX__) {
+        std::cout << "Event: " << (LCDistance >= toChainThreshold) << " - LCFar" << std::endl;
+        return LCDistance >= toChainThreshold;
+    }
+    std::cout << "Event: " << 0 << " - LCFar" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_SingleChain(void* data) {
-    std::cout << "Event: " << (identicalChain == 1) << " - SingleChain" <<std::endl;
-    return identicalChain == 1;
+    if(currentState == RobotState::CHAIN) {
+        std::cout << "Event: " << (identicalChain == 0) << " - SingleChain" << std::endl;
+        return identicalChain == 0;
+    }
+    std::cout << "Event: " << 0 << " - SingleChain" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_MultiChain(void* data) {
-    std::cout << "Event: " << (identicalChain > 1) << " - MultiChain" <<std::endl;
-    return identicalChain > 1;
+    if(currentState == RobotState::CHAIN) {
+        std::cout << "Event: " << (identicalChain > 0) << " - MultiChain" << std::endl;
+        return identicalChain > 0;
+    }
+    std::cout << "Event: " << 0 << " - MultiChain" << std::endl;
+    return 0;
 }
 
 /*
