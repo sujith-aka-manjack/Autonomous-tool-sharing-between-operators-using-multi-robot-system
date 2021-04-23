@@ -99,12 +99,14 @@ public:
         Real GeneralizedLennardJones(Real f_distance);
     };
 
+    /* List of states */
     enum class RobotState {
         LEADER = 0,
         FOLLOWER,
         CHAIN
     };
 
+    /* List of move types available to the robot */
     enum class MoveType {
         STOP = 0,
         FLOCK
@@ -161,7 +163,7 @@ protected:
     /* 
     * Receive messages from neighboring robots.
     */
-    virtual void ReceiveMsg();
+    virtual void GetMessages();
 
     /* 
     * Update sensor readings.
@@ -254,7 +256,7 @@ private:
     /* Sensor reading results */
     Real minChainDistance; // Distance to the closest chain entity
     bool isClosestToChain;
-    std::vector<std::string> connectingTargets; // Used to store connected entities it is connecting while in the CHAIN state
+    std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
     size_t identicalChain;  // Number of nearby chains that have the same connnecting targets (i.e. furthest two chain entities)
 
     /* Outgoing message */

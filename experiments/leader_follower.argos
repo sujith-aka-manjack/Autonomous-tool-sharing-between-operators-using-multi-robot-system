@@ -43,7 +43,7 @@
                   exponent="2" />
         <team leader="L1" 
               to_chain_threshold="60"
-              to_follow_threshold="15" />
+              to_follow_threshold="20" />
       </params>
     </follower_controller>
 

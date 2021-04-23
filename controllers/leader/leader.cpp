@@ -3,6 +3,8 @@
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
 
+#include <algorithm>
+
 /****************************************/
 /****************************************/
 
@@ -56,6 +58,9 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /* Get team ID from leader ID */
     teamID = stoi(GetId().substr(1));
 
+    /* Set state to leader */
+    currentState = RobotState::LEADER;
+
     /* Set LED color */
     m_pcLEDs->SetAllColors(CColor::BLUE);
 
@@ -74,8 +79,8 @@ void CLeader::Reset() {
     msg_index = 0;
 
     /* Reset the incoming public events */
-    pub_events.clear();
-    pub_events[EV_b] = false;
+    // pub_events.clear();
+    // pub_events[EV_b] = false;
 }
 
 /****************************************/
@@ -83,7 +88,22 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    /*** MESSAGE INIT ***/
+    /*-----------------*/
+    /* Reset variables */
+    /*-----------------*/
+
+    /* Clear messages received */
+    // teamMsgs.clear();
+    // chainMsgs.clear();
+    // otherLeaderMsgs.clear();
+    // otherTeamMsgs.clear();
+
+    /*----------------------*/
+    /* Receive new messages */
+    /*----------------------*/
+    GetMessages();
+
+    /* Create new message */
     msg = CByteArray(16, 255);
     msg_index = 0;
     /* Set its state in msg */
@@ -93,6 +113,16 @@ void CLeader::ControlStep() {
     msg[msg_index++] = stoi(id.substr(1));  // For leader, ID = teamID
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
+    /* Set whether it has seen a chain */
+    // if( !chainMsgs.empty() || !otherLeaderMsgs.empty() )
+    //     msg[msg_index++] = 1;
+    // else
+    //     msg[msg_index++] = 0;
+    msg[msg_index++] = 1;
+
+    /*---------*/
+    /* Control */
+    /*---------*/
 
     /* Follow the control vector only if selected */
     if(m_bSelected)
@@ -100,7 +130,9 @@ void CLeader::ControlStep() {
     else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
-    /* Set message to send */
+    /*--------------*/
+    /* Send message */
+    /*--------------*/
     m_pcRABAct->SetData(msg);
 
 }
@@ -131,30 +163,92 @@ void CLeader::SetControlVector(const CVector2& c_control) {
 /****************************************/
 /****************************************/
 
+// void CLeader::GetMessages() {
+
+//     /* Reset all public event occurances */
+//     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+//         itr->second = false;
+//     }
+
+//     /* Get RAB messages from nearby e-pucks */
+//     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
+
+//     if(! tMsgs.empty()) {
+//         for(size_t i = 0; i < tMsgs.size(); ++i) {
+//             size_t j = 0;
+//             while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
+//                 unsigned char event = tMsgs[i].Data[j];
+//                 pub_events[event] = true;   // If a public event has occured, set it to true
+//                 j++;
+//             }
+//         }
+//     }
+
+//     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
+//         std::cout << "key = " << itr->first           // print key
+//                   << ", val = " << itr->second << "\n";    // print value
+//     }
+// }
+
 void CLeader::GetMessages() {
+    // /* Get RAB messages from nearby e-pucks */
+    // const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
 
-    /* Reset all public event occurances */
-    for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-        itr->second = false;
-    }
+    // if( !tMsgs.empty()) {
+    //     for(int i = 0; i < tMsgs.size(); i++) {
 
-    /* Get RAB messages from nearby e-pucks */
-    const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
+    //         size_t index = 0;
 
-    if(! tMsgs.empty()) {
-        for(size_t i = 0; i < tMsgs.size(); ++i) {
-            size_t j = 0;
-            while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
-                unsigned char event = tMsgs[i].Data[j];
-                pub_events[event] = true;   // If a public event has occured, set it to true
-                j++;
-            }
-        }
-    }
+    //         Message msg = Message();
+    //         msg.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
+    //         msg.id = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
+    //         msg.teamid = tMsgs[i].Data[index++];
+    //         msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
-    // for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-    //     std::cout << "key = " << itr->first           // print key
-    //               << ", val = " << itr->second << "\n";    // print value
+    //         /* Message from chain robot */
+    //         if(msg.state == RobotState::CHAIN) {
+    //             msg.id = 'F' + msg.id;
+
+    //             /* Store which chain entities the other chain robot is connected to */
+    //             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
+    //                 std::string chainID;
+    //                 chainID += (char)tMsgs[i].Data[index++];            // First char of ID
+    //                 chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+    //                 msg.connections.push_back(chainID);
+    //             }
+                
+    //             sort(std::begin(msg.connections), std::end(msg.connections));
+    //             chainMsgs.push_back(msg);
+    //         } 
+    //         /* Message from team */
+    //         else if(msg.teamid == teamID) {
+    //             // /* Message from leader */
+    //             // if(msg.state == RobotState::LEADER) {
+    //             //     msg.id = 'L' + msg.id;
+    //             //     msg.hasSeenChain = tMsgs[i].Data[index++];
+    //             //     leaderMsg = msg;
+    //             // } 
+    //             /* Message from follower */
+    //             if(msg.state == RobotState::FOLLOWER) {
+    //                 msg.id = 'F' + msg.id;
+    //                 msg.hasSeenChain = tMsgs[i].Data[index++];
+    //                 teamMsgs.push_back(msg);
+    //             }
+    //         } 
+    //         /* Message from other team */
+    //         else {
+    //             /* Message from other leader */
+    //             if(msg.state == RobotState::LEADER) {
+    //                 msg.id = 'L' + msg.id;
+    //                 otherLeaderMsgs.push_back(msg);   
+    //             }
+    //             /* Message from other follower */
+    //             else if(msg.state == RobotState::FOLLOWER) {
+    //                 msg.id = 'F' + msg.id;
+    //                 otherTeamMsgs.push_back(msg); 
+    //             }
+    //         }
+    //     }
     // }
 }
 

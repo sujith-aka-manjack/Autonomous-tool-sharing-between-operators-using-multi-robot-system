@@ -35,7 +35,7 @@
 
 #include "SCT.h"
 
-#include <map>
+// #include <map>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -47,6 +47,48 @@ using namespace argos;
  * A controller is simply an implementation of the CCI_Controller class.
  */
 class CLeader : public CCI_Controller {
+
+public:
+
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
+
+    /* List of states */
+    enum class RobotState {
+        LEADER = 0,
+        FOLLOWER,
+        CHAIN
+    };
+
+    /* Structure to store incoming data received from other robots */
+    // struct Message {
+    //     RobotState state;
+    //     std::string id;
+    //     UInt8 teamid;
+    //     CVector2 direction;
+    //     bool hasSeenChain; // FOLLOWER
+    //     std::vector<std::string> connections; // CHAIN
+    // };
 
 public:
 
@@ -125,31 +167,6 @@ protected:
 
 private:
 
-    struct SWheelTurningParams {
-        /*
-        * The turning mechanism.
-        * The robot can be in three different turning states.
-        */
-        enum ETurningMechanism
-        {
-            NO_TURN = 0, // go straight
-            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
-            HARD_TURN    // wheels are turning with opposite speeds
-        } TurningMechanism;
-        /*
-        * Angular thresholds to change turning state.
-        */
-        CRadians HardTurnOnAngleThreshold;
-        CRadians SoftTurnOnAngleThreshold;
-        CRadians NoTurnAngleThreshold;
-        /* Maximum wheel speed */
-        Real MaxSpeed;
-
-        void Init(TConfigurationNode& t_tree);
-    };
-
-private:
-
     /* Pointer to the differential steering actuator */
     CCI_DifferentialSteeringActuator* m_pcWheels;
     /* Pointer to the e-puck proximity sensor */
@@ -171,21 +188,23 @@ private:
     CVector2 m_cControl;
 
     /* Robot state */
-    enum class RobotState {
-        LEADER = 0,
-        FOLLOWER,
-        CHAIN
-    } currentState = RobotState::LEADER;
+    RobotState currentState;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
+
+    /* Messages received from nearby robots */
+    // std::vector<Message> teamMsgs;
+    // std::vector<Message> chainMsgs;
+    // std::vector<Message> otherLeaderMsgs;
+    // std::vector<Message> otherTeamMsgs;
 
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
-    std::map<size_t, bool> pub_events;
+    // std::map<size_t, bool> pub_events;
 
     /*
     * The following variables are used as parameters for the
