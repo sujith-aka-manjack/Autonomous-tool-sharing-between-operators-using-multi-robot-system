@@ -10,31 +10,35 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 11
-#define NUM_SUPERVISORS 2
+#define NUM_EVENTS 13
+#define NUM_SUPERVISORS 4
 
 /* Event Info */
 #define EV_flock 0
 
-#define EV_singleChain 1
+#define EV_closestToChain 1
 
-#define EV_wait 2
+#define EV_chainFar 2
 
 #define EV_leaderFar 3
 
-#define EV_joinLeader 4
+#define EV_notClosestToChain 4
 
-#define EV_multiChain 5
+#define EV_wait 5
 
 #define EV_stop 6
 
-#define EV_LCFar 7
+#define EV_joinLeader 7
 
-#define EV_leaderNear 8
+#define EV_singleChain 8
 
-#define EV_joinChain 9
+#define EV_leaderNear 9
 
-#define EV_LCNear 10
+#define EV_chainNear 10
+
+#define EV_joinChain 11
+
+#define EV_multiChain 12
 
 /* Structure to store member functions */
 struct Scallback {
@@ -123,28 +127,19 @@ protected:
     /* Buffer to record the occurances of uncontrollable events */
     std::queue<unsigned char> input_buffer;
 
-    /* Supervisors */    
-    const unsigned char     ev_controllable[11] = { 1,0,1,0,1,0,1,0,0,1,0 };
-    const unsigned char     sup_events[2][11] = { { 1,1,1,1,1,1,1,1,1,1,1 },{ 0,1,1,1,1,1,0,1,1,1,1 } };
-    const unsigned long int sup_init_state[2]     = { 0,0 };
-    unsigned long int       sup_current_state[2]  = { 0,0 };    
-    const unsigned long int sup_data_pos[2] = { 0,55 };
-    const unsigned char     sup_data[ 120 ] = { 3,EV_flock,0,1,EV_LCFar,0,0,EV_LCNear,0,0,3,EV_LCFar,0,1,EV_joinChain,0,2,EV_LCNear,0,1,5,EV_singleChain,0,2,EV_leaderFar,0,2,EV_multiChain,0,2,EV_stop,0,3,EV_leaderNear,0,2,6,EV_singleChain,0,3,EV_wait,0,3,EV_leaderFar,0,3,EV_joinLeader,0,0,EV_multiChain,0,3,EV_leaderNear,0,3,2,EV_LCFar,0,1,EV_LCNear,0,0,3,EV_LCFar,0,1,EV_LCNear,0,0,EV_joinChain,0,2,4,EV_singleChain,0,2,EV_leaderNear,0,3,EV_multiChain,0,4,EV_leaderFar,0,2,5,EV_singleChain,0,3,EV_leaderNear,0,3,EV_multiChain,0,3,EV_joinLeader,0,0,EV_leaderFar,0,2,6,EV_singleChain,0,2,EV_wait,0,4,EV_leaderNear,0,3,EV_multiChain,0,4,EV_joinLeader,0,0,EV_leaderFar,0,4 };
-    
+    /* Supervisors */
+    const unsigned char     ev_controllable[13] = { 1,0,0,0,0,1,1,1,0,0,0,1,0 };
+    const unsigned char     sup_events[4][13] = { { 1,1,1,1,1,1,1,1,1,1,1,1,1 },{ 0,1,1,1,1,0,0,1,1,1,1,1,1 },{ 0,1,1,1,1,0,0,1,1,1,1,1,1 },{ 0,1,1,1,1,1,0,1,1,1,1,1,1 } };
+    const unsigned long int sup_init_state[4]     = { 0,0,0,0 };
+    unsigned long int       sup_current_state[4]  = { 0,0,0,0 };    
+    const unsigned long int sup_data_pos[4] = { 0,67,112,157 };
+    const unsigned char     sup_data[ 288 ] = { 5,EV_flock,0,1,EV_closestToChain,0,0,EV_chainFar,0,0,EV_notClosestToChain,0,0,EV_chainNear,0,0,5,EV_closestToChain,0,1,EV_chainFar,0,1,EV_notClosestToChain,0,1,EV_chainNear,0,1,EV_joinChain,0,2,5,EV_leaderFar,0,2,EV_stop,0,3,EV_singleChain,0,2,EV_leaderNear,0,2,EV_multiChain,0,2,6,EV_leaderFar,0,3,EV_wait,0,3,EV_joinLeader,0,0,EV_singleChain,0,3,EV_leaderNear,0,3,EV_multiChain,0,3,4,EV_closestToChain,0,0,EV_chainFar,0,1,EV_notClosestToChain,0,0,EV_chainNear,0,0,5,EV_closestToChain,0,1,EV_chainFar,0,1,EV_notClosestToChain,0,1,EV_chainNear,0,0,EV_joinChain,0,2,5,EV_leaderFar,0,2,EV_joinLeader,0,1,EV_singleChain,0,2,EV_leaderNear,0,2,EV_multiChain,0,2,4,EV_closestToChain,0,1,EV_chainFar,0,0,EV_notClosestToChain,0,0,EV_chainNear,0,0,5,EV_closestToChain,0,1,EV_chainFar,0,1,EV_notClosestToChain,0,0,EV_chainNear,0,1,EV_joinChain,0,2,5,EV_leaderFar,0,2,EV_joinLeader,0,1,EV_singleChain,0,2,EV_leaderNear,0,2,EV_multiChain,0,2,5,EV_closestToChain,0,0,EV_chainFar,0,0,EV_notClosestToChain,0,0,EV_chainNear,0,0,EV_joinChain,0,1,4,EV_leaderFar,0,1,EV_singleChain,0,1,EV_multiChain,0,2,EV_leaderNear,0,3,6,EV_leaderFar,0,2,EV_singleChain,0,1,EV_joinLeader,0,7,EV_multiChain,0,2,EV_leaderNear,0,5,EV_wait,0,2,5,EV_leaderFar,0,1,EV_singleChain,0,3,EV_joinLeader,0,4,EV_multiChain,0,5,EV_leaderNear,0,3,5,EV_closestToChain,0,4,EV_chainFar,0,4,EV_notClosestToChain,0,4,EV_chainNear,0,4,EV_joinChain,0,3,5,EV_leaderFar,0,2,EV_singleChain,0,3,EV_joinLeader,0,6,EV_multiChain,0,5,EV_leaderNear,0,5,5,EV_closestToChain,0,6,EV_chainFar,0,6,EV_notClosestToChain,0,6,EV_chainNear,0,6,EV_joinChain,0,5,6,EV_closestToChain,0,7,EV_chainFar,0,7,EV_notClosestToChain,0,7,EV_chainNear,0,7,EV_joinChain,0,2,EV_wait,0,7 };
+
 };
 
 /****************************************/
 /*               SCTProb                */
 /****************************************/
-
-/* Structure to store variable probability update functions */
-struct Pcallback {
-    std::function<float(void* data)> check_input;
-    unsigned char supervisor;
-    unsigned char state;
-    unsigned char event;
-    void* data;
-};
 
 class SCTProb : virtual public SCT {
 
@@ -156,43 +151,29 @@ public:
     /* Class destructor */
     ~SCTProb();
 
-    /* Add callback function for updating variable probabilities */
-    template<typename Class>
-    void add_variable_prob(Class* p, unsigned char sup, unsigned char state, unsigned char event, float (Class::*ci)( void* ), void* data) {
-        using namespace std::placeholders; //for _1, _2, _3...
-        std::string key = std::to_string(sup) + '-' + std::to_string(state) + '-' + std::to_string(event);
-        variable_prob_callback[key].check_input = std::bind(ci, p, _1);
-        variable_prob_callback[key].supervisor  = sup;
-        variable_prob_callback[key].state       = state;
-        variable_prob_callback[key].event       = event;
-        variable_prob_callback[key].data        = data;
-    }
-
-    /* Run the generator player to execute the next action */
-    virtual void run_step();
+    /* Update variable probability */
+    virtual void set_prob( unsigned char var_prob, float prob );
 
 protected:
 
-    /* Get new variable probabilities from the robot */
-    virtual void update_prob();
-
-    /* Given the supervisor and its state, return the position of the current state's probabilities in the data structure */
+    /* Given the supervisor and its state, return the position of the current state's fixed probabilities in the data structure */
     virtual unsigned long int get_state_position_prob( unsigned char supervisor, unsigned long int state );
+
+    /* Given the supervisor and its state, return the position of the current state's variable probabilities in the data structure */
+    virtual unsigned long int get_state_position_var_prob( unsigned char supervisor, unsigned long int state );
 
     /* Choose a controllale event from the list of enabled controllable events using probabilities */
     virtual unsigned char get_next_controllable( unsigned char *event );
 
     /* Return all the enabled controllable event probabilities */
     virtual float get_active_controllable_events_prob( float *events );
-    
-    /* Map of callback functions for updating variable probabilities */
-    std::unordered_map<std::string, Pcallback> variable_prob_callback;
 
     /* Probability info of supervisors */
-    const unsigned long int sup_data_prob_pos[2] = { 0,9 };
-    float                   sup_data_prob[ 18 ] = { 1,1,1,1,1,1,2,0.50000000,0.50000000,0,1,1,0,1,1,2,0.90000000,0.10000000 };
-
-
+    const unsigned long int sup_data_prob_pos[4] = { 0,9,14,19 };
+    const float             sup_data_prob[ 36 ] = { 1,1,1,1,1,1,2,0.50000000,0.50000000,0,1,1,1,1,0,1,1,1,1,1,1,0,2,0.10000000,0.90000000,1,1,1,1,1,1,1,1,2,1,0.90000000 };
+    const unsigned long int sup_data_var_prob_pos[4] = { 0,5,7,9 };
+    const unsigned char     sup_data_var_prob[ 18 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    float                   current_var_prob[1] = { 1.0 };
 };
 
 #endif

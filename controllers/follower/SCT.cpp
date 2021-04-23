@@ -190,68 +190,36 @@ SCTProb::SCTProb(){}
 
 SCTProb::~SCTProb(){}
 
-void SCTProb::run_step(){
-    update_input(); // Get all uncontrollable events
-    update_prob();  // Update variable probabilities
-    unsigned char event;
-
-    /* Apply all the uncontrollable events */
-    while ( get_next_uncontrollable( &event ) ){
-        make_transition( event );
-        exec_callback( event );
-    }
-
-    /* Apply the chosen controllable event */
-    if( get_next_controllable( &event ) ){  /* Find and pick a controllable event (CE) */
-        make_transition( event );
-        exec_callback( event );
-    }
-}
-
-void SCTProb::update_prob() {
-    /* Run each callback function to update variable probabilities */
-    for(auto itr = variable_prob_callback.begin(); itr != variable_prob_callback.end(); ++itr) {
-        /* Obtain new probability */
-        float prob = itr->second.check_input(NULL);
-
-        /* Get current state and transition probabilities */
-        unsigned char position = get_state_position(itr->second.supervisor,
-                                                    itr->second.state);
-
-        unsigned char position_prob = get_state_position_prob(itr->second.supervisor,
-                                                              itr->second.state);
-        
-        size_t num_transitions = sup_data[position];
-        position++;
-        position_prob++;
-        
-        for(size_t i = 0; i < num_transitions; i++) {
-            unsigned char event = sup_data[position];
-            
-            /* Check if we have reached the desired event */
-            if(event == itr->second.event)
-                break;
-
-            /* Move to the next event */
-            position += 3;
-            /* Move to the next event probability, only if it was a controllable event */
-            if(ev_controllable[event])
-                position_prob++;
-        }
-
-        /* Set new probability */
-        sup_data_prob[position_prob] = prob;
-    }
+void SCTProb::set_prob( unsigned char var_prob, float prob ) {
+    current_var_prob[var_prob] = prob;
 }
 
 unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {
     unsigned long int s, en;
     unsigned long int prob_position = sup_data_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
     for(s=0; s<state; s++){                                             /* Keep iterating until the state is reached */
-        en            =  sup_data_prob[prob_position];                  /* The number of probabilities in the state */
-        prob_position += en + 1;                                        /* Next event's probability position */
+        en            =  sup_data_prob[prob_position];                  /* The number of controllable events in the state */
+        prob_position += en + 1;                                        /* Next controllable event's probability position */
     }
     return prob_position;
+}
+
+unsigned long int SCTProb::get_state_position_var_prob( unsigned char supervisor, unsigned long int state ) {
+    unsigned long int s, t, en, pn;
+    unsigned long int prob_position = sup_data_prob_pos[ supervisor ];
+    unsigned long int var_prob_position = sup_data_var_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
+    for(s=0; s<state; s++){                                                     /* Keep iterating until the state is reached */
+        en = sup_data_prob[prob_position];                                      /* The number of controllable events in the state */
+        if(en == 0) {                                                           /* If there are no controllabel events, go to the next state */
+            var_prob_position++;
+            continue;
+        }                                                        
+        for(t=0; t<en; t++){                                                    
+            pn = sup_data_var_prob[var_prob_position];                          /* The number of variable probabilities in the state */
+            var_prob_position += pn + 1;                                        /* Next event's variable probability position */
+        }
+    }
+    return var_prob_position;
 }
 
 unsigned char SCTProb::get_next_controllable( unsigned char *event ) {
@@ -260,6 +228,12 @@ unsigned char SCTProb::get_next_controllable( unsigned char *event ) {
     float prob_sum = get_active_controllable_events_prob( events );
     if( prob_sum > 0.0001 ){                /* If at least one event is enabled do */
         random_value = (float) rand() / RAND_MAX * prob_sum;   /* Pick a random index (event) */
+
+        std::cout << "prob_sum " << prob_sum << std::endl;
+        std::cout << "rand_val " << random_value << std::endl;
+        for(i=0; i<NUM_EVENTS; i++)
+            std::cout << "events[" << i << "] " << events[i] << std::endl;
+
         for(i=0; i<NUM_EVENTS; i++){
             random_sum += events[i];        /* Add probability of each event until the random value is reached */
             if( (random_value < random_sum) && ev_controllable[ i ] ){
@@ -286,10 +260,9 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
 
     /* Check if a controllable event is disabled in any of the supervisors */
     for( i=0; i<NUM_SUPERVISORS; i++ ){
-        unsigned long int position;
+        unsigned long int position, position_prob, position_var_prob;
         unsigned char num_transitions;
         unsigned char ev_disable[NUM_EVENTS];
-        unsigned long int position_prob;
 
         for( j=0; j<NUM_EVENTS; j++ ){
             if( sup_events[i][j] ){
@@ -301,8 +274,9 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
         }
 
         /* Get current state and transition probabilities */
-        position        = get_state_position(i, sup_current_state[i]);
-        position_prob   = get_state_position_prob(i, sup_current_state[i]);
+        position          = get_state_position(i, sup_current_state[i]);
+        position_prob     = get_state_position_prob(i, sup_current_state[i]);
+        position_var_prob = get_state_position_var_prob(i, sup_current_state[i]);
         num_transitions = sup_data[position];
         position++;
         position_prob++;
@@ -315,7 +289,32 @@ float SCTProb::get_active_controllable_events_prob( float *events ) {
             if( ev_controllable[ event ] && sup_events[i][ event ] ){
                 ev_disable[ event ] = 0;
                 events[ event ] *= sup_data_prob[position_prob];    /* Cumulatively multiply the event's probability from all supervisors */
+                
+                std::cout << "\nsup_data_prob[" << position_prob << "] " << sup_data_prob[position_prob] << std::endl;
+                std::cout << "events[" << std::to_string(event) << "] " << events[event] << std::endl;
+                std::cout << "sup_data_var_prob[" << position_var_prob << "] " << std::to_string(sup_data_var_prob[position_var_prob]) << std::endl;
+
+                unsigned long int num_var_prob = sup_data_var_prob[position_var_prob];
+
+                /* If variable prob exists, multiply them one at a time */
+                for( j=0; j<num_var_prob; j++ ){
+                    position_var_prob++;
+
+                    std::cout << "sup_data_var_prob[" << position_var_prob << "] " << std::to_string(sup_data_var_prob[position_var_prob]) << std::endl;
+
+                    unsigned char var_prob = sup_data_var_prob[position_var_prob];
+
+                    std::cout << "var_prob " << std::to_string(var_prob) << std::endl;
+                    std::cout << "position_var_prob " << position_var_prob << std::endl;
+                    std::cout << "current_var_prob[" << std::to_string(var_prob) << "] " << current_var_prob[var_prob] << std::endl;
+
+                    events[ event ] *= current_var_prob[var_prob];
+                }
+
+                std::cout << "events[" << std::to_string(event) << "] " << events[event] << std::endl;
+
                 position_prob++;
+                position_var_prob++;
             }
             position += 3;
         }

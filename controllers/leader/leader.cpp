@@ -69,7 +69,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(10, 255);
+    msg = CByteArray(16, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -84,7 +84,7 @@ void CLeader::Reset() {
 void CLeader::ControlStep() {
 
     /*** MESSAGE INIT ***/
-    msg = CByteArray(10, 255);
+    msg = CByteArray(16, 255);
     msg_index = 0;
     /* Set its state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);

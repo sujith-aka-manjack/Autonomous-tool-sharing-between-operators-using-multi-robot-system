@@ -41,16 +41,84 @@
  */
 using namespace argos;
 
-struct Message {
-    std::string id;
-    CVector2 direction;
-    std::vector<std::string> connections;
-};
-
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */
 class CFollower : public CCI_Controller {
+
+public:
+
+    /*
+    * The following variables are used as parameters for
+    * turning during navigation. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><wheel_turning>
+    * section.
+    */
+    struct SWheelTurningParams {
+        /*
+        * The turning mechanism.
+        * The robot can be in three different turning states.
+        */
+        enum ETurningMechanism
+        {
+            NO_TURN = 0, // go straight
+            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+            HARD_TURN    // wheels are turning with opposite speeds
+        } TurningMechanism;
+        /*
+        * Angular thresholds to change turning state.
+        */
+        CRadians HardTurnOnAngleThreshold;
+        CRadians SoftTurnOnAngleThreshold;
+        CRadians NoTurnAngleThreshold;
+        /* Maximum wheel speed */
+        Real MaxSpeed;
+
+        void Init(TConfigurationNode& t_tree);
+    };
+
+    /*
+    * The following variables are used as parameters for
+    * flocking interaction. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * section.
+    */
+    struct SFlockingInteractionParams {
+        /* Target robot-robot distance in cm */
+        Real TargetDistance;
+        /* Gain of the Lennard-Jones potential */
+        Real Gain;
+        /* Exponent of the Lennard-Jones potential */
+        Real Exponent;
+
+        void Init(TConfigurationNode& t_node);
+        Real GeneralizedLennardJones(Real f_distance);
+    };
+
+    enum class RobotState {
+        LEADER = 0,
+        FOLLOWER,
+        CHAIN
+    };
+
+    enum class MoveType {
+        STOP = 0,
+        FLOCK
+    };
+
+    /* Structure to store incoming data received from other robots */
+    struct Message {
+        RobotState state;
+        std::string id;
+        UInt8 teamid;
+        CVector2 direction;
+        bool hasSeenChain; // FOLLOWER
+        std::vector<std::string> connections; // CHAIN
+    };
 
 public:
 
@@ -136,68 +204,15 @@ protected:
     virtual void Callback_JoinLeader(void* data);
     virtual void Callback_JoinChain(void* data);
     virtual void Callback_Wait(void* data);
-    virtual void Callback_LCNear(void* data);
-    virtual void Callback_LCFar(void* data);
 
+    virtual unsigned char Check_ChainNear(void* data);
+    virtual unsigned char Check_ChainFar(void* data);
+    virtual unsigned char Check_ClosestToChain(void* data);
+    virtual unsigned char Check_NotClosestToChain(void* data);
     virtual unsigned char Check_LeaderNear(void* data);
     virtual unsigned char Check_LeaderFar(void* data);
-    virtual unsigned char Check_LCNear(void* data);
-    virtual unsigned char Check_LCFar(void* data);
     virtual unsigned char Check_SingleChain(void* data);
     virtual unsigned char Check_MultiChain(void* data);
-
-private:
-
-    /*
-    * The following variables are used as parameters for
-    * turning during navigation. You can set their value
-    * in the <parameters> section of the XML configuration
-    * file, under the
-    * <controllers><footbot_flocking_controller><parameters><wheel_turning>
-    * section.
-    */
-    struct SWheelTurningParams {
-        /*
-        * The turning mechanism.
-        * The robot can be in three different turning states.
-        */
-        enum ETurningMechanism
-        {
-            NO_TURN = 0, // go straight
-            SOFT_TURN,   // both wheels are turning forwards, but at different speeds
-            HARD_TURN    // wheels are turning with opposite speeds
-        } TurningMechanism;
-        /*
-        * Angular thresholds to change turning state.
-        */
-        CRadians HardTurnOnAngleThreshold;
-        CRadians SoftTurnOnAngleThreshold;
-        CRadians NoTurnAngleThreshold;
-        /* Maximum wheel speed */
-        Real MaxSpeed;
-
-        void Init(TConfigurationNode& t_tree);
-    };
-
-    /*
-    * The following variables are used as parameters for
-    * flocking interaction. You can set their value
-    * in the <parameters> section of the XML configuration
-    * file, under the
-    * <controllers><footbot_flocking_controller><parameters><flocking>
-    * section.
-    */
-    struct SFlockingInteractionParams {
-        /* Target robot-robot distance in cm */
-        Real TargetDistance;
-        /* Gain of the Lennard-Jones potential */
-        Real Gain;
-        /* Exponent of the Lennard-Jones potential */
-        Real Exponent;
-
-        void Init(TConfigurationNode& t_node);
-        Real GeneralizedLennardJones(Real f_distance);
-    };
 
 private:
 
@@ -223,18 +238,9 @@ private:
     SCTProb* sct;
 
     /* Robot state */
-    enum class RobotState {
-        LEADER = 0,
-        FOLLOWER,
-        CHAIN
-    } currentState = RobotState::FOLLOWER;
-
+    RobotState currentState;
     /* MoveType */
-    enum MoveType {
-        STOP = 0,
-        FLOCK
-    } currentMoveType;
-
+    MoveType currentMoveType;
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
 
@@ -246,8 +252,9 @@ private:
     std::vector<Message> otherTeamMsgs;
 
     /* Sensor reading results */
-    Real LCDistance; // Leader-Chain distance
-    std::vector<std::string> connectingTargets; // Used to store two furthest entities it is connecting while in the CHAIN state
+    Real minChainDistance; // Distance to the closest chain entity
+    bool isClosestToChain;
+    std::vector<std::string> connectingTargets; // Used to store connected entities it is connecting while in the CHAIN state
     size_t identicalChain;  // Number of nearby chains that have the same connnecting targets (i.e. furthest two chain entities)
 
     /* Outgoing message */

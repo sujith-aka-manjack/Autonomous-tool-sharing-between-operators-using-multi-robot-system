@@ -20,7 +20,6 @@
 
 #define EV_b 2
 
-
 /* Variable Probability Info */
 #define PROB_x 0
 
