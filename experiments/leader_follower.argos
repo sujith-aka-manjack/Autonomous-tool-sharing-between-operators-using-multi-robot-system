@@ -128,7 +128,7 @@
       <body position="-0.1,0,0" orientation="0,0,0" />
     </e-puck>
 
-    <!-- <e-puck id="F3" rab_range="1.0" rab_data_size="16">
+    <e-puck id="F3" rab_range="1.0" rab_data_size="16">
       <controller config="ef" />
       <body position="-0.2,0.1,0" orientation="0,0,0" />
     </e-puck>
@@ -146,7 +146,7 @@
     <e-puck id="F6" rab_range="1.0" rab_data_size="16">
       <controller config="ef" />
       <body position="-0.3,0.1,0" orientation="0,0,0" />
-    </e-puck> -->
+    </e-puck>
 
     <!--
         We distribute 5 boxes uniformly in position and rotation around Z.
