@@ -5,6 +5,8 @@
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
 
+#include <unordered_map>
+
 /****************************************/
 /****************************************/
 
@@ -47,7 +49,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-        m_cOutput << "# clock\tfollower\tchain\tseparation" << std::endl;
+        m_cOutput << "# clock\tfollower\tchain\tleader1pos\tleader2pos" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
@@ -88,7 +90,7 @@ void CExperimentLoopFunctions::PreStep() {
 
     UInt32 unFollowers = 0;
     UInt32 unChains = 0;
-    std::vector<CVector2> leaderPos;
+    std::unordered_map<std::string,CVector2> leaderPos;
 
     /* Get all the e-pucks */
     CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
@@ -115,14 +117,9 @@ void CExperimentLoopFunctions::PreStep() {
             /* Get the position of the leader on the ground as a CVector2 */
             CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
                                      cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-            leaderPos.push_back(cPos);
+            leaderPos[cEPuck.GetId()] = cPos;
         }
     }
-
-    // Calculate the distance between the two leaders.
-    CVector2 leaderSeparation = leaderPos[0] - leaderPos[1];
-    Real leaderDistance = leaderSeparation.Length();
-
 
 //    /* Logic to pick and drop food items */
 //    /*
@@ -195,7 +192,8 @@ void CExperimentLoopFunctions::PreStep() {
     m_cOutput << GetSpace().GetSimulationClock() << "\t"
               << unFollowers << "\t"
               << unChains << "\t"
-              << leaderDistance << std::endl;
+              << leaderPos["L1"] << "\t"
+              << leaderPos["L2"] << std::endl;
 }
 
 /****************************************/
