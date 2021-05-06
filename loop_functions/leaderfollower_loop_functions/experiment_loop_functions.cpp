@@ -25,6 +25,7 @@ CExperimentLoopFunctions::CExperimentLoopFunctions() /* :
 /****************************************/
 
 void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
+    
     std::cout << "Init experiment loop function" << std::endl;
 
     try {
@@ -49,7 +50,14 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-        m_cOutput << "# clock\tleader1pos\tleader1follower\tleader2pos\tleader2follower\tchain" << std::endl;
+        m_cOutput << "# clock\t"
+                     "leader1posX\t"
+                     "leader1posY\t"
+                     "leader1follower\t"
+                     "leader2posX\t"
+                     "leader2posY\t"
+                     "leader2follower\t"
+                     "chain" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
@@ -194,9 +202,11 @@ void CExperimentLoopFunctions::PreStep() {
 
     /* Output stuff to file */
     m_cOutput << GetSpace().GetSimulationClock() << "\t"
-              << leaderPos["L1"] << "\t"
+              << leaderPos["L1"].GetX() << "\t"
+              << leaderPos["L1"].GetY() << "\t"
               << unFollowers1 << "\t"
-              << leaderPos["L2"] << "\t"
+              << leaderPos["L2"].GetX() << "\t"
+              << leaderPos["L2"].GetY() << "\t"
               << unFollowers2 << "\t"
               << unChains << std::endl;
 }
