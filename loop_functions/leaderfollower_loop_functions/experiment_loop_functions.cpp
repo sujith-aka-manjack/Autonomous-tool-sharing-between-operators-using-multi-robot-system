@@ -24,6 +24,7 @@ CExperimentLoopFunctions::CExperimentLoopFunctions() /* :
 
 void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
     std::cout << "Init experiment loop function" << std::endl;
+
     try {
         TConfigurationNode& tForaging = GetNode(t_node, "experiment");
 //       /* Get a pointer to the floor entity */
@@ -46,7 +47,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-        m_cOutput << "# clock\tfollower\tchain" << std::endl;
+        m_cOutput << "# clock\tfollower\tchain\tseparation" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
@@ -64,7 +65,7 @@ void CExperimentLoopFunctions::Reset() {
     m_cOutput.close();
     /* Open the file, erasing its contents */
     m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-    m_cOutput << "# clock\tfollower\tchain" << std::endl;
+    m_cOutput << "# clock\tfollower\tchain\tseparation" << std::endl;
 //    /* Distribute uniformly the items in the environment */
 //    for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
 //       m_cFoodPos[i].Set(m_pcRNG->Uniform(m_cForagingArenaSideX),
@@ -87,6 +88,8 @@ void CExperimentLoopFunctions::PreStep() {
 
     UInt32 unFollowers = 0;
     UInt32 unChains = 0;
+    std::vector<CVector2> leaderPos;
+
     /* Get all the e-pucks */
     CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
 
@@ -96,20 +99,29 @@ void CExperimentLoopFunctions::PreStep() {
 
         /* Get handle to e-puck entity and controller */
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-        CFollower* cController;
-
+        
         if(dynamic_cast<CFollower*>(&cEPuck.GetControllableEntity().GetController())) {
-            cController = dynamic_cast<CFollower*>(&cEPuck.GetControllableEntity().GetController());
-        } else {
-            /* e-puck controller is not a follower! Ignore and continue to next iteration */
-            continue;
+            /* If the e-puck is a FOLLOWER robot */
+            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+
+            /* Count how many e-pucks are in each state */
+            if( cController.currentState == CFollower::RobotState::FOLLOWER ) ++unFollowers;
+            else ++unChains;
+
+        } else if(dynamic_cast<CLeader*>(&cEPuck.GetControllableEntity().GetController())) {
+            /* If the e-puck is a LEADER robot */
+            CLeader & cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
+
+            /* Get the position of the leader on the ground as a CVector2 */
+            CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                     cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+            leaderPos.push_back(cPos);
         }
-
-        /* Count how many e-pucks are in which state */
-        if( cController->currentState == CFollower::RobotState::FOLLOWER ) ++unFollowers;
-        else ++unChains;
-
     }
+
+    // Calculate the distance between the two leaders.
+    CVector2 leaderSeparation = leaderPos[0] - leaderPos[1];
+    Real leaderDistance = leaderSeparation.Length();
 
 
 //    /* Logic to pick and drop food items */
@@ -182,7 +194,8 @@ void CExperimentLoopFunctions::PreStep() {
     /* Output stuff to file */
     m_cOutput << GetSpace().GetSimulationClock() << "\t"
               << unFollowers << "\t"
-              << unChains << std::endl;
+              << unChains << "\t"
+              << leaderDistance << std::endl;
 }
 
 /****************************************/
