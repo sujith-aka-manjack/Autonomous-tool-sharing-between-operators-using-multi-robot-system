@@ -104,13 +104,13 @@ public:
         LEADER = 0,
         FOLLOWER,
         CHAIN
-    };
+    } currentState;
 
     /* List of move types available to the robot */
     enum class MoveType {
         STOP = 0,
         FLOCK
-    };
+    } currentMoveType;
 
     /* Structure to store incoming data received from other robots */
     struct Message {
@@ -239,10 +239,6 @@ private:
     /* Controller */
     SCTProb* sct;
 
-    /* Robot state */
-    RobotState currentState;
-    /* MoveType */
-    MoveType currentMoveType;
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
 

@@ -3,7 +3,7 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <controllers/leader/leader.h>
-// #include <controllers/follower/follower.h>
+#include <controllers/follower/follower.h>
 
 /****************************************/
 /****************************************/
@@ -88,12 +88,48 @@ void CExperimentLoopFunctions::Destroy() {
 /****************************************/
 
 void CExperimentLoopFunctions::PreStep() {
-   /* Logic to pick and drop food items */
-   /*
-    * If a robot is in the nest, drop the food item
-    * If a robot is on a food item, pick it
-    * Each robot can carry only one food item per time
-    */
+
+    
+
+    UInt32 unFollowers = 0;
+    UInt32 unChains = 0;
+    /* Get all the e-pucks */
+    CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
+
+    for(CSpace::TMapPerType::iterator it = m_cEPucks.begin();
+        it != m_cEPucks.end();
+        ++it) {
+
+        /* Get handle to e-puck entity and controller */
+        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
+        CFollower* cController;
+
+        if(dynamic_cast<CFollower*>(&cEPuck.GetControllableEntity().GetController())) {
+            cController = dynamic_cast<CFollower*>(&cEPuck.GetControllableEntity().GetController());
+        } else {
+            /* e-puck controller is not a follower! Ignore and continue to next iteration */
+            continue;
+        }
+
+        /* Count how many e-pucks are in which state */
+        if( cController->currentState == CFollower::RobotState::FOLLOWER ) ++unFollowers;
+        else ++unChains;
+
+    }
+
+    /* Get current simulation timestep */
+    std::cout << "\n### TIMESTEP: " << GetSpace().GetSimulationClock() << " ###" << std::endl;
+    /* Get number of robots in the follower/chain state */
+    std::cout << "Follower: " << unFollowers << std::endl;
+    std::cout << "Chain: " << unChains << std::endl;
+
+
+//    /* Logic to pick and drop food items */
+//    /*
+//     * If a robot is in the nest, drop the food item
+//     * If a robot is on a food item, pick it
+//     * Each robot can carry only one food item per time
+//     */
 //    UInt32 unWalkingFBs = 0;
 //    UInt32 unRestingFBs = 0;
 //    /* Check whether a robot is on a food item */

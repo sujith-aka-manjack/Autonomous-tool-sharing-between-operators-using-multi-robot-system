@@ -78,7 +78,7 @@ public:
         LEADER = 0,
         FOLLOWER,
         CHAIN
-    };
+    } currentState;
 
     /* Structure to store incoming data received from other robots */
     // struct Message {
@@ -186,9 +186,6 @@ private:
 
     /* The control vector */
     CVector2 m_cControl;
-
-    /* Robot state */
-    RobotState currentState;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
