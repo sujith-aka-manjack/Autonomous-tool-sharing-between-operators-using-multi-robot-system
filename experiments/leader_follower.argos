@@ -199,7 +199,7 @@
         Check 'argos3 -q qt-opengl' for more help.
     -->
     <qt-opengl autoplay="false">
-      <user_functions library="build/loop_functions/manualcontrol_loop_functions/libmanualcontrol_loop_functions"
+      <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
                       label="manualcontrol_qtuser_functions" />
       <camera>
         <!-- <placements>
