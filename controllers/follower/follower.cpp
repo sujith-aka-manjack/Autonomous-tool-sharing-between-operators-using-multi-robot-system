@@ -657,6 +657,13 @@ void CFollower::PrintName() {
 /****************************************/
 /****************************************/
 
+UInt8 CFollower::GetTeamID() {
+    return teamID;
+}
+
+/****************************************/
+/****************************************/
+
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_Flock(void* data) {

@@ -49,7 +49,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-        m_cOutput << "# clock\tfollower\tchain\tleader1pos\tleader2pos" << std::endl;
+        m_cOutput << "# clock\tleader1pos\tleader1follower\tleader2pos\tleader2follower\tchain" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
@@ -88,7 +88,8 @@ void CExperimentLoopFunctions::Destroy() {
 
 void CExperimentLoopFunctions::PreStep() {
 
-    UInt32 unFollowers = 0;
+    UInt32 unFollowers1 = 0;
+    UInt32 unFollowers2 = 0;
     UInt32 unChains = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
 
@@ -107,7 +108,10 @@ void CExperimentLoopFunctions::PreStep() {
             CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
             /* Count how many e-pucks are in each state */
-            if( cController.currentState == CFollower::RobotState::FOLLOWER ) ++unFollowers;
+            if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
+                if( cController.GetTeamID() == 1 ) ++unFollowers1;
+                else ++unFollowers2;
+            } 
             else ++unChains;
 
         } else if(dynamic_cast<CLeader*>(&cEPuck.GetControllableEntity().GetController())) {
@@ -190,10 +194,11 @@ void CExperimentLoopFunctions::PreStep() {
 
     /* Output stuff to file */
     m_cOutput << GetSpace().GetSimulationClock() << "\t"
-              << unFollowers << "\t"
-              << unChains << "\t"
               << leaderPos["L1"] << "\t"
-              << leaderPos["L2"] << std::endl;
+              << unFollowers1 << "\t"
+              << leaderPos["L2"] << "\t"
+              << unFollowers2 << "\t"
+              << unChains << std::endl;
 }
 
 /****************************************/

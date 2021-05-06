@@ -158,6 +158,11 @@ public:
     */
     virtual void Destroy() {}
 
+    /*
+    * Get team ID.
+    */
+    virtual UInt8 GetTeamID();
+
 protected:
 
     /* 
