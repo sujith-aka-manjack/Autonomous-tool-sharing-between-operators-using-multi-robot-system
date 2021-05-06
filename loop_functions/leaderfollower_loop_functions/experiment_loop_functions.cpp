@@ -50,13 +50,13 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-        m_cOutput << "# clock\t"
-                     "leader1posX\t"
-                     "leader1posY\t"
-                     "leader1follower\t"
-                     "leader2posX\t"
-                     "leader2posY\t"
-                     "leader2follower\t"
+        m_cOutput << "# clock,"
+                     "leader1posX,"
+                     "leader1posY,"
+                     "leader1follower,"
+                     "leader2posX,"
+                     "leader2posY,"
+                     "leader2follower,"
                      "chain" << std::endl;
     }
     catch(CARGoSException& ex) {
@@ -75,13 +75,13 @@ void CExperimentLoopFunctions::Reset() {
     m_cOutput.close();
     /* Open the file, erasing its contents */
     m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-    m_cOutput << "# clock\t"
-                 "leader1posX\t"
-                 "leader1posY\t"
-                 "leader1follower\t"
-                 "leader2posX\t"
-                 "leader2posY\t"
-                 "leader2follower\t"
+    m_cOutput << "# clock,"
+                 "leader1posX,"
+                 "leader1posY,"
+                 "leader1follower,"
+                 "leader2posX,"
+                 "leader2posY,"
+                 "leader2follower,"
                  "chain" << std::endl;
 //    /* Distribute uniformly the items in the environment */
 //    for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
@@ -208,13 +208,13 @@ void CExperimentLoopFunctions::PreStep() {
 //    }
 
     /* Output stuff to file */
-    m_cOutput << GetSpace().GetSimulationClock() << "\t"
-              << leaderPos["L1"].GetX() << "\t"
-              << leaderPos["L1"].GetY() << "\t"
-              << unFollowers1 << "\t"
-              << leaderPos["L2"].GetX() << "\t"
-              << leaderPos["L2"].GetY() << "\t"
-              << unFollowers2 << "\t"
+    m_cOutput << GetSpace().GetSimulationClock() << ","
+              << leaderPos["L1"].GetX() << ","
+              << leaderPos["L1"].GetY() << ","
+              << unFollowers1 << ","
+              << leaderPos["L2"].GetX() << ","
+              << leaderPos["L2"].GetY() << ","
+              << unFollowers2 << ","
               << unChains << std::endl;
 }
 
