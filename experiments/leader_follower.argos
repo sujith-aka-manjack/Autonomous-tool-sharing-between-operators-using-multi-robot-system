@@ -71,6 +71,14 @@
 
   </controllers>
 
+  <!-- ****************** -->
+  <!-- * Loop functions * -->
+  <!-- ****************** -->
+  <loop_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
+                  label="experiment_loop_functions">
+    <experiment />
+  </loop_functions>
+
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->

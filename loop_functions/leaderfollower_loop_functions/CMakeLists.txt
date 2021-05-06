@@ -1,6 +1,8 @@
 add_library(leaderfollower_loop_functions MODULE 
   manualcontrol_qtuser_functions.h
-  manualcontrol_qtuser_functions.cpp)
+  manualcontrol_qtuser_functions.cpp
+  experiment_loop_functions.h
+  experiment_loop_functions.cpp)
 
 target_link_libraries(leaderfollower_loop_functions
   leader
