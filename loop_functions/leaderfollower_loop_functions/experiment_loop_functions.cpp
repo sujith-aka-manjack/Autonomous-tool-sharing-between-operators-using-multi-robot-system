@@ -75,7 +75,14 @@ void CExperimentLoopFunctions::Reset() {
     m_cOutput.close();
     /* Open the file, erasing its contents */
     m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-    m_cOutput << "# clock\tfollower\tchain\tseparation" << std::endl;
+    m_cOutput << "# clock\t"
+                 "leader1posX\t"
+                 "leader1posY\t"
+                 "leader1follower\t"
+                 "leader2posX\t"
+                 "leader2posY\t"
+                 "leader2follower\t"
+                 "chain" << std::endl;
 //    /* Distribute uniformly the items in the environment */
 //    for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
 //       m_cFoodPos[i].Set(m_pcRNG->Uniform(m_cForagingArenaSideX),
