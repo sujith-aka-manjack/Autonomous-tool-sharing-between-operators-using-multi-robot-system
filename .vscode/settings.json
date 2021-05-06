@@ -61,5 +61,6 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "*.ipp": "cpp"
-    }
+    },
+    "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python"
 }
