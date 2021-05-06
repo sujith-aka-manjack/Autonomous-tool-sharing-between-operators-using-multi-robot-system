@@ -24,8 +24,8 @@ CExperimentLoopFunctions::CExperimentLoopFunctions() /* :
 
 void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
     std::cout << "Init experiment loop function" << std::endl;
-//    try {
-//       TConfigurationNode& tForaging = GetNode(t_node, "foraging");
+    try {
+        TConfigurationNode& tForaging = GetNode(t_node, "experiment");
 //       /* Get a pointer to the floor entity */
 //       m_pcFloor = &GetSpace().GetFloorEntity();
 //       /* Get the number of food items we want to be scattered from XML */
@@ -42,19 +42,15 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 //             CVector2(m_pcRNG->Uniform(m_cForagingArenaSideX),
 //                      m_pcRNG->Uniform(m_cForagingArenaSideY)));
 //       }
-//       /* Get the output file name from XML */
-//       GetNodeAttribute(tForaging, "output", m_strOutput);
-//       /* Open the file, erasing its contents */
-//       m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-//       m_cOutput << "# clock\twalking\tresting\tcollected_food\tenergy" << std::endl;
-//       /* Get energy gain per item collected */
-//       GetNodeAttribute(tForaging, "energy_per_item", m_unEnergyPerFoodItem);
-//       /* Get energy loss per walking robot */
-//       GetNodeAttribute(tForaging, "energy_per_walking_robot", m_unEnergyPerWalkingRobot);
-//    }
-//    catch(CARGoSException& ex) {
-//       THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
-//    }
+        /* Get the output file name from XML */
+        GetNodeAttribute(tForaging, "output", m_strOutput);
+        /* Open the file, erasing its contents */
+        m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
+        m_cOutput << "# clock\tfollower\tchain" << std::endl;
+    }
+    catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
+    }
 }
 
 /****************************************/
@@ -64,11 +60,11 @@ void CExperimentLoopFunctions::Reset() {
 //    /* Zero the counters */
 //    m_unCollectedFood = 0;
 //    m_nEnergy = 0;
-//    /* Close the file */
-//    m_cOutput.close();
-//    /* Open the file, erasing its contents */
-//    m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
-//    m_cOutput << "# clock\twalking\tresting\tcollected_food\tenergy" << std::endl;
+    /* Close the file */
+    m_cOutput.close();
+    /* Open the file, erasing its contents */
+    m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
+    m_cOutput << "# clock\tfollower\tchain" << std::endl;
 //    /* Distribute uniformly the items in the environment */
 //    for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
 //       m_cFoodPos[i].Set(m_pcRNG->Uniform(m_cForagingArenaSideX),
@@ -80,16 +76,14 @@ void CExperimentLoopFunctions::Reset() {
 /****************************************/
 
 void CExperimentLoopFunctions::Destroy() {
-   /* Close the file */
-//    m_cOutput.close();
+    /* Close the file */
+    m_cOutput.close();
 }
 
 /****************************************/
 /****************************************/
 
 void CExperimentLoopFunctions::PreStep() {
-
-    
 
     UInt32 unFollowers = 0;
     UInt32 unChains = 0;
@@ -116,12 +110,6 @@ void CExperimentLoopFunctions::PreStep() {
         else ++unChains;
 
     }
-
-    /* Get current simulation timestep */
-    std::cout << "\n### TIMESTEP: " << GetSpace().GetSimulationClock() << " ###" << std::endl;
-    /* Get number of robots in the follower/chain state */
-    std::cout << "Follower: " << unFollowers << std::endl;
-    std::cout << "Chain: " << unChains << std::endl;
 
 
 //    /* Logic to pick and drop food items */
@@ -190,14 +178,11 @@ void CExperimentLoopFunctions::PreStep() {
 //          }
 //       }
 //    }
-//    /* Update energy expediture due to walking robots */
-//    m_nEnergy -= unWalkingFBs * m_unEnergyPerWalkingRobot;
-//    /* Output stuff to file */
-//    m_cOutput << GetSpace().GetSimulationClock() << "\t"
-//              << unWalkingFBs << "\t"
-//              << unRestingFBs << "\t"
-//              << m_unCollectedFood << "\t"
-//              << m_nEnergy << std::endl;
+
+    /* Output stuff to file */
+    m_cOutput << GetSpace().GetSimulationClock() << "\t"
+              << unFollowers << "\t"
+              << unChains << std::endl;
 }
 
 /****************************************/

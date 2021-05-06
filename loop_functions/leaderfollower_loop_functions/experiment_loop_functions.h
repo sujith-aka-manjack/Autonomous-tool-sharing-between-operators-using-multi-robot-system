@@ -29,8 +29,8 @@ private:
 //    CFloorEntity* m_pcFloor;
 //    CRandom::CRNG* m_pcRNG;
 
-//    std::string m_strOutput;
-//    std::ofstream m_cOutput;
+    std::string m_strOutput;
+    std::ofstream m_cOutput;
 
 //    UInt32 m_unCollectedFood;
 //    SInt64 m_nEnergy;
