@@ -1,4 +1,4 @@
-add_library(follower MODULE 
+add_library(follower SHARED 
   follower.h 
   follower.cpp 
   SCT.h 

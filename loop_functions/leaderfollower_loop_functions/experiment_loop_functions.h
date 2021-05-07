@@ -4,7 +4,7 @@
 #include <argos3/core/simulator/loop_functions.h>
 // #include <argos3/core/simulator/entity/floor_entity.h>
 // #include <argos3/core/utility/math/range.h>
-// #include <argos3/core/utility/math/rng.h>
+#include <argos3/core/utility/math/rng.h>
 
 using namespace argos;
 
@@ -27,15 +27,24 @@ private:
 //    CRange<Real> m_cExperimentArenaSideX, m_cExperimentArenaSideY;
 //    std::vector<CVector2> m_cFoodPos;
 //    CFloorEntity* m_pcFloor;
-//    CRandom::CRNG* m_pcRNG;
+   CRandom::CRNG* m_pcRNG;
 
-    std::string m_strOutput;
-    std::ofstream m_cOutput;
+   /* Output file */
+   std::string m_strOutput;
+   std::ofstream m_cOutput;
 
 //    UInt32 m_unCollectedFood;
 //    SInt64 m_nEnergy;
 //    UInt32 m_unEnergyPerFoodItem;
 //    UInt32 m_unEnergyPerWalkingRobot;
+
+   /* Distribute a leader-robot team */
+   void PlaceCluster(const CVector2& c_center,
+                     UInt32 un_leaders,
+                     UInt32 un_robots,
+                     Real f_density,
+                     UInt32 un_leader_id_start,
+                     UInt32 un_robot_id_start);
 };
 
 #endif

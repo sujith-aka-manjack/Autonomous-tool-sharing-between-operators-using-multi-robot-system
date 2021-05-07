@@ -1,3 +1,5 @@
+include_directories(${ARGOS_QTOPENGL_INCLUDE_DIRS})
+
 add_library(leaderfollower_loop_functions MODULE 
   manualcontrol_qtuser_functions.h
   manualcontrol_qtuser_functions.cpp
@@ -6,6 +8,7 @@ add_library(leaderfollower_loop_functions MODULE
 
 target_link_libraries(leaderfollower_loop_functions
   leader
+  follower
   argos3core_simulator
   argos3plugin_simulator_entities
   argos3plugin_simulator_epuck

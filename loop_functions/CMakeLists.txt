@@ -1,7 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
 # If Qt+OpenGL dependencies were found, descend into these directories
-if(ARGOS_COMPILE_QTOPENGL)
+if(ARGOS_QTOPENGL_FOUND)
   add_subdirectory(leaderfollower_loop_functions)
-endif(ARGOS_COMPILE_QTOPENGL)
+endif(ARGOS_QTOPENGL_FOUND)
 

@@ -78,6 +78,16 @@
   <loop_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
                   label="experiment_loop_functions">
     <experiment output="LF-experiment.csv" />
+    <teams>
+      <team leader_num="1"
+            robot_num="3"
+            center="0,0"
+            density="0.1" />
+      <team leader_num="1"
+            robot_num="4"
+            center="1,1"
+            density="0.1" />
+    </teams>
   </loop_functions>
 
   <!-- *********************** -->
@@ -117,7 +127,7 @@
       </entity>
     </distribute> -->
 
-    <e-puck id="L1" rab_range="0.8" rab_data_size="16">
+    <!-- <e-puck id="L1" rab_range="0.8" rab_data_size="16">
       <controller config="el" />
       <body position="0,0.1,0" orientation="0,0,0" />
     </e-puck>
@@ -155,7 +165,7 @@
     <e-puck id="F6" rab_range="0.8" rab_data_size="16">
       <controller config="ef" />
       <body position="-0.3,0.1,0" orientation="0,0,0" />
-    </e-puck>
+    </e-puck> -->
 
     <!--
         We distribute 5 boxes uniformly in position and rotation around Z.

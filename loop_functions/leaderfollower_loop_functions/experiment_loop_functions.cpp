@@ -10,6 +10,18 @@
 /****************************************/
 /****************************************/
 
+static const Real        EP_RADIUS        = 0.035f;
+static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
+static const Real        EP_RAB_RANGE     = 0.8f;
+static const Real        EP_RAB_DATA_SIZE = 16;
+static const std::string HL_CONTROLLER    = "el";
+static const std::string EP_CONTROLLER    = "ef";
+static const UInt32      MAX_PLACE_TRIALS = 20;
+static const UInt32      MAX_ROBOT_TRIALS = 20;
+
+/****************************************/
+/****************************************/
+
 CExperimentLoopFunctions::CExperimentLoopFunctions() /* :
    m_cForagingArenaSideX(-0.9f, 1.7f),
    m_cForagingArenaSideY(-1.7f, 1.7f),
@@ -29,6 +41,9 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
     std::cout << "Init experiment loop function" << std::endl;
 
     try {
+        /*
+        * Parse the configuration file
+        */
         TConfigurationNode& tForaging = GetNode(t_node, "experiment");
 //       /* Get a pointer to the floor entity */
 //       m_pcFloor = &GetSpace().GetFloorEntity();
@@ -38,8 +53,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 //       /* Get the number of food items we want to be scattered from XML */
 //       GetNodeAttribute(tForaging, "radius", m_fFoodSquareRadius);
 //       m_fFoodSquareRadius *= m_fFoodSquareRadius;
-//       /* Create a new RNG */
-//       m_pcRNG = CRandom::CreateRNG("argos");
+        /* Create a new RNG */
+        m_pcRNG = CRandom::CreateRNG("argos");
 //       /* Distribute uniformly the items in the environment */
 //       for(UInt32 i = 0; i < unFoodItems; ++i) {
 //          m_cFoodPos.push_back(
@@ -58,6 +73,42 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                      "leader2posY,"
                      "leader2follower,"
                      "chain" << std::endl;
+
+        /*
+        * Distribute leaders and robots
+        */
+
+        /* ID counts */
+        UInt32 unPlacedLeaders = 1;
+        UInt32 unPlacedRobots = 1;
+        /* Get the teams node */
+        TConfigurationNode& ex_tree = GetNode(t_node, "teams");
+        /* Go through the nodes (teams) */
+        TConfigurationNodeIterator itDistr;
+        for(itDistr = itDistr.begin(&ex_tree);
+            itDistr != itDistr.end();
+            ++itDistr) {
+            
+            /* Get current node */
+            TConfigurationNode& tDistr = *itDistr;
+            /* Distribution center */
+            CVector2 cCenter;
+            GetNodeAttribute(tDistr, "center", cCenter);
+            /* Number of leaders to place */
+            UInt32 unLeaders;
+            GetNodeAttribute(tDistr, "leader_num", unLeaders);
+            /* Number of robots to place */
+            UInt32 unRobots;
+            GetNodeAttribute(tDistr, "robot_num", unRobots);
+            /* Density of the robots */
+            Real fDensity;
+            GetNodeAttribute(tDistr, "density", fDensity);
+            /* Place robots */
+            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unPlacedLeaders, unPlacedRobots);
+            /* Update robot count */
+            unPlacedLeaders += unLeaders;
+            unPlacedRobots += unRobots;
+        }
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
@@ -216,6 +267,95 @@ void CExperimentLoopFunctions::PreStep() {
               << leaderPos["L2"].GetY() << ","
               << unFollowers2 << ","
               << unChains << std::endl;
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
+                                            UInt32 un_leaders,
+                                            UInt32 un_robots,
+                                            Real f_density,
+                                            UInt32 un_leader_id_start,
+                                            UInt32 un_robot_id_start) {
+
+    try {
+        /* Calculate side of the region in which the robots are scattered */
+        Real fHalfSide = Sqrt((EP_AREA * un_robots) / f_density) / 2.0f;
+        CRange<Real> cAreaRange(-fHalfSide, fHalfSide);
+        /* Place robots */
+        UInt32 unTrials;
+        CEPuckEntity* pcEP;
+        std::ostringstream cEPId;
+        CVector3 cEPPos;
+        CQuaternion cEPRot;
+
+        /* For each leader */
+        for(size_t i = 0; i < un_leaders; ++i) {
+            /* Make the id */
+            cEPId.str("");
+            cEPId << "L" << (i + un_leader_id_start);
+            /* Create the leader in the origin and add it to ARGoS space */
+            pcEP = new CEPuckEntity(cEPId.str(),
+                                    HL_CONTROLLER,
+                                    CVector3(),
+                                    CQuaternion(),
+                                    EP_RAB_RANGE,
+                                    EP_RAB_DATA_SIZE,
+                                    "");
+            AddEntity(*pcEP);
+            /* Try to place it in the arena */
+            unTrials = 0;
+            bool bDone;
+            do {
+                /* Choose a random position */
+                ++unTrials;
+                cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
+                        m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
+                        0.0f);
+                cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                    CVector3::Z);
+                bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+            } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
+            if(!bDone) {
+                THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+            }
+        }
+
+        /* For each robot */
+        for(size_t i = 0; i < un_robots; ++i) {
+            /* Make the id */
+            cEPId.str("");
+            cEPId << "F" << (i + un_robot_id_start);
+            /* Create the robot in the origin and add it to ARGoS space */
+            pcEP = new CEPuckEntity(cEPId.str(),
+                                    EP_CONTROLLER,
+                                    CVector3(),
+                                    CQuaternion(),
+                                    EP_RAB_RANGE,
+                                    EP_RAB_DATA_SIZE,
+                                    "");
+            AddEntity(*pcEP);
+            /* Try to place it in the arena */
+            unTrials = 0;
+            bool bDone;
+            do {
+                /* Choose a random position */
+                ++unTrials;
+                cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
+                        m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
+                        0.0f);
+                cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                    CVector3::Z);
+                bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+            } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
+            if(!bDone) {
+                THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+            }
+        }
+    } catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
+    }
 }
 
 /****************************************/
