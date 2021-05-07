@@ -34,6 +34,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
 #include "SCT.h"
+#include "pid.h"
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -263,6 +264,9 @@ private:
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
+
+    /* PID controller to calculate the force of a leader */
+    PID* pid;
 
     /*
     * The following variables are used as parameters for the

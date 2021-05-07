@@ -63,6 +63,7 @@ CFollower::CFollower() :
 
 CFollower::~CFollower() {
     delete sct;
+    delete pid;
 }
 
 /****************************************/
@@ -125,6 +126,16 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_leaderFar,         NULL, &CFollower::Check_LeaderFar,         NULL);
     sct->add_callback(this, EV_singleChain,       NULL, &CFollower::Check_SingleChain,       NULL);
     sct->add_callback(this, EV_multiChain,        NULL, &CFollower::Check_MultiChain,        NULL);
+
+    /*
+    * Init PID Controller
+    */
+    pid = new PID(0.1,  // dt
+                  80,    // max
+                  -80,    // min
+                  1,    // Kp
+                  0,    // Ki
+                  0);   // Kd
 
     Reset();
 }
@@ -442,23 +453,22 @@ void CFollower::UpdateSensors() {
 CVector2 CFollower::GetLeaderFlockingVector() {
     CVector2 resVec = CVector2();
     if(leaderMsg.direction.Length() > 0.0f) {
-        /*
-        * Take the blob distance and angle
-        * With the distance, calculate the Lennard-Jones interaction force
-        * Form a 2D vector with the interaction force and the angle
-        * Sum such vector to the accumulator
-        */
-        /* Calculate LJ */
-        Real fLJ = m_sLeaderFlockingParams.GeneralizedLennardJones(leaderMsg.direction.Length());
-        /* Sum to accumulator */
-        resVec += CVector2(fLJ,
+        std::cout << leaderMsg.direction.Length() << std::endl;
+
+        Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
+                                   leaderMsg.direction.Length());
+        std::cout << fPID << std::endl;
+
+        resVec += CVector2(-fPID,
                            leaderMsg.direction.Angle());
+
         /* Clamp the length of the vector to the max speed */
         if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
             resVec.Normalize();
             resVec *= m_sWheelTurningParams.MaxSpeed;
         }
     }
+
     return resVec;
 }
 
@@ -554,6 +564,31 @@ CVector2 CFollower::GetOtherRepulsionVector() {
 /****************************************/
 /****************************************/
 
+void CFollower::Flock() {
+    /* Calculate overall force applied to the robot */
+    CVector2 leaderForce = GetLeaderFlockingVector();
+    CVector2 teamForce = GetTeamFlockingVector();
+    CVector2 otherForce = GetOtherRepulsionVector();
+    CVector2 sumForce = leaderForce + teamForce + otherForce;
+
+    // /* DEBUGGING */
+    // if(this->GetId() == "F1") {
+    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
+    //     std::cout << "team: " << teamForce.Length() << std::endl;
+    //     std::cout << "other: " << otherForce.Length() << std::endl;
+    //     std::cout << "sum: " << sumForce.Length() << std::endl;
+    // }
+
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 0.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Get the heading angle */
     CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
@@ -620,31 +655,6 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     }
     /* Finally, set the wheel speeds */
     m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
-}
-
-/****************************************/
-/****************************************/
-
-void CFollower::Flock() {
-    /* Calculate overall force applied to the robot */
-    CVector2 leaderForce = GetLeaderFlockingVector();
-    CVector2 teamForce = GetTeamFlockingVector();
-    CVector2 otherForce = GetOtherRepulsionVector();
-    CVector2 sumForce = leaderForce + teamForce + otherForce;
-
-    /* DEBUGGING */
-    // if(this->GetId() == "F1") {
-    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
-    //     std::cout << "team: " << teamForce.Length() << std::endl;
-    //     std::cout << "other: " << otherForce.Length() << std::endl;
-    //     std::cout << "sum: " << sumForce.Length() << std::endl;
-    // }
-
-    /* Set Wheel Speed */
-    if(sumForce.Length() > 0.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 }
 
 /****************************************/
