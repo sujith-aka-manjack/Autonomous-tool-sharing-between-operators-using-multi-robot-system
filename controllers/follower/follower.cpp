@@ -29,6 +29,21 @@ void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
+void CFollower::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
+   try {
+      GetNodeAttribute(t_node, "target_distance", TargetDistance);
+      GetNodeAttribute(t_node, "kp", Kp);
+      GetNodeAttribute(t_node, "ki", Ki);
+      GetNodeAttribute(t_node, "kd", Kd);
+   }
+   catch(CARGoSException& ex) {
+      THROW_ARGOSEXCEPTION_NESTED("Error initializing controller flocking parameters.", ex);
+   }
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
    try {
       GetNodeAttribute(t_node, "target_distance", TargetDistance);
@@ -130,12 +145,12 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init PID Controller
     */
-    pid = new PID(0.1,  // dt
-                  80,    // max
-                  -80,    // min
-                  1,    // Kp
-                  0,    // Ki
-                  0);   // Kd
+    pid = new PID(0.1,  // dt  (loop interval time)
+                  80,   // max (output vector length)
+                  -80,  // min (output vector length)
+                  m_sLeaderFlockingParams.Kp,    // Kp
+                  m_sLeaderFlockingParams.Ki,    // Ki
+                  m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
 }
@@ -571,16 +586,16 @@ void CFollower::Flock() {
     CVector2 otherForce = GetOtherRepulsionVector();
     CVector2 sumForce = leaderForce + teamForce + otherForce;
 
-    // /* DEBUGGING */
-    // if(this->GetId() == "F1") {
-    //     std::cout << "leader: " << leaderForce.Length() << std::endl;
-    //     std::cout << "team: " << teamForce.Length() << std::endl;
-    //     std::cout << "other: " << otherForce.Length() << std::endl;
-    //     std::cout << "sum: " << sumForce.Length() << std::endl;
-    // }
+    /* DEBUGGING */
+    if(this->GetId() == "F1") {
+        std::cout << "leader: " << leaderForce.Length() << std::endl;
+        std::cout << "team: " << teamForce.Length() << std::endl;
+        std::cout << "other: " << otherForce.Length() << std::endl;
+        std::cout << "sum: " << sumForce.Length() << std::endl;
+    }
 
     /* Set Wheel Speed */
-    if(sumForce.Length() > 0.0f)
+    if(sumForce.Length() > 1.0f)
         SetWheelSpeedsFromVector(sumForce);
     else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);

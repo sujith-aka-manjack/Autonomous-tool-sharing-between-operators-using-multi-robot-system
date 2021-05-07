@@ -88,6 +88,25 @@ public:
     * <controllers><footbot_flocking_controller><parameters><flocking>
     * section.
     */
+    struct SLeaderInteractionParams {
+        /* Target leader-robot distance in cm */
+        Real TargetDistance;
+        /* Parameters to be used for PID */
+        Real Kp;
+        Real Ki;
+        Real Kd;
+
+        void Init(TConfigurationNode& t_node);
+    };
+
+    /*
+    * The following variables are used as parameters for
+    * flocking interaction. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * section.
+    */
     struct SFlockingInteractionParams {
         /* Target robot-robot distance in cm */
         Real TargetDistance;
@@ -237,11 +256,11 @@ private:
 
     /* The turning parameters. */
     SWheelTurningParams m_sWheelTurningParams;
+    /* The flocking interaction parameters between leader. */
+    SLeaderInteractionParams m_sLeaderFlockingParams;
     /* The flocking interaction parameters between teammates. */
     SFlockingInteractionParams m_sTeamFlockingParams;
-    /* The flocking interaction parameters between leader. */
-    SFlockingInteractionParams m_sLeaderFlockingParams;
-
+    
     /* Controller */
     SCTProb* sct;
 
