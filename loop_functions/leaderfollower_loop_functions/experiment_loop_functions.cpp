@@ -22,12 +22,12 @@ static const UInt32      MAX_ROBOT_TRIALS = 20;
 /****************************************/
 /****************************************/
 
-CExperimentLoopFunctions::CExperimentLoopFunctions() /* :
-   m_cForagingArenaSideX(-0.9f, 1.7f),
+CExperimentLoopFunctions::CExperimentLoopFunctions() :
+   /* m_cForagingArenaSideX(-0.9f, 1.7f),
    m_cForagingArenaSideY(-1.7f, 1.7f),
-   m_pcFloor(NULL),
-   m_pcRNG(NULL),
-   m_unCollectedFood(0),
+   m_pcFloor(NULL), */
+   m_pcRNG(NULL)
+   /* m_unCollectedFood(0),
    m_nEnergy(0),
    m_unEnergyPerFoodItem(1),
    m_unEnergyPerWalkingRobot(1) */ {
@@ -311,10 +311,10 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 /* Choose a random position */
                 ++unTrials;
                 cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
-                        m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
-                        0.0f);
+                           m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
+                           0.0f);
                 cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
-                                    CVector3::Z);
+                                     CVector3::Z);
                 bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
             } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
             if(!bDone) {
@@ -346,10 +346,10 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 /* Choose a random position */
                 ++unTrials;
                 cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
-                        m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
-                        0.0f);
+                           m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
+                           0.0f);
                 cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
-                                    CVector3::Z);
+                                     CVector3::Z);
                 bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
             } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
             if(!bDone) {
