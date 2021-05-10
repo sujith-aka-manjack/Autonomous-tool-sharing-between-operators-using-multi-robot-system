@@ -66,6 +66,7 @@
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
                        max_speed="8" />
+        <path_following goal_range="0.1" />
       </params>
     </leader_controller>
 

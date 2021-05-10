@@ -50,6 +50,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     try {
         /* Wheel turning */
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
+        /* Goal allowance range */
+        GetNodeAttribute(GetNode(t_node, "path_following"), "goal_range", goalRange);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);

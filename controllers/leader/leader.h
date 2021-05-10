@@ -209,7 +209,8 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
-    
+    /* Consider it has arrived to a goal/waypoint if it is within a threshold */
+    Real goalRange;
 };
 
 #endif
