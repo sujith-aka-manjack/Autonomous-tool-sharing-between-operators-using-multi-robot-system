@@ -336,6 +336,9 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                     EP_RAB_DATA_SIZE,
                                     "");
             AddEntity(*pcEP);
+            /* Assign initial team id */
+            CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
+            cController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;
