@@ -82,14 +82,14 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         UInt32 unPlacedLeaders = 1;
         UInt32 unPlacedRobots = 1;
         /* Get the teams node */
-        TConfigurationNode& ex_tree = GetNode(t_node, "teams");
+        TConfigurationNode& et_tree = GetNode(t_node, "teams");
         /* Go through the nodes (teams) */
         TConfigurationNodeIterator itDistr;
-        for(itDistr = itDistr.begin(&ex_tree);
+        for(itDistr = itDistr.begin(&et_tree);
             itDistr != itDistr.end();
             ++itDistr) {
             
-            /* Get current node */
+            /* Get current node (team) */
             TConfigurationNode& tDistr = *itDistr;
             /* Distribution center */
             CVector2 cCenter;
@@ -105,6 +105,32 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             GetNodeAttribute(tDistr, "density", fDensity);
             /* Place robots */
             PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unPlacedLeaders, unPlacedRobots);
+
+            /* Get the waypoints node */
+            std::vector<CVector2> waypoints;
+            TConfigurationNode& wp_tree = GetNode(et_tree, "team");
+            /* Go through the nodes (waypoints) */
+            TConfigurationNodeIterator itWaypt;
+            for(itWaypt = itWaypt.begin(&wp_tree);
+                itWaypt != itWaypt.end();
+                ++itWaypt) {
+
+                /* Get current node (waypoint) */
+                TConfigurationNode& tWaypt = *itWaypt;
+                /* Coordinate of waypoint */
+                CVector2 coord;
+                GetNodeAttribute(tWaypt, "coord", coord);
+                waypoints.push_back(coord);
+            }
+            /* Get the newly created leader */
+            std::ostringstream cEPId;
+            cEPId.str("");
+            cEPId << "L" << unPlacedLeaders;
+            CEPuckEntity& cEPuck = dynamic_cast<CEPuckEntity&>(GetSpace().GetEntity(cEPId.str()));
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
+            /* Set list of waypoints to leader */
+            cController.SetWaypoints(waypoints);
+            
             /* Update robot count */
             unPlacedLeaders += unLeaders;
             unPlacedRobots += unRobots;
@@ -182,7 +208,7 @@ void CExperimentLoopFunctions::PreStep() {
 
         } else if(dynamic_cast<CLeader*>(&cEPuck.GetControllableEntity().GetController())) {
             /* If the e-puck is a LEADER robot */
-            CLeader & cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
 
             /* Get the position of the leader on the ground as a CVector2 */
             CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
@@ -290,7 +316,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         CVector3 cEPPos;
         CQuaternion cEPRot;
 
-        /* For each leader */
+        /* For each leader */ // CURRENTLY ONLY ONE LEADER PER TEAM IS SUPPORTED
         for(size_t i = 0; i < un_leaders; ++i) {
             /* Make the id */
             cEPId.str("");

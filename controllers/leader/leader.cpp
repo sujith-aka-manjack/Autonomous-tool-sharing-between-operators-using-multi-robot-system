@@ -100,6 +100,10 @@ void CLeader::ControlStep() {
     // otherLeaderMsgs.clear();
     // otherTeamMsgs.clear();
 
+    // for(int i = 0; i < waypoints.size(); i++) {
+    //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
+    // }
+
     /*----------------------*/
     /* Receive new messages */
     /*----------------------*/
@@ -160,6 +164,13 @@ void CLeader::Deselect() {
 
 void CLeader::SetControlVector(const CVector2& c_control) {
    m_cControl = c_control;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetWaypoints(const std::vector<CVector2> waypts) {
+    waypoints = waypts;
 }
 
 /****************************************/

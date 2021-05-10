@@ -143,6 +143,11 @@ public:
     */
     void SetControlVector(const CVector2& c_control);
 
+    /*
+    * Sets the list of waypoints to visit.
+    */
+    void SetWaypoints(const std::vector<CVector2> waypts);
+
 protected:
 
     /* 
@@ -199,6 +204,9 @@ private:
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
+
+    /* Ordered list of waypoints to visit */
+    std::vector<CVector2> waypoints;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
     // std::map<size_t, bool> pub_events;
