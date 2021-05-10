@@ -689,6 +689,13 @@ UInt8 CFollower::GetTeamID() {
 /****************************************/
 /****************************************/
 
+void CFollower::SetTeamID(const UInt8 id) {
+    teamID = id;
+}
+
+/****************************************/
+/****************************************/
+
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_Flock(void* data) {

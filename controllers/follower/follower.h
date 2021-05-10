@@ -183,6 +183,11 @@ public:
     */
     virtual UInt8 GetTeamID();
 
+    /*
+    * Set team ID.
+    */
+    virtual void SetTeamID(const UInt8 id);
+
 protected:
 
     /* 
