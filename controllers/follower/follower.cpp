@@ -93,8 +93,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
     m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds");
 
-    std::string leaderStr;
-
     /*
     * Parse the config file
     */
@@ -104,8 +102,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
         /* Flocking-related */
         m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
-        /* Initial team ID */
-        GetNodeAttribute(GetNode(t_node, "team"), "leader", leaderStr);
         /* Chain formation threshold */
         GetNodeAttribute(GetNode(t_node, "team"), "to_chain_threshold", toChainThreshold);
         GetNodeAttribute(GetNode(t_node, "team"), "to_follow_threshold", toFollowThreshold);
@@ -113,12 +109,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
-
-    /* Set leader ID as team ID */
-    if(leaderStr[0] != 'L') {
-        THROW_ARGOSEXCEPTION("Non-leader name passed to follower. Leader name must be 'L<num>' format.");
-    }
-    teamID = stoi(leaderStr.substr(1));
 
     /* Set initial state to follower */
     currentState = RobotState::FOLLOWER;

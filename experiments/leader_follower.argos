@@ -42,8 +42,7 @@
         <team_flocking target_distance="15"
                   gain="1000"
                   exponent="2" />
-        <team leader="L1" 
-              to_chain_threshold="60"
+        <team to_chain_threshold="60"
               to_follow_threshold="20" />
       </params>
     </follower_controller>
@@ -84,8 +83,8 @@
             center="0,0"
             density="0.1" />
       <team leader_num="1"
-            robot_num="4"
-            center="1,1"
+            robot_num="3"
+            center="-1,1"
             density="0.1" />
     </teams>
   </loop_functions>
