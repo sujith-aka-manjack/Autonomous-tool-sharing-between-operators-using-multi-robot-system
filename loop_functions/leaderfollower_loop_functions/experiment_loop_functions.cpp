@@ -108,10 +108,9 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 
             /* Get the waypoints node */
             std::queue<CVector2> waypoints; // Queue to provide to the robot
-            TConfigurationNode& wp_tree = GetNode(et_tree, "team");
             /* Go through the nodes (waypoints) */
             TConfigurationNodeIterator itWaypt;
-            for(itWaypt = itWaypt.begin(&wp_tree);
+            for(itWaypt = itWaypt.begin(&tDistr);
                 itWaypt != itWaypt.end();
                 ++itWaypt) {
 
