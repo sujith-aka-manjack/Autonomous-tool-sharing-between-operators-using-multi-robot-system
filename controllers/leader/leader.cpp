@@ -39,10 +39,11 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
-    m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
-    m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
-    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds");
+    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"            );
+    m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing"    );
+    m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing"    );
+    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds"                 );
+    m_pcPosSens   = GetSensor  <CCI_PositioningSensor           >("positioning"          );
 
     /*
     * Parse the config file
@@ -133,8 +134,12 @@ void CLeader::ControlStep() {
     /* Follow the control vector only if selected */
     if(m_bSelected)
         SetWheelSpeedsFromVector(m_cControl);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    else {
+        if( !waypoints.empty() )
+            SetWheelSpeedsFromVector(VectorToWaypoint());
+        else
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    }
 
     /*--------------*/
     /* Send message */
@@ -169,7 +174,7 @@ void CLeader::SetControlVector(const CVector2& c_control) {
 /****************************************/
 /****************************************/
 
-void CLeader::SetWaypoints(const std::vector<CVector2> waypts) {
+void CLeader::SetWaypoints(const std::queue<CVector2> waypts) {
     waypoints = waypts;
 }
 
@@ -269,6 +274,52 @@ void CLeader::GetMessages() {
 /****************************************/
 
 void CLeader::UpdateSensors() {}
+
+/****************************************/
+/****************************************/
+
+CVector2 CLeader::VectorToWaypoint() {    
+    /* Get current position */
+    CVector3 pos3d = m_pcPosSens->GetReading().Position;
+    CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+    CRadians cZAngle, cYAngle, cXAngle;
+    m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
+    std::cout << "pos2d " << pos2d << std::endl;
+
+    /* Check if it is near the waypoint */
+    Real dist = (waypoints.front() - pos2d).Length();
+    std::cout << "dist " << dist << std::endl;
+    if(dist < goalRange) {
+        /* Delete waypoint from queue */
+        waypoints.pop();
+    }
+
+    /* Calculate a normalized vector that points to the next waypoint */
+    // CRadians angle = cZAngle - waypoints.front().Angle();
+
+    CVector2 cAccum = waypoints.front() - pos2d;
+    std::cout << "cAccum: " << cAccum << std::endl;
+    std::cout << "angle: " << cAccum.Angle() << std::endl;
+    cAccum.Rotate((-cZAngle).SignedNormalize());
+    
+    std::cout << "cAccum: " << cAccum << std::endl;
+    std::cout << "angle: " << cAccum.Angle() << std::endl;
+
+    // std::cout << "cZAngle: " << cZAngle << std::endl;
+    // std::cout << "Waypts: " << waypoints.front().Angle() << std::endl;
+    // std::cout << "angle: " << angle << std::endl;
+    // CVector2 cAccum = CVector2(dist, angle);
+    // std::cout << res << std::endl;
+    // std::cout << cAccum.Length() << ", " << 
+
+    if(cAccum.Length() > 0.0f) {
+        /* Make the vector as long as the max speed */
+        cAccum.Normalize();
+        cAccum *= m_sWheelTurningParams.MaxSpeed;
+    }
+    std::cout << "cAccum: " << cAccum << std::endl;
+    return cAccum;
+}
 
 /****************************************/
 /****************************************/

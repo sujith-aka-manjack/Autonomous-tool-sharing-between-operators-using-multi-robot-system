@@ -107,7 +107,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unPlacedLeaders, unPlacedRobots);
 
             /* Get the waypoints node */
-            std::vector<CVector2> waypoints;
+            std::queue<CVector2> waypoints;
             TConfigurationNode& wp_tree = GetNode(et_tree, "team");
             /* Go through the nodes (waypoints) */
             TConfigurationNodeIterator itWaypt;
@@ -120,7 +120,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                 /* Coordinate of waypoint */
                 CVector2 coord;
                 GetNodeAttribute(tWaypt, "coord", coord);
-                waypoints.push_back(coord);
+                waypoints.push(coord);
             }
             /* Get the newly created leader */
             std::ostringstream cEPId;
@@ -130,7 +130,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             CLeader& cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
             /* Set list of waypoints to leader */
             cController.SetWaypoints(waypoints);
-            
+
             /* Update robot count */
             unPlacedLeaders += unLeaders;
             unPlacedRobots += unRobots;

@@ -26,7 +26,6 @@
         <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
-        <positioning implementation="default" />
         <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
@@ -57,9 +56,9 @@
         <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
-        <positioning implementation="default" />
         <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <positioning implementation="default" />
       </sensors>
       <params>
         <wheel_turning hard_turn_angle_threshold="90"
@@ -83,6 +82,8 @@
       <team leader_num="1" robot_num="3" center="0,0" density="0.1">
         <waypoint coord="1,1" />
         <waypoint coord="1,-1" />
+        <waypoint coord="-1,-1" />
+        <waypoint coord="-1,1" />
       </team>
       <!-- <team leader_num="1" robot_num="3" center="-1,1" density="0.1">
       </team> -->

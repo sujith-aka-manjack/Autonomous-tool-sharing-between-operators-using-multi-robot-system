@@ -32,6 +32,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
 /* Definition of the LEDs actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
+/* Definition of the positioning sensor */
+#include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
 
@@ -146,19 +148,24 @@ public:
     /*
     * Sets the list of waypoints to visit.
     */
-    void SetWaypoints(const std::vector<CVector2> waypts);
+    void SetWaypoints(const std::queue<CVector2> waypts);
 
 protected:
 
     /* 
     * Receive messages from neighboring robots.
     */
-    void GetMessages();
+    virtual void GetMessages();
 
     /* 
     * Update sensor readings.
     */
-    void UpdateSensors();
+    virtual void UpdateSensors();
+
+    /*
+    * Calculates the vector to the next waypoint.
+    */
+    virtual CVector2 VectorToWaypoint();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
@@ -182,6 +189,8 @@ private:
     CCI_RangeAndBearingSensor* m_pcRABSens;
     /* Pointer to the LEDs actuator */
     CCI_LEDsActuator* m_pcLEDs;
+    /* Pointer to the positioning sensor */
+    CCI_PositioningSensor* m_pcPosSens;
 
     /* The turning parameters */
     SWheelTurningParams m_sWheelTurningParams;
@@ -206,7 +215,7 @@ private:
     size_t msg_index = 0;
 
     /* Ordered list of waypoints to visit */
-    std::vector<CVector2> waypoints;
+    std::queue<CVector2> waypoints;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
     // std::map<size_t, bool> pub_events;
