@@ -71,7 +71,12 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_dista
 
 CFollower::CFollower() :
     m_pcWheels(NULL),
-    m_pcProximity(NULL){}
+    m_pcProximity(NULL),
+    m_pcRABAct(NULL),
+    m_pcRABSens(NULL),
+    m_pcLEDs(NULL),
+    sct(NULL),
+    pid(NULL) {}
 
 /****************************************/
 /****************************************/

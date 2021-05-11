@@ -30,7 +30,12 @@ void CLeader::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 
 CLeader::CLeader() :
     m_pcWheels(NULL),
-    m_pcProximity(NULL) {}
+    m_pcProximity(NULL),
+    m_pcRABAct(NULL),
+    m_pcRABSens(NULL),
+    m_pcLEDs(NULL),
+    m_pcPosSens(NULL),
+    PIDHeading(NULL) {}
 
 /****************************************/
 /****************************************/
@@ -66,6 +71,14 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(CColor::BLUE);
+
+    /* Init PID Controller */
+    PIDHeading = new PID(0.1,   // dt  (loop interval time)
+                         m_sWheelTurningParams.MaxSpeed,    // max
+                         -m_sWheelTurningParams.MaxSpeed,   // min
+                         10,    // Kp
+                         0,    // Ki
+                         0);   // Kd
 
     Reset();
 }
@@ -136,7 +149,7 @@ void CLeader::ControlStep() {
         SetWheelSpeedsFromVector(m_cControl);
     else {
         if( !waypoints.empty() )
-            SetWheelSpeedsFromVector(VectorToWaypoint());
+            SetWheelSpeedsFromVectorHoming(VectorToWaypoint());
         else
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
     }
@@ -385,6 +398,33 @@ void CLeader::SetWheelSpeedsFromVector(const CVector2& c_heading) {
         fLeftWheelSpeed  = fSpeed2;
         fRightWheelSpeed = fSpeed1;
     }
+    /* Finally, set the wheel speeds */
+    m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetWheelSpeedsFromVectorHoming(const CVector2& c_heading) {
+
+    /* Get the heading angle */
+    CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
+    /* Get the length of the heading vector */
+    Real fHeadingLength = c_heading.Length();
+    
+    /* Calculate the amount to adjust the wheel speeds */
+    Real fSpeed = PIDHeading->calculate(0,cHeadingAngle.GetValue());
+    std::cout << fSpeed << std::endl;
+
+    /* Apply the calculated speeds to the appropriate wheels */
+    Real fLeftWheelSpeed, fRightWheelSpeed;
+    fLeftWheelSpeed  = m_sWheelTurningParams.MaxSpeed+fSpeed;
+    fRightWheelSpeed = m_sWheelTurningParams.MaxSpeed-fSpeed;
+
+    /* Clamp the speed so that it's not greater than MaxSpeed */
+    fLeftWheelSpeed = Min<Real>(fLeftWheelSpeed, m_sWheelTurningParams.MaxSpeed);
+    fRightWheelSpeed = Min<Real>(fRightWheelSpeed, m_sWheelTurningParams.MaxSpeed);
+
     /* Finally, set the wheel speeds */
     m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
 }

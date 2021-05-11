@@ -36,6 +36,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
+#include "pid.h"
 
 // #include <map>
 
@@ -169,8 +170,15 @@ protected:
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
+    * Used in manual control.
     */
     void SetWheelSpeedsFromVector(const CVector2& c_heading);
+
+    /*
+    * Gets a direction vector as input and transforms it into wheel actuation using a PID controller.
+    * Used in autonomous control.
+    */
+    void SetWheelSpeedsFromVectorHoming(const CVector2& c_heading);
 
     /*
     * Print robot id.
@@ -213,6 +221,9 @@ private:
     /* Outgoing message */
     CByteArray msg;
     size_t msg_index = 0;
+
+    /* PID to control the heading angle */
+    PID* PIDHeading;
 
     /* Ordered list of waypoints to visit */
     std::queue<CVector2> waypoints;
