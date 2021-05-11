@@ -65,6 +65,10 @@
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
                        max_speed="8" />
+        <waypoint_tracking target_angle="0"
+                           kp="10"
+                           ki="0"
+                           kd="0" />
         <path_following goal_range="0.1" />
       </params>
     </leader_controller>

@@ -85,7 +85,7 @@ public:
     * flocking interaction. You can set their value
     * in the <parameters> section of the XML configuration
     * file, under the
-    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * <controllers><follower_controller><parameters><leader_flocking>
     * section.
     */
     struct SLeaderInteractionParams {
@@ -104,7 +104,7 @@ public:
     * flocking interaction. You can set their value
     * in the <parameters> section of the XML configuration
     * file, under the
-    * <controllers><footbot_flocking_controller><parameters><flocking>
+    * <controllers><follower_controller><parameters><team_flocking>
     * section.
     */
     struct SFlockingInteractionParams {

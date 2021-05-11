@@ -28,6 +28,21 @@ void CLeader::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
+void CLeader::SWaypointTrackingParams::Init(TConfigurationNode& t_node) {
+   try {
+      GetNodeAttribute(t_node, "target_angle", TargetAngle);
+      GetNodeAttribute(t_node, "kp", Kp);
+      GetNodeAttribute(t_node, "ki", Ki);
+      GetNodeAttribute(t_node, "kd", Kd);
+   }
+   catch(CARGoSException& ex) {
+      THROW_ARGOSEXCEPTION_NESTED("Error initializing controller waypoint tracking parameters.", ex);
+   }
+}
+
+/****************************************/
+/****************************************/
+
 CLeader::CLeader() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
@@ -56,6 +71,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     try {
         /* Wheel turning */
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
+        /* Waypoint tracking */
+        m_sWaypointTrackingParams.Init(GetNode(t_node, "waypoint_tracking"));
         /* Goal allowance range */
         GetNodeAttribute(GetNode(t_node, "path_following"), "goal_range", goalRange);
     }
@@ -73,12 +90,12 @@ void CLeader::Init(TConfigurationNode& t_node) {
     m_pcLEDs->SetAllColors(CColor::BLUE);
 
     /* Init PID Controller */
-    PIDHeading = new PID(0.1,   // dt  (loop interval time)
-                         m_sWheelTurningParams.MaxSpeed,    // max
-                         -m_sWheelTurningParams.MaxSpeed,   // min
-                         10,    // Kp
-                         0,    // Ki
-                         0);   // Kd
+    PIDHeading = new PID(0.1,                             // dt  (loop interval time)
+                         m_sWheelTurningParams.MaxSpeed,  // max
+                         -m_sWheelTurningParams.MaxSpeed, // min
+                         m_sWaypointTrackingParams.Kp,    // Kp
+                         m_sWaypointTrackingParams.Ki,    // Ki
+                         m_sWaypointTrackingParams.Kd);   // Kd
 
     Reset();
 }
@@ -149,6 +166,7 @@ void CLeader::ControlStep() {
         SetWheelSpeedsFromVector(m_cControl);
     else {
         if( !waypoints.empty() )
+            // Collision avoidance vector
             SetWheelSpeedsFromVectorHoming(VectorToWaypoint());
         else
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);

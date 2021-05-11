@@ -76,6 +76,25 @@ public:
         void Init(TConfigurationNode& t_tree);
     };
 
+    /*
+    * The following variables are used as parameters for
+    * tracking waypoints. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><leader_controller><parameters><waypoint_tracking>
+    * section.
+    */
+    struct SWaypointTrackingParams {
+        /* Target angle to waypoint in radians */
+        Real TargetAngle;
+        /* Parameters to be used for PID */
+        Real Kp;
+        Real Ki;
+        Real Kd;
+
+        void Init(TConfigurationNode& t_node);
+    };
+
     /* List of states */
     enum class RobotState {
         LEADER = 0,
@@ -202,6 +221,8 @@ private:
 
     /* The turning parameters */
     SWheelTurningParams m_sWheelTurningParams;
+    /* The waypoint tracking parameters */
+    SWaypointTrackingParams m_sWaypointTrackingParams;
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;
