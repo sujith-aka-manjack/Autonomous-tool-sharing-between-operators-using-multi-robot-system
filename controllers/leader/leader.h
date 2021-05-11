@@ -91,8 +91,30 @@ public:
         Real Kp;
         Real Ki;
         Real Kd;
+        /* Consider it has arrived to a goal/waypoint if it is within a threshold */
+        Real thresRange;
+        
+        void Init(TConfigurationNode& t_node);
+    };
+
+    /*
+    * The following variables are used as parameters for
+    * flocking interaction. You can set their value
+    * in the <parameters> section of the XML configuration
+    * file, under the
+    * <controllers><leader_controller><parameters><team_flocking>
+    * section.
+    */
+    struct SFlockingInteractionParams {
+        /* Target robot-robot distance in cm */
+        Real TargetDistance;
+        /* Gain of the Lennard-Jones potential */
+        Real Gain;
+        /* Exponent of the Lennard-Jones potential */
+        Real Exponent;
 
         void Init(TConfigurationNode& t_node);
+        Real GeneralizedLennardJones(Real f_distance);
     };
 
     /* List of states */
@@ -103,14 +125,14 @@ public:
     } currentState;
 
     /* Structure to store incoming data received from other robots */
-    // struct Message {
-    //     RobotState state;
-    //     std::string id;
-    //     UInt8 teamid;
-    //     CVector2 direction;
-    //     bool hasSeenChain; // FOLLOWER
-    //     std::vector<std::string> connections; // CHAIN
-    // };
+    struct Message {
+        RobotState state;
+        std::string id;
+        UInt8 teamid;
+        CVector2 direction;
+        bool hasSeenChain; // FOLLOWER
+        std::vector<std::string> connections; // CHAIN
+    };
 
 public:
 
@@ -187,6 +209,11 @@ protected:
     */
     virtual CVector2 VectorToWaypoint();
 
+    /* 
+    * Get a flocking vector between itself and the other robots not in the same team.
+    */
+    virtual CVector2 GetOtherRepulsionVector();
+
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
     * Used in manual control.
@@ -223,6 +250,8 @@ private:
     SWheelTurningParams m_sWheelTurningParams;
     /* The waypoint tracking parameters */
     SWaypointTrackingParams m_sWaypointTrackingParams;
+    /* The flocking interaction parameters between teammates. */
+    SFlockingInteractionParams m_sTeamFlockingParams;
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;
@@ -234,10 +263,10 @@ private:
     UInt8 teamID;
 
     /* Messages received from nearby robots */
-    // std::vector<Message> teamMsgs;
-    // std::vector<Message> chainMsgs;
-    // std::vector<Message> otherLeaderMsgs;
-    // std::vector<Message> otherTeamMsgs;
+    std::vector<Message> teamMsgs;
+    std::vector<Message> chainMsgs;
+    std::vector<Message> otherLeaderMsgs;
+    std::vector<Message> otherTeamMsgs;
 
     /* Outgoing message */
     CByteArray msg;
@@ -258,8 +287,6 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
-    /* Consider it has arrived to a goal/waypoint if it is within a threshold */
-    Real goalRange;
 };
 
 #endif

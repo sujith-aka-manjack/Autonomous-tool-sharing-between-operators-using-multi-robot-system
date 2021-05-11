@@ -68,8 +68,11 @@
         <waypoint_tracking target_angle="0"
                            kp="10"
                            ki="0"
-                           kd="0" />
-        <path_following goal_range="0.1" />
+                           kd="0" 
+                           thres_range="0.1" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
       </params>
     </leader_controller>
 
@@ -89,7 +92,7 @@
         <waypoint coord="-1,-1" />
         <waypoint coord="-1,1" />
       </team>
-      <team leader_num="1" robot_num="3" center="-1,1" density="0.1">
+      <team leader_num="1" robot_num="3" center="1,0" density="0.1">
       </team>
     </teams>
   </loop_functions>
