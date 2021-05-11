@@ -23,14 +23,14 @@ static const UInt32      MAX_ROBOT_TRIALS = 20;
 /****************************************/
 
 CExperimentLoopFunctions::CExperimentLoopFunctions() :
-   /* m_cForagingArenaSideX(-0.9f, 1.7f),
-   m_cForagingArenaSideY(-1.7f, 1.7f),
-   m_pcFloor(NULL), */
-   m_pcRNG(NULL)
-   /* m_unCollectedFood(0),
-   m_nEnergy(0),
-   m_unEnergyPerFoodItem(1),
-   m_unEnergyPerWalkingRobot(1) */ {
+    // m_cExperimentArenaSideX(-0.9f, 1.7f),
+    // m_cExperimentArenaSideY(-1.7f, 1.7f),
+    m_pcFloor(NULL),
+    m_pcRNG(NULL)
+    /* m_unCollectedFood(0),
+    m_nEnergy(0),
+    m_unEnergyPerFoodItem(1),
+    m_unEnergyPerWalkingRobot(1) */ {
 }
 
 /****************************************/
@@ -45,8 +45,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         * Parse the configuration file
         */
         TConfigurationNode& tForaging = GetNode(t_node, "experiment");
-//       /* Get a pointer to the floor entity */
-//       m_pcFloor = &GetSpace().GetFloorEntity();
+        /* Get a pointer to the floor entity */
+        m_pcFloor = &GetSpace().GetFloorEntity();
 //       /* Get the number of food items we want to be scattered from XML */
 //       UInt32 unFoodItems;
 //       GetNodeAttribute(tForaging, "items", unFoodItems);
@@ -55,12 +55,12 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 //       m_fFoodSquareRadius *= m_fFoodSquareRadius;
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
-//       /* Distribute uniformly the items in the environment */
-//       for(UInt32 i = 0; i < unFoodItems; ++i) {
-//          m_cFoodPos.push_back(
-//             CVector2(m_pcRNG->Uniform(m_cForagingArenaSideX),
-//                      m_pcRNG->Uniform(m_cForagingArenaSideY)));
-//       }
+        // /* Distribute uniformly the items in the environment */
+        // for(UInt32 i = 0; i < 8; ++i) {
+        //     m_cFoodPos.push_back(
+        //         CVector2(m_pcRNG->Uniform(m_cExperimentArenaSideX),
+        //                  m_pcRNG->Uniform(m_cExperimentArenaSideY)));
+        // }
         /* Get the output file name from XML */
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
@@ -107,7 +107,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unPlacedLeaders, unPlacedRobots);
 
             /* Get the waypoints node */
-            std::queue<CVector2> waypoints;
+            std::queue<CVector2> waypoints; // Queue to provide to the robot
             TConfigurationNode& wp_tree = GetNode(et_tree, "team");
             /* Go through the nodes (waypoints) */
             TConfigurationNodeIterator itWaypt;
@@ -120,6 +120,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                 /* Coordinate of waypoint */
                 CVector2 coord;
                 GetNodeAttribute(tWaypt, "coord", coord);
+                m_cWaypointPos.push_back(coord);
                 waypoints.push(coord);
             }
             /* Get the newly created leader */
@@ -173,6 +174,18 @@ void CExperimentLoopFunctions::Reset() {
 void CExperimentLoopFunctions::Destroy() {
     /* Close the file */
     m_cOutput.close();
+}
+
+/****************************************/
+/****************************************/
+
+CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane) {
+   for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
+      if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
+         return CColor::ORANGE;
+      }
+   }
+   return CColor::GRAY90;
 }
 
 /****************************************/
