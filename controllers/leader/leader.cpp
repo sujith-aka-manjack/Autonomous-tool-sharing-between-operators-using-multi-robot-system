@@ -76,7 +76,8 @@ CLeader::CLeader() :
     m_pcLEDs(NULL),
     m_pcPosSens(NULL),
     m_bSelected(false),
-    PIDHeading(NULL) {}
+    PIDHeading(NULL),
+    closeToRobot(false) {}
 
 /****************************************/
 /****************************************/
@@ -101,6 +102,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
         m_sWaypointTrackingParams.Init(GetNode(t_node, "waypoint_tracking"));
         /* Flocking-related */
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
+        /* Minimum distance from robot */
+        GetNodeAttribute(GetNode(t_node, "team_distance"), "min_leader_robot_distance", minDistanceFromRobot);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -157,6 +160,8 @@ void CLeader::ControlStep() {
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
 
+    closeToRobot = false;
+
     // for(int i = 0; i < waypoints.size(); i++) {
     //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
     // }
@@ -165,6 +170,38 @@ void CLeader::ControlStep() {
     /* Receive new messages */
     /*----------------------*/
     GetMessages();
+
+    /*------------------------*/
+    /* Update sensor readings */
+    /*------------------------*/
+    UpdateSensors();
+
+    /*---------*/
+    /* Control */
+    /*---------*/
+
+    /* Follow the control vector only if selected */
+    if(m_bSelected) {
+        SetWheelSpeedsFromVector(m_cControl);
+    }
+    else {
+        if( !closeToRobot ) {
+            /* Stop if other robots are too far from itself */
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+        }
+        else if( !waypoints.empty() ) {
+            /* Calculate overall force applied to the robot */
+            CVector2 waypointForce = VectorToWaypoint();        // Attraction to waypoint
+            CVector2 otherForce = GetOtherRepulsionVector();    // Repulsion from other robots (other team and chain robots)
+            CVector2 sumForce = waypointForce + otherForce;
+            // std::cout << "waypointForce: " << waypointForce << std::endl;
+            // std::cout << "otherForce: " << otherForce << std::endl;
+            // std::cout << "sumForce: " << sumForce << std::endl;
+            SetWheelSpeedsFromVectorHoming(GetOtherRepulsionVector() + VectorToWaypoint());
+        }
+        else
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    }
 
     /* Create new message */
     msg = CByteArray(16, 255);
@@ -182,30 +219,6 @@ void CLeader::ControlStep() {
     // else
     //     msg[msg_index++] = 0;
     msg[msg_index++] = 1;
-
-    /*---------*/
-    /* Control */
-    /*---------*/
-
-    /* Follow the control vector only if selected */
-    if(m_bSelected) {
-        SetWheelSpeedsFromVector(m_cControl);
-    }
-    else {
-        if( !waypoints.empty() ) {
-            // Collision avoidance vector
-            /* Calculate overall force applied to the robot */
-            CVector2 waypointForce = VectorToWaypoint();
-            CVector2 otherForce = GetOtherRepulsionVector();
-            CVector2 sumForce = waypointForce + otherForce;
-            std::cout << "waypointForce: " << waypointForce << std::endl;
-            std::cout << "otherForce: " << otherForce << std::endl;
-            std::cout << "sumForce: " << sumForce << std::endl;
-            SetWheelSpeedsFromVectorHoming(GetOtherRepulsionVector() + VectorToWaypoint());
-        }
-        else
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-    }
 
     /*--------------*/
     /* Send message */
@@ -339,7 +352,20 @@ void CLeader::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CLeader::UpdateSensors() {}
+void CLeader::UpdateSensors() {
+    /* Combine messages received from its own followers and chain entities */
+    std::vector<Message> combinedMsgs(chainMsgs);
+    combinedMsgs.insert(std::end(combinedMsgs),
+                        std::begin(teamMsgs),
+                        std::end(teamMsgs));
+
+    /* Check whether follower or chain is nearby (within threshold) */
+    for(int i = 0 ; i < combinedMsgs.size(); i++) {
+        Real dist = combinedMsgs[i].direction.Length();
+        if(dist < minDistanceFromRobot)
+            closeToRobot = true;
+    }
+}
 
 /****************************************/
 /****************************************/

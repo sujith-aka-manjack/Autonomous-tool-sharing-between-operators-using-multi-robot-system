@@ -278,6 +278,9 @@ private:
     /* Ordered list of waypoints to visit */
     std::queue<CVector2> waypoints;
 
+    /* Flag to know whether a follower or a chain is nearby */
+    bool closeToRobot;
+
     /* Incoming message buffer (occurances of public uncontrollable events) */
     // std::map<size_t, bool> pub_events;
 
@@ -287,6 +290,8 @@ private:
     * of the XML configuration file, under the
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
+    /* The leader can move as long as it is withthin the minimum distance threshold from the robots */
+    Real minDistanceFromRobot;
 };
 
 #endif

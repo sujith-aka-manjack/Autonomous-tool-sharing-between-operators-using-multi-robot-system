@@ -73,6 +73,7 @@
         <team_flocking target_distance="15"
                        gain="1000"
                        exponent="2" />
+        <team_distance min_leader_robot_distance="70" />
       </params>
     </leader_controller>
 
