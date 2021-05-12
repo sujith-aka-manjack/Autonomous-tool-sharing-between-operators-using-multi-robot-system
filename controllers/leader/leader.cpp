@@ -361,22 +361,15 @@ CVector2 CLeader::VectorToWaypoint() {
     }
 
     /* Calculate a normalized vector that points to the next waypoint */
-    // CRadians angle = cZAngle - waypoints.front().Angle();
-
     CVector2 cAccum = waypoints.front() - pos2d;
+
     std::cout << "cAccum: " << cAccum << std::endl;
     std::cout << "angle: " << cAccum.Angle() << std::endl;
+
     cAccum.Rotate((-cZAngle).SignedNormalize());
     
     std::cout << "cAccum: " << cAccum << std::endl;
     std::cout << "angle: " << cAccum.Angle() << std::endl;
-
-    // std::cout << "cZAngle: " << cZAngle << std::endl;
-    // std::cout << "Waypts: " << waypoints.front().Angle() << std::endl;
-    // std::cout << "angle: " << angle << std::endl;
-    // CVector2 cAccum = CVector2(dist, angle);
-    // std::cout << res << std::endl;
-    // std::cout << cAccum.Length() << ", " << 
 
     if(cAccum.Length() > 0.0f) {
         /* Make the vector as long as the max speed */

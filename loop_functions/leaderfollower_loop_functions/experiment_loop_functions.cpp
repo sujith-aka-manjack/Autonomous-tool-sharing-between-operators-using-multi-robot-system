@@ -179,12 +179,12 @@ void CExperimentLoopFunctions::Destroy() {
 /****************************************/
 
 CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane) {
-   for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
-      if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
-         return CColor::ORANGE;
-      }
-   }
-   return CColor::GRAY90;
+    for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
+        if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
+            return CColor::ORANGE;
+        }
+    }
+    return CColor::GRAY90;
 }
 
 /****************************************/
