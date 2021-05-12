@@ -214,10 +214,10 @@ void CLeader::ControlStep() {
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
     /* Set whether it has seen a chain */
-    // if( !chainMsgs.empty() || !otherLeaderMsgs.empty() )
-    //     msg[msg_index++] = 1;
-    // else
-    //     msg[msg_index++] = 0;
+    if( !chainMsgs.empty() || !otherLeaderMsgs.empty() )
+        msg[msg_index++] = 1;
+    else
+        msg[msg_index++] = 0;
     msg[msg_index++] = 1;
 
     /*--------------*/

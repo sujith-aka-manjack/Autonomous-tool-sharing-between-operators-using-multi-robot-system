@@ -235,16 +235,13 @@ protected:
     virtual void Callback_Stop(void* data);
     virtual void Callback_JoinLeader(void* data);
     virtual void Callback_JoinChain(void* data);
-    virtual void Callback_Wait(void* data);
 
     virtual unsigned char Check_ChainNear(void* data);
     virtual unsigned char Check_ChainFar(void* data);
-    virtual unsigned char Check_ClosestToChain(void* data);
-    virtual unsigned char Check_NotClosestToChain(void* data);
     virtual unsigned char Check_LeaderNear(void* data);
     virtual unsigned char Check_LeaderFar(void* data);
-    virtual unsigned char Check_SingleChain(void* data);
-    virtual unsigned char Check_MultiChain(void* data);
+    virtual unsigned char Check_ClosestToChain(void* data);
+    virtual unsigned char Check_NotClosestToChain(void* data);
 
 private:
 
@@ -283,7 +280,6 @@ private:
     Real minChainDistance; // Distance to the closest chain entity
     bool isClosestToChain;
     std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
-    size_t identicalChain;  // Number of nearby chains that have the same connnecting targets (i.e. furthest two chain entities)
 
     /* Outgoing message */
     CByteArray msg;
