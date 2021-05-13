@@ -451,11 +451,9 @@ void CFollower::UpdateSensors() {
                 CVector2 diff = otherLeaderMsgs[i].direction - otherChainMsgs[j].direction;
                 Real dist = diff.Length();
                 std::cout << "Dist between LC: " << dist << std::endl;
-                if(dist < toChainThreshold && otherLeaderMsgs[i].hasSeenChain) {
-                    if(dist < minChainDistance) {
-                        isClosestToChain = false;
-                        break;
-                    }
+                if(dist < minChainDistance && otherLeaderMsgs[i].hasSeenChain) {
+                    isClosestToChain = false;
+                    break;
                 }
             }
             if( !isClosestToChain )
