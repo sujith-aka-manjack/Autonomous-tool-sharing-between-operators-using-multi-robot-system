@@ -209,12 +209,11 @@ void CLeader::ControlStep() {
     /* Set its state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
     /* Set sender ID in msg */
-    std::string id = this->GetId();
-    msg[msg_index++] = stoi(id.substr(1));  // For leader, ID = teamID
+    msg[msg_index++] = teamID;  // For leader, ID = teamID
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
     /* Set whether it has seen a chain */
-    if( !chainMsgs.empty() || !otherLeaderMsgs.empty() )
+    if( !chainMsgs.empty() || !otherLeaderMsgs.empty() || !otherTeamMsgs.empty() )
         msg[msg_index++] = 1;
     else
         msg[msg_index++] = 0;

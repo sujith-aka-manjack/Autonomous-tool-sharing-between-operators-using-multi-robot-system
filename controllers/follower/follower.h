@@ -138,8 +138,8 @@ public:
         std::string id;
         UInt8 teamid;
         CVector2 direction;
-        bool hasSeenChain; // FOLLOWER
-        std::vector<std::string> connections; // CHAIN
+        bool hasSeenOtherTeam; // FOLLOWER
+        // std::vector<std::string> connections; // CHAIN
     };
 
 public:
@@ -277,11 +277,11 @@ private:
     std::vector<Message> otherTeamMsgs;
 
     /* Sensor reading results */
-    Real minChainDistance; // Distance to the closest chain entity
+    Real minNonTeamDistance; // Distance to the closest non-team member
     UInt8 closestLeader;
     Real closestLeaderDistance;
-    bool isClosestToChain;
-    std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
+    bool isClosestToOther;
+    // std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
 
     /* Outgoing message */
     CByteArray msg;
