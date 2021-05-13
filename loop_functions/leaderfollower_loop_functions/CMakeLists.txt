@@ -12,5 +12,6 @@ target_link_libraries(leaderfollower_loop_functions
   argos3core_simulator
   argos3plugin_simulator_entities
   argos3plugin_simulator_epuck
+  argos3plugin_simulator_epuckleader
   argos3plugin_simulator_qtopengl
   ${ARGOS_QTOPENGL_LIBRARIES})

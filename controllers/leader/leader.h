@@ -36,7 +36,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT.h"
-#include "pid.h"
+#include <utility/pid.h>
 
 // #include <map>
 

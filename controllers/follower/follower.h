@@ -34,7 +34,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
 #include "SCT.h"
-#include "pid.h"
+#include <utility/pid.h>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
