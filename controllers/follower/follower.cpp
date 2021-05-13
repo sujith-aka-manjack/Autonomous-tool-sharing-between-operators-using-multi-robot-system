@@ -223,7 +223,7 @@ void CFollower::ControlStep() {
     switch(currentState) {
         case RobotState::FOLLOWER: {
             std::cout << "State: FOLLOWER" << std::endl;
-            m_pcLEDs->SetAllColors(CColor::BLACK);
+            m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             /* Set current team ID in msg */
             msg[msg_index++] = teamID;
@@ -237,7 +237,7 @@ void CFollower::ControlStep() {
         }
         case RobotState::CHAIN: {
             std::cout << "State: CHAIN" << std::endl;
-            m_pcLEDs->SetAllColors(CColor::RED);
+            m_pcLEDs->SetAllColors(CColor::CYAN);
 
             /* Set current team ID in msg */
             msg[msg_index++] = teamID;

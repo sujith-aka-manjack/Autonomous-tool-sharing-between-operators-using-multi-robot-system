@@ -155,7 +155,7 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck
     */
-   DrawText(CVector3(0.0, 0.0, 0.3),   // position
+   DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str()); // text
 }
 

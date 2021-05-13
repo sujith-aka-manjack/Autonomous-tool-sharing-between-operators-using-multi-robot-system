@@ -116,7 +116,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
 
     /* Set LED color */
-    m_pcLEDs->SetAllColors(CColor::BLUE);
+    m_pcLEDs->SetAllColors(CColor::BLACK);
 
     /* Init PID Controller */
     PIDHeading = new PID(0.1,                             // dt  (loop interval time)

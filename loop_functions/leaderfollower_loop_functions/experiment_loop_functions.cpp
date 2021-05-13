@@ -137,7 +137,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         }
     }
     catch(CARGoSException& ex) {
-        THROW_ARGOSEXCEPTION_NESTED("Error parsing loop functions!", ex);
+        THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
     }
 }
 
