@@ -184,7 +184,9 @@ void CFollower::ControlStep() {
 
     /* Reset sensor reading results */
     minChainDistance = __FLT_MAX__;
-    isClosestToChain = true;
+    isClosestToChain = false;
+    closestLeaderDistance = __FLT_MAX__;
+    closestLeader = 255;    // No leader
     connections.clear();
 
     /*----------------------*/
@@ -217,7 +219,7 @@ void CFollower::ControlStep() {
     std::string id = this->GetId();
     msg[msg_index++] = stoi(id.substr(1));
 
-    // Decide whether to communicate depending on current state (switch between follower and chain)
+    // Decide what to communicate depending on current state (switch between follower and chain)
     switch(currentState) {
         case RobotState::FOLLOWER: {
             std::cout << "State: FOLLOWER" << std::endl;
@@ -238,7 +240,6 @@ void CFollower::ControlStep() {
             m_pcLEDs->SetAllColors(CColor::RED);
 
             /* Set current team ID in msg */
-            teamID = 255;
             msg[msg_index++] = teamID;
 
             /* Set connected chain entity info to message (up to 6) */
@@ -378,16 +379,21 @@ void CFollower::UpdateSensors() {
         if(leaderMsg.direction.Length() > 0.0f)
             combinedTeamMsgs.push_back(leaderMsg);
 
+        /* Was any chain or other leader detected? Cannot be closest to chain if none were detected */
+        if(combinedChainMsgs.empty())
+            isClosestToChain = false;
+        else
+            isClosestToChain = true;
+
         Real minDist = __FLT_MAX__;
         for(int i = 0; i < combinedTeamMsgs.size(); i++) {
             for(int j = 0; j < combinedChainMsgs.size(); j++) {
-
                 CVector2 diff = combinedTeamMsgs[i].direction - combinedChainMsgs[j].direction;
                 Real dist = diff.Length();
                 if(dist < minDist && combinedTeamMsgs[i].hasSeenChain) {
                     minDist = dist;
                     if(minDist < minChainDistance) {
-                        isClosestToChain = false;
+                        isClosestToChain = false;   // There is a teammate that is closer to the chain
                         break;
                     }
                 }
@@ -397,26 +403,56 @@ void CFollower::UpdateSensors() {
         }
     }
     else if(currentState == RobotState::CHAIN) {
-        /* Check the distance to another chain that's the closest */
-        for(int i = 0 ; i < chainMsgs.size(); i++) {
-            Real dist = chainMsgs[i].direction.Length();
-            if(dist < minChainDistance)
-                minChainDistance = dist;
+        /* Check the distance to the closest leader */
+        /* Event: leaderNear, leaderFar */
+        for(int i = 0 ; i < otherLeaderMsgs.size(); i++) {
+            Real dist = otherLeaderMsgs[i].direction.Length();
+            if(dist < closestLeaderDistance) {
+                closestLeaderDistance = dist;
+                closestLeader = stoi(otherLeaderMsgs[i].id.substr(1));
+            }
         }
-
-        std::cout << "Dist to chain: " << minChainDistance << std::endl;
+        
+        std::cout << "Dist to leader(" << closestLeader << "): " << closestLeaderDistance << std::endl;
         
         /* Check if any leader is closer to the chain and has seen a chain */
         /* Event: closestToChain, notClosestToChain */
-        Real minDist = __FLT_MAX__;
         for(int i = 0; i < otherLeaderMsgs.size(); i++) {
-            for(int j = 0; j < chainMsgs.size(); j++) {
 
-                CVector2 diff = otherLeaderMsgs[i].direction - chainMsgs[j].direction;
+            /* Remove other leader currently being considered from combinedChainMsgs */
+            std::vector<Message> otherChainMsgs(combinedChainMsgs);
+            auto itr = otherChainMsgs.begin();
+            while(itr != otherChainMsgs.end()) {
+                if((*itr).id == otherLeaderMsgs[i].id)
+                    itr = otherChainMsgs.erase(itr);
+                else
+                    itr++;
+            }
+
+            /* Was any chain or other leader detected? Cannot be closest to chain if none were detected */
+            if(otherChainMsgs.empty())
+                isClosestToChain = false;
+            else
+                isClosestToChain = true;
+
+            /* Check the distance to another chain that's the closest to itself */
+            minChainDistance = __FLT_MAX__;
+            for(int j = 0 ; j < otherChainMsgs.size(); j++) {
+                Real dist = otherChainMsgs[j].direction.Length();
+                if(dist < minChainDistance)
+                    minChainDistance = dist;
+            }
+            std::cout << "Dist to chain: " << minChainDistance << std::endl;
+            std::cout << "combinedChainMsgs: " << combinedChainMsgs.size() << std::endl;
+            std::cout << "otherChainMsgs: " << otherChainMsgs.size() << std::endl;
+
+            /* Check whether the leader or itself is closer to a chain */
+            for(int j = 0; j < otherChainMsgs.size(); j++) {
+                CVector2 diff = otherLeaderMsgs[i].direction - otherChainMsgs[j].direction;
                 Real dist = diff.Length();
-                if(dist < minDist && otherLeaderMsgs[i].hasSeenChain) {
-                    minDist = dist;
-                    if(minDist < minChainDistance) {
+                std::cout << "Dist between LC: " << dist << std::endl;
+                if(dist < toChainThreshold && otherLeaderMsgs[i].hasSeenChain) {
+                    if(dist < minChainDistance) {
                         isClosestToChain = false;
                         break;
                     }
@@ -676,11 +712,13 @@ void CFollower::Callback_Stop(void* data) {
 
 void CFollower::Callback_JoinLeader(void* data) {
     std::cout << "Action: JoinLeader" <<std::endl;
+    teamID = closestLeader;
     currentState = RobotState::FOLLOWER;
 }
 
 void CFollower::Callback_JoinChain(void* data) {
     std::cout << "Action: JoinChain" <<std::endl;
+    teamID = 255;
     currentState = RobotState::CHAIN;
 }
 
@@ -721,8 +759,7 @@ unsigned char CFollower::Check_LeaderNear(void* data) {
     if(currentState == RobotState::CHAIN) {
         for(int i = 0; i < otherLeaderMsgs.size(); i++) {
             if(otherLeaderMsgs[i].direction.Length() < toFollowThreshold) {
-                teamID = otherLeaderMsgs[i].teamid;
-                std::cout << "Event: " << 1 << " - leaderNear(" << teamID << ")" << std::endl;
+                std::cout << "Event: " << 1 << " - leaderNear(" << otherLeaderMsgs[i].teamid << ")" << std::endl;
                 return 1;
             }
         }
@@ -745,41 +782,13 @@ unsigned char CFollower::Check_LeaderFar(void* data) {
 }
 
 unsigned char CFollower::Check_ClosestToChain(void* data) {
-    if(currentState == RobotState::FOLLOWER) {
-        /* Check whether it is the closest to other chain entities (chain & other leaders) among nearby TEAMMATES */
-        if( !chainMsgs.empty() || !otherLeaderMsgs.empty() ) {
-            std::cout << "Event: " << (isClosestToChain == true) << " - closestToChain" << std::endl;
-            return isClosestToChain == true;
-        }
-    }
-    else if(currentState == RobotState::CHAIN) {
-        /* Check whether it is the closest to other chains among nearby LEADERS */
-        if( !chainMsgs.empty() ) {
-            std::cout << "Event: " << (isClosestToChain == true) << " - closestToChain" << std::endl;
-            return isClosestToChain == true;
-        }
-    }
-    std::cout << "Event: " << 0 << " - closestToChain" << std::endl; // Default output
-    return 0;
+    std::cout << "Event: " << isClosestToChain << " - closestToChain" << std::endl; // Default output
+    return isClosestToChain;
 }
 
 unsigned char CFollower::Check_NotClosestToChain(void* data) {
-    if(currentState == RobotState::FOLLOWER) {
-        /* Check whether it is NOT closest to other chain entities (chain & other leaders) among nearby TEAMMATES */
-        if( !chainMsgs.empty() || !otherLeaderMsgs.empty() ) {
-            std::cout << "Event: " << (isClosestToChain == false) << " - notClosestToChain" << std::endl;
-            return isClosestToChain == false;
-        }
-    }
-    else if(currentState == RobotState::CHAIN) {
-        /* Check whether it is NOT closest to other chains among nearby LEADERS */
-        if( !chainMsgs.empty() ) {
-            std::cout << "Event: " << (isClosestToChain == false) << " - notClosestToChain" << std::endl;
-            return isClosestToChain == false;
-        }
-    }
-    std::cout << "Event: " << 1 << " - notClosestToChain" << std::endl; // Default output
-    return 1;
+    std::cout << "Event: " << !isClosestToChain << " - notClosestToChain" << std::endl; // Default output
+    return !isClosestToChain;
 }
 
 /*

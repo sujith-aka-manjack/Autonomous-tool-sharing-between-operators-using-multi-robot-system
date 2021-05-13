@@ -278,6 +278,8 @@ private:
 
     /* Sensor reading results */
     Real minChainDistance; // Distance to the closest chain entity
+    UInt8 closestLeader;
+    Real closestLeaderDistance;
     bool isClosestToChain;
     std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
 
