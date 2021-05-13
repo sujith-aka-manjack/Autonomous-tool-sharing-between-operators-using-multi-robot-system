@@ -40,4 +40,4 @@ add_subdirectory(loop_functions)
 # add_subdirectory(embedding)
 
 # Custom e-puck model
-# add_subdirectory(epuckpos)
+add_subdirectory(e-puck_leader)

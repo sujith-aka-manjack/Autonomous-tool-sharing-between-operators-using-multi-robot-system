@@ -2,6 +2,7 @@
 #include <argos3/core/simulator/simulator.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
+#include <e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
 
@@ -126,8 +127,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             std::ostringstream cEPId;
             cEPId.str("");
             cEPId << "L" << unPlacedLeaders;
-            CEPuckEntity& cEPuck = dynamic_cast<CEPuckEntity&>(GetSpace().GetEntity(cEPId.str()));
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
+            CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
             /* Set list of waypoints to leader */
             cController.SetWaypoints(waypoints);
 
@@ -197,36 +198,38 @@ void CExperimentLoopFunctions::PreStep() {
     UInt32 unChains = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
 
+    /* Get all the e-puck_leaders */
+    CSpace::TMapPerType& m_cEPuckLeaders = GetSpace().GetEntitiesByType("e-puck_leader");
+    for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+        it != m_cEPuckLeaders.end();
+        ++it) {
+
+        /* Get handle to e-puck_leader entity and controller */
+        CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+        CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+        /* Get the position of the leader on the ground as a CVector2 */
+        CVector2 cPos = CVector2(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                 cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+        leaderPos[cEPuckLeader.GetId()] = cPos;
+    }
+
     /* Get all the e-pucks */
     CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
-
     for(CSpace::TMapPerType::iterator it = m_cEPucks.begin();
         it != m_cEPucks.end();
         ++it) {
 
         /* Get handle to e-puck entity and controller */
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-        
-        if(dynamic_cast<CFollower*>(&cEPuck.GetControllableEntity().GetController())) {
-            /* If the e-puck is a FOLLOWER robot */
-            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+        CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
-            /* Count how many e-pucks are in each state */
-            if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
-                if( cController.GetTeamID() == 1 ) ++unFollowers1;
-                else ++unFollowers2;
-            } 
-            else ++unChains;
-
-        } else if(dynamic_cast<CLeader*>(&cEPuck.GetControllableEntity().GetController())) {
-            /* If the e-puck is a LEADER robot */
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuck.GetControllableEntity().GetController());
-
-            /* Get the position of the leader on the ground as a CVector2 */
-            CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
-                                     cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-            leaderPos[cEPuck.GetId()] = cPos;
-        }
+        /* Count how many e-pucks are in each state */
+        if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
+            if( cController.GetTeamID() == 1 ) ++unFollowers1;
+            else ++unFollowers2;
+        } 
+        else ++unChains;
     }
 
 //    /* Logic to pick and drop food items */
@@ -323,6 +326,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         CRange<Real> cAreaRange(-fHalfSide, fHalfSide);
         /* Place robots */
         UInt32 unTrials;
+        CEPuckLeaderEntity* pcEPL;
         CEPuckEntity* pcEP;
         std::ostringstream cEPId;
         CVector3 cEPPos;
@@ -334,14 +338,14 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             cEPId.str("");
             cEPId << "L" << (i + un_leader_id_start);
             /* Create the leader in the origin and add it to ARGoS space */
-            pcEP = new CEPuckEntity(cEPId.str(),
-                                    HL_CONTROLLER,
-                                    CVector3(),
-                                    CQuaternion(),
-                                    EP_RAB_RANGE,
-                                    EP_RAB_DATA_SIZE,
-                                    "");
-            AddEntity(*pcEP);
+            pcEPL = new CEPuckLeaderEntity(cEPId.str(),
+                                           HL_CONTROLLER,
+                                           CVector3(),
+                                           CQuaternion(),
+                                           EP_RAB_RANGE,
+                                           EP_RAB_DATA_SIZE,
+                                           "");
+            AddEntity(*pcEPL);
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;
@@ -353,7 +357,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                            0.0f);
                 cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
                                      CVector3::Z);
-                bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+                bDone = MoveEntity(pcEPL->GetEmbodiedEntity(), cEPPos, cEPRot);
             } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
             if(!bDone) {
                 THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
