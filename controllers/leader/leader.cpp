@@ -357,6 +357,12 @@ void CLeader::UpdateSensors() {
     combinedMsgs.insert(std::end(combinedMsgs),
                         std::begin(teamMsgs),
                         std::end(teamMsgs));
+    combinedMsgs.insert(std::end(combinedMsgs),
+                        std::begin(otherLeaderMsgs),
+                        std::end(otherLeaderMsgs));
+    combinedMsgs.insert(std::end(combinedMsgs),
+                        std::begin(otherTeamMsgs),
+                        std::end(otherTeamMsgs));
 
     /* Check whether follower or chain is nearby (within threshold) */
     for(int i = 0 ; i < combinedMsgs.size(); i++) {
