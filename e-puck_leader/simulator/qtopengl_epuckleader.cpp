@@ -222,7 +222,7 @@ namespace argos {
 
    void CQTOpenGLEPuckLeader::RenderChassis() {
       /* Set material */
-      SetGreenPlasticMaterial();
+      SetRedPlasticMaterial();
       /* This part covers the bottom face (parallel to XY) */
       glBegin(GL_QUADS);
       /* Bottom face */
@@ -261,7 +261,7 @@ namespace argos {
 
    void CQTOpenGLEPuckLeader::RenderBody() {
       /* Set material */
-      SetGreenPlasticMaterial();
+      SetRedPlasticMaterial();
       CVector2 cVertex(BODY_RADIUS, 0.0f);
       CRadians cAngle(-CRadians::TWO_PI / m_unVertices);
       /* Bottom part */
