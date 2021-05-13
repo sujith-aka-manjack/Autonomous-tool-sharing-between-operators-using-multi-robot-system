@@ -3,7 +3,7 @@
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/core/utility/logging/argos_log.h>
-
+#include <utility/team_color.h>
 #include <algorithm>
 
 /****************************************/

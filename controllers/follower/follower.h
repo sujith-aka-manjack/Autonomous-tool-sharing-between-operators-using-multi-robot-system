@@ -42,15 +42,6 @@
  */
 using namespace argos;
 
-/* Team colors */
-std::unordered_map<UInt8, CColor> teamColor = {
-                                                {1, CColor::RED},
-                                                {2, CColor::BLUE},
-                                                {3, CColor::YELLOW},
-                                                {4, CColor::MAGENTA},
-                                                {5, CColor::WHITE},
-                                              };
-
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */

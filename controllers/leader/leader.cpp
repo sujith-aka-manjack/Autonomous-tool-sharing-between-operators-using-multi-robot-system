@@ -2,7 +2,7 @@
 #include "leader.h"
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
-
+#include <utility/team_color.h>
 #include <algorithm>
 
 /****************************************/
@@ -116,7 +116,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
 
     /* Set LED color */
-    m_pcLEDs->SetAllColors(CColor::BLACK);
+    m_pcLEDs->SetAllColors(teamColor[teamID]);
 
     /* Init PID Controller */
     PIDHeading = new PID(0.1,                             // dt  (loop interval time)

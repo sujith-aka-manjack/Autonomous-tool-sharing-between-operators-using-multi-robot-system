@@ -41,3 +41,6 @@ add_subdirectory(loop_functions)
 
 # Custom e-puck model
 add_subdirectory(e-puck_leader)
+
+# Utility scripts
+add_subdirectory(utility)
