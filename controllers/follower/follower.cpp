@@ -228,11 +228,8 @@ void CFollower::ControlStep() {
             /* Set current team ID in msg */
             msg[msg_index++] = teamID;
 
-            /* Set whether it has seen a chain */
-            if( !chainMsgs.empty() || !otherLeaderMsgs.empty() || !otherTeamMsgs.empty() )
-                msg[msg_index++] = 1;
-            else
-                msg[msg_index++] = 0;
+            /* Set how many non-team members it has seen */
+            msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
             break;
         }
         case RobotState::CHAIN: {
@@ -315,13 +312,13 @@ void CFollower::GetMessages() {
                 /* Message from leader */
                 if(msg.state == RobotState::LEADER) {
                     msg.id = 'L' + msg.id;
-                    msg.hasSeenOtherTeam = tMsgs[i].Data[index++];
+                    msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     leaderMsg = msg;
                 } 
                 /* Message from follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    msg.hasSeenOtherTeam = tMsgs[i].Data[index++];
+                    msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     teamMsgs.push_back(msg);
                 }
             } 
@@ -330,13 +327,13 @@ void CFollower::GetMessages() {
                 /* Message from other leader */
                 if(msg.state == RobotState::LEADER) {
                     msg.id = 'L' + msg.id;
-                    msg.hasSeenOtherTeam = tMsgs[i].Data[index++];
+                    msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     otherLeaderMsgs.push_back(msg);   
                 }
                 /* Message from other follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    msg.hasSeenOtherTeam = tMsgs[i].Data[index++];
+                    msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     otherTeamMsgs.push_back(msg); 
                 }
             }
@@ -393,7 +390,7 @@ void CFollower::UpdateSensors() {
             for(int j = 0; j < nonTeamMsgs.size(); j++) {
                 CVector2 diff = combinedTeamMsgs[i].direction - nonTeamMsgs[j].direction;
                 Real dist = diff.Length();
-                if(dist < minDist && combinedTeamMsgs[i].hasSeenOtherTeam) {
+                if(dist < minDist && combinedTeamMsgs[i].numOtherTeamSeen > 0) {
                     minDist = dist;
                     if(minDist < minNonTeamDistance) {
                         isClosestToOther = false;   // There is a team member that is closer to a non-team member
@@ -433,10 +430,12 @@ void CFollower::UpdateSensors() {
             }
 
             /* Was any non-team member detected? Cannot be closest to non-team member if none were detected */
-            if(tempOtherMsgs.empty())
+            if(tempOtherMsgs.empty()) {
                 isClosestToOther = false;
-            else
+            }
+            else {
                 isClosestToOther = true;
+            }
 
             /* Check the distance to a robot that's the closest to itself and not part of the currently considered team*/
             minNonTeamDistance = __FLT_MAX__;
@@ -454,7 +453,7 @@ void CFollower::UpdateSensors() {
                 CVector2 diff = otherLeaderMsgs[i].direction - tempOtherMsgs[j].direction;
                 Real dist = diff.Length();
                 std::cout << "Dist between LC: " << dist << std::endl;
-                if(dist < minNonTeamDistance && otherLeaderMsgs[i].hasSeenOtherTeam) {
+                if(dist < minNonTeamDistance && otherLeaderMsgs[i].numOtherTeamSeen > 1) {  // Must be >1 to exclude itself, who is a chain
                     isClosestToOther = false;
                     break;
                 }
@@ -738,6 +737,10 @@ unsigned char CFollower::Check_ChainNear(void* data) {
             return 0;
         }
     }
+    else if(currentState == RobotState::CHAIN) {
+        std::cout << "Event: " << 0 << " - chainNear" << std::endl;
+        return 0;
+    }
     std::cout << "Event: " << 1 << " - chainNear" << std::endl; // Robot is the chain
     return 1;
 }
@@ -777,6 +780,10 @@ unsigned char CFollower::Check_LeaderFar(void* data) {
                 return 0;
             }
         }
+    }
+    else if(currentState == RobotState::FOLLOWER) {
+        std::cout << "Event: " << 0 << " - leaderFar" << std::endl;
+        return 0;
     }
     std::cout << "Event: " << 1 << " - leaderFar" << std::endl;
     return 1;

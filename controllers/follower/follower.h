@@ -138,7 +138,7 @@ public:
         std::string id;
         UInt8 teamid;
         CVector2 direction;
-        bool hasSeenOtherTeam; // FOLLOWER
+        UInt8 numOtherTeamSeen;
         // std::vector<std::string> connections; // CHAIN
     };
 

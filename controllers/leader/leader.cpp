@@ -212,12 +212,8 @@ void CLeader::ControlStep() {
     msg[msg_index++] = teamID;  // For leader, ID = teamID
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
-    /* Set whether it has seen a chain */
-    if( !chainMsgs.empty() || !otherLeaderMsgs.empty() || !otherTeamMsgs.empty() )
-        msg[msg_index++] = 1;
-    else
-        msg[msg_index++] = 0;
-    msg[msg_index++] = 1;
+    /* Set how many non-team members it has seen */
+    msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
 
     /*--------------*/
     /* Send message */
@@ -306,28 +302,22 @@ void CLeader::GetMessages() {
                 msg.id = 'F' + msg.id;
 
                 /* Store which chain entities the other chain robot is connected to */
-                while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                    std::string chainID;
-                    chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.connections.push_back(chainID);
-                }
+                // while(tMsgs[i].Data[index] != 255) {    // Check if data exists
+                //     std::string chainID;
+                //     chainID += (char)tMsgs[i].Data[index++];            // First char of ID
+                //     chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                //     msg.connections.push_back(chainID);
+                // }
                 
-                sort(std::begin(msg.connections), std::end(msg.connections));
+                // sort(std::begin(msg.connections), std::end(msg.connections));
                 chainMsgs.push_back(msg);
             } 
             /* Message from team */
             else if(msg.teamid == teamID) {
-                // /* Message from leader */
-                // if(msg.state == RobotState::LEADER) {
-                //     msg.id = 'L' + msg.id;
-                //     msg.hasSeenChain = tMsgs[i].Data[index++];
-                //     leaderMsg = msg;
-                // } 
                 /* Message from follower */
                 if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    msg.hasSeenChain = tMsgs[i].Data[index++];
+                    // msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     teamMsgs.push_back(msg);
                 }
             } 
