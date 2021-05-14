@@ -19,6 +19,7 @@ CManualControlQTUserFunctions::CManualControlQTUserFunctions() :
 
    /* Register function to draw entity name */
    RegisterUserFunction<CManualControlQTUserFunctions,CEPuckEntity>(&CManualControlQTUserFunctions::Draw);
+   RegisterUserFunction<CManualControlQTUserFunctions,CEPuckLeaderEntity>(&CManualControlQTUserFunctions::Draw);
 }
 
 /****************************************/
@@ -100,9 +101,9 @@ void CManualControlQTUserFunctions::KeyReleased(QKeyEvent* pc_event) {
 
 void CManualControlQTUserFunctions::EntitySelected(CEntity& c_entity) {
    /* Make sure the entity is an e-puck */
-   CEPuckEntity* pcFB = dynamic_cast<CEPuckEntity*>(&c_entity);
+   CEPuckLeaderEntity* pcFB = dynamic_cast<CEPuckLeaderEntity*>(&c_entity);
    if(!pcFB) return;
-   /* It's an e-puck; extract its controller */
+   /* It's an e-puck_leader; extract its controller */
    m_pcController = dynamic_cast<CLeader*>(&pcFB->GetControllableEntity().GetController());
    /* Tell that e-puck that it is selected */
    m_pcController->Select();
@@ -154,6 +155,18 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
    /* The position of the text is expressed wrt the reference point of the e-puck
     * See also the description in
     * $ argos3 -q e-puck
+    */
+   DrawText(CVector3(0.0, 0.0, 0.2),   // position
+            c_entity.GetId().c_str()); // text
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
+   /* The position of the text is expressed wrt the reference point of the e-puck_leader
+    * See also the description in
+    * $ argos3 -q e-puck_leader
     */
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str()); // text
