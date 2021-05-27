@@ -21,22 +21,26 @@ public:
    virtual CColor GetFloorColor(const CVector2& c_position_on_plane);
    virtual void PreStep();
 
+   /* Structure to store task data */
+   struct Task {
+      CVector2 position;
+      Real radius;
+      UInt8 min_robot_num;
+      UInt8 max_robot_num;
+      UInt8 demand;
+   };
+
 private:
 
-//    Real m_fFoodSquareRadius;
    // CRange<Real> m_cExperimentArenaSideX, m_cExperimentArenaSideY;
    std::vector<CVector2> m_cWaypointPos;
+   std::vector<Task> m_tTasks;
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
 
    /* Output file */
    std::string m_strOutput;
    std::ofstream m_cOutput;
-
-//    UInt32 m_unCollectedFood;
-//    SInt64 m_nEnergy;
-//    UInt32 m_unEnergyPerFoodItem;
-//    UInt32 m_unEnergyPerWalkingRobot;
 
    /* Distribute a leader-robot team */
    void PlaceCluster(const CVector2& c_center,

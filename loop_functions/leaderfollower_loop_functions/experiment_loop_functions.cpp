@@ -27,11 +27,7 @@ CExperimentLoopFunctions::CExperimentLoopFunctions() :
     // m_cExperimentArenaSideX(-0.9f, 1.7f),
     // m_cExperimentArenaSideY(-1.7f, 1.7f),
     m_pcFloor(NULL),
-    m_pcRNG(NULL)
-    /* m_unCollectedFood(0),
-    m_nEnergy(0),
-    m_unEnergyPerFoodItem(1),
-    m_unEnergyPerWalkingRobot(1) */ {
+    m_pcRNG(NULL) {
 }
 
 /****************************************/
@@ -48,12 +44,6 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         TConfigurationNode& tForaging = GetNode(t_node, "experiment");
         /* Get a pointer to the floor entity */
         m_pcFloor = &GetSpace().GetFloorEntity();
-//       /* Get the number of food items we want to be scattered from XML */
-//       UInt32 unFoodItems;
-//       GetNodeAttribute(tForaging, "items", unFoodItems);
-//       /* Get the number of food items we want to be scattered from XML */
-//       GetNodeAttribute(tForaging, "radius", m_fFoodSquareRadius);
-//       m_fFoodSquareRadius *= m_fFoodSquareRadius;
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         // /* Distribute uniformly the items in the environment */
@@ -135,6 +125,35 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             /* Update robot count */
             unPlacedLeaders += unLeaders;
             unPlacedRobots += unRobots;
+        }
+
+        /*
+        * Initialize tasks
+        */
+
+        /* Get the teams node */
+        TConfigurationNode& ts_tree = GetNode(t_node, "tasks");
+        /* Go through the nodes (tasks) */
+        for(itDistr = itDistr.begin(&ts_tree);
+            itDistr != itDistr.end();
+            ++itDistr) {
+
+            /* Get current node (task) */
+            TConfigurationNode& tDistr = *itDistr;
+            /* Initialize task */
+            Task task;
+            /* Task center */
+            GetNodeAttribute(tDistr, "position", task.position);
+            /* Task radius */
+            GetNodeAttribute(tDistr, "radius", task.radius);
+            /* Minimum robot constraint */
+            GetNodeAttribute(tDistr, "minimum_robot_num", task.min_robot_num);
+            /* Maximum robot constraint */
+            GetNodeAttribute(tDistr, "maximum_robot_num", task.max_robot_num);
+            /* Task demand */
+            GetNodeAttribute(tDistr, "task_demand", task.demand);
+
+            m_tTasks.push_back(task);
         }
     }
     catch(CARGoSException& ex) {
