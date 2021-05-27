@@ -39,8 +39,9 @@ add_subdirectory(loop_functions)
 # Descend into the embedding directory
 # add_subdirectory(embedding)
 
-# Custom e-puck model
+# Custom entities
 add_subdirectory(e-puck_leader)
+add_subdirectory(circle_task)
 
 # Utility scripts
 add_subdirectory(utility)
