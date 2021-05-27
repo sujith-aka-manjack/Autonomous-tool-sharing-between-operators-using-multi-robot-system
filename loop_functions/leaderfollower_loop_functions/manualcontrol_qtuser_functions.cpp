@@ -183,11 +183,4 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
 /****************************************/
 /****************************************/
 
-void CManualControlQTUserFunctions::DrawInWorld() {
-
-}
-
-/****************************************/
-/****************************************/
-
 REGISTER_QTOPENGL_USER_FUNCTIONS(CManualControlQTUserFunctions, "manualcontrol_qtuser_functions")

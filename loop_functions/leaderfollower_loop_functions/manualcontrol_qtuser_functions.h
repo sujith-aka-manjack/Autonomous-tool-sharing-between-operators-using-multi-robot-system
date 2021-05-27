@@ -72,11 +72,6 @@ public:
     */
    virtual void Draw(CEPuckLeaderEntity& c_entity);
 
-   /**
-    * Draws other entities in the world.
-    */
-   virtual void DrawInWorld();
-
 private:
 
    /**
