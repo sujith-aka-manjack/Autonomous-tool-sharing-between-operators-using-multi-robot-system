@@ -69,6 +69,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         * Distribute leaders and robots
         */
 
+        std::cout << "[LOG] Adding robots..." << std::endl;
+
         /* ID counts */
         UInt32 unPlacedLeaders = 1;
         UInt32 unPlacedRobots = 1;
@@ -127,9 +129,13 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             unPlacedRobots += unRobots;
         }
 
+        std::cout << "[LOG] Added robots" << std::endl;
+
         /*
         * Initialize tasks
         */
+
+        std::cout << "[LOG] Adding tasks..." << std::endl;
 
         /* Get the teams node */
         TConfigurationNode& ts_tree = GetNode(t_node, "tasks");
@@ -155,6 +161,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 
             m_tTasks.push_back(task);
         }
+
+        std::cout << "[LOG] Added tasks" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
@@ -165,9 +173,6 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CExperimentLoopFunctions::Reset() {
-//    /* Zero the counters */
-//    m_unCollectedFood = 0;
-//    m_nEnergy = 0;
     /* Close the file */
     m_cOutput.close();
     /* Open the file, erasing its contents */
@@ -199,9 +204,14 @@ void CExperimentLoopFunctions::Destroy() {
 /****************************************/
 
 CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane) {
+    for(UInt32 i = 0; i < m_tTasks.size(); ++i) {
+        if((c_position_on_plane - m_tTasks[i].position).SquareLength() < 0.1 ) {
+            return CColor::ORANGE;
+        }
+    }
     for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
         if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
-            return CColor::ORANGE;
+            return CColor::GRAY70;
         }
     }
     return CColor::GRAY90;

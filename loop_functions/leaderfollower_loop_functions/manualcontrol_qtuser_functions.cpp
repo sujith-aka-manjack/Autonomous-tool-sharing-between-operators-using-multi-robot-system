@@ -1,5 +1,6 @@
 #include "manualcontrol_qtuser_functions.h"
 #include <QKeyEvent>
+#include <argos3/plugins/simulator/entities/rab_equipped_entity.h>
 
 /****************************************/
 /****************************************/
@@ -170,6 +171,20 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     */
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str()); // text
+
+   DrawCircle(CVector3(0.0, 0.0, 0.01),
+              CQuaternion(),
+              c_entity.GetRABEquippedEntity().GetRange(),
+              CColor::RED,
+              false,
+              40U);
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlQTUserFunctions::DrawInWorld() {
+
 }
 
 /****************************************/
