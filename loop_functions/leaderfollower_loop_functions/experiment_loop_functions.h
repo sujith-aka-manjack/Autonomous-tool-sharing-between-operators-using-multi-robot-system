@@ -25,9 +25,9 @@ public:
    struct Task {
       CVector2 position;
       Real radius;
-      UInt8 min_robot_num;
-      UInt8 max_robot_num;
-      UInt8 demand;
+      UInt32 min_robot_num;
+      UInt32 max_robot_num;
+      UInt32 demand;
    };
 
 private:
