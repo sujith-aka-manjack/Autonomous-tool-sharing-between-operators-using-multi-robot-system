@@ -5,6 +5,7 @@
 #include <e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
+#include <circle_task/circle_task_entity.h>
 
 #include <unordered_map>
 
@@ -72,8 +73,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         std::cout << "[LOG] Adding robots..." << std::endl;
 
         /* ID counts */
-        UInt32 unPlacedLeaders = 1;
-        UInt32 unPlacedRobots = 1;
+        UInt32 unNextLeaderId = 1;
+        UInt32 unNextRobotId = 1;
         /* Get the teams node */
         TConfigurationNode& et_tree = GetNode(t_node, "teams");
         /* Go through the nodes (teams) */
@@ -97,7 +98,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             Real fDensity;
             GetNodeAttribute(tDistr, "density", fDensity);
             /* Place robots */
-            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unPlacedLeaders, unPlacedRobots);
+            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
 
             /* Get the waypoints node */
             std::queue<CVector2> waypoints; // Queue to provide to the robot
@@ -118,15 +119,15 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             /* Get the newly created leader */
             std::ostringstream cEPId;
             cEPId.str("");
-            cEPId << "L" << unPlacedLeaders;
+            cEPId << "L" << unNextLeaderId;
             CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
             CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
             /* Set list of waypoints to leader */
             cController.SetWaypoints(waypoints);
 
             /* Update robot count */
-            unPlacedLeaders += unLeaders;
-            unPlacedRobots += unRobots;
+            unNextLeaderId += unLeaders;
+            unNextRobotId += unRobots;
         }
 
         std::cout << "[LOG] Added robots" << std::endl;
@@ -137,6 +138,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 
         std::cout << "[LOG] Adding tasks..." << std::endl;
 
+        /* ID counts */
+        UInt32 unNextTaskId = 1;
         /* Get the teams node */
         TConfigurationNode& ts_tree = GetNode(t_node, "tasks");
         /* Go through the nodes (tasks) */
@@ -147,19 +150,29 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             /* Get current node (task) */
             TConfigurationNode& tDistr = *itDistr;
             /* Initialize task */
-            Task task;
+            // Task task;
             /* Task center */
-            GetNodeAttribute(tDistr, "position", task.position);
+            CVector2 cCenter;
+            GetNodeAttribute(tDistr, "position", cCenter);
             /* Task radius */
-            GetNodeAttribute(tDistr, "radius", task.radius);
-            /* Minimum robot constraint */
-            GetNodeAttribute(tDistr, "minimum_robot_num", task.min_robot_num);
-            /* Maximum robot constraint */
-            GetNodeAttribute(tDistr, "maximum_robot_num", task.max_robot_num);
+            Real fRadius;
+            GetNodeAttribute(tDistr, "radius", fRadius);
             /* Task demand */
-            GetNodeAttribute(tDistr, "task_demand", task.demand);
+            UInt32 unDemand;
+            GetNodeAttribute(tDistr, "task_demand", unDemand);
+            /* Minimum robot constraint */
+            UInt32 unMinRobotNum;
+            GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+            /* Maximum robot constraint */
+            UInt32 unMaxRobotNum;
+            GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+            
+            /* Place Tasks */
+            PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+            // m_tTasks.push_back(task);
 
-            m_tTasks.push_back(task);
+            /* Update task count */
+            unNextTaskId++;
         }
 
         std::cout << "[LOG] Added tasks" << std::endl;
@@ -185,11 +198,6 @@ void CExperimentLoopFunctions::Reset() {
                  "leader2posY,"
                  "leader2follower,"
                  "chain" << std::endl;
-//    /* Distribute uniformly the items in the environment */
-//    for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
-//       m_cFoodPos[i].Set(m_pcRNG->Uniform(m_cForagingArenaSideX),
-//                         m_pcRNG->Uniform(m_cForagingArenaSideY));
-//    }
 }
 
 /****************************************/
@@ -204,16 +212,16 @@ void CExperimentLoopFunctions::Destroy() {
 /****************************************/
 
 CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane) {
-    for(UInt32 i = 0; i < m_tTasks.size(); ++i) {
-        if((c_position_on_plane - m_tTasks[i].position).SquareLength() < 0.1 ) {
-            return CColor::ORANGE;
-        }
-    }
-    for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
-        if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
-            return CColor::GRAY70;
-        }
-    }
+    // for(UInt32 i = 0; i < m_tTasks.size(); ++i) {
+    //     if((c_position_on_plane - m_tTasks[i].position).SquareLength() < 0.1 ) {
+    //         return CColor::ORANGE;
+    //     }
+    // }
+    // for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
+    //     if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
+    //         return CColor::GRAY70;
+    //     }
+    // }
     return CColor::GRAY90;
 }
 
@@ -260,73 +268,6 @@ void CExperimentLoopFunctions::PreStep() {
         } 
         else ++unChains;
     }
-
-//    /* Logic to pick and drop food items */
-//    /*
-//     * If a robot is in the nest, drop the food item
-//     * If a robot is on a food item, pick it
-//     * Each robot can carry only one food item per time
-//     */
-//    UInt32 unWalkingFBs = 0;
-//    UInt32 unRestingFBs = 0;
-//    /* Check whether a robot is on a food item */
-//    CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
-
-//    for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
-//        it != m_cFootbots.end();
-//        ++it) {
-//       /* Get handle to foot-bot entity and controller */
-//       CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
-//       CFootBotForaging& cController = dynamic_cast<CFootBotForaging&>(cFootBot.GetControllableEntity().GetController());
-//       /* Count how many foot-bots are in which state */
-//       if(! cController.IsResting()) ++unWalkingFBs;
-//       else ++unRestingFBs;
-//       /* Get the position of the foot-bot on the ground as a CVector2 */
-//       CVector2 cPos;
-//       cPos.Set(cFootBot.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
-//                cFootBot.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-//       /* Get food data */
-//       CFootBotForaging::SFoodData& sFoodData = cController.GetFoodData();
-//       /* The foot-bot has a food item */
-//       if(sFoodData.HasFoodItem) {
-//          /* Check whether the foot-bot is in the nest */
-//          if(cPos.GetX() < -1.0f) {
-//             /* Place a new food item on the ground */
-//             m_cFoodPos[sFoodData.FoodItemIdx].Set(m_pcRNG->Uniform(m_cForagingArenaSideX),
-//                                                   m_pcRNG->Uniform(m_cForagingArenaSideY));
-//             /* Drop the food item */
-//             sFoodData.HasFoodItem = false;
-//             sFoodData.FoodItemIdx = 0;
-//             ++sFoodData.TotalFoodItems;
-//             /* Increase the energy and food count */
-//             m_nEnergy += m_unEnergyPerFoodItem;
-//             ++m_unCollectedFood;
-//             /* The floor texture must be updated */
-//             m_pcFloor->SetChanged();
-//          }
-//       }
-//       else {
-//          /* The foot-bot has no food item */
-//          /* Check whether the foot-bot is out of the nest */
-//          if(cPos.GetX() > -1.0f) {
-//             /* Check whether the foot-bot is on a food item */
-//             bool bDone = false;
-//             for(size_t i = 0; i < m_cFoodPos.size() && !bDone; ++i) {
-//                if((cPos - m_cFoodPos[i]).SquareLength() < m_fFoodSquareRadius) {
-//                   /* If so, we move that item out of sight */
-//                   m_cFoodPos[i].Set(100.0f, 100.f);
-//                   /* The foot-bot is now carrying an item */
-//                   sFoodData.HasFoodItem = true;
-//                   sFoodData.FoodItemIdx = i;
-//                   /* The floor texture must be updated */
-//                   m_pcFloor->SetChanged();
-//                   /* We are done */
-//                   bDone = true;
-//                }
-//             }
-//          }
-//       }
-//    }
 
     /* Output stuff to file */
     m_cOutput << GetSpace().GetSimulationClock() << ","
@@ -429,6 +370,37 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         }
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
+                                         Real f_radius,
+                                         UInt32 un_demand,
+                                         UInt32 un_min_robot_num,
+                                         UInt32 un_max_robot_num,
+                                         UInt32 un_task_id_start) {
+
+    try {
+        CCircleTaskEntity* pcCTS;
+        std::ostringstream cTSId;
+
+        /* Make the id */
+        cTSId.str("");
+        cTSId << "task_" << un_task_id_start;
+        /* Create the task and add it to ARGoS space */
+        pcCTS = new CCircleTaskEntity(cTSId.str(),
+                                      c_center,
+                                      f_radius,
+                                      un_demand,
+                                      un_min_robot_num,
+                                      un_max_robot_num);
+        AddEntity(*pcCTS);
+
+    } catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
     }
 }
 

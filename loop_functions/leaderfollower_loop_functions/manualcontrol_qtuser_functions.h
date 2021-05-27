@@ -17,6 +17,7 @@
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
+#include <circle_task/circle_task_entity.h>
 
 using namespace argos;
 
@@ -71,6 +72,11 @@ public:
     * Draws the entity ID above the e-puck_leader.
     */
    virtual void Draw(CEPuckLeaderEntity& c_entity);
+
+   /**
+    * Draws objects to the simulation.
+    */
+   virtual void DrawInWorld();
 
 private:
 

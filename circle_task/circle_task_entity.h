@@ -33,6 +33,30 @@ namespace argos {
       virtual void Init(TConfigurationNode& t_tree);
       virtual void Reset();
 
+      virtual CVector2 GetPosition() const {
+         return m_cPos;
+      }
+
+      virtual Real GetRadius() const {
+         return m_fRadius;
+      }
+
+      virtual UInt32 GetDemand() const {
+         return m_unDemand;
+      }
+
+      virtual void SetDemand(UInt32 un_demand) {
+         m_unDemand = un_demand;
+      }
+
+      virtual UInt32 GetMinRobotNum() const {
+         return m_unMinRobotNum;
+      }
+
+      virtual UInt32 GetMaxRobotNum() const {
+         return m_unMaxRobotNum;
+      }
+
       virtual std::string GetTypeDescription() const {
          return "circle_task";
       }

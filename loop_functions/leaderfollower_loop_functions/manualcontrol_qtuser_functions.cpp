@@ -1,5 +1,6 @@
 #include "manualcontrol_qtuser_functions.h"
 #include <QKeyEvent>
+#include <argos3/core/simulator/simulator.h>
 #include <argos3/plugins/simulator/entities/rab_equipped_entity.h>
 
 /****************************************/
@@ -172,12 +173,50 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str()); // text
 
-   DrawCircle(CVector3(0.0, 0.0, 0.01),
-              CQuaternion(),
-              c_entity.GetRABEquippedEntity().GetRange(),
-              CColor::RED,
-              false,
-              40U);
+   // DrawCircle(CVector3(0.0, 0.0, 0.01),
+   //            CQuaternion(),
+   //            c_entity.GetRABEquippedEntity().GetRange(),
+   //            CColor::RED,
+   //            false,
+   //            40U);
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlQTUserFunctions::DrawInWorld() {
+
+   /* 
+   * Draw Circle Tasks 
+   */
+
+   /* Get all the circle tasks */
+   CSpace::TMapPerType& m_cCircleTasks = CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+   
+   for(CSpace::TMapPerType::iterator it = m_cCircleTasks.begin();
+       it != m_cCircleTasks.end();
+       ++it) {
+
+      /* Get handle to the circle task entity */
+      CCircleTaskEntity& cCircleTask = *any_cast<CCircleTaskEntity*>(it->second);
+
+      /* Draw circle task */
+      CVector2 pos = cCircleTask.GetPosition();
+      DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                 CQuaternion(),
+                 cCircleTask.GetRadius(),
+                 CColor(255U, 128U, 128U, 255U),
+                 true,
+                 40U);
+      
+      /* Draw task info */
+      std::ostringstream cText;
+      cText.str("");
+      cText << cCircleTask.GetDemand();
+      DrawText(CVector3(pos.GetX(), pos.GetY()+cCircleTask.GetRadius()/2, 0.01),
+                        cText.str(),
+                        CColor::BLACK);
+   }
 }
 
 /****************************************/

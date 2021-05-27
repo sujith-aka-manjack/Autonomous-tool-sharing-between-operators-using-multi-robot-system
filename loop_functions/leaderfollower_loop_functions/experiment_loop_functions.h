@@ -49,6 +49,14 @@ private:
                      Real f_density,
                      UInt32 un_leader_id_start,
                      UInt32 un_robot_id_start);
+
+   /* Place a task */
+   void PlaceTask(const CVector2& c_center,
+                  Real f_radius,
+                  UInt32 un_demand,
+                  UInt32 un_min_robot_num,
+                  UInt32 un_max_robot_num,
+                  UInt32 un_task_id_start);
 };
 
 #endif

@@ -26,7 +26,12 @@ namespace argos {
                                         UInt32 un_demand,
                                         UInt32 un_min_robot_num,
                                         UInt32 un_max_robot_num) :
-      CComposableEntity(nullptr, str_id) {}
+      CComposableEntity(nullptr, str_id),
+      m_cPos(c_position),
+      m_fRadius(f_radius),
+      m_unDemand(un_demand),
+      m_unMinRobotNum(un_min_robot_num),
+      m_unMaxRobotNum(un_max_robot_num) {}
 
    /****************************************/
    /****************************************/
