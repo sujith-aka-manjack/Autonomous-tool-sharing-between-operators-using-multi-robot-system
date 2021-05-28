@@ -7,8 +7,6 @@
 #include <controllers/follower/follower.h>
 #include <circle_task/circle_task_entity.h>
 
-#include <unordered_map>
-
 /****************************************/
 /****************************************/
 
@@ -25,8 +23,6 @@ static const UInt32      MAX_ROBOT_TRIALS = 20;
 /****************************************/
 
 CExperimentLoopFunctions::CExperimentLoopFunctions() :
-    // m_cExperimentArenaSideX(-0.9f, 1.7f),
-    // m_cExperimentArenaSideY(-1.7f, 1.7f),
     m_pcFloor(NULL),
     m_pcRNG(NULL) {
 }
@@ -47,12 +43,6 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         m_pcFloor = &GetSpace().GetFloorEntity();
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
-        // /* Distribute uniformly the items in the environment */
-        // for(UInt32 i = 0; i < 8; ++i) {
-        //     m_cFoodPos.push_back(
-        //         CVector2(m_pcRNG->Uniform(m_cExperimentArenaSideX),
-        //                  m_pcRNG->Uniform(m_cExperimentArenaSideY)));
-        // }
         /* Get the output file name from XML */
         GetNodeAttribute(tForaging, "output", m_strOutput);
         /* Open the file, erasing its contents */
@@ -149,8 +139,6 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 
             /* Get current node (task) */
             TConfigurationNode& tDistr = *itDistr;
-            /* Initialize task */
-            // Task task;
             /* Task center */
             CVector2 cCenter;
             GetNodeAttribute(tDistr, "position", cCenter);
@@ -169,7 +157,6 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             
             /* Place Tasks */
             PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-            // m_tTasks.push_back(task);
 
             /* Update task count */
             unNextTaskId++;
@@ -234,8 +221,20 @@ void CExperimentLoopFunctions::PreStep() {
     UInt32 unFollowers2 = 0;
     UInt32 unChains = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
+    std::unordered_map<std::string,UInt32> taskWithRobot; // Store the number of e-pucks that have worked on each task in the previous timestep
 
-    /* Get all the e-puck_leaders */
+    /* Add existing task id to the map */
+    CSpace::TMapPerType& m_cCTasks = GetSpace().GetEntitiesByType("circle_task");
+    for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
+        itTask != m_cCTasks.end();
+        ++itTask) {
+        
+        /* Initialize each task with zero e-pucks working on it */
+        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+        taskWithRobot[cCTask.GetId()] = 0;
+    }
+
+    /* Record leader states */
     CSpace::TMapPerType& m_cEPuckLeaders = GetSpace().GetEntitiesByType("e-puck_leader");
     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
         it != m_cEPuckLeaders.end();
@@ -251,22 +250,75 @@ void CExperimentLoopFunctions::PreStep() {
         leaderPos[cEPuckLeader.GetId()] = cPos;
     }
 
-    /* Get all the e-pucks */
+    /* Record follower states */
     CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
-    for(CSpace::TMapPerType::iterator it = m_cEPucks.begin();
-        it != m_cEPucks.end();
-        ++it) {
+    for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
+        itEpuck != m_cEPucks.end();
+        ++itEpuck) {
 
         /* Get handle to e-puck entity and controller */
-        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
+        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
         CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+        UInt8 unTeamId = cController.GetTeamID();
 
         /* Count how many e-pucks are in each state */
         if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
-            if( cController.GetTeamID() == 1 ) ++unFollowers1;
+            // Count flock state
+            if( unTeamId == 1 ) ++unFollowers1;
             else ++unFollowers2;
-        } 
-        else ++unChains;
+
+            /* 
+            * Check whether the e-puck is working on a task
+            */            
+
+            /* Current location */
+            CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                     cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+
+            /* Leaeder's location */
+            std::ostringstream cLeaderId;
+            cLeaderId.str("");
+            cLeaderId << "L" << unTeamId;
+            CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
+
+            /* Check e-puck and its leader is within the range of a task */
+            for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
+                itTask != m_cCTasks.end();
+                ++itTask) {
+
+                /* Task location */
+                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                CVector2 cTaskPos = cCTask.GetPosition();
+
+                if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                   (cLeaderPos - cTaskPos).SquareLength() < cCTask.GetRadius()) {
+                       
+                       taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                       break;
+                }
+            }
+        }
+        else ++unChains; // Count chain state
+        
+    }
+
+    /* Update task demands */
+    for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
+        itTask != m_cCTasks.end();
+        ++itTask) {
+
+        // TODO: Apply minimum and maximum robot constraint
+
+        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+        UInt32 currentDemand = cCTask.GetDemand();
+
+        if(currentDemand < taskWithRobot[cCTask.GetId()]) {
+            cCTask.SetDemand(0);
+        } else {
+            cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+        }
+        
+        // TODO: Record task demand
     }
 
     /* Output stuff to file */

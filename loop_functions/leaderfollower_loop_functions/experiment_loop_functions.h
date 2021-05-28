@@ -6,6 +6,8 @@
 // #include <argos3/core/utility/math/range.h>
 // #include <argos3/core/utility/math/rng.h>
 
+#include <unordered_map>
+
 using namespace argos;
 
 class CExperimentLoopFunctions : public CLoopFunctions {
@@ -21,22 +23,12 @@ public:
    virtual CColor GetFloorColor(const CVector2& c_position_on_plane);
    virtual void PreStep();
 
-   /* Structure to store task data */
-   struct Task {
-      CVector2 position;
-      Real radius;
-      UInt32 min_robot_num;
-      UInt32 max_robot_num;
-      UInt32 demand;
-   };
-
 private:
 
-   // CRange<Real> m_cExperimentArenaSideX, m_cExperimentArenaSideY;
    std::vector<CVector2> m_cWaypointPos;
-   std::vector<Task> m_tTasks;
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
+   std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
 
    /* Output file */
    std::string m_strOutput;
