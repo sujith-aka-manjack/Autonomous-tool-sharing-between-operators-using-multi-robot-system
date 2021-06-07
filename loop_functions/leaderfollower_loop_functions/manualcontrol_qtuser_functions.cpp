@@ -202,12 +202,22 @@ void CManualControlQTUserFunctions::DrawInWorld() {
 
       /* Draw circle task */
       CVector2 pos = cCircleTask.GetPosition();
-      DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
-                 CQuaternion(),
-                 cCircleTask.GetRadius(),
-                 CColor(255U, 128U, 128U, 255U),
-                 true,
-                 40U);
+      UInt32 demand = cCircleTask.GetDemand();
+      if(demand > 0) {
+         DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                    CQuaternion(),
+                    cCircleTask.GetRadius(),
+                    CColor(255U, 128U, 128U, 255U),
+                    true,
+                    40U);
+      } else {
+         DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                    CQuaternion(),
+                    cCircleTask.GetRadius(),
+                    CColor(128U, 255U, 128U, 255U),
+                    true,
+                    40U);
+      }
       
       /* Draw task info */
       std::ostringstream cText;
