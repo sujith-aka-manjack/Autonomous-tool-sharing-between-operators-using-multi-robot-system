@@ -213,9 +213,11 @@ void CLeader::ControlStep() {
             if(dist < m_sWaypointTrackingParams.thresRange) {
                 if(currentTaskDemand == 0) {
                     msg[msg_index++] = 0; // send stopTask signal to robots in the team
+                    m_pcLEDs->SetAllColors(teamColor[teamID]);
                     waypoints.pop(); // Delete waypoint from queue
                 } else {
                     msg[msg_index++] = 1; // send startTask signal to robots in the team
+                    m_pcLEDs->SetAllColors(CColor::WHITE);
                 }
             }
 
