@@ -154,6 +154,10 @@ void CLeader::ControlStep() {
     /* Reset variables */
     /*-----------------*/
 
+    /* Create new message */
+    msg = CByteArray(16, 255);
+    msg_index = 0;
+
     /* Clear messages received */
     teamMsgs.clear();
     chainMsgs.clear();
@@ -175,6 +179,15 @@ void CLeader::ControlStep() {
     /* Update sensor readings */
     /*------------------------*/
     UpdateSensors();
+    
+    /* Set its state in msg */
+    msg[msg_index++] = static_cast<UInt8>(currentState);
+    /* Set sender ID in msg */
+    msg[msg_index++] = teamID;  // For leader, ID = teamID
+    /* Set team ID in msg */
+    msg[msg_index++] = teamID;
+    /* Set how many non-team members it has seen */
+    msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
 
     /*---------*/
     /* Control */
@@ -195,39 +208,44 @@ void CLeader::ControlStep() {
             CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
             Real dist = (waypoints.front() - pos2d).Length();
             std::cout << "dist " << dist << std::endl;
+
+            /* Check if task is completed */
             if(dist < m_sWaypointTrackingParams.thresRange) {
-                waypoints.pop(); // Delete waypoint from queue
+                if(currentTaskDemand == 0) {
+                    msg[msg_index++] = 0; // send stopTask signal to robots in the team
+                    waypoints.pop(); // Delete waypoint from queue
+                } else {
+                    msg[msg_index++] = 1; // send startTask signal to robots in the team
+                }
             }
-            
-            /* Calculate overall force applied to the robot */
-            CVector2 waypointForce = VectorToWaypoint();        // Attraction to waypoint
-            CVector2 otherForce = GetOtherRepulsionVector();    // Repulsion from other robots (other team and chain robots)
-            CVector2 sumForce = waypointForce + otherForce;
-            // std::cout << "waypointForce: " << waypointForce << std::endl;
-            // std::cout << "otherForce: " << otherForce << std::endl;
-            // std::cout << "sumForce: " << sumForce << std::endl;
-            SetWheelSpeedsFromVectorHoming(sumForce);
+
+            /* If current task is completed, move to the next one */
+            if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+                /* Calculate overall force applied to the robot */
+                CVector2 waypointForce = VectorToWaypoint();        // Attraction to waypoint
+                CVector2 otherForce = GetOtherRepulsionVector();    // Repulsion from other robots (other team and chain robots)
+                CVector2 sumForce = waypointForce + otherForce;
+                // std::cout << "waypointForce: " << waypointForce << std::endl;
+                // std::cout << "otherForce: " << otherForce << std::endl;
+                // std::cout << "sumForce: " << sumForce << std::endl;
+                SetWheelSpeedsFromVectorHoming(sumForce);
+            } 
+            else {
+                m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            }
         }
         else
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
     }
 
-    /* Create new message */
-    msg = CByteArray(16, 255);
-    msg_index = 0;
-    /* Set its state in msg */
-    msg[msg_index++] = static_cast<UInt8>(currentState);
-    /* Set sender ID in msg */
-    msg[msg_index++] = teamID;  // For leader, ID = teamID
-    /* Set team ID in msg */
-    msg[msg_index++] = teamID;
-    /* Set how many non-team members it has seen */
-    msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
-
     /*--------------*/
     /* Send message */
     /*--------------*/
     m_pcRABAct->SetData(msg);
+
+
+    /* Reset task demand */
+    currentTaskDemand = 0;
 
 }
 
@@ -257,8 +275,22 @@ void CLeader::SetControlVector(const CVector2& c_control) {
 /****************************************/
 /****************************************/
 
+CVector2 CLeader::GetNextWaypoint() {
+    return waypoints.front();
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::SetWaypoints(const std::queue<CVector2> waypts) {
     waypoints = waypts;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetTaskDemand(const UInt32 un_demand) {
+    currentTaskDemand = un_demand;
 }
 
 /****************************************/

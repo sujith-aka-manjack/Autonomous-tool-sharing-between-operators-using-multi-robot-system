@@ -234,7 +234,7 @@ void CExperimentLoopFunctions::PreStep() {
         taskWithRobot[cCTask.GetId()] = 0;
     }
 
-    /* Record leader states */
+    /* Loop leaders */
     CSpace::TMapPerType& m_cEPuckLeaders = GetSpace().GetEntitiesByType("e-puck_leader");
     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
         it != m_cEPuckLeaders.end();
@@ -248,9 +248,26 @@ void CExperimentLoopFunctions::PreStep() {
         CVector2 cPos = CVector2(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
                                  cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
         leaderPos[cEPuckLeader.GetId()] = cPos;
+
+        /* Give the leader its next task info if it is within the task range */
+        CVector2 nextTaskPos = cController.GetNextWaypoint();
+        for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
+            itTask != m_cCTasks.end();
+            ++itTask) {
+
+            /* Task location */
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            CVector2 cTaskPos = cCTask.GetPosition();
+
+            /* If there is a task with the given task position AND leader is within the task range, return task demand */
+            if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                cController.SetTaskDemand(cCTask.GetDemand());
+                break;
+            }
+        }
     }
 
-    /* Record follower states */
+    /* Loop followers */
     CSpace::TMapPerType& m_cEPucks = GetSpace().GetEntitiesByType("e-puck");
     for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
         itEpuck != m_cEPucks.end();
@@ -291,10 +308,10 @@ void CExperimentLoopFunctions::PreStep() {
                 CVector2 cTaskPos = cCTask.GetPosition();
 
                 if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                   (cLeaderPos - cTaskPos).SquareLength() < cCTask.GetRadius()) {
+                   (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
                        
-                       taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
-                       break;
+                    taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                    break;
                 }
             }
         }

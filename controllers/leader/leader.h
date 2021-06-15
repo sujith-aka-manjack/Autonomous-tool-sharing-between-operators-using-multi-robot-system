@@ -188,9 +188,19 @@ public:
     void SetControlVector(const CVector2& c_control);
 
     /*
+    * Get the next waypoint in the queue.
+    */
+    CVector2 GetNextWaypoint();
+
+    /*
     * Sets the list of waypoints to visit.
     */
     void SetWaypoints(const std::queue<CVector2> waypts);
+
+    /* 
+    * Sets the current task info.
+    */
+    void SetTaskDemand(const UInt32 un_demand);
 
 protected:
 
@@ -277,6 +287,9 @@ private:
 
     /* Ordered list of waypoints to visit */
     std::queue<CVector2> waypoints;
+
+    /* Task demand of the current working task */
+    UInt32 currentTaskDemand;
 
     /* Flag to know whether a follower or a chain is nearby */
     bool closeToRobot;
