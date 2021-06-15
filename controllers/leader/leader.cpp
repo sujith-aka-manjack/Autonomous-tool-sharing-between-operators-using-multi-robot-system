@@ -190,6 +190,15 @@ void CLeader::ControlStep() {
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
         }
         else if( !waypoints.empty() ) {
+            /* Check if it is near the waypoint */
+            CVector3 pos3d = m_pcPosSens->GetReading().Position;
+            CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+            Real dist = (waypoints.front() - pos2d).Length();
+            std::cout << "dist " << dist << std::endl;
+            if(dist < m_sWaypointTrackingParams.thresRange) {
+                waypoints.pop(); // Delete waypoint from queue
+            }
+            
             /* Calculate overall force applied to the robot */
             CVector2 waypointForce = VectorToWaypoint();        // Attraction to waypoint
             CVector2 otherForce = GetOtherRepulsionVector();    // Repulsion from other robots (other team and chain robots)
@@ -197,7 +206,7 @@ void CLeader::ControlStep() {
             // std::cout << "waypointForce: " << waypointForce << std::endl;
             // std::cout << "otherForce: " << otherForce << std::endl;
             // std::cout << "sumForce: " << sumForce << std::endl;
-            SetWheelSpeedsFromVectorHoming(GetOtherRepulsionVector() + VectorToWaypoint());
+            SetWheelSpeedsFromVectorHoming(sumForce);
         }
         else
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
@@ -372,14 +381,6 @@ CVector2 CLeader::VectorToWaypoint() {
     CRadians cZAngle, cYAngle, cXAngle;
     m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
     std::cout << "pos2d " << pos2d << std::endl;
-
-    /* Check if it is near the waypoint */
-    Real dist = (waypoints.front() - pos2d).Length();
-    std::cout << "dist " << dist << std::endl;
-    if(dist < m_sWaypointTrackingParams.thresRange) {
-        /* Delete waypoint from queue */
-        waypoints.pop();
-    }
 
     /* Calculate a normalized vector that points to the next waypoint */
     CVector2 cAccum = waypoints.front() - pos2d;
