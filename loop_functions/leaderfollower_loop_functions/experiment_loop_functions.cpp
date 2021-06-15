@@ -327,17 +327,18 @@ void CExperimentLoopFunctions::PreStep() {
         itTask != m_cCTasks.end();
         ++itTask) {
 
-        // TODO: Apply minimum and maximum robot constraint
-
         CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
         UInt32 currentDemand = cCTask.GetDemand();
 
-        if(currentDemand < taskWithRobot[cCTask.GetId()]) {
-            cCTask.SetDemand(0);
-        } else {
-            cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+        /* Check if there is enough robots working on the task */
+        if(taskWithRobot[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
+            if(currentDemand < taskWithRobot[cCTask.GetId()]) {
+                cCTask.SetDemand(0);
+            } else {
+                cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+            }
         }
-        
+
         // TODO: Record task demand
     }
 
