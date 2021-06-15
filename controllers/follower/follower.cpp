@@ -711,6 +711,13 @@ void CFollower::SetTeamID(const UInt8 id) {
 /****************************************/
 /****************************************/
 
+bool CFollower::IsWorking() {
+    return performingTask;
+}
+
+/****************************************/
+/****************************************/
+
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_Flock(void* data) {

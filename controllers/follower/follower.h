@@ -189,6 +189,11 @@ public:
     */
     virtual void SetTeamID(const UInt8 id);
 
+    /*
+    * Return whether the robot is working on a task.
+    */
+    virtual bool IsWorking();
+
 protected:
 
     /* 

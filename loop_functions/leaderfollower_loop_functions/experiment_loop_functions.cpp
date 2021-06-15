@@ -298,7 +298,6 @@ void CExperimentLoopFunctions::PreStep() {
             cLeaderId << "L" << unTeamId;
             CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
 
-            /* Check e-puck and its leader is within the range of a task */
             for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
                 itTask != m_cCTasks.end();
                 ++itTask) {
@@ -307,11 +306,15 @@ void CExperimentLoopFunctions::PreStep() {
                 CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
                 CVector2 cTaskPos = cCTask.GetPosition();
 
-                if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                   (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                       
-                    taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
-                    break;
+                /* Check if robot is working on a task */
+                if(cController.IsWorking()) {
+                    /* Check e-puck and its leader is within the range of a task */
+                    if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                    (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                        
+                        taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                        break;
+                    }
                 }
             }
         }
