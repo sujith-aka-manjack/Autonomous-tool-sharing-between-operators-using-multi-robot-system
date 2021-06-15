@@ -139,6 +139,7 @@ public:
         UInt8 teamid;
         CVector2 direction;
         UInt8 numOtherTeamSeen;
+        UInt8 taskSignal;
         // std::vector<std::string> connections; // CHAIN
     };
 
@@ -233,9 +234,14 @@ protected:
     /* Callback functions */
     virtual void Callback_Flock(void* data);
     virtual void Callback_Stop(void* data);
+    virtual void Callback_StartTask(void* data);
+    virtual void Callback_StopTask(void* data);
     virtual void Callback_JoinLeader(void* data);
     virtual void Callback_JoinChain(void* data);
 
+    virtual unsigned char Check_TaskEnded(void* data);
+    virtual unsigned char Check_GetStart(void* data);
+    virtual unsigned char Check_GetStop(void* data);
     virtual unsigned char Check_ChainNear(void* data);
     virtual unsigned char Check_ChainFar(void* data);
     virtual unsigned char Check_LeaderNear(void* data);
@@ -289,6 +295,12 @@ private:
 
     /* PID controller to calculate the force of a leader */
     PID* pid;
+
+    /* Flag to indicate whether this robot is working on a task */
+    bool performingTask;
+
+    /* Flag to indicate whether the robot joined the chain in the previous timestep */
+    bool joinChainTriggered;
 
     /*
     * The following variables are used as parameters for the

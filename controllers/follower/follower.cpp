@@ -118,15 +118,26 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /* Set initial state to follower */
     currentState = RobotState::FOLLOWER;
 
+    /* Robot initially not working on any task */
+    performingTask = false;
+
+    /* Initialize flag */
+    joinChainTriggered = false;
+
     /*
     * Init SCT Controller
     */
     sct = new SCTProb();
     sct->add_callback(this, EV_flock,      &CFollower::Callback_Flock,      NULL, NULL);
     sct->add_callback(this, EV_stop,       &CFollower::Callback_Stop,       NULL, NULL);
+    sct->add_callback(this, EV_startTask,  &CFollower::Callback_StartTask,  NULL, NULL);
+    sct->add_callback(this, EV_stopTask,   &CFollower::Callback_StopTask,   NULL, NULL);
     sct->add_callback(this, EV_joinLeader, &CFollower::Callback_JoinLeader, NULL, NULL);
     sct->add_callback(this, EV_joinChain,  &CFollower::Callback_JoinChain,  NULL, NULL);
 
+    sct->add_callback(this, EV_taskEnded,         NULL, &CFollower::Check_TaskEnded,         NULL);
+    sct->add_callback(this, EV_getStart,          NULL, &CFollower::Check_GetStart,          NULL);
+    sct->add_callback(this, EV_getStop,           NULL, &CFollower::Check_GetStop,           NULL);
     sct->add_callback(this, EV_chainNear,         NULL, &CFollower::Check_ChainNear,         NULL);
     sct->add_callback(this, EV_chainFar,          NULL, &CFollower::Check_ChainFar,          NULL);
     sct->add_callback(this, EV_leaderNear,        NULL, &CFollower::Check_LeaderNear,        NULL);
@@ -313,6 +324,8 @@ void CFollower::GetMessages() {
                 if(msg.state == RobotState::LEADER) {
                     msg.id = 'L' + msg.id;
                     msg.numOtherTeamSeen = tMsgs[i].Data[index++];
+                    msg.taskSignal = tMsgs[i].Data[index++];
+                    std::cout << "Signal: " << msg.taskSignal << std::endl;
                     leaderMsg = msg;
                 } 
                 /* Message from follower */
@@ -710,6 +723,16 @@ void CFollower::Callback_Stop(void* data) {
     currentMoveType = MoveType::STOP;
 }
 
+void CFollower::Callback_StartTask(void* data) {
+    std::cout << "Action: StartTask" <<std::endl;
+    performingTask = true;
+}
+
+void CFollower::Callback_StopTask(void* data) {
+    std::cout << "Action: StopTask" <<std::endl;
+    performingTask = false;
+}
+
 void CFollower::Callback_JoinLeader(void* data) {
     std::cout << "Action: JoinLeader" <<std::endl;
     teamID = closestLeader;
@@ -720,12 +743,45 @@ void CFollower::Callback_JoinChain(void* data) {
     std::cout << "Action: JoinChain" <<std::endl;
     teamID = 255;
     currentState = RobotState::CHAIN;
+    joinChainTriggered = true;
 }
 
 /****************************************/
 /****************************************/
 
 /* Callback functions (Uncontrollable events) */
+
+unsigned char CFollower::Check_TaskEnded(void* data) {
+    if(joinChainTriggered) {
+        std::cout << "Event: " << 1 << " - taskEnded" << std::endl;
+        joinChainTriggered = false;
+        return 1;
+    }
+    std::cout << "Event: " << 0 << " - taskEnded" << std::endl;
+    return 0;
+}
+
+unsigned char CFollower::Check_GetStart(void* data) {
+    if(currentState == RobotState::FOLLOWER) {
+        if(leaderMsg.taskSignal == 1) {
+            std::cout << "Event: " << 1 << " - getStart" << std::endl;
+            return 1;
+        }
+    }
+    std::cout << "Event: " << 0 << " - getStart" << std::endl;
+    return 0;
+}
+
+unsigned char CFollower::Check_GetStop(void* data) {
+    if(currentState == RobotState::FOLLOWER) {
+        if(leaderMsg.taskSignal == 0) {
+            std::cout << "Event: " << 1 << " - getStop" << std::endl;
+            return 1;
+        }
+    }
+    std::cout << "Event: " << 0 << " - getStop" << std::endl;
+    return 0;
+}
 
 unsigned char CFollower::Check_ChainNear(void* data) {
     if(currentState == RobotState::FOLLOWER) {

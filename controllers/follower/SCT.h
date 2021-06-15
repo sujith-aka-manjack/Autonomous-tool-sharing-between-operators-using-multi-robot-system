@@ -10,29 +10,39 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 10
-#define NUM_SUPERVISORS 5
+#define NUM_EVENTS 15
+#define NUM_SUPERVISORS 6
 
 /* Event Info */
-#define EV_leaderNear 0
+#define EV_flock 0
 
-#define EV_flock 1
+#define EV_stopTask 1
 
-#define EV_joinLeader 2
+#define EV_chainFar 2
 
-#define EV_chainFar 3
+#define EV_leaderFar 3
 
-#define EV_leaderFar 4
+#define EV_startTask 4
 
-#define EV_chainNear 5
+#define EV_joinLeader 5
 
-#define EV_joinChain 6
+#define EV_taskEnded 6
 
-#define EV_stop 7
+#define EV_leaderNear 7
 
-#define EV_closestToChain 8
+#define EV_chainNear 8
 
-#define EV_notClosestToChain 9
+#define EV_joinChain 9
+
+#define EV_stop 10
+
+#define EV_getStop 11
+
+#define EV_getStart 12
+
+#define EV_closestToChain 13
+
+#define EV_notClosestToChain 14
 
 /* Structure to store member functions */
 struct Scallback {
@@ -122,12 +132,12 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[10] = { 0,1,1,0,0,0,1,1,0,0 };
-    const unsigned char     sup_events[5][10] = { { 1,1,1,1,1,1,1,1,0,0 },{ 1,0,1,1,1,1,1,0,0,0 },{ 1,0,1,1,1,1,1,0,1,1 },{ 1,0,1,1,1,1,1,0,0,0 },{ 1,0,1,1,1,1,1,0,1,1 } };
-    const unsigned long int sup_init_state[5]     = { 0,0,0,0,0 };
-    unsigned long int       sup_current_state[5]  = { 0,0,0,0,0 };    
-    const unsigned long int sup_data_pos[5] = { 0,40,67,128,165 };
-    const unsigned char     sup_data[ 226 ] = { 3,EV_flock,0,1,EV_chainFar,0,0,EV_chainNear,0,0,3,EV_chainFar,0,1,EV_chainNear,0,1,EV_joinChain,0,2,3,EV_leaderNear,0,2,EV_leaderFar,0,2,EV_stop,0,3,3,EV_leaderNear,0,3,EV_joinLeader,0,0,EV_leaderFar,0,3,2,EV_chainFar,0,1,EV_chainNear,0,0,3,EV_chainFar,0,1,EV_chainNear,0,0,EV_joinChain,0,2,3,EV_joinLeader,0,1,EV_leaderNear,0,2,EV_leaderFar,0,2,4,EV_closestToChain,0,1,EV_chainFar,0,0,EV_chainNear,0,0,EV_notClosestToChain,0,0,5,EV_closestToChain,0,1,EV_chainFar,0,1,EV_chainNear,0,1,EV_joinChain,0,2,EV_notClosestToChain,0,0,5,EV_joinLeader,0,1,EV_leaderNear,0,2,EV_closestToChain,0,2,EV_leaderFar,0,2,EV_notClosestToChain,0,3,5,EV_joinLeader,0,0,EV_leaderNear,0,3,EV_closestToChain,0,2,EV_leaderFar,0,3,EV_notClosestToChain,0,3,3,EV_chainFar,0,0,EV_chainNear,0,0,EV_joinChain,0,1,2,EV_leaderNear,0,2,EV_leaderFar,0,1,3,EV_joinLeader,0,3,EV_leaderNear,0,2,EV_leaderFar,0,1,3,EV_chainFar,0,3,EV_chainNear,0,3,EV_joinChain,0,2,5,EV_closestToChain,0,0,EV_chainFar,0,0,EV_chainNear,0,0,EV_joinChain,0,1,EV_notClosestToChain,0,2,4,EV_leaderNear,0,1,EV_closestToChain,0,1,EV_leaderFar,0,1,EV_notClosestToChain,0,3,5,EV_closestToChain,0,0,EV_chainFar,0,2,EV_chainNear,0,2,EV_joinChain,0,3,EV_notClosestToChain,0,2,5,EV_joinLeader,0,2,EV_leaderNear,0,3,EV_closestToChain,0,1,EV_leaderFar,0,3,EV_notClosestToChain,0,3 };
+    const unsigned char     ev_controllable[15] = { 1,1,0,0,1,1,0,0,0,1,1,0,0,0,0 };
+    const unsigned char     sup_events[6][15] = { { 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0 },{ 0,1,0,0,1,0,1,0,0,0,0,1,1,0,0 },{ 0,0,1,1,0,1,0,1,1,1,0,0,0,0,0 },{ 0,0,1,1,0,1,0,1,1,1,0,0,0,1,1 },{ 0,0,1,1,0,1,0,1,1,1,0,0,0,0,0 },{ 0,0,1,1,0,1,0,1,1,1,0,0,0,1,1 } };
+    const unsigned long int sup_init_state[6]     = { 0,0,0,0,0,0 };
+    unsigned long int       sup_current_state[6]  = { 0,0,0,0,0,0 };    
+    const unsigned long int sup_data_pos[6] = { 0,104,144,171,232,269 };
+    const unsigned char     sup_data[ 330 ] = { 4,EV_flock,0,1,EV_chainFar,0,0,EV_startTask,0,2,EV_chainNear,0,0,4,EV_chainFar,0,1,EV_startTask,0,3,EV_chainNear,0,1,EV_joinChain,0,5,5,EV_flock,0,3,EV_stopTask,0,0,EV_chainFar,0,2,EV_taskEnded,0,0,EV_chainNear,0,2,5,EV_stopTask,0,1,EV_chainFar,0,3,EV_taskEnded,0,1,EV_chainNear,0,3,EV_joinChain,0,4,4,EV_leaderFar,0,4,EV_taskEnded,0,5,EV_leaderNear,0,4,EV_stop,0,6,3,EV_leaderFar,0,5,EV_leaderNear,0,5,EV_stop,0,7,4,EV_leaderFar,0,6,EV_joinLeader,0,2,EV_taskEnded,0,7,EV_leaderNear,0,6,3,EV_leaderFar,0,7,EV_joinLeader,0,0,EV_leaderNear,0,7,2,EV_getStop,0,0,EV_getStart,0,1,3,EV_getStop,0,0,EV_startTask,0,2,EV_getStart,0,1,3,EV_taskEnded,0,1,EV_getStop,0,3,EV_getStart,0,2,4,EV_stopTask,0,0,EV_taskEnded,0,0,EV_getStop,0,3,EV_getStart,0,2,2,EV_chainFar,0,1,EV_chainNear,0,0,3,EV_chainFar,0,1,EV_chainNear,0,0,EV_joinChain,0,2,3,EV_joinLeader,0,1,EV_leaderNear,0,2,EV_leaderFar,0,2,4,EV_closestToChain,0,1,EV_chainFar,0,0,EV_chainNear,0,0,EV_notClosestToChain,0,0,5,EV_closestToChain,0,1,EV_chainFar,0,1,EV_chainNear,0,1,EV_joinChain,0,2,EV_notClosestToChain,0,0,5,EV_joinLeader,0,1,EV_leaderNear,0,2,EV_closestToChain,0,2,EV_leaderFar,0,2,EV_notClosestToChain,0,3,5,EV_joinLeader,0,0,EV_leaderNear,0,3,EV_closestToChain,0,2,EV_leaderFar,0,3,EV_notClosestToChain,0,3,3,EV_chainFar,0,0,EV_chainNear,0,0,EV_joinChain,0,1,2,EV_leaderNear,0,2,EV_leaderFar,0,1,3,EV_joinLeader,0,3,EV_leaderNear,0,2,EV_leaderFar,0,1,3,EV_chainFar,0,3,EV_chainNear,0,3,EV_joinChain,0,2,5,EV_closestToChain,0,0,EV_chainFar,0,0,EV_chainNear,0,0,EV_joinChain,0,1,EV_notClosestToChain,0,2,4,EV_leaderNear,0,1,EV_closestToChain,0,1,EV_leaderFar,0,1,EV_notClosestToChain,0,3,5,EV_closestToChain,0,0,EV_chainFar,0,2,EV_chainNear,0,2,EV_joinChain,0,3,EV_notClosestToChain,0,2,5,EV_joinLeader,0,2,EV_leaderNear,0,3,EV_closestToChain,0,1,EV_leaderFar,0,3,EV_notClosestToChain,0,3 };
 };
 
 /****************************************/
@@ -162,10 +172,10 @@ protected:
     virtual float get_active_controllable_events_prob( float *events );
 
     /* Probability info of supervisors */
-    const unsigned long int sup_data_prob_pos[5] = { 0,8,13,20,27 };
-    const float             sup_data_prob[ 34 ] = { 1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1 };
-    const unsigned long int sup_data_var_prob_pos[5] = { 0,4,6,9,12 };
-    const unsigned char     sup_data_var_prob[ 15 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    const unsigned long int sup_data_prob_pos[6] = { 0,20,26,31,38,45 };
+    const float             sup_data_prob[ 52 ] = { 2,1,1,2,1,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1 };
+    const unsigned long int sup_data_var_prob_pos[6] = { 0,12,14,16,19,22 };
+    const unsigned char     sup_data_var_prob[ 25 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
     float                   current_var_prob[0] = {  };
 };
 
