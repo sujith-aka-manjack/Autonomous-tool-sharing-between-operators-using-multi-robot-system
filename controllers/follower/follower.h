@@ -117,6 +117,7 @@ public:
 
         void Init(TConfigurationNode& t_node);
         Real GeneralizedLennardJones(Real f_distance);
+        Real GeneralizedLennardJonesRepulsion(Real f_distance);
     };
 
     /* List of states */
