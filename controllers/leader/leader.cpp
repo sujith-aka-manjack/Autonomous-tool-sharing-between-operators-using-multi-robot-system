@@ -97,7 +97,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"            );
+    m_pcProximity = GetSensor  <CCI_EPuckProximitySensor        >("epuck_proximity"      );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing"    );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing"    );
     m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds"                 );
@@ -160,6 +160,8 @@ void CLeader::Reset() {
 /****************************************/
 
 void CLeader::ControlStep() {
+
+    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     /*-----------------*/
     /* Reset variables */
@@ -235,13 +237,15 @@ void CLeader::ControlStep() {
             /* If current task is completed, move to the next one */
             if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
                 /* Calculate overall force applied to the robot */
-                CVector2 waypointForce = VectorToWaypoint();        // Attraction to waypoint
-                CVector2 otherForce = GetOtherRepulsionVector();    // Repulsion from other robots (other team and chain robots)
-                CVector2 sumForce = waypointForce + otherForce;
-                // std::cout << "waypointForce: " << waypointForce << std::endl;
-                // std::cout << "otherForce: " << otherForce << std::endl;
-                // std::cout << "sumForce: " << sumForce << std::endl;
-                SetWheelSpeedsFromVectorHoming(sumForce);
+                CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
+                CVector2 robotForce = GetRobotRepulsionVector();       // Repulsion from other robots (other team and chain robots)
+                CVector2 obstacleForce = GetObstacleRepulsionVector(); // repulsion from obstacles
+                CVector2 sumForce = waypointForce + robotForce + obstacleForce;
+                std::cout << "waypointForce: " << waypointForce << std::endl;
+                std::cout << "robotForce: " << robotForce << std::endl;
+                std::cout << "obstacleForce: " << obstacleForce << std::endl;
+                std::cout << "sumForce: " << sumForce << std::endl;
+                SetWheelSpeedsFromVectorHoming(obstacleForce);
             } 
             else {
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
@@ -450,7 +454,7 @@ CVector2 CLeader::VectorToWaypoint() {
 /****************************************/
 /****************************************/
 
-CVector2 CLeader::GetOtherRepulsionVector() {
+CVector2 CLeader::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
     int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + chainMsgs.size();
 
@@ -486,7 +490,7 @@ CVector2 CLeader::GetOtherRepulsionVector() {
         }
 
         if(numRepulse > 0) {
-            /* Divide the accumulator by the number of blobs producing repulsive forces */
+            /* Divide the accumulator by the number of e-pucks producing repulsive forces */
             resVec /= numRepulse;
             /* Clamp the length of the vector to the max speed */
             if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -495,6 +499,40 @@ CVector2 CLeader::GetOtherRepulsionVector() {
             }
         }
     }
+    return resVec;
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CLeader::GetObstacleRepulsionVector() {
+    /* Get proximity sensor readings */
+    const CCI_EPuckProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+
+    CVector2 resVec = CVector2();
+    int numRepulse = 0;
+
+    for(size_t i = 0; i < tProxReads.size(); i++) {
+        CVector2 vec = CVector2(tProxReads[i].Value, 
+                                tProxReads[i].Angle);
+
+        if(vec.Length() > 0.0f) {
+            numRepulse++;
+            resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
+        }
+        std::cout << "sensor " << i << ": " << vec << std::endl;
+    }
+
+    if(numRepulse > 0) {
+        /* Divide the accumulator by the number of sensors detecting obstacles */
+        resVec /= numRepulse;
+        /* Clamp the length of the vector to the max speed */
+        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+            resVec.Normalize();
+            resVec *= m_sWheelTurningParams.MaxSpeed;
+        }
+    }
+
     return resVec;
 }
 

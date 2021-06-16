@@ -25,7 +25,7 @@
 /* Definition of the differential steering actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
 /* Definition of proximity sensor */
-#include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
+#include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_proximity_sensor.h>
 /* Definition of the range-and-bearing actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 /* Definition of the range-and-bearing sensor */
@@ -223,7 +223,12 @@ protected:
     /* 
     * Get a flocking vector between itself and the other robots not in the same team.
     */
-    virtual CVector2 GetOtherRepulsionVector();
+    virtual CVector2 GetRobotRepulsionVector();
+
+    /*
+    * Get a repulsion vector from obstacles.
+    */
+    virtual CVector2 GetObstacleRepulsionVector();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
@@ -247,7 +252,7 @@ private:
     /* Pointer to the differential steering actuator */
     CCI_DifferentialSteeringActuator* m_pcWheels;
     /* Pointer to the e-puck proximity sensor */
-    CCI_ProximitySensor* m_pcProximity;
+    CCI_EPuckProximitySensor* m_pcProximity;
     /* Pointer to the range-and-bearing actuator */
     CCI_RangeAndBearingActuator* m_pcRABAct;
     /* Pointer to the range-and-bearing sensor */
@@ -272,6 +277,9 @@ private:
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
+
+    /* Proximity sensor readings */
+    std::vector<Real> proxReadings;
 
     /* Messages received from nearby robots */
     std::vector<Message> teamMsgs;
