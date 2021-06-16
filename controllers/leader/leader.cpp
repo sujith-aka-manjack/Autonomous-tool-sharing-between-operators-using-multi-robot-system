@@ -68,6 +68,17 @@ Real CLeader::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distanc
 /****************************************/
 /****************************************/
 
+/*
+ * This function is a generalization of the Lennard-Jones potential for repulsion only 
+ */
+Real CLeader::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Real f_distance) {
+   Real fNormDistExp = ::pow(TargetDistance / f_distance, Exponent);
+   return -Gain / f_distance * (fNormDistExp * fNormDistExp);
+}
+
+/****************************************/
+/****************************************/
+
 CLeader::CLeader() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
@@ -449,41 +460,29 @@ CVector2 CLeader::GetOtherRepulsionVector() {
 
         for(int i = 0; i < otherLeaderMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(otherLeaderMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
             /* Sum to accumulator */
-            CVector2 force = CVector2(fLJ,
-                                      otherLeaderMsgs[i].direction.Angle());
-            /* Only apply repulsive force */
-            if( Abs(otherLeaderMsgs[i].direction.Angle() - force.Angle()) >= CRadians::PI_OVER_TWO ) {
-                resVec += force;
-                numRepulse++;
-            }
+            resVec += CVector2(fLJ,
+                               otherLeaderMsgs[i].direction.Angle());
+            numRepulse++;
         }
 
         for(int i = 0; i < otherTeamMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(otherTeamMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
             /* Sum to accumulator */
-            CVector2 force = CVector2(fLJ,
-                                      otherTeamMsgs[i].direction.Angle());
-            /* Only apply repulsive force */
-            if( Abs(otherTeamMsgs[i].direction.Angle() - force.Angle()) >= CRadians::PI_OVER_TWO ) {
-                resVec += force;
-                numRepulse++;
-            }
+            resVec += CVector2(fLJ,
+                               otherTeamMsgs[i].direction.Angle());
+            numRepulse++;
         }
 
         for(int i = 0; i < chainMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(chainMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(chainMsgs[i].direction.Length());
             /* Sum to accumulator */
-            CVector2 force = CVector2(fLJ,
-                                      chainMsgs[i].direction.Angle());
-            /* Only apply repulsive force */
-            if( Abs(chainMsgs[i].direction.Angle() - force.Angle()) >= CRadians::PI_OVER_TWO ) {
-                resVec += force;
-                numRepulse++;
-            }
+            resVec += CVector2(fLJ,
+                               chainMsgs[i].direction.Angle());
+            numRepulse++;
         }
 
         if(numRepulse > 0) {
