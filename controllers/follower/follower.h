@@ -307,7 +307,7 @@ private:
     /* Flag to indicate whether the robot joined the chain in the previous timestep */
     bool joinChainTriggered;
 
-    UInt32 global_timer;
+    /* Timer to make robot wait for a predefined time before becoming a chain member (to avoid abrupt changes) */
     UInt32 connection_timer;
 
     /*

@@ -115,14 +115,11 @@ void CFollower::Init(TConfigurationNode& t_node) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
 
-    /* Set initial state to follower */
-    currentState = RobotState::FOLLOWER;
-
-    /* Robot initially not working on any task */
-    performingTask = false;
-
-    /* Initialize flag */
-    joinChainTriggered = false;
+    /* Initialization */
+    currentState = RobotState::FOLLOWER; // Set initial state to follower
+    performingTask = false; // Robot initially not working on any task
+    joinChainTriggered = false; // Initialize flag
+    connection_timer = 0; // Init timer used to determine whether to connect
 
     /*
     * Init SCT Controller
@@ -156,10 +153,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
                   m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
-
-    // DEBUG
-    global_timer = 0;
-    connection_timer = 0;
 }
 
 /****************************************/
@@ -363,8 +356,6 @@ void CFollower::GetMessages() {
 
 void CFollower::UpdateSensors() {
 
-    global_timer++; //DEBUG
-
     /* Check leader distance with chain (including other leader) */
 
     std::cout << "chainMsg  = " << chainMsgs.size() << std::endl;
@@ -415,35 +406,20 @@ void CFollower::UpdateSensors() {
                 if(dist < minDist && combinedTeamMsgs[i].numOtherTeamSeen > 0) {
                     minDist = dist;
                     if(minDist < minNonTeamDistance) {
-                        // if(global_timer >= 665) {
-                        //     std::cout << "IN DEBUG CODE" << std::endl;
-                        //     if(connection_timer > 3) {
-                        //         std::cout << "TIMER REACHED!" << std::endl;
-                        //         isClosestToOther = false;
-                        //         connection_timer = 0;
-                        //         break;
-                        //     } else {
-                        //         connection_timer++;
-                        //         std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
-                        //         hasIncremented = true;
-                        //         break;
-                        //     }
-                        // } else {
                         isClosestToOther = false;   // There is a team member that is closer to a non-team member
                         break;
-                        // }
                     }
                 }
             }
             if( !isClosestToOther )
                 break;
         }
-        if(global_timer >= 665) { // DEBUG
-            if(isClosestToOther && connection_timer < 3) {
-                connection_timer++;
-                std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
-                isClosestToOther = false;
-            }
+
+        /* Make robot wait for 3 timesteps before commiting to become a chain member */
+        if(isClosestToOther && connection_timer < 3) {
+            connection_timer++;
+            std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
+            isClosestToOther = false;
         }
         
     }
@@ -782,7 +758,8 @@ void CFollower::Callback_JoinChain(void* data) {
     std::cout << "Action: JoinChain" <<std::endl;
     teamID = 255;
     currentState = RobotState::CHAIN;
-    joinChainTriggered = true;
+    joinChainTriggered = true; // Used to trigger TaskEnded
+    connection_timer = 0; // Reset timer
 }
 
 /****************************************/
