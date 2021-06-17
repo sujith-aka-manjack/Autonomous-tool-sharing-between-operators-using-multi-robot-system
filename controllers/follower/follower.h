@@ -307,6 +307,9 @@ private:
     /* Flag to indicate whether the robot joined the chain in the previous timestep */
     bool joinChainTriggered;
 
+    UInt32 global_timer;
+    UInt32 connection_timer;
+
     /*
     * The following variables are used as parameters for the
     * algorithm. You can set their value in the <parameters> section

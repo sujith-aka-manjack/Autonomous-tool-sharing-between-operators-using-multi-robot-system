@@ -156,6 +156,10 @@ void CFollower::Init(TConfigurationNode& t_node) {
                   m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
+
+    // DEBUG
+    global_timer = 0;
+    connection_timer = 0;
 }
 
 /****************************************/
@@ -359,6 +363,8 @@ void CFollower::GetMessages() {
 
 void CFollower::UpdateSensors() {
 
+    global_timer++; //DEBUG
+
     /* Check leader distance with chain (including other leader) */
 
     std::cout << "chainMsg  = " << chainMsgs.size() << std::endl;
@@ -397,23 +403,49 @@ void CFollower::UpdateSensors() {
             isClosestToOther = false;
         else
             isClosestToOther = true;
-
+        
         Real minDist = __FLT_MAX__;
+        std::cout << "# size: " << combinedTeamMsgs.size() << std::endl;
         for(int i = 0; i < combinedTeamMsgs.size(); i++) {
             for(int j = 0; j < nonTeamMsgs.size(); j++) {
                 CVector2 diff = combinedTeamMsgs[i].direction - nonTeamMsgs[j].direction;
                 Real dist = diff.Length();
+                std::cout << "## " << combinedTeamMsgs[i].id << " dist: " << dist << std::endl;
+                std::cout << "## " << combinedTeamMsgs[i].id << " seen: " << combinedTeamMsgs[i].numOtherTeamSeen << std::endl;
                 if(dist < minDist && combinedTeamMsgs[i].numOtherTeamSeen > 0) {
                     minDist = dist;
                     if(minDist < minNonTeamDistance) {
+                        // if(global_timer >= 665) {
+                        //     std::cout << "IN DEBUG CODE" << std::endl;
+                        //     if(connection_timer > 3) {
+                        //         std::cout << "TIMER REACHED!" << std::endl;
+                        //         isClosestToOther = false;
+                        //         connection_timer = 0;
+                        //         break;
+                        //     } else {
+                        //         connection_timer++;
+                        //         std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
+                        //         hasIncremented = true;
+                        //         break;
+                        //     }
+                        // } else {
                         isClosestToOther = false;   // There is a team member that is closer to a non-team member
                         break;
+                        // }
                     }
                 }
             }
             if( !isClosestToOther )
                 break;
         }
+        if(global_timer >= 665) { // DEBUG
+            if(isClosestToOther && connection_timer < 3) {
+                connection_timer++;
+                std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
+                isClosestToOther = false;
+            }
+        }
+        
     }
     else if(currentState == RobotState::CHAIN) {
         /* Check the distance to the closest leader */
