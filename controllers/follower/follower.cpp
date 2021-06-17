@@ -9,6 +9,20 @@
 /****************************************/
 /****************************************/
 
+static const std::vector<CRadians> PROX_ANGLE {
+                                                CRadians::PI / 10.5884f,
+                                                CRadians::PI / 3.5999f,
+                                                CRadians::PI_OVER_TWO,  // side sensor
+                                                CRadians::PI / 1.2f,    // back sensor
+                                                CRadians::PI / 0.8571f, // back sensor
+                                                CRadians::PI / 0.6667f, // side sensor
+                                                CRadians::PI / 0.5806f,
+                                                CRadians::PI / 0.5247f
+                                              };
+
+/****************************************/
+/****************************************/
+
 void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
    try {
       TurningMechanism = NO_TURN;
@@ -542,7 +556,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetOtherRepulsionVector() {
+CVector2 CFollower::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
     int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + chainMsgs.size();
 
@@ -593,18 +607,48 @@ CVector2 CFollower::GetOtherRepulsionVector() {
 /****************************************/
 /****************************************/
 
+CVector2 CFollower::GetObstacleRepulsionVector() {
+    /* Get proximity sensor readings */
+    std::vector<Real> fProxReads = m_pcProximity->GetReadings();
+
+    CVector2 resVec = CVector2();
+
+    for(size_t i = 0; i < fProxReads.size(); i++) {
+        CVector2 vec = CVector2();
+        if(fProxReads[i] > 0.0f) {
+            Real length = (fProxReads[i] - 0.9) * m_sWheelTurningParams.MaxSpeed * 10; // Map length to 0 ~ max_speed
+            vec = CVector2(length, PROX_ANGLE[i]);
+
+            resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
+        }
+        // std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
+    }
+
+    /* Clamp the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+    }
+
+    return resVec;
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::Flock() {
     /* Calculate overall force applied to the robot */
     CVector2 leaderForce = GetLeaderFlockingVector();
     CVector2 teamForce = GetTeamFlockingVector();
-    CVector2 otherForce = GetOtherRepulsionVector();
-    CVector2 sumForce = leaderForce + teamForce + otherForce;
+    CVector2 robotForce = GetRobotRepulsionVector();
+    CVector2 obstacleForce = GetObstacleRepulsionVector();
+    CVector2 sumForce = leaderForce + teamForce + robotForce + obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
         std::cout << "leader: " << leaderForce.Length() << std::endl;
         std::cout << "team: " << teamForce.Length() << std::endl;
-        std::cout << "other: " << otherForce.Length() << std::endl;
+        std::cout << "other: " << robotForce.Length() << std::endl;
         std::cout << "sum: " << sumForce.Length() << std::endl;
     }
 

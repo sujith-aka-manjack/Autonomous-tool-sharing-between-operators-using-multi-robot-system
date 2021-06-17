@@ -220,7 +220,12 @@ protected:
     /* 
     * Get a flocking vector between itself and the other robots not in the same team.
     */
-    virtual CVector2 GetOtherRepulsionVector();
+    virtual CVector2 GetRobotRepulsionVector();
+
+    /*
+    * Get a repulsion vector from obstacles.
+    */
+    virtual CVector2 GetObstacleRepulsionVector();
 
     /*
     * Move wheels according to flocking vector
