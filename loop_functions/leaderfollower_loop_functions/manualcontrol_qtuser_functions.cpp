@@ -12,12 +12,14 @@ static const Real DIRECTION_VECTOR_FACTOR = 10.;
 /****************************************/
 
 CManualControlQTUserFunctions::CManualControlQTUserFunctions() :
-   m_pcController(NULL) {
+   m_pcController(NULL),
+   m_bSignal(false) {
    /* No key is pressed initially */
    m_punPressedKeys[DIRECTION_FORWARD]  = 0;
    m_punPressedKeys[DIRECTION_BACKWARD] = 0;
    m_punPressedKeys[DIRECTION_LEFT]     = 0;
    m_punPressedKeys[DIRECTION_RIGHT]    = 0;
+   m_punPressedKeys[SIGNAL]             = 0;
 
    /* Register function to draw entity name */
    RegisterUserFunction<CManualControlQTUserFunctions,CEPuckEntity>(&CManualControlQTUserFunctions::Draw);
@@ -53,6 +55,11 @@ void CManualControlQTUserFunctions::KeyPressed(QKeyEvent* pc_event) {
          /* Right */
          m_punPressedKeys[DIRECTION_RIGHT] = 1;
          SetDirectionFromKeyEvent();
+         break;
+      case Qt::Key_S:
+         /* Toggle signal */
+         m_punPressedKeys[SIGNAL] = 1;
+         SetSignalFromKeyEvent();
          break;
       default:
          /* Unknown key */
@@ -114,6 +121,7 @@ void CManualControlQTUserFunctions::EntitySelected(CEntity& c_entity) {
    m_punPressedKeys[DIRECTION_BACKWARD] = 0;
    m_punPressedKeys[DIRECTION_LEFT]     = 0;
    m_punPressedKeys[DIRECTION_RIGHT]    = 0;
+   m_punPressedKeys[SIGNAL]             = 0;
 }
 
 /****************************************/
@@ -148,6 +156,14 @@ void CManualControlQTUserFunctions::SetDirectionFromKeyEvent() {
        CVector2(0.0f, LRDirection));
    /* Set direction */
    m_pcController->SetControlVector(cDir);
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlQTUserFunctions::SetSignalFromKeyEvent() {
+   m_bSignal = !m_bSignal;
+   m_pcController->SetSignal(m_bSignal);
 }
 
 /****************************************/

@@ -85,16 +85,22 @@ private:
     */
    void SetDirectionFromKeyEvent();
 
+   /**
+    * Sets the broadcast signal from a key event.
+    */ 
+   void SetSignalFromKeyEvent();
+
 private:
 
    /**
-    * Robot direction.
+    * Mapping of keys to functionality.
     */
-   enum EDirection {
+   enum EKeyMap {
       DIRECTION_FORWARD = 0,
       DIRECTION_BACKWARD,
       DIRECTION_LEFT,
-      DIRECTION_RIGHT
+      DIRECTION_RIGHT,
+      SIGNAL
    };
 
    /**
@@ -106,7 +112,12 @@ private:
    /**
     * Current state of each key.
     */
-   UInt8 m_punPressedKeys[4];
+   UInt8 m_punPressedKeys[5];
+
+   /**
+    * Current state of toggle switch for signal.
+    */
+   bool m_bSignal;
 
 };
 

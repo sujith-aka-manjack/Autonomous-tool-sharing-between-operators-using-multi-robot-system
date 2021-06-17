@@ -101,6 +101,7 @@ CLeader::CLeader() :
     m_pcLEDs(NULL),
     m_pcPosSens(NULL),
     m_bSelected(false),
+    m_bSignal(false),
     PIDHeading(NULL),
     closeToRobot(false) {}
 
@@ -223,6 +224,12 @@ void CLeader::ControlStep() {
     /* Follow the control vector only if selected */
     if(m_bSelected) {
         SetWheelSpeedsFromVector(m_cControl);
+        std::cout << "SIGNAL " << m_bSignal << std::endl; 
+        if(m_bSignal)
+            m_pcLEDs->SetAllColors(CColor::WHITE);
+        else
+            m_pcLEDs->SetAllColors(teamColor[teamID]);
+        msg[msg_index++] = int(m_bSignal);
     }
     else {
         if( !closeToRobot ) {
@@ -301,6 +308,13 @@ void CLeader::Deselect() {
 
 void CLeader::SetControlVector(const CVector2& c_control) {
    m_cControl = c_control;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetSignal(const bool b_signal) {
+    m_bSignal = b_signal;
 }
 
 /****************************************/
