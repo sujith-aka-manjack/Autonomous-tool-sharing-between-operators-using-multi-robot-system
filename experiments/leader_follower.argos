@@ -135,8 +135,11 @@
       <body position="-2,0,0" orientation="0,0,0" />
     </box>
 
-    <box id="wall_center" size="0.5,1,0.5" movable="false">
+    <box id="wall_center" size="0.5,0.5,0.5" movable="false">
       <body position="0.7,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_center5" size="0.5,0.5,0.5" movable="false">
+      <body position="0,0.7,0" orientation="0,0,0" />
     </box>
     <!-- <box id="wall_center2" size="0.1,1,0.5" movable="false">
       <body position="-0.5,0,0" orientation="0,0,0" />
