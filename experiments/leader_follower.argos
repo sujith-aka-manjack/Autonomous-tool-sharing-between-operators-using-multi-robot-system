@@ -27,7 +27,10 @@
       </actuators>
       <sensors>
         <proximity implementation="default" show_rays="false" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <range_and_bearing implementation="medium"
+                           medium="rab"
+                           show_rays="true"
+                           noise_std_dev="0.1" />
       </sensors>
       <params>
         <wheel_turning hard_turn_angle_threshold="90"
@@ -222,7 +225,7 @@
   <!-- * Media * -->
   <!-- ********* -->
   <media>
-    <range_and_bearing id="rab" />
+    <range_and_bearing id="rab" check_occlusions="false"/>
     <led id="leds" />
   </media>
 
