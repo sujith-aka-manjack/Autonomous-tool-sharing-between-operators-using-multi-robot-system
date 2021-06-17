@@ -140,14 +140,11 @@ void CFollower::Init(TConfigurationNode& t_node) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
 
-    /* Set initial state to follower */
-    currentState = RobotState::FOLLOWER;
-
-    /* Robot initially not working on any task */
-    performingTask = false;
-
-    /* Initialize flag */
-    joinChainTriggered = false;
+    /* Initialization */
+    currentState = RobotState::FOLLOWER; // Set initial state to follower
+    performingTask = false; // Robot initially not working on any task
+    joinChainTriggered = false; // Initialize flag
+    connection_timer = 0; // Init timer used to determine whether to connect
 
     /*
     * Init SCT Controller
@@ -422,12 +419,15 @@ void CFollower::UpdateSensors() {
             isClosestToOther = false;
         else
             isClosestToOther = true;
-
+        
         Real minDist = __FLT_MAX__;
+        std::cout << "# size: " << combinedTeamMsgs.size() << std::endl;
         for(int i = 0; i < combinedTeamMsgs.size(); i++) {
             for(int j = 0; j < nonTeamMsgs.size(); j++) {
                 CVector2 diff = combinedTeamMsgs[i].direction - nonTeamMsgs[j].direction;
                 Real dist = diff.Length();
+                std::cout << "## " << combinedTeamMsgs[i].id << " dist: " << dist << std::endl;
+                std::cout << "## " << combinedTeamMsgs[i].id << " seen: " << combinedTeamMsgs[i].numOtherTeamSeen << std::endl;
                 if(dist < minDist && combinedTeamMsgs[i].numOtherTeamSeen > 0) {
                     minDist = dist;
                     if(minDist < minNonTeamDistance) {
@@ -439,6 +439,14 @@ void CFollower::UpdateSensors() {
             if( !isClosestToOther )
                 break;
         }
+
+        /* Make robot wait for 3 timesteps before commiting to become a chain member */
+        if(isClosestToOther && connection_timer < 3) {
+            connection_timer++;
+            std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
+            isClosestToOther = false;
+        }
+        
     }
     else if(currentState == RobotState::CHAIN) {
         /* Check the distance to the closest leader */
@@ -793,7 +801,8 @@ void CFollower::Callback_JoinChain(void* data) {
     std::cout << "Action: JoinChain" <<std::endl;
     teamID = 255;
     currentState = RobotState::CHAIN;
-    joinChainTriggered = true;
+    joinChainTriggered = true; // Used to trigger TaskEnded
+    connection_timer = 0; // Reset timer
 }
 
 /****************************************/
