@@ -8,6 +8,20 @@
 /****************************************/
 /****************************************/
 
+static const std::vector<CRadians> PROX_ANGLE {
+                                                CRadians::PI / 10.5884f,
+                                                CRadians::PI / 3.5999f,
+                                                CRadians::PI_OVER_TWO,  // side sensor
+                                                CRadians::PI / 1.2f,    // back sensor
+                                                CRadians::PI / 0.8571f, // back sensor
+                                                CRadians::PI / 0.6667f, // side sensor
+                                                CRadians::PI / 0.5806f,
+                                                CRadians::PI / 0.5247f
+                                              };
+
+/****************************************/
+/****************************************/
+
 void CLeader::SWheelTurningParams::Init(TConfigurationNode& t_node) {
     try {
         TurningMechanism = NO_TURN;
@@ -97,7 +111,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    m_pcProximity = GetSensor  <CCI_EPuckProximitySensor        >("epuck_proximity"      );
+    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"            );
     m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing"    );
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing"    );
     m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds"                 );
@@ -245,7 +259,7 @@ void CLeader::ControlStep() {
                 std::cout << "robotForce: " << robotForce << std::endl;
                 std::cout << "obstacleForce: " << obstacleForce << std::endl;
                 std::cout << "sumForce: " << sumForce << std::endl;
-                SetWheelSpeedsFromVectorHoming(obstacleForce);
+                SetWheelSpeedsFromVectorHoming(sumForce);
             } 
             else {
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
@@ -507,30 +521,25 @@ CVector2 CLeader::GetRobotRepulsionVector() {
 
 CVector2 CLeader::GetObstacleRepulsionVector() {
     /* Get proximity sensor readings */
-    const CCI_EPuckProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+    std::vector<Real> fProxReads = m_pcProximity->GetReadings();
 
     CVector2 resVec = CVector2();
-    int numRepulse = 0;
 
-    for(size_t i = 0; i < tProxReads.size(); i++) {
-        CVector2 vec = CVector2(tProxReads[i].Value, 
-                                tProxReads[i].Angle);
+    for(size_t i = 0; i < fProxReads.size(); i++) {
+        CVector2 vec = CVector2();
+        if(fProxReads[i] > 0.0f) {
+            Real length = (fProxReads[i] - 0.9) * m_sWheelTurningParams.MaxSpeed * 10; // Map length to 0 ~ max_speed
+            vec = CVector2(length, PROX_ANGLE[i]);
 
-        if(vec.Length() > 0.0f) {
-            numRepulse++;
             resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
         }
-        std::cout << "sensor " << i << ": " << vec << std::endl;
+        // std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
     }
 
-    if(numRepulse > 0) {
-        /* Divide the accumulator by the number of sensors detecting obstacles */
-        resVec /= numRepulse;
-        /* Clamp the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
-        }
+    /* Clamp the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
     }
 
     return resVec;

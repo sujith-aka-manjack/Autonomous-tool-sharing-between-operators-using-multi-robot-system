@@ -25,7 +25,7 @@
 /* Definition of the differential steering actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
 /* Definition of proximity sensor */
-#include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_proximity_sensor.h>
+#include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
 /* Definition of the range-and-bearing actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 /* Definition of the range-and-bearing sensor */
@@ -252,7 +252,7 @@ private:
     /* Pointer to the differential steering actuator */
     CCI_DifferentialSteeringActuator* m_pcWheels;
     /* Pointer to the e-puck proximity sensor */
-    CCI_EPuckProximitySensor* m_pcProximity;
+    CCI_ProximitySensor* m_pcProximity;
     /* Pointer to the range-and-bearing actuator */
     CCI_RangeAndBearingActuator* m_pcRABAct;
     /* Pointer to the range-and-bearing sensor */

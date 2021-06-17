@@ -56,7 +56,7 @@
         <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
-        <epuck_proximity implementation="default" show_rays="true" />
+        <proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
         <positioning implementation="default" />
       </sensors>
@@ -135,10 +135,10 @@
       <body position="-2,0,0" orientation="0,0,0" />
     </box>
 
-    <box id="wall_center" size="0.1,1,0.5" movable="false">
-      <body position="0.5,0,0" orientation="0,0,0" />
+    <box id="wall_center" size="0.5,1,0.5" movable="false">
+      <body position="0.7,0,0" orientation="0,0,0" />
     </box>
-    <box id="wall_center2" size="0.1,1,0.5" movable="false">
+    <!-- <box id="wall_center2" size="0.1,1,0.5" movable="false">
       <body position="-0.5,0,0" orientation="0,0,0" />
     </box>
     <box id="wall_center3" size="1,0.1,0.5" movable="false">
@@ -146,7 +146,7 @@
     </box>
     <box id="wall_center4" size="1,0.1,0.5" movable="false">
       <body position="0,-0.5,0" orientation="0,0,0" />
-    </box>
+    </box> -->
 
     <!--
         You can distribute entities randomly. Here, we distribute
