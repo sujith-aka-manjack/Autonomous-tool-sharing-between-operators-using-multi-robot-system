@@ -520,10 +520,10 @@ CVector2 CLeader::GetRobotRepulsionVector() {
         if(numRepulse > 0) {
             /* Divide the accumulator by the number of e-pucks producing repulsive forces */
             resVec /= numRepulse;
-            /* Clamp the length of the vector to the max speed */
+            /* Clamp the length of the vector to half of the max speed */
             if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
                 resVec.Normalize();
-                resVec *= m_sWheelTurningParams.MaxSpeed;
+                resVec *= m_sWheelTurningParams.MaxSpeed * 0.5;
             }
         }
     }
