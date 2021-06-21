@@ -440,13 +440,22 @@ void CFollower::UpdateSensors() {
                 break;
         }
 
-        /* Make robot wait for 3 timesteps before commiting to become a chain member */
-        if(isClosestToOther && connection_timer < 3) {
+        /* Update connenction timer (checked later) */
+        if(isClosestToOther) {
             connection_timer++;
             std::cout << "TIMER INCREMENT " << connection_timer << std::endl;
+        } else {
+            connection_timer = 0;
+            std::cout << "TIMER RESET " << connection_timer << std::endl;
+        }
+
+        /* Make robot wait for 3 timesteps before commiting to become a chain member */
+        if(connection_timer < 3 && connection_timer != connection_timer_prev) { // Timer has to increment consecutively in every timestep. Reset otherwise.
             isClosestToOther = false;
         }
-        
+
+        connection_timer_prev = connection_timer;
+
     }
     else if(currentState == RobotState::CHAIN) {
         /* Check the distance to the closest leader */

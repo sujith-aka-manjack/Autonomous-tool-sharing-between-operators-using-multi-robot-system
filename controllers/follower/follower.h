@@ -315,6 +315,7 @@ private:
 
     /* Timer to make robot wait for a predefined time before becoming a chain member (to avoid abrupt changes) */
     UInt32 connection_timer;
+    UInt32 connection_timer_prev;
 
     /*
     * The following variables are used as parameters for the
