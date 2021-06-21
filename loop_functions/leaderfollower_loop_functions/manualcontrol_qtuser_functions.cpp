@@ -238,7 +238,8 @@ void CManualControlQTUserFunctions::DrawInWorld() {
       /* Draw task info */
       std::ostringstream cText;
       cText.str("");
-      cText << ceil(cCircleTask.GetDemand() / 10);
+      // cText << ceil(cCircleTask.GetDemand() / 10);
+      cText << cCircleTask.GetDemand();
       QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
       DrawText(CVector3(pos.GetX(), pos.GetY()+cCircleTask.GetRadius()/2, 0.01),
                cText.str(),
