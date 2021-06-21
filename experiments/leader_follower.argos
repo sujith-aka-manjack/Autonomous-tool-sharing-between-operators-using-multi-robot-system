@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="0"
                 ticks_per_second="10"
-                random_seed="124" />
+                random_seed="123" />
   </framework>
 
   <!-- *************** -->
@@ -44,7 +44,7 @@
                   gain="1000"
                   exponent="2" />
         <team to_chain_threshold="50"
-              to_follow_threshold="30" />
+              to_follow_threshold="45" />
       </params>
     </follower_controller>
 
@@ -110,8 +110,8 @@
 
     <!-- Tasks that the teams must complete -->
     <tasks>
-      <task position="0.8,0.8" radius="0.4" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
-      <task position="-1.3,-1.3" radius="0.4" minimum_robot_num="2" maximum_robot_num="10" task_demand="100" />
+      <task position="0.8,0.8" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="-1.3,-1.3" radius="0.4" minimum_robot_num="1" maximum_robot_num="10" task_demand="200" />
     </tasks>
   </loop_functions>
 
@@ -137,11 +137,11 @@
       <body position="-2,0,0" orientation="0,0,0" />
     </box>
 
-    <box id="wall_center" size="0.5,0.5,0.5" movable="false">
-      <body position="0.7,0,0" orientation="0,0,0" />
-    </box>
-    <box id="wall_center5" size="0.5,0.5,0.5" movable="false">
-      <body position="0,0.7,0" orientation="0,0,0" />
+    <!-- <box id="wall_center" size="0.7,0.5,0.3" movable="false">
+      <body position="0.6,0,0" orientation="0,0,0" />
+    </box> -->
+    <box id="wall_center5" size="0.5,1.0,0.3" movable="false">
+      <body position="-0.6,0.2,0" orientation="0,0,0" />
     </box>
     <!-- <box id="wall_center2" size="0.1,1,0.5" movable="false">
       <body position="-0.5,0,0" orientation="0,0,0" />
@@ -246,6 +246,7 @@
           <placement index="1" position="-1.13679,0.00582551,2.45548" look_at="-0.704207,0.00502653,1.55389" up="0.901591,-0.00166523,0.432586" lens_focal_length="50" />
           <placement index="0" position="-1.67387,-0.0881827,2.71917" look_at="-1.24128,-0.0889817,1.81758" up="0.901591,-0.00166523,0.432586" lens_focal_length="20" />
           <placement index="2" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+          <placement index="3" position="0,-0.146444,10.092" look_at="0,-0.146444,9.09204" up="1,0,0" lens_focal_length="65" />
         </placements>
       </camera>
     </qt-opengl>
