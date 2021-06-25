@@ -131,8 +131,7 @@ public:
         std::string id;
         UInt8 teamid;
         CVector2 direction;
-        UInt8 numOtherTeamSeen;
-        // std::vector<std::string> connections; // CHAIN
+        std::vector<std::string> connections;
     };
 
 public:

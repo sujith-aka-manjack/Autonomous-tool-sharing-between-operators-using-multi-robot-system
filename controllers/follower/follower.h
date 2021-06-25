@@ -139,9 +139,8 @@ public:
         std::string id;
         UInt8 teamid;
         CVector2 direction;
-        UInt8 numOtherTeamSeen;
         UInt8 taskSignal;
-        // std::vector<std::string> connections; // CHAIN
+        std::vector<std::string> connections;
     };
 
 public:
@@ -243,22 +242,37 @@ protected:
     virtual void PrintName();
 
     /* Callback functions */
-    virtual void Callback_Flock(void* data);
-    virtual void Callback_Stop(void* data);
-    virtual void Callback_StartTask(void* data);
-    virtual void Callback_StopTask(void* data);
-    virtual void Callback_JoinLeader(void* data);
-    virtual void Callback_JoinChain(void* data);
+    // virtual void Callback_Flock(void* data);
+    // virtual void Callback_Stop(void* data);
+    // virtual void Callback_StartTask(void* data);
+    // virtual void Callback_StopTask(void* data);
+    // virtual void Callback_JoinLeader(void* data);
+    // virtual void Callback_JoinChain(void* data);
+
+    virtual void Callback_MoveFlock(void* data);
+    virtual void Callback_MoveStop(void* data);
+    virtual void Callback_TaskBegin(void* data);
+    virtual void Callback_TaskStop(void* data);
+    virtual void Callback_SetFS(void* data);
+    virtual void Callback_SetCS(void* data);
+
+    // virtual unsigned char Check_TaskEnded(void* data);
+    // virtual unsigned char Check_GetStart(void* data);
+    // virtual unsigned char Check_GetStop(void* data);
+    // virtual unsigned char Check_ChainNear(void* data);
+    // virtual unsigned char Check_ChainFar(void* data);
+    // virtual unsigned char Check_LeaderNear(void* data);
+    // virtual unsigned char Check_LeaderFar(void* data);
+    // virtual unsigned char Check_ClosestToChain(void* data);
+    // virtual unsigned char Check_NotClosestToChain(void* data);
 
     virtual unsigned char Check_TaskEnded(void* data);
-    virtual unsigned char Check_GetStart(void* data);
-    virtual unsigned char Check_GetStop(void* data);
-    virtual unsigned char Check_ChainNear(void* data);
-    virtual unsigned char Check_ChainFar(void* data);
-    virtual unsigned char Check_LeaderNear(void* data);
-    virtual unsigned char Check_LeaderFar(void* data);
-    virtual unsigned char Check_ClosestToChain(void* data);
-    virtual unsigned char Check_NotClosestToChain(void* data);
+    virtual unsigned char Check_ReceiveTB(void* data);
+    virtual unsigned char Check_ReceiveTS(void* data);
+    virtual unsigned char Check_DistFar(void* data);
+    virtual unsigned char Check_DistNear(void* data);
+    virtual unsigned char Check_IsNearest(void* data);
+    virtual unsigned char Check_NotNearest(void* data);
 
 private:
 
@@ -297,8 +311,8 @@ private:
     Real minNonTeamDistance; // Distance to the closest non-team member
     UInt8 closestLeader;
     Real closestLeaderDistance;
-    bool isClosestToOther;
-    // std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
+    bool isClosestToNonTeam;
+    std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
 
     /* Outgoing message */
     CByteArray msg;

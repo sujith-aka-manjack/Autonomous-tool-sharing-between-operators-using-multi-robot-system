@@ -162,7 +162,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(16, 255);
+    msg = CByteArray(64, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -183,7 +183,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(16, 255);
+    msg = CByteArray(64, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -215,7 +215,7 @@ void CLeader::ControlStep() {
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
     /* Set how many non-team members it has seen */
-    msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
+    // msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
 
     /*---------*/
     /* Control */
@@ -276,11 +276,24 @@ void CLeader::ControlStep() {
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
     }
 
+    /* Set ID of all connections to msg */
+    std::vector<Message> allMsgs(teamMsgs);
+    allMsgs.insert(std::end(allMsgs), std::begin(chainMsgs), std::end(chainMsgs));
+    allMsgs.insert(std::end(allMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+
+    for(size_t i = 0; i < allMsgs.size(); i++) {
+        msg[msg_index++] = allMsgs[i].id[0];    // First character of ID
+        msg[msg_index++] = stoi(allMsgs[i].id.substr(1));    // ID number
+
+        if(i >= 30)
+            break;
+    }
+
     /*--------------*/
     /* Send message */
     /*--------------*/
     m_pcRABAct->SetData(msg);
-
 
     /* Reset task demand */
     currentTaskDemand = 0;
