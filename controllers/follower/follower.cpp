@@ -149,7 +149,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    sct = new SCTProb();
+    sct = new SCT();
 
     sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);

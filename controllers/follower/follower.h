@@ -295,7 +295,7 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
     
     /* Controller */
-    SCTProb* sct;
+    SCT* sct;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
