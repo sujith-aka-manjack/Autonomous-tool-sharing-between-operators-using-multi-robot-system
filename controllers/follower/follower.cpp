@@ -144,7 +144,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /* Initialization */
     currentState = RobotState::FOLLOWER; // Set initial state to follower
     performingTask = false; // Robot initially not working on any task
-    joinChainTriggered = false; // Initialize flag
 
     /*
     * Init SCT Controller
@@ -158,7 +157,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_setFS,     &CFollower::Callback_SetFS,     NULL, NULL);
     sct->add_callback(this, EV_setCS,     &CFollower::Callback_SetCS,     NULL, NULL);
 
-    sct->add_callback(this, EV_taskEnded,  NULL, &CFollower::Check_TaskEnded,  NULL);
     sct->add_callback(this, EV_receiveTB,  NULL, &CFollower::Check_ReceiveTB,  NULL);
     sct->add_callback(this, EV_receiveTS,  NULL, &CFollower::Check_ReceiveTS,  NULL);
     sct->add_callback(this, EV_distFar,    NULL, &CFollower::Check_DistFar,    NULL);
@@ -897,24 +895,12 @@ void CFollower::Callback_SetCS(void* data) {
     std::cout << "Action: setCS" <<std::endl;
     currentState = RobotState::CHAIN;
     teamID = 255;
-    joinChainTriggered = true; // Used to trigger TaskEnded
-    // connection_timer = 0; // Reset timer
 }
 
 /****************************************/
 /****************************************/
 
 /* Callback functions (Uncontrollable events) */
-
-unsigned char CFollower::Check_TaskEnded(void* data) {
-    if(joinChainTriggered) {
-        std::cout << "Event: " << 1 << " - taskEnded" << std::endl;
-        joinChainTriggered = false;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - taskEnded" << std::endl;
-    return 0;
-}
 
 unsigned char CFollower::Check_ReceiveTB(void* data) {
     if(leaderMsg.direction.Length() > 0.0f && leaderMsg.taskSignal == 1) {
@@ -935,20 +921,20 @@ unsigned char CFollower::Check_ReceiveTS(void* data) {
 }
 
 unsigned char CFollower::Check_DistFar(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__) {
-        std::cout << "Event: " << (minNonTeamDistance >= toChainThreshold) << " - distFar" << std::endl;
-        return minNonTeamDistance >= toChainThreshold;
+    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= toChainThreshold) {
+        std::cout << "Event: " << 1 << " - distFar" << std::endl;
+        return 1;
     }
-    std::cout << "Event: " << 0 << " - distFar" << std::endl; // Event not activated as no non-team robot detected.
+    std::cout << "Event: " << 0 << " - distFar" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_DistNear(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__) {
-        std::cout << "Event: " << (minNonTeamDistance < toChainThreshold) << " - distNear" << std::endl;
-        return minNonTeamDistance < toChainThreshold;
+    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < toChainThreshold) {
+        std::cout << "Event: " << 1 << " - distNear" << std::endl;
+        return 1;
     }
-    std::cout << "Event: " << 0 << " - distNear" << std::endl; // Event not activated as no non-team robot detected.
+    std::cout << "Event: " << 0 << " - distNear" << std::endl;
     return 0;
 }
 
