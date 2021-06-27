@@ -309,10 +309,7 @@ private:
 
     /* Sensor reading results */
     Real minNonTeamDistance; // Distance to the closest non-team member
-    UInt8 closestLeader;
-    Real closestLeaderDistance;
     bool isClosestToNonTeam;
-    std::vector<std::string> connections; // Used to store connected entities it is connecting while in the CHAIN state
 
     /* Outgoing message */
     CByteArray msg;
@@ -326,10 +323,6 @@ private:
 
     /* Flag to indicate whether the robot joined the chain in the previous timestep */
     bool joinChainTriggered;
-
-    /* Timer to make robot wait for a predefined time before becoming a chain member (to avoid abrupt changes) */
-    UInt32 connection_timer;
-    UInt32 connection_timer_prev;
 
     /*
     * The following variables are used as parameters for the

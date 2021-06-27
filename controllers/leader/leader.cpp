@@ -214,22 +214,24 @@ void CLeader::ControlStep() {
     msg[msg_index++] = teamID;  // For leader, ID = teamID
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
-    /* Set how many non-team members it has seen */
-    // msg[msg_index++] = chainMsgs.size() + otherLeaderMsgs.size() + otherTeamMsgs.size();
 
     /*---------*/
     /* Control */
     /*---------*/
 
-    /* Follow the control vector only if selected */
+    /* Is the robot selected? */
     if(m_bSelected) {
+
+        /* Follow the control vector */
         SetWheelSpeedsFromVector(m_cControl);
         std::cout << "SIGNAL " << m_bSignal << std::endl; 
+
         if(m_bSignal)
             m_pcLEDs->SetAllColors(CColor::WHITE);
         else
             m_pcLEDs->SetAllColors(teamColor[teamID]);
-        msg[msg_index++] = int(m_bSignal);
+
+        msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
     }
     else {
         if( !closeToRobot ) {
@@ -253,7 +255,8 @@ void CLeader::ControlStep() {
                     msg[msg_index++] = 1; // send startTask signal to robots in the team
                     m_pcLEDs->SetAllColors(CColor::WHITE);
                 }
-            }
+            } else
+                msg[msg_index++] = 0; // Leader is not close to a waypoint
 
             /* If current task is completed, move to the next one */
             if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
