@@ -124,7 +124,7 @@ public:
     enum class RobotState {
         LEADER = 0,
         FOLLOWER,
-        CHAIN
+        CONNECTOR
     } currentState;
 
     /* List of move types available to the robot */
@@ -282,23 +282,23 @@ private:
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
 
+    /* PID controller to calculate the force towards the leader */
+    PID* pid;
+
+    /* Outgoing message */
+    CByteArray msg;
+    size_t msg_index = 0;
+
     /* Messages received from nearby robots */
     Message leaderMsg;
     std::vector<Message> teamMsgs;
-    std::vector<Message> chainMsgs;
+    std::vector<Message> connectorMsgs;
     std::vector<Message> otherLeaderMsgs;
     std::vector<Message> otherTeamMsgs;
 
     /* Sensor reading results */
     Real minNonTeamDistance; // Distance to the closest non-team member
     bool isClosestToNonTeam;
-
-    /* Outgoing message */
-    CByteArray msg;
-    size_t msg_index = 0;
-
-    /* PID controller to calculate the force of a leader */
-    PID* pid;
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;
@@ -310,8 +310,8 @@ private:
     * <controllers><epuck_obstacleavoidance_controller> section.
     */
     /* Chain formation threshold */
-    Real toChainThreshold;
-    Real toFollowThreshold;
+    Real separationThres;
+    Real joiningThres;
 
 };
 

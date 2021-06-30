@@ -43,8 +43,8 @@
         <team_flocking target_distance="15"
                   gain="1000"
                   exponent="2" />
-        <team to_chain_threshold="50"
-              to_follow_threshold="45" />
+        <team separation_threshold="50"
+              joining_threshold="50" />
       </params>
     </follower_controller>
 

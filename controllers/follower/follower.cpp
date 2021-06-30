@@ -119,10 +119,10 @@ void CFollower::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"         );
-    m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing" );
-    m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
-    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds");
+    m_pcProximity = GetSensor  <CCI_ProximitySensor             >("proximity"            );
+    m_pcRABAct    = GetActuator<CCI_RangeAndBearingActuator     >("range_and_bearing"    );
+    m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing"    );
+    m_pcLEDs      = GetActuator<CCI_LEDsActuator                >("leds"                 );
 
     /*
     * Parse the config file
@@ -134,8 +134,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
         /* Chain formation threshold */
-        GetNodeAttribute(GetNode(t_node, "team"), "to_chain_threshold", toChainThreshold);
-        GetNodeAttribute(GetNode(t_node, "team"), "to_follow_threshold", toFollowThreshold);
+        GetNodeAttribute(GetNode(t_node, "team"), "separation_threshold", separationThres);
+        GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -150,6 +150,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     */
     sct = new SCT();
 
+    /* Register controllable events */
     sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
     sct->add_callback(this, EV_taskBegin, &CFollower::Callback_TaskBegin, NULL, NULL);
@@ -157,13 +158,13 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_setFS,     &CFollower::Callback_SetFS,     NULL, NULL);
     sct->add_callback(this, EV_setCS,     &CFollower::Callback_SetCS,     NULL, NULL);
 
+    /* Register uncontrollable events */
     sct->add_callback(this, EV_receiveTB,  NULL, &CFollower::Check_ReceiveTB,  NULL);
     sct->add_callback(this, EV_receiveTS,  NULL, &CFollower::Check_ReceiveTS,  NULL);
     sct->add_callback(this, EV_distFar,    NULL, &CFollower::Check_DistFar,    NULL);
     sct->add_callback(this, EV_distNear,   NULL, &CFollower::Check_DistNear,   NULL);
     sct->add_callback(this, EV_isNearest,  NULL, &CFollower::Check_IsNearest,  NULL);
     sct->add_callback(this, EV_notNearest, NULL, &CFollower::Check_NotNearest, NULL);
-
 
     /*
     * Init PID Controller
@@ -209,7 +210,7 @@ void CFollower::ControlStep() {
     /* Clear messages received */
     leaderMsg = Message();
     teamMsgs.clear();
-    chainMsgs.clear();
+    connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
 
@@ -230,10 +231,8 @@ void CFollower::ControlStep() {
     /*--------------------*/
     /* Run SCT controller */
     /*--------------------*/
-    
     sct->run_step();
 
-    // PrintName();
     sct->print_current_state();
     std::cout << std::endl;
 
@@ -247,7 +246,7 @@ void CFollower::ControlStep() {
     std::string id = this->GetId();
     msg[msg_index++] = stoi(id.substr(1));
 
-    // Decide what to communicate depending on current state (switch between follower and chain)
+    // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
         case RobotState::FOLLOWER: {
             std::cout << "State: FOLLOWER" << std::endl;
@@ -257,8 +256,8 @@ void CFollower::ControlStep() {
             msg[msg_index++] = teamID;
             break;
         }
-        case RobotState::CHAIN: {
-            std::cout << "State: CHAIN" << std::endl;
+        case RobotState::CONNECTOR: {
+            std::cout << "State: CONNECTOR" << std::endl;
             m_pcLEDs->SetAllColors(CColor::CYAN);
 
             /* Set current team ID in msg */
@@ -286,7 +285,7 @@ void CFollower::ControlStep() {
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
-    allMsgs.insert(std::end(allMsgs), std::begin(chainMsgs), std::end(chainMsgs));
+    allMsgs.insert(std::end(allMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
     if(leaderMsg.direction.Length() > 0.0f) {
@@ -329,21 +328,21 @@ void CFollower::GetMessages() {
             msg.teamid = tMsgs[i].Data[index++];
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
-            /* Message from chain robot */
-            if(msg.state == RobotState::CHAIN) {
+            /* Message from a connector robot */
+            if(msg.state == RobotState::CONNECTOR) {
                 msg.id = 'F' + msg.id;
                 index++; // Skip index
 
                 /* Store the IDs of connected robots */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                    std::string chainID;
-                    chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.connections.push_back(chainID);
+                    std::string robotID;
+                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    msg.connections.push_back(robotID);
                 }
                 
                 // sort(std::begin(msg.connections), std::end(msg.connections));
-                chainMsgs.push_back(msg);
+                connectorMsgs.push_back(msg);
             } 
             /* Message from team */
             else if(msg.teamid == teamID) {
@@ -355,10 +354,10 @@ void CFollower::GetMessages() {
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                        std::string chainID;
-                        chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                        chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                        msg.connections.push_back(chainID);
+                        std::string robotID;
+                        robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                        robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                        msg.connections.push_back(robotID);
                     }
                     leaderMsg = msg;
                 } 
@@ -369,10 +368,10 @@ void CFollower::GetMessages() {
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                        std::string chainID;
-                        chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                        chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                        msg.connections.push_back(chainID);
+                        std::string robotID;
+                        robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                        robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                        msg.connections.push_back(robotID);
                     }
                     teamMsgs.push_back(msg);
                 }
@@ -386,10 +385,10 @@ void CFollower::GetMessages() {
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                        std::string chainID;
-                        chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                        chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                        msg.connections.push_back(chainID);
+                        std::string robotID;
+                        robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                        robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                        msg.connections.push_back(robotID);
                     }
                     otherLeaderMsgs.push_back(msg);   
                 }
@@ -400,10 +399,10 @@ void CFollower::GetMessages() {
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                        std::string chainID;
-                        chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                        chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                        msg.connections.push_back(chainID);
+                        std::string robotID;
+                        robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                        robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                        msg.connections.push_back(robotID);
                     }
                     otherTeamMsgs.push_back(msg);
                 }
@@ -417,13 +416,11 @@ void CFollower::GetMessages() {
 
 void CFollower::UpdateSensors() {
 
-    /* Check leader distance with chain (including other leader) */
-
-    std::cout << "chainMsg  = " << chainMsgs.size() << std::endl;
+    std::cout << "connectorMsg  = " << connectorMsgs.size() << std::endl;
     std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
 
     /* Combine messages received from all non-team entities */
-    std::vector<Message> nonTeamMsgs(chainMsgs);
+    std::vector<Message> nonTeamMsgs(connectorMsgs);
     nonTeamMsgs.insert(std::end(nonTeamMsgs),
                        std::begin(otherLeaderMsgs),
                        std::end(otherLeaderMsgs));
@@ -500,7 +497,7 @@ void CFollower::UpdateSensors() {
             isClosestToNonTeam = true;
 
     } 
-    else if(currentState == RobotState::CHAIN) {
+    else if(currentState == RobotState::CONNECTOR) {
         
         /* Find unique team IDs detected */
         std::set<UInt8> teamIDs;
@@ -512,7 +509,7 @@ void CFollower::UpdateSensors() {
         }
         std::cout << std::endl;
 
-        teamIDs.erase(255); // Remove team id used by chains (255)
+        teamIDs.erase(255); // Remove team id used by connectors (255)
 
         int isClosestCount = 0;
 
@@ -642,7 +639,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
 
 CVector2 CFollower::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
-    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + chainMsgs.size();
+    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
 
     if(otherSeen > 0) {
 
@@ -666,12 +663,12 @@ CVector2 CFollower::GetRobotRepulsionVector() {
             numRepulse++;
         }
 
-        for(int i = 0; i < chainMsgs.size(); i++) {
+        for(int i = 0; i < connectorMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(chainMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
             /* Sum to accumulator */
             resVec += CVector2(fLJ,
-                               chainMsgs[i].direction.Angle());
+                               connectorMsgs[i].direction.Angle());
             numRepulse++;
         }
 
@@ -722,11 +719,11 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 
 void CFollower::Flock() {
     /* Calculate overall force applied to the robot */
-    CVector2 leaderForce = GetLeaderFlockingVector();
-    CVector2 teamForce = GetTeamFlockingVector();
-    CVector2 robotForce = GetRobotRepulsionVector();
+    CVector2 leaderForce   = GetLeaderFlockingVector();
+    CVector2 teamForce     = GetTeamFlockingVector();
+    CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce = leaderForce + teamForce + robotForce + obstacleForce;
+    CVector2 sumForce      = leaderForce + teamForce + robotForce + obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
@@ -893,7 +890,7 @@ void CFollower::Callback_SetFS(void* data) {
 
 void CFollower::Callback_SetCS(void* data) {
     std::cout << "Action: setCS" <<std::endl;
-    currentState = RobotState::CHAIN;
+    currentState = RobotState::CONNECTOR;
     teamID = 255;
 }
 
@@ -921,7 +918,7 @@ unsigned char CFollower::Check_ReceiveTS(void* data) {
 }
 
 unsigned char CFollower::Check_DistFar(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= toChainThreshold) {
+    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= separationThres) {
         std::cout << "Event: " << 1 << " - distFar" << std::endl;
         return 1;
     }
@@ -930,7 +927,7 @@ unsigned char CFollower::Check_DistFar(void* data) {
 }
 
 unsigned char CFollower::Check_DistNear(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < toChainThreshold) {
+    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < joiningThres) {
         std::cout << "Event: " << 1 << " - distNear" << std::endl;
         return 1;
     }

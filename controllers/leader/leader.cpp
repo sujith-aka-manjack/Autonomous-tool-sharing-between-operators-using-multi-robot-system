@@ -188,7 +188,7 @@ void CLeader::ControlStep() {
 
     /* Clear messages received */
     teamMsgs.clear();
-    chainMsgs.clear();
+    connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
 
@@ -260,15 +260,18 @@ void CLeader::ControlStep() {
 
             /* If current task is completed, move to the next one */
             if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+
                 /* Calculate overall force applied to the robot */
                 CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
-                CVector2 robotForce = GetRobotRepulsionVector();       // Repulsion from other robots (other team and chain robots)
+                CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
                 CVector2 obstacleForce = GetObstacleRepulsionVector(); // repulsion from obstacles
-                CVector2 sumForce = waypointForce + robotForce + obstacleForce;
+
+                CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
                 std::cout << "waypointForce: " << waypointForce << std::endl;
                 std::cout << "robotForce: " << robotForce << std::endl;
                 std::cout << "obstacleForce: " << obstacleForce << std::endl;
                 std::cout << "sumForce: " << sumForce << std::endl;
+
                 SetWheelSpeedsFromVectorHoming(sumForce);
             } 
             else {
@@ -281,7 +284,7 @@ void CLeader::ControlStep() {
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
-    allMsgs.insert(std::end(allMsgs), std::begin(chainMsgs), std::end(chainMsgs));
+    allMsgs.insert(std::end(allMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
@@ -399,27 +402,16 @@ void CLeader::GetMessages() {
             msg.teamid = tMsgs[i].Data[index++];
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
-            /* Message from chain robot */
-            if(msg.state == RobotState::CHAIN) {
+            /* Message from connector robot */
+            if(msg.state == RobotState::CONNECTOR) {
                 msg.id = 'F' + msg.id;
-
-                /* Store which chain entities the other chain robot is connected to */
-                // while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                //     std::string chainID;
-                //     chainID += (char)tMsgs[i].Data[index++];            // First char of ID
-                //     chainID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                //     msg.connections.push_back(chainID);
-                // }
-                
-                // sort(std::begin(msg.connections), std::end(msg.connections));
-                chainMsgs.push_back(msg);
+                connectorMsgs.push_back(msg);
             } 
             /* Message from team */
             else if(msg.teamid == teamID) {
                 /* Message from follower */
                 if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    // msg.numOtherTeamSeen = tMsgs[i].Data[index++];
                     teamMsgs.push_back(msg);
                 }
             } 
@@ -444,8 +436,9 @@ void CLeader::GetMessages() {
 /****************************************/
 
 void CLeader::UpdateSensors() {
-    /* Combine messages received from its own followers and chain entities */
-    std::vector<Message> combinedMsgs(chainMsgs);
+
+    /* Combine messages received */
+    std::vector<Message> combinedMsgs(connectorMsgs);
     combinedMsgs.insert(std::end(combinedMsgs),
                         std::begin(teamMsgs),
                         std::end(teamMsgs));
@@ -456,7 +449,7 @@ void CLeader::UpdateSensors() {
                         std::begin(otherTeamMsgs),
                         std::end(otherTeamMsgs));
 
-    /* Check whether follower or chain is nearby (within threshold) */
+    /* Check whether there is a neighbor (within threshold) */
     for(int i = 0 ; i < combinedMsgs.size(); i++) {
         Real dist = combinedMsgs[i].direction.Length();
         if(dist < minDistanceFromRobot)
@@ -500,7 +493,7 @@ CVector2 CLeader::VectorToWaypoint() {
 
 CVector2 CLeader::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
-    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + chainMsgs.size();
+    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
 
     if(otherSeen > 0) {
 
@@ -524,12 +517,12 @@ CVector2 CLeader::GetRobotRepulsionVector() {
             numRepulse++;
         }
 
-        for(int i = 0; i < chainMsgs.size(); i++) {
+        for(int i = 0; i < connectorMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(chainMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
             /* Sum to accumulator */
             resVec += CVector2(fLJ,
-                               chainMsgs[i].direction.Angle());
+                               connectorMsgs[i].direction.Angle());
             numRepulse++;
         }
 

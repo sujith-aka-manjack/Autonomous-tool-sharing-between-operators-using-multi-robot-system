@@ -54,7 +54,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                      "leader2posX,"
                      "leader2posY,"
                      "leader2follower,"
-                     "chain" << std::endl;
+                     "connector" << std::endl;
 
         /*
         * Distribute leaders and robots
@@ -184,7 +184,7 @@ void CExperimentLoopFunctions::Reset() {
                  "leader2posX,"
                  "leader2posY,"
                  "leader2follower,"
-                 "chain" << std::endl;
+                 "connector" << std::endl;
 }
 
 /****************************************/
@@ -219,7 +219,7 @@ void CExperimentLoopFunctions::PreStep() {
 
     UInt32 unFollowers1 = 0;
     UInt32 unFollowers2 = 0;
-    UInt32 unChains = 0;
+    UInt32 unConnectors = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
     std::unordered_map<std::string,UInt32> taskWithRobot; // Store the number of e-pucks that have worked on each task in the previous timestep
 
@@ -318,7 +318,7 @@ void CExperimentLoopFunctions::PreStep() {
                 }
             }
         }
-        else ++unChains; // Count chain state
+        else ++unConnectors; // Count the number of connectors
         
     }
 
@@ -350,7 +350,7 @@ void CExperimentLoopFunctions::PreStep() {
               << leaderPos["L2"].GetX() << ","
               << leaderPos["L2"].GetY() << ","
               << unFollowers2 << ","
-              << unChains << std::endl;
+              << unConnectors << std::endl;
 }
 
 /****************************************/

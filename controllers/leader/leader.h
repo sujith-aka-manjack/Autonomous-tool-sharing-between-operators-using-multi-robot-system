@@ -122,7 +122,7 @@ public:
     enum class RobotState {
         LEADER = 0,
         FOLLOWER,
-        CHAIN
+        CONNECTOR
     } currentState;
 
     /* Structure to store incoming data received from other robots */
@@ -290,7 +290,7 @@ private:
 
     /* Messages received from nearby robots */
     std::vector<Message> teamMsgs;
-    std::vector<Message> chainMsgs;
+    std::vector<Message> connectorMsgs;
     std::vector<Message> otherLeaderMsgs;
     std::vector<Message> otherTeamMsgs;
 
@@ -307,7 +307,7 @@ private:
     /* Task demand of the current working task */
     UInt32 currentTaskDemand;
 
-    /* Flag to know whether a follower or a chain is nearby */
+    /* Flag to know whether there is a neighbor */
     bool closeToRobot;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
