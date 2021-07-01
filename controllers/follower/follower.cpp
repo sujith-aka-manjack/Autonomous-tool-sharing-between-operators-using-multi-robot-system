@@ -130,12 +130,20 @@ void CFollower::Init(TConfigurationNode& t_node) {
     try {
         /* Wheel turning */
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
+
         /* Flocking-related */
         m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
+
         /* Chain formation threshold */
         GetNodeAttribute(GetNode(t_node, "team"), "separation_threshold", separationThres);
         GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
+
+        /* Weights for the flocking behavior */
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "leader",   leaderWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "other",    otherWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -588,7 +596,7 @@ void CFollower::UpdateSensors() {
 
 CVector2 CFollower::GetLeaderFlockingVector() {
     CVector2 resVec = CVector2();
-    if(leaderMsg.direction.Length() > 0.0f) {
+    if(leaderMsg.direction.Length() > 0.0f) {   // If leader is detected
         std::cout << leaderMsg.direction.Length() << std::endl;
 
         Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
@@ -598,7 +606,7 @@ CVector2 CFollower::GetLeaderFlockingVector() {
         resVec += CVector2(-fPID,
                            leaderMsg.direction.Angle());
 
-        /* Clamp the length of the vector to the max speed */
+        /* Limit the length of the vector to the max speed */
         if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
             resVec.Normalize();
             resVec *= m_sWheelTurningParams.MaxSpeed;
@@ -616,16 +624,16 @@ CVector2 CFollower::GetTeamFlockingVector() {
     int teammateSeen = teamMsgs.size();
     if(teammateSeen > 0) {
 
-        for(int i = 0; i < teammateSeen; i++) {
+        for(size_t i = 0; i < teammateSeen; i++) {
             /* Calculate LJ */
             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(teamMsgs[i].direction.Length());
             /* Sum to accumulator */
             resVec += CVector2(fLJ,
                                teamMsgs[i].direction.Angle());
         }
-        /* Divide the accumulator by the number of blobs seen */
+        /* Divide the accumulator by the number of team members seen */
         resVec /= teammateSeen;
-        /* Clamp the length of the vector to the max speed */
+        /* Limit the length of the vector to the max speed */
         if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
             resVec.Normalize();
             resVec *= m_sWheelTurningParams.MaxSpeed;
@@ -645,7 +653,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
 
         int numRepulse = 0;
 
-        for(int i = 0; i < otherLeaderMsgs.size(); i++) {
+        for(size_t i = 0; i < otherLeaderMsgs.size(); i++) {
             /* Calculate LJ */
             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
             /* Sum to accumulator */
@@ -654,7 +662,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
             numRepulse++;
         }
 
-        for(int i = 0; i < otherTeamMsgs.size(); i++) {
+        for(size_t i = 0; i < otherTeamMsgs.size(); i++) {
             /* Calculate LJ */
             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
             /* Sum to accumulator */
@@ -663,7 +671,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
             numRepulse++;
         }
 
-        for(int i = 0; i < connectorMsgs.size(); i++) {
+        for(size_t i = 0; i < connectorMsgs.size(); i++) {
             /* Calculate LJ */
             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
             /* Sum to accumulator */
@@ -675,7 +683,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
         if(numRepulse > 0) {
             /* Divide the accumulator by the number of blobs producing repulsive forces */
             resVec /= numRepulse;
-            /* Clamp the length of the vector to the max speed */
+            /* Limit the length of the vector to the max speed */
             if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
                 resVec.Normalize();
                 resVec *= m_sWheelTurningParams.MaxSpeed;
@@ -705,7 +713,7 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
         // std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
     }
 
-    /* Clamp the length of the vector to the max speed */
+    /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
         resVec.Normalize();
         resVec *= m_sWheelTurningParams.MaxSpeed;
@@ -723,7 +731,7 @@ void CFollower::Flock() {
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = leaderForce + teamForce + robotForce + obstacleForce;
+    CVector2 sumForce      = leaderWeight*leaderForce + teamWeight*teamForce + otherWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {

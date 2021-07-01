@@ -82,7 +82,7 @@ public:
 
     /*
     * The following variables are used as parameters for
-    * flocking interaction. You can set their value
+    * leader following. You can set their value
     * in the <parameters> section of the XML configuration
     * file, under the
     * <controllers><follower_controller><parameters><leader_flocking>
@@ -276,6 +276,12 @@ private:
     /* The flocking interaction parameters between teammates. */
     SFlockingInteractionParams m_sTeamFlockingParams;
     
+    /* Weights for the flocking behavior */
+    Real leaderWeight;
+    Real teamWeight;
+    Real otherWeight;
+    Real obstacleWeight;
+
     /* Controller */
     SCT* sct;
 
