@@ -133,7 +133,17 @@ public:
         FLOCK
     } currentMoveType;
 
-    /* Structure to store incoming data received from other robots */
+    /* 
+    * Structure to store incoming data received from other robots 
+    * 
+    * The raw messages are assumed to arrive in the following data structure:
+    * 
+    *    |  (1)   |  (2)   |   (3)   |       (4)        |    (5)    |    (6)-(7)    |        (8)-(67)       |  
+    *    ----------------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  |      Signal      | Hop-count |   Connector   |      Connections      |
+    *    | State  |   ID   | Team ID | (Only by leader) | to leader | Approval (ID) | (2 bytes for ID x 30) |
+    * 
+    */
     struct Message {
         RobotState state;
         std::string id;
