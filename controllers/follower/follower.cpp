@@ -194,7 +194,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(64, 255);
+    msg = CByteArray(67, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -212,7 +212,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(64, 255);
+    msg = CByteArray(67, 255);
     msg_index = 0;
 
     /* Clear messages received */

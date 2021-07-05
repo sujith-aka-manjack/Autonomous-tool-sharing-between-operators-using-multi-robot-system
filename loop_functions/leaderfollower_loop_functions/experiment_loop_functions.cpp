@@ -13,7 +13,7 @@
 static const Real        EP_RADIUS        = 0.035f;
 static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
 static const Real        EP_RAB_RANGE     = 0.8f;
-static const Real        EP_RAB_DATA_SIZE = 64;
+static const Real        EP_RAB_DATA_SIZE = 67;
 static const std::string HL_CONTROLLER    = "el";
 static const std::string EP_CONTROLLER    = "ef";
 static const UInt32      MAX_PLACE_TRIALS = 20;

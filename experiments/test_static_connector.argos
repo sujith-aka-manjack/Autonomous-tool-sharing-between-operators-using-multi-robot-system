@@ -178,14 +178,14 @@
       </entity>
     </distribute> -->
 
-    <e-puck id="F101" rab_range="0.8" rab_data_size="64">
+    <e-puck id="F101" rab_range="0.8" rab_data_size="67">
       <controller config="esc" />
-      <body position="0.1,0.8,0" orientation="0,0,0" />
+      <body position="0.4,0.8,0" orientation="0,0,0" />
     </e-puck>
 
-    <e-puck id="F102" rab_range="0.8" rab_data_size="64">
+    <e-puck id="F102" rab_range="0.8" rab_data_size="67">
       <controller config="esc" />
-      <body position="-0.1,0.8,0" orientation="0,0,0" />
+      <body position="-0.4,0.8,0" orientation="0,0,0" />
     </e-puck>
 
     <!--
