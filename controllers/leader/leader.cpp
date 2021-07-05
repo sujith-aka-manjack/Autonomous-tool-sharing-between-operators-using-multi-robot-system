@@ -278,8 +278,10 @@ void CLeader::ControlStep() {
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
             }
         }
-        else
+        else {
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            msg[msg_index++] = 0; // Leader sends stopTask
+        }
     }
 
     /* Set ID of all connections to msg */
