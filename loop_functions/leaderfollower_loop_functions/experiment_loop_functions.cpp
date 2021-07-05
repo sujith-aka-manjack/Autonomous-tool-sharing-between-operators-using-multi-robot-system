@@ -73,51 +73,86 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             itDistr != itDistr.end();
             ++itDistr) {
             
-            /* Get current node (team) */
+            /* Get current node (team/custom_team) */
             TConfigurationNode& tDistr = *itDistr;
-            /* Distribution center */
-            CVector2 cCenter;
-            GetNodeAttribute(tDistr, "center", cCenter);
+
             /* Number of leaders to place */
             UInt32 unLeaders;
-            GetNodeAttribute(tDistr, "leader_num", unLeaders);
+
             /* Number of robots to place */
             UInt32 unRobots;
-            GetNodeAttribute(tDistr, "robot_num", unRobots);
-            /* Density of the robots */
-            Real fDensity;
-            GetNodeAttribute(tDistr, "density", fDensity);
-            /* Place robots */
-            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
 
-            /* Get the waypoints node */
-            std::queue<CVector2> waypoints; // Queue to provide to the robot
-            /* Go through the nodes (waypoints) */
-            TConfigurationNodeIterator itWaypt;
-            for(itWaypt = itWaypt.begin(&tDistr);
-                itWaypt != itWaypt.end();
-                ++itWaypt) {
+            if(itDistr->Value() == "team") {
+                /* Distribution center */
+                CVector2 cCenter;
+                GetNodeAttribute(tDistr, "center", cCenter);
+                GetNodeAttribute(tDistr, "leader_num", unLeaders);
+                GetNodeAttribute(tDistr, "robot_num", unRobots);
+                /* Density of the robots */
+                Real fDensity;
+                GetNodeAttribute(tDistr, "density", fDensity);
+                /* Place robots */
+                PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
 
-                /* Get current node (waypoint) */
-                TConfigurationNode& tWaypt = *itWaypt;
-                /* Coordinate of waypoint */
-                CVector2 coord;
-                GetNodeAttribute(tWaypt, "coord", coord);
-                m_cWaypointPos.push_back(coord);
-                waypoints.push(coord);
+                /* Get the waypoints node */
+                std::queue<CVector2> waypoints; // Queue to provide to the robot
+                /* Go through the nodes (waypoints) */
+                TConfigurationNodeIterator itWaypt;
+                for(itWaypt = itWaypt.begin(&tDistr);
+                    itWaypt != itWaypt.end();
+                    ++itWaypt) {
+
+                    /* Get current node (waypoint) */
+                    TConfigurationNode& tWaypt = *itWaypt;
+                    /* Coordinate of waypoint */
+                    CVector2 coord;
+                    GetNodeAttribute(tWaypt, "coord", coord);
+                    m_cWaypointPos.push_back(coord);
+                    waypoints.push(coord);
+                }
+                /* Get the newly created leader */
+                std::ostringstream cEPId;
+                cEPId.str("");
+                cEPId << "L" << unNextLeaderId;
+                CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+                /* Set list of waypoints to leader */
+                cController.SetWaypoints(waypoints);
+
+                /* Update robot count */
+                unNextLeaderId += unLeaders;
+                unNextRobotId += unRobots;
             }
-            /* Get the newly created leader */
-            std::ostringstream cEPId;
-            cEPId.str("");
-            cEPId << "L" << unNextLeaderId;
-            CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
-            /* Set list of waypoints to leader */
-            cController.SetWaypoints(waypoints);
+            else if(itDistr->Value() == "custom_team") {
+                
+                /* Get the robots node */
+                TConfigurationNode& er_tree = GetNode(tDistr, "robots");
+                /* Go through the nodes (robots) */
+                TConfigurationNodeIterator itRobot;
 
-            /* Update robot count */
-            unNextLeaderId += unLeaders;
-            unNextRobotId += unRobots;
+                for(itRobot = itRobot.begin(&er_tree);
+                    itRobot != itRobot.end();
+                    ++itRobot) {
+
+                    /* Get current node (robot) */
+                    TConfigurationNode& tRobot = *itRobot;
+                    /* Distribution center */
+                    CVector2 cCenter;
+                    GetNodeAttribute(tRobot, "position", cCenter);
+                    std::string str_type;
+                    GetNodeAttribute(tRobot, "type", str_type);
+
+                    PlaceCustomPosition(cCenter, str_type, unNextLeaderId, unNextRobotId);
+
+                    if(str_type == "leader")
+                        unLeaders++;
+                    else if(str_type == "follower")
+                        unNextRobotId++;
+                }
+
+                /* Update robot count */
+                unNextLeaderId += unLeaders;
+            } 
         }
 
         std::cout << "[LOG] Added robots" << std::endl;
@@ -275,51 +310,60 @@ void CExperimentLoopFunctions::PreStep() {
 
         /* Get handle to e-puck entity and controller */
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
-        CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
-        UInt8 unTeamId = cController.GetTeamID();
+        try {
+            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+            UInt8 unTeamId = cController.GetTeamID();
 
-        /* Count how many e-pucks are in each state */
-        if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
-            // Count flock state
-            if( unTeamId == 1 ) ++unFollowers1;
-            else ++unFollowers2;
+            /* Count how many e-pucks are in each state */
+            if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
+                // Count flock state
+                if( unTeamId == 1 ) ++unFollowers1;
+                else ++unFollowers2;
 
-            /* 
-            * Check whether the e-puck is working on a task
-            */            
+                /* 
+                * Check whether the e-puck is working on a task
+                */            
 
-            /* Current location */
-            CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
-                                     cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+                /* Current location */
+                CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                        cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
 
-            /* Leaeder's location */
-            std::ostringstream cLeaderId;
-            cLeaderId.str("");
-            cLeaderId << "L" << unTeamId;
-            CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
+                /* Leaeder's location */
+                std::ostringstream cLeaderId;
+                cLeaderId.str("");
+                cLeaderId << "L" << unTeamId;
+                CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
 
-            for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
-                itTask != m_cCTasks.end();
-                ++itTask) {
+                for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
+                    itTask != m_cCTasks.end();
+                    ++itTask) {
 
-                /* Task location */
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                CVector2 cTaskPos = cCTask.GetPosition();
+                    /* Task location */
+                    CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                    CVector2 cTaskPos = cCTask.GetPosition();
 
-                /* Check if robot is working on a task */
-                if(cController.IsWorking()) {
-                    /* Check e-puck and its leader is within the range of a task */
-                    if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                    (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                        
-                        taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
-                        break;
+                    /* Check if robot is working on a task */
+                    if(cController.IsWorking()) {
+                        /* Check e-puck and its leader is within the range of a task */
+                        if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                        (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                            
+                            taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                            break;
+                        }
                     }
                 }
             }
+            else 
+                ++unConnectors; // Count the number of connectors
+
+        } catch(CARGoSException& ex) {
+            THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
+            
+        } catch(const std::bad_cast& e) {
+            std::cout << e.what() << '\n';
+
         }
-        else ++unConnectors; // Count the number of connectors
-        
     }
 
     /* Update task demands */
@@ -443,6 +487,82 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         }
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
+                                                   std::string str_type,
+                                                   UInt32 un_leader_id_start,
+                                                   UInt32 un_robot_id_start) {
+
+    try{
+        /* Place robot */
+        std::ostringstream cEPId;
+        CVector3 cEPPos;
+        CQuaternion cEPRot;
+
+        if(str_type == "leader") {
+            CEPuckLeaderEntity* pcEPL;
+            /* Make the id */
+            cEPId.str("");
+            cEPId << "L" << (un_leader_id_start);
+            /* Create the leader in the origin and add it to ARGoS space */
+            pcEPL = new CEPuckLeaderEntity(cEPId.str(),
+                                           HL_CONTROLLER,
+                                           CVector3(),
+                                           CQuaternion(),
+                                           EP_RAB_RANGE,
+                                           EP_RAB_DATA_SIZE,
+                                           "");
+            AddEntity(*pcEPL);
+
+            /* Try to place it in the arena */
+            bool bDone;
+            /* Place on specified position */
+            cEPPos.Set(c_center.GetX(),
+                        c_center.GetY(),
+                        0.0f);
+            cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                    CVector3::Z);
+            bDone = MoveEntity(pcEPL->GetEmbodiedEntity(), cEPPos, cEPRot);
+
+            if(!bDone) {
+                THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+            }
+        }
+        else if(str_type == "follower") {
+            CEPuckEntity* pcEP;
+            /* Make the id */
+            cEPId.str("");
+            cEPId << "F" << (un_robot_id_start);
+            /* Create the robot in the origin and add it to ARGoS space */
+            pcEP = new CEPuckEntity(cEPId.str(),
+                                    EP_CONTROLLER,
+                                    CVector3(),
+                                    CQuaternion(),
+                                    EP_RAB_RANGE,
+                                    EP_RAB_DATA_SIZE,
+                                    "");
+            AddEntity(*pcEP);
+            /* Assign initial team id */
+            CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
+            cController.SetTeamID(un_leader_id_start);  // Assign teamID of team leader
+
+            /* Try to place it in the arena */
+            bool bDone;
+            /* Place on specified position */
+            cEPPos.Set(c_center.GetX(),
+                        c_center.GetY(),
+                        0.0f);
+            cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                    CVector3::Z);
+            bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+        }
+    } catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("While placing robot in a custom position", ex);
     }
 }
 

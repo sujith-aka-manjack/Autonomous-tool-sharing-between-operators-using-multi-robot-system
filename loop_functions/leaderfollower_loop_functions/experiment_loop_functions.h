@@ -42,6 +42,11 @@ private:
                      UInt32 un_leader_id_start,
                      UInt32 un_robot_id_start);
 
+   void PlaceCustomPosition(const CVector2& c_center,
+                            std::string str_type,
+                            UInt32 un_leader_id_start,
+                            UInt32 un_robot_id_start);
+
    /* Place a task */
    void PlaceTask(const CVector2& c_center,
                   Real f_radius,
