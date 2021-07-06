@@ -720,57 +720,6 @@ CVector2 CFollower::GetRobotRepulsionVector() {
 /****************************************/
 /****************************************/
 
-// CVector2 CFollower::GetRobotRepulsionVector() {
-//     CVector2 resVec = CVector2();
-//     int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
-
-//     if(otherSeen > 0) {
-
-//         int numRepulse = 0;
-
-//         for(size_t i = 0; i < otherLeaderMsgs.size(); i++) {
-//             /* Calculate LJ */
-//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
-//             /* Sum to accumulator */
-//             resVec += CVector2(fLJ,
-//                                otherLeaderMsgs[i].direction.Angle());
-//             numRepulse++;
-//         }
-
-//         for(size_t i = 0; i < otherTeamMsgs.size(); i++) {
-//             /* Calculate LJ */
-//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
-//             /* Sum to accumulator */
-//             resVec += CVector2(fLJ,
-//                                otherTeamMsgs[i].direction.Angle());
-//             numRepulse++;
-//         }
-
-//         for(size_t i = 0; i < connectorMsgs.size(); i++) {
-//             /* Calculate LJ */
-//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
-//             /* Sum to accumulator */
-//             resVec += CVector2(fLJ,
-//                                connectorMsgs[i].direction.Angle());
-//             numRepulse++;
-//         }
-
-//         if(numRepulse > 0) {
-//             /* Divide the accumulator by the number of blobs producing repulsive forces */
-//             resVec /= numRepulse;
-//             /* Limit the length of the vector to the max speed */
-//             if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-//                 resVec.Normalize();
-//                 resVec *= m_sWheelTurningParams.MaxSpeed;
-//             }
-//         }
-//     }
-//     return resVec;
-// }
-
-/****************************************/
-/****************************************/
-
 CVector2 CFollower::GetObstacleRepulsionVector() {
     /* Get proximity sensor readings */
     std::vector<Real> fProxReads = m_pcProximity->GetReadings();
