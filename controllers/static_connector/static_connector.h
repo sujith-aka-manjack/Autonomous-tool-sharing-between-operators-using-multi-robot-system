@@ -133,13 +133,24 @@ public:
         FLOCK
     } currentMoveType;
 
-    /* Structure to store incoming data received from other robots */
+    /* 
+    * Structure to store incoming data received from other robots 
+    * 
+    * The raw messages are assumed to arrive in the following data structure:
+    * 
+    *    |  (1)   |  (2)   |   (3)   |       (4)        |    (5)    |    (6)-(7)    |        (8)-(67)       |  
+    *    ----------------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  |      Signal      | Hop-count |   Connector   |      Connections      |
+    *    | State  |   ID   | Team ID | (Only by leader) | to leader | Approval (ID) | (2 bytes for ID x 30) |
+    * 
+    */
     struct Message {
+        CVector2 direction;
         RobotState state;
         std::string id;
         UInt8 teamid;
-        CVector2 direction;
         UInt8 taskSignal;
+        UInt8 hopCount;
         std::vector<std::string> connections;
     };
 
@@ -207,17 +218,12 @@ protected:
     virtual void UpdateSensors();
 
     /* 
-    * Get a flocking vector between itself and the leader.
-    */
-    virtual CVector2 GetLeaderFlockingVector();
-
-    /* 
-    * Get a flocking vector between itself and the other followers in the same team.
+    * Get a flocking vector between itself and team members with the smallest hop count.
     */
     virtual CVector2 GetTeamFlockingVector();
 
     /* 
-    * Get a flocking vector between itself and the other robots not in the same team.
+    * Get a repulsion vector between itself and all other robots.
     */
     virtual CVector2 GetRobotRepulsionVector();
 
@@ -277,9 +283,8 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
     
     /* Weights for the flocking behavior */
-    Real leaderWeight;
     Real teamWeight;
-    Real otherWeight;
+    Real robotWeight;
     Real obstacleWeight;
 
     /* Controller */
@@ -301,6 +306,9 @@ private:
     std::vector<Message> connectorMsgs;
     std::vector<Message> otherLeaderMsgs;
     std::vector<Message> otherTeamMsgs;
+
+    /* The number of hops from the leader to itself */
+    UInt8 hopCountToLeader;  // default to 255 if unknown
 
     /* Sensor reading results */
     Real minNonTeamDistance; // Distance to the closest non-team member

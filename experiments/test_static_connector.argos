@@ -36,7 +36,7 @@
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
                        max_speed="8" />
-        <leader_flocking target_distance="20"
+        <leader_flocking target_distance="15"
                          kp="1"
                          ki="0"
                          kd="0" />
@@ -45,9 +45,8 @@
                        exponent="2" />
         <team separation_threshold="50"
               joining_threshold="50" />
-        <flocking_weights leader="1"
-                          team="1"
-                          other="1"
+        <flocking_weights team="1"
+                          robot="1"
                           obstacle="1" />
       </params>
     </follower_controller>
@@ -66,6 +65,22 @@
                            show_rays="true"/> 
       </sensors>
       <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="8" />
+        <leader_flocking target_distance="15"
+                         kp="1"
+                         ki="0"
+                         kd="0" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
+        <team separation_threshold="50"
+              joining_threshold="50" />
+        <flocking_weights team="1"
+                          robot="1"
+                          obstacle="1" />
       </params>
     </static_connector_controller>
 

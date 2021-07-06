@@ -108,8 +108,8 @@ CStaticConnector::CStaticConnector() :
 /****************************************/
 
 CStaticConnector::~CStaticConnector() {
-    // delete sct;
-    // delete pid;
+    delete sct;
+    delete pid;
 }
 
 /****************************************/
@@ -127,63 +127,62 @@ void CStaticConnector::Init(TConfigurationNode& t_node) {
     /*
     * Parse the config file
     */
-    // try {
-    //     /* Wheel turning */
-    //     m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
+    try {
+        /* Wheel turning */
+        m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
 
-    //     /* Flocking-related */
-    //     m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
-    //     m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
+        /* Flocking-related */
+        m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
+        m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
 
-    //     /* Chain formation threshold */
-    //     GetNodeAttribute(GetNode(t_node, "team"), "separation_threshold", separationThres);
-    //     GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
+        /* Chain formation threshold */
+        GetNodeAttribute(GetNode(t_node, "team"), "separation_threshold", separationThres);
+        GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
 
-    //     /* Weights for the flocking behavior */
-    //     GetNodeAttribute(GetNode(t_node, "flocking_weights"), "leader",   leaderWeight);
-    //     GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
-    //     GetNodeAttribute(GetNode(t_node, "flocking_weights"), "other",    otherWeight);
-    //     GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
-    // }
-    // catch(CARGoSException& ex) {
-    //     THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
-    // }
+        /* Weights for the flocking behavior */
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "robot",    robotWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
+    }
+    catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
+    }
 
     /* Initialization */
-    currentState = RobotState::CONNECTOR; // Set initial state to connector
+    currentState = RobotState::CONNECTOR; // Set initial state to follower
     performingTask = false; // Robot initially not working on any task
-    teamID = 255;
+    hopCountToLeader = 255; // Default (max) value as hop count is unknown
 
     /*
     * Init SCT Controller
     */
-    // sct = new SCT();
+    sct = new SCT();
 
-    // /* Register controllable events */
-    // sct->add_callback(this, EV_moveFlock, &CStaticConnector::Callback_MoveFlock, NULL, NULL);
-    // sct->add_callback(this, EV_moveStop,  &CStaticConnector::Callback_MoveStop,  NULL, NULL);
-    // sct->add_callback(this, EV_taskBegin, &CStaticConnector::Callback_TaskBegin, NULL, NULL);
-    // sct->add_callback(this, EV_taskStop,  &CStaticConnector::Callback_TaskStop,  NULL, NULL);
-    // sct->add_callback(this, EV_setFS,     &CStaticConnector::Callback_SetFS,     NULL, NULL);
-    // sct->add_callback(this, EV_setCS,     &CStaticConnector::Callback_SetCS,     NULL, NULL);
+    /* Register controllable events */
+    sct->add_callback(this, EV_moveFlock, &CStaticConnector::Callback_MoveFlock, NULL, NULL);
+    sct->add_callback(this, EV_moveStop,  &CStaticConnector::Callback_MoveStop,  NULL, NULL);
+    sct->add_callback(this, EV_taskBegin, &CStaticConnector::Callback_TaskBegin, NULL, NULL);
+    sct->add_callback(this, EV_taskStop,  &CStaticConnector::Callback_TaskStop,  NULL, NULL);
+    sct->add_callback(this, EV_setFS,     &CStaticConnector::Callback_SetFS,     NULL, NULL);
+    sct->add_callback(this, EV_setCS,     &CStaticConnector::Callback_SetCS,     NULL, NULL);
 
-    // /* Register uncontrollable events */
-    // sct->add_callback(this, EV_receiveTB,  NULL, &CStaticConnector::Check_ReceiveTB,  NULL);
-    // sct->add_callback(this, EV_receiveTS,  NULL, &CStaticConnector::Check_ReceiveTS,  NULL);
-    // sct->add_callback(this, EV_distFar,    NULL, &CStaticConnector::Check_DistFar,    NULL);
-    // sct->add_callback(this, EV_distNear,   NULL, &CStaticConnector::Check_DistNear,   NULL);
-    // sct->add_callback(this, EV_isNearest,  NULL, &CStaticConnector::Check_IsNearest,  NULL);
-    // sct->add_callback(this, EV_notNearest, NULL, &CStaticConnector::Check_NotNearest, NULL);
+    /* Register uncontrollable events */
+    sct->add_callback(this, EV_receiveTB,  NULL, &CStaticConnector::Check_ReceiveTB,  NULL);
+    sct->add_callback(this, EV_receiveTS,  NULL, &CStaticConnector::Check_ReceiveTS,  NULL);
+    sct->add_callback(this, EV_distFar,    NULL, &CStaticConnector::Check_DistFar,    NULL);
+    sct->add_callback(this, EV_distNear,   NULL, &CStaticConnector::Check_DistNear,   NULL);
+    sct->add_callback(this, EV_isNearest,  NULL, &CStaticConnector::Check_IsNearest,  NULL);
+    sct->add_callback(this, EV_notNearest, NULL, &CStaticConnector::Check_NotNearest, NULL);
 
-    // /*
-    // * Init PID Controller
-    // */
-    // pid = new PID(0.1,  // dt  (loop interval time)
-    //               80,   // max (output vector length)
-    //               -80,  // min (output vector length)
-    //               m_sLeaderFlockingParams.Kp,    // Kp
-    //               m_sLeaderFlockingParams.Ki,    // Ki
-    //               m_sLeaderFlockingParams.Kd);   // Kd
+    /*
+    * Init PID Controller
+    */
+    pid = new PID(0.1,  // dt  (loop interval time)
+                  80,   // max (output vector length)
+                  -80,  // min (output vector length)
+                  m_sLeaderFlockingParams.Kp,    // Kp
+                  m_sLeaderFlockingParams.Ki,    // Ki
+                  m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
 }
@@ -195,7 +194,7 @@ void CStaticConnector::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(64, 255);
+    msg = CByteArray(67, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -213,7 +212,7 @@ void CStaticConnector::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(64, 255);
+    msg = CByteArray(67, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -243,7 +242,7 @@ void CStaticConnector::ControlStep() {
     // sct->run_step();
 
     // sct->print_current_state();
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -251,26 +250,40 @@ void CStaticConnector::ControlStep() {
 
     /* Set current state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
+
     /* Set sender ID in msg */
     std::string id = this->GetId();
     msg[msg_index++] = stoi(id.substr(1));
 
+    /* Set current team ID in msg */
+    msg[msg_index++] = teamID;
+
     // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
-        // case RobotState::FOLLOWER: {
-        //     std::cout << "State: FOLLOWER" << std::endl;
-        //     m_pcLEDs->SetAllColors(teamColor[teamID]);
+        case RobotState::FOLLOWER: {
+            std::cout << "State: FOLLOWER" << std::endl;
+            m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-        //     /* Set current team ID in msg */
-        //     msg[msg_index++] = teamID;
-        //     break;
-        // }
+            msg_index++; // Skip signal
+
+            /* Set its hop count to the leader */
+            std::cout << "HOP = " << hopCountToLeader << std::endl;
+            msg[msg_index++] = hopCountToLeader;
+            
+            msg_index += 2; // Skip connector approval
+
+            break;
+        }
         case RobotState::CONNECTOR: {
             std::cout << "State: CONNECTOR" << std::endl;
             m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            /* Set current team ID in msg */
-            msg[msg_index++] = teamID;
+            msg_index++; // Skip signal
+            msg_index++; // Skip hop count
+
+            // Connector approval
+            msg_index += 2; // TEMP: Skip connector approval
+
             break;
         }
         case RobotState::LEADER: {
@@ -280,17 +293,15 @@ void CStaticConnector::ControlStep() {
     }
 
     switch(currentMoveType) {
-        // case MoveType::FLOCK: {
-        //     Flock();
-        //     break;
-        // }
+        case MoveType::FLOCK: {
+            Flock();
+            break;
+        }
         case MoveType::STOP: {
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
             break;
         }
     }
-
-    msg_index++; // Skip index in message
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -340,7 +351,11 @@ void CStaticConnector::GetMessages() {
             /* Message from a connector robot */
             if(msg.state == RobotState::CONNECTOR) {
                 msg.id = 'F' + msg.id;
-                index++; // Skip index
+                index++; // Skip signal
+                index++; // Skip hop count
+
+                // Connector approval
+                index += 2; // TEMP: Skip connector approval
 
                 /* Store the IDs of connected robots */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -360,6 +375,8 @@ void CStaticConnector::GetMessages() {
                     msg.id = 'L' + msg.id;
                     msg.taskSignal = tMsgs[i].Data[index++];
                     std::cout << "Signal: " << msg.taskSignal << std::endl;
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -373,7 +390,9 @@ void CStaticConnector::GetMessages() {
                 /* Message from follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    index++; // Skip index
+                    index++; // Skip signal
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -391,6 +410,8 @@ void CStaticConnector::GetMessages() {
                 if(msg.state == RobotState::LEADER) {
                     msg.id = 'L' + msg.id;
                     msg.taskSignal = tMsgs[i].Data[index++];
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -404,7 +425,9 @@ void CStaticConnector::GetMessages() {
                 /* Message from other follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    index++; // Skip index
+                    index++; // Skip signal
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -595,51 +618,56 @@ void CStaticConnector::UpdateSensors() {
 /****************************************/
 /****************************************/
 
-CVector2 CStaticConnector::GetLeaderFlockingVector() {
-    CVector2 resVec = CVector2();
-    if(leaderMsg.direction.Length() > 0.0f) {   // If leader is detected
-        std::cout << leaderMsg.direction.Length() << std::endl;
-
-        Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
-                                   leaderMsg.direction.Length());
-        std::cout << fPID << std::endl;
-
-        resVec += CVector2(-fPID,
-                           leaderMsg.direction.Angle());
-
-        /* Limit the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
-        }
-    }
-
-    return resVec;
-}
-
-/****************************************/
-/****************************************/
-
 CVector2 CStaticConnector::GetTeamFlockingVector() {
     CVector2 resVec = CVector2();
-    int teammateSeen = teamMsgs.size();
-    if(teammateSeen > 0) {
 
-        for(size_t i = 0; i < teammateSeen; i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(teamMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               teamMsgs[i].direction.Angle());
+    if(leaderMsg.direction.Length() > 0.0f) {
+        hopCountToLeader = 1; // Record its own hop count
+        resVec = leaderMsg.direction;
+    } else {
+        
+        UInt8 minCount = 255;
+
+        /* Find the smallest hop count among team members */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hopCount < minCount) {    
+                minCount = teamMsgs[i].hopCount;
+            }
         }
-        /* Divide the accumulator by the number of team members seen */
-        resVec /= teammateSeen;
-        /* Limit the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
+
+        // Record its own hop count
+        if(minCount != 255)
+            hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
+        else {
+            hopCountToLeader = minCount; // No neighbours have a valid hop count to the leader
+            return resVec;
         }
+
+        size_t numAttract = 0;
+
+        /* Calculate attractive force towards team members with the smallest hop count */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hopCount == minCount) {
+                resVec += teamMsgs[i].direction;
+                numAttract++;
+            }
+        }
+        resVec /= numAttract;
     }
+
+    /* Run the PID controller to calculate the force to team members with the smallest hop count */
+    Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
+                               resVec.Length());
+
+    resVec = CVector2(-fPID,
+                      resVec.Angle());
+
+    /* Limit the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+    }
+
     return resVec;
 }
 
@@ -648,49 +676,44 @@ CVector2 CStaticConnector::GetTeamFlockingVector() {
 
 CVector2 CStaticConnector::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
-    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
 
-    if(otherSeen > 0) {
+    std::vector<Message> repulseMsgs;
 
-        int numRepulse = 0;
+    /* Add team messages with equal or greater hop count */
+    if(hopCountToLeader < 255) {
+        UInt8 minCount = hopCountToLeader - 1;
 
-        for(size_t i = 0; i < otherLeaderMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               otherLeaderMsgs[i].direction.Angle());
-            numRepulse++;
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hopCount > minCount)
+                repulseMsgs.push_back(teamMsgs[i]);
         }
-
-        for(size_t i = 0; i < otherTeamMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               otherTeamMsgs[i].direction.Angle());
-            numRepulse++;
-        }
-
-        for(size_t i = 0; i < connectorMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               connectorMsgs[i].direction.Angle());
-            numRepulse++;
-        }
-
-        if(numRepulse > 0) {
-            /* Divide the accumulator by the number of blobs producing repulsive forces */
-            resVec /= numRepulse;
-            /* Limit the length of the vector to the max speed */
-            if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-                resVec.Normalize();
-                resVec *= m_sWheelTurningParams.MaxSpeed;
-            }
-        }
+    } else {
+        repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
     }
+    
+    /* Add other messages */
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+
+    for(size_t i = 0; i < repulseMsgs.size(); i++) {
+        /* Calculate LJ */
+        Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(repulseMsgs[i].direction.Length());
+        /* Sum to accumulator */
+        resVec += CVector2(fLJ,
+                           repulseMsgs[i].direction.Angle());
+    }
+
+    /* Calculate the average vector */
+    if( !repulseMsgs.empty() )
+        resVec /= repulseMsgs.size();
+
+    /* Limit the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+    }
+
     return resVec;
 }
 
@@ -728,17 +751,16 @@ CVector2 CStaticConnector::GetObstacleRepulsionVector() {
 
 void CStaticConnector::Flock() {
     /* Calculate overall force applied to the robot */
-    CVector2 leaderForce   = GetLeaderFlockingVector();
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = leaderWeight*leaderForce + teamWeight*teamForce + otherWeight*robotForce + obstacleWeight*obstacleForce;
+    CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
-        std::cout << "leader: " << leaderForce.Length() << std::endl;
         std::cout << "team: " << teamForce.Length() << std::endl;
-        std::cout << "other: " << robotForce.Length() << std::endl;
+        std::cout << "robot: " << robotForce.Length() << std::endl;
+        std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
         std::cout << "sum: " << sumForce.Length() << std::endl;
     }
 
