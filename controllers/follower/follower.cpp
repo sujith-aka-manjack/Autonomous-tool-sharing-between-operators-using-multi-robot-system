@@ -152,6 +152,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /* Initialization */
     currentState = RobotState::FOLLOWER; // Set initial state to follower
     performingTask = false; // Robot initially not working on any task
+    hopCountToLeader = 255; // Default (max) value as hop count is unknown
 
     /*
     * Init SCT Controller
@@ -250,9 +251,13 @@ void CFollower::ControlStep() {
 
     /* Set current state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
+
     /* Set sender ID in msg */
     std::string id = this->GetId();
     msg[msg_index++] = stoi(id.substr(1));
+
+    /* Set current team ID in msg */
+    msg[msg_index++] = teamID;
 
     // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
@@ -260,16 +265,42 @@ void CFollower::ControlStep() {
             std::cout << "State: FOLLOWER" << std::endl;
             m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-            /* Set current team ID in msg */
-            msg[msg_index++] = teamID;
+            msg_index++; // Skip signal
+
+            /* Set its hop count to the leader */
+            if(leaderMsg.direction.Length() > 0.0f) {
+                hopCountToLeader = 1; // If leader is seen, send 1
+            } else {
+
+                UInt8 minCount = 255;
+                for(size_t i = 0; i < teamMsgs.size(); i++) {
+                    if(teamMsgs[i].hopCount < minCount) {   // Find the smallest hop count among team members 
+                        minCount = teamMsgs[i].hopCount;
+                    }
+                }
+
+                if(minCount != 255)
+                    hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
+                else
+                    hopCountToLeader = minCount; // No neighbours have a valid hop count to the leader
+            }
+            std::cout << "HOP = " << hopCountToLeader << std::endl;
+            msg[msg_index++] = hopCountToLeader;
+            
+            msg_index += 2; // Skip connector approval
+
             break;
         }
         case RobotState::CONNECTOR: {
             std::cout << "State: CONNECTOR" << std::endl;
             m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            /* Set current team ID in msg */
-            msg[msg_index++] = teamID;
+            msg_index++; // Skip signal
+            msg_index++; // Skip hop count
+
+            // Connector approval
+            msg_index += 2; // TEMP: Skip connector approval
+
             break;
         }
         case RobotState::LEADER: {
@@ -288,8 +319,6 @@ void CFollower::ControlStep() {
             break;
         }
     }
-
-    msg_index++; // Skip index in message
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -339,7 +368,11 @@ void CFollower::GetMessages() {
             /* Message from a connector robot */
             if(msg.state == RobotState::CONNECTOR) {
                 msg.id = 'F' + msg.id;
-                index++; // Skip index
+                index++; // Skip signal
+                index++; // Skip hop count
+
+                // Connector approval
+                index += 2; // TEMP: Skip connector approval
 
                 /* Store the IDs of connected robots */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -359,6 +392,8 @@ void CFollower::GetMessages() {
                     msg.id = 'L' + msg.id;
                     msg.taskSignal = tMsgs[i].Data[index++];
                     std::cout << "Signal: " << msg.taskSignal << std::endl;
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -372,7 +407,9 @@ void CFollower::GetMessages() {
                 /* Message from follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    index++; // Skip index
+                    index++; // Skip signal
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -390,6 +427,8 @@ void CFollower::GetMessages() {
                 if(msg.state == RobotState::LEADER) {
                     msg.id = 'L' + msg.id;
                     msg.taskSignal = tMsgs[i].Data[index++];
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -403,7 +442,9 @@ void CFollower::GetMessages() {
                 /* Message from other follower */
                 else if(msg.state == RobotState::FOLLOWER) {
                     msg.id = 'F' + msg.id;
-                    index++; // Skip index
+                    index++; // Skip signal
+                    msg.hopCount = tMsgs[i].Data[index++];
+                    index += 2; // Skip connector approval
 
                     /* Store the IDs of connected robots */
                     while(tMsgs[i].Data[index] != 255) {    // Check if data exists

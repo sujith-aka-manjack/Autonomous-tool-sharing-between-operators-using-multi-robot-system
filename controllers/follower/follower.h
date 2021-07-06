@@ -145,11 +145,12 @@ public:
     * 
     */
     struct Message {
+        CVector2 direction;
         RobotState state;
         std::string id;
         UInt8 teamid;
-        CVector2 direction;
         UInt8 taskSignal;
+        UInt8 hopCount;
         std::vector<std::string> connections;
     };
 
@@ -311,6 +312,9 @@ private:
     std::vector<Message> connectorMsgs;
     std::vector<Message> otherLeaderMsgs;
     std::vector<Message> otherTeamMsgs;
+
+    /* The number of hops from the leader to itself */
+    UInt8 hopCountToLeader;  // default to 255 if unknown
 
     /* Sensor reading results */
     Real minNonTeamDistance; // Distance to the closest non-team member

@@ -137,10 +137,10 @@ public:
     * 
     */
     struct Message {
+        CVector2 direction;
         RobotState state;
         std::string id;
         UInt8 teamid;
-        CVector2 direction;
         std::vector<std::string> connections;
     };
 

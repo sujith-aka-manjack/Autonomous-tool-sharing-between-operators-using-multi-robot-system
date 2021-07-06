@@ -284,6 +284,11 @@ void CLeader::ControlStep() {
         }
     }
 
+    /* Set its hop count to 0 since it is te leader */
+    msg[msg_index++] = 0;
+
+    msg_index += 2; // Skip connector approval
+
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
     allMsgs.insert(std::end(allMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
