@@ -140,9 +140,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
 
         /* Weights for the flocking behavior */
-        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "leader",   leaderWeight);
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
-        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "other",    otherWeight);
+        GetNodeAttribute(GetNode(t_node, "flocking_weights"), "robot",    robotWeight);
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
     }
     catch(CARGoSException& ex) {
@@ -619,7 +618,7 @@ void CFollower::UpdateSensors() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetLeaderFlockingVector() {
+CVector2 CFollower::GetTeamFlockingVector() {
     CVector2 resVec = CVector2();
 
     if(leaderMsg.direction.Length() > 0.0f) {
@@ -675,40 +674,39 @@ CVector2 CFollower::GetLeaderFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetTeamFlockingVector() {
+CVector2 CFollower::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
 
-    UInt8 numRepulse = 0;
+    std::vector<Message> repulseMsgs;
 
-    if(hopCountToLeader < 255) {    // There is a team member with a smaller hop count than itself
+    /* Add team messages with equal or greater hop count */
+    if(hopCountToLeader < 255) {
         UInt8 minCount = hopCountToLeader - 1;
 
         for(size_t i = 0; i < teamMsgs.size(); i++) {
-
-            if(teamMsgs[i].hopCount > minCount) {
-                 /* Calculate LJ */
-                Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(teamMsgs[i].direction.Length());
-                /* Sum to accumulator */
-                resVec += CVector2(fLJ,
-                                teamMsgs[i].direction.Angle());
-
-                numRepulse++;
-            }
+            if(teamMsgs[i].hopCount > minCount)
+                repulseMsgs.push_back(teamMsgs[i]);
         }
-    } else {    // No team member has a valid hop count (all 255)
-        for(size_t i = 0; i < teamMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(teamMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               teamMsgs[i].direction.Angle());
-        }
-        numRepulse = teamMsgs.size();
+    } else {
+        repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
+    }
+    
+    /* Add other messages */
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+
+    for(size_t i = 0; i < repulseMsgs.size(); i++) {
+        /* Calculate LJ */
+        Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(repulseMsgs[i].direction.Length());
+        /* Sum to accumulator */
+        resVec += CVector2(fLJ,
+                           repulseMsgs[i].direction.Angle());
     }
 
     /* Calculate the average vector */
-    if(numRepulse > 0)
-        resVec /= numRepulse;
+    if( !repulseMsgs.empty() )
+        resVec /= repulseMsgs.size();
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -722,53 +720,53 @@ CVector2 CFollower::GetTeamFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetRobotRepulsionVector() {
-    CVector2 resVec = CVector2();
-    int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
+// CVector2 CFollower::GetRobotRepulsionVector() {
+//     CVector2 resVec = CVector2();
+//     int otherSeen = otherLeaderMsgs.size() + otherTeamMsgs.size() + connectorMsgs.size();
 
-    if(otherSeen > 0) {
+//     if(otherSeen > 0) {
 
-        int numRepulse = 0;
+//         int numRepulse = 0;
 
-        for(size_t i = 0; i < otherLeaderMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               otherLeaderMsgs[i].direction.Angle());
-            numRepulse++;
-        }
+//         for(size_t i = 0; i < otherLeaderMsgs.size(); i++) {
+//             /* Calculate LJ */
+//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherLeaderMsgs[i].direction.Length());
+//             /* Sum to accumulator */
+//             resVec += CVector2(fLJ,
+//                                otherLeaderMsgs[i].direction.Angle());
+//             numRepulse++;
+//         }
 
-        for(size_t i = 0; i < otherTeamMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               otherTeamMsgs[i].direction.Angle());
-            numRepulse++;
-        }
+//         for(size_t i = 0; i < otherTeamMsgs.size(); i++) {
+//             /* Calculate LJ */
+//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(otherTeamMsgs[i].direction.Length());
+//             /* Sum to accumulator */
+//             resVec += CVector2(fLJ,
+//                                otherTeamMsgs[i].direction.Angle());
+//             numRepulse++;
+//         }
 
-        for(size_t i = 0; i < connectorMsgs.size(); i++) {
-            /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
-            /* Sum to accumulator */
-            resVec += CVector2(fLJ,
-                               connectorMsgs[i].direction.Angle());
-            numRepulse++;
-        }
+//         for(size_t i = 0; i < connectorMsgs.size(); i++) {
+//             /* Calculate LJ */
+//             Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(connectorMsgs[i].direction.Length());
+//             /* Sum to accumulator */
+//             resVec += CVector2(fLJ,
+//                                connectorMsgs[i].direction.Angle());
+//             numRepulse++;
+//         }
 
-        if(numRepulse > 0) {
-            /* Divide the accumulator by the number of blobs producing repulsive forces */
-            resVec /= numRepulse;
-            /* Limit the length of the vector to the max speed */
-            if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-                resVec.Normalize();
-                resVec *= m_sWheelTurningParams.MaxSpeed;
-            }
-        }
-    }
-    return resVec;
-}
+//         if(numRepulse > 0) {
+//             /* Divide the accumulator by the number of blobs producing repulsive forces */
+//             resVec /= numRepulse;
+//             /* Limit the length of the vector to the max speed */
+//             if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+//                 resVec.Normalize();
+//                 resVec *= m_sWheelTurningParams.MaxSpeed;
+//             }
+//         }
+//     }
+//     return resVec;
+// }
 
 /****************************************/
 /****************************************/
@@ -804,17 +802,16 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 
 void CFollower::Flock() {
     /* Calculate overall force applied to the robot */
-    CVector2 leaderForce   = GetLeaderFlockingVector();
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = leaderWeight*leaderForce + teamWeight*teamForce /* + otherWeight*robotForce + obstacleWeight*obstacleForce */;
+    CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
-        std::cout << "leader: " << leaderForce.Length() << std::endl;
         std::cout << "team: " << teamForce.Length() << std::endl;
-        std::cout << "other: " << robotForce.Length() << std::endl;
+        std::cout << "robot: " << robotForce.Length() << std::endl;
+        std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
         std::cout << "sum: " << sumForce.Length() << std::endl;
     }
 

@@ -218,17 +218,12 @@ protected:
     virtual void UpdateSensors();
 
     /* 
-    * Get a flocking vector between itself and the leader.
-    */
-    virtual CVector2 GetLeaderFlockingVector();
-
-    /* 
-    * Get a flocking vector between itself and the other followers in the same team.
+    * Get a flocking vector between itself and team members with the smallest hop count.
     */
     virtual CVector2 GetTeamFlockingVector();
 
     /* 
-    * Get a flocking vector between itself and the other robots not in the same team.
+    * Get a repulsion vector between itself and all other robots.
     */
     virtual CVector2 GetRobotRepulsionVector();
 
@@ -288,9 +283,8 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
     
     /* Weights for the flocking behavior */
-    Real leaderWeight;
     Real teamWeight;
-    Real otherWeight;
+    Real robotWeight;
     Real obstacleWeight;
 
     /* Controller */
