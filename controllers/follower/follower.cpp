@@ -268,22 +268,6 @@ void CFollower::ControlStep() {
             msg_index++; // Skip signal
 
             /* Set its hop count to the leader */
-            if(leaderMsg.direction.Length() > 0.0f) {
-                hopCountToLeader = 1; // If leader is seen, send 1
-            } else {
-
-                UInt8 minCount = 255;
-                for(size_t i = 0; i < teamMsgs.size(); i++) {
-                    if(teamMsgs[i].hopCount < minCount) {   // Find the smallest hop count among team members 
-                        minCount = teamMsgs[i].hopCount;
-                    }
-                }
-
-                if(minCount != 255)
-                    hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
-                else
-                    hopCountToLeader = minCount; // No neighbours have a valid hop count to the leader
-            }
             std::cout << "HOP = " << hopCountToLeader << std::endl;
             msg[msg_index++] = hopCountToLeader;
             
@@ -637,21 +621,52 @@ void CFollower::UpdateSensors() {
 
 CVector2 CFollower::GetLeaderFlockingVector() {
     CVector2 resVec = CVector2();
-    if(leaderMsg.direction.Length() > 0.0f) {   // If leader is detected
-        std::cout << leaderMsg.direction.Length() << std::endl;
 
-        Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
-                                   leaderMsg.direction.Length());
-        std::cout << fPID << std::endl;
+    if(leaderMsg.direction.Length() > 0.0f) {
+        hopCountToLeader = 1; // Record its own hop count
+        resVec = leaderMsg.direction;
+    } else {
+        
+        UInt8 minCount = 255;
 
-        resVec += CVector2(-fPID,
-                           leaderMsg.direction.Angle());
-
-        /* Limit the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
+        /* Find the smallest hop count among team members */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hopCount < minCount) {    
+                minCount = teamMsgs[i].hopCount;
+            }
         }
+
+        // Record its own hop count
+        if(minCount != 255)
+            hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
+        else {
+            hopCountToLeader = minCount; // No neighbours have a valid hop count to the leader
+            return resVec;
+        }
+
+        size_t numAttract = 0;
+
+        /* Calculate attractive force towards team members with the smallest hop count */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hopCount == minCount) {
+                resVec += teamMsgs[i].direction;
+                numAttract++;
+            }
+        }
+        resVec /= numAttract;
+    }
+
+    /* Run the PID controller to calculate the force to team members with the smallest hop count */
+    Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
+                               resVec.Length());
+
+    resVec = CVector2(-fPID,
+                      resVec.Angle());
+
+    /* Limit the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
     }
 
     return resVec;
@@ -662,24 +677,45 @@ CVector2 CFollower::GetLeaderFlockingVector() {
 
 CVector2 CFollower::GetTeamFlockingVector() {
     CVector2 resVec = CVector2();
-    int teammateSeen = teamMsgs.size();
-    if(teammateSeen > 0) {
 
-        for(size_t i = 0; i < teammateSeen; i++) {
+    UInt8 numRepulse = 0;
+
+    if(hopCountToLeader < 255) {    // There is a team member with a smaller hop count than itself
+        UInt8 minCount = hopCountToLeader - 1;
+
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+
+            if(teamMsgs[i].hopCount > minCount) {
+                 /* Calculate LJ */
+                Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(teamMsgs[i].direction.Length());
+                /* Sum to accumulator */
+                resVec += CVector2(fLJ,
+                                teamMsgs[i].direction.Angle());
+
+                numRepulse++;
+            }
+        }
+    } else {    // No team member has a valid hop count (all 255)
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
             /* Calculate LJ */
-            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJones(teamMsgs[i].direction.Length());
+            Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(teamMsgs[i].direction.Length());
             /* Sum to accumulator */
             resVec += CVector2(fLJ,
                                teamMsgs[i].direction.Angle());
         }
-        /* Divide the accumulator by the number of team members seen */
-        resVec /= teammateSeen;
-        /* Limit the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
-        }
+        numRepulse = teamMsgs.size();
     }
+
+    /* Calculate the average vector */
+    if(numRepulse > 0)
+        resVec /= numRepulse;
+
+    /* Limit the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+    }
+
     return resVec;
 }
 
@@ -772,7 +808,7 @@ void CFollower::Flock() {
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = leaderWeight*leaderForce + teamWeight*teamForce + otherWeight*robotForce + obstacleWeight*obstacleForce;
+    CVector2 sumForce      = leaderWeight*leaderForce + teamWeight*teamForce /* + otherWeight*robotForce + obstacleWeight*obstacleForce */;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
