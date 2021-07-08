@@ -77,7 +77,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             TConfigurationNode& tDistr = *itDistr;
 
             /* Number of leaders to place */
-            UInt32 unLeaders;
+            UInt32 unLeaders = 0;
 
             /* Number of robots to place */
             UInt32 unRobots;
