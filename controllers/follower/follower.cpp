@@ -481,8 +481,8 @@ void CFollower::UpdateSensors() {
 
         /* Add leader to team messages*/
         std::vector<Message> combinedTeamMsgs(teamMsgs);
-        if(leaderMsg.direction.Length() > 0.0f)
-            combinedTeamMsgs.push_back(leaderMsg);
+        // if(leaderMsg.direction.Length() > 0.0f)
+        //     combinedTeamMsgs.push_back(leaderMsg);
 
         for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
 
