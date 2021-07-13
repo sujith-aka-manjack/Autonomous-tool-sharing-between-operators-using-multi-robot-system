@@ -149,7 +149,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     }
 
     /* Initialization */
-    currentState = RobotState::FOLLOWER; // Set initial state to follower
+    currentState = RobotState::CONNECTOR; // Set initial state to connector
     performingTask = false; // Robot initially not working on any task
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
 
@@ -161,18 +161,22 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /* Register controllable events */
     sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    sct->add_callback(this, EV_taskBegin, &CFollower::Callback_TaskBegin, NULL, NULL);
-    sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
-    sct->add_callback(this, EV_setFS,     &CFollower::Callback_SetFS,     NULL, NULL);
-    sct->add_callback(this, EV_setCS,     &CFollower::Callback_SetCS,     NULL, NULL);
-
+    sct->add_callback(this, EV_setF,      &CFollower::Callback_SetF,      NULL, NULL);
+    sct->add_callback(this, EV_setC,      &CFollower::Callback_SetC,      NULL, NULL);
+    sct->add_callback(this, EV_sendR,     &CFollower::Callback_SendR,     NULL, NULL);
+    sct->add_callback(this, EV_sendA,     &CFollower::Callback_SendA,     NULL, NULL);
+    
     /* Register uncontrollable events */
-    sct->add_callback(this, EV_receiveTB,  NULL, &CFollower::Check_ReceiveTB,  NULL);
-    sct->add_callback(this, EV_receiveTS,  NULL, &CFollower::Check_ReceiveTS,  NULL);
-    sct->add_callback(this, EV_distFar,    NULL, &CFollower::Check_DistFar,    NULL);
-    sct->add_callback(this, EV_distNear,   NULL, &CFollower::Check_DistNear,   NULL);
-    sct->add_callback(this, EV_isNearest,  NULL, &CFollower::Check_IsNearest,  NULL);
-    sct->add_callback(this, EV_notNearest, NULL, &CFollower::Check_NotNearest, NULL);
+    sct->add_callback(this, EV_assignF,   NULL, &CFollower::Check_AssignF,   NULL);
+    sct->add_callback(this, EV_assignC,   NULL, &CFollower::Check_AssignC,   NULL);
+    sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
+    sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
+    sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
+    sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
+    sct->add_callback(this, EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
+    sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
+    sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
+    sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
 
     /*
     * Init PID Controller
@@ -291,7 +295,7 @@ void CFollower::ControlStep() {
 
     switch(currentMoveType) {
         case MoveType::FLOCK: {
-            Flock();
+            // Flock();
             break;
         }
         case MoveType::STOP: {
@@ -338,8 +342,6 @@ void CFollower::GetMessages() {
         for(int i = 0; i < tMsgs.size(); i++) {
 
             size_t index = 0;
-
-            std::cout << tMsgs[i].Data << std::endl;
 
             Message msg = Message();
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
@@ -436,8 +438,6 @@ void CFollower::GetMessages() {
                 else
                     otherTeamMsgs.push_back(msg);
             }
-
-            
         }
     }
 }
@@ -475,142 +475,162 @@ void CFollower::UpdateSensors() {
 
     if(currentState == RobotState::FOLLOWER) {
 
-        /* Initializa a list of non team robots that this robot is the closest */
-        std::vector<std::string> closestNonTeamRobots; // CURRENTLY CHECKS FOR ONLY ONE FOR OPTIMIZATION
+        // /* Initializa a list of non team robots that this robot is the closest */
+        // std::vector<std::string> closestNonTeamRobots; // CURRENTLY CHECKS FOR ONLY ONE FOR OPTIMIZATION
 
-        /* Add leader to team messages*/
-        std::vector<Message> combinedTeamMsgs(teamMsgs);
-        // if(leaderMsg.direction.Length() > 0.0f)
-        //     combinedTeamMsgs.push_back(leaderMsg);
+        // /* Add leader to team messages*/
+        // std::vector<Message> combinedTeamMsgs(teamMsgs);
+        // // if(leaderMsg.direction.Length() > 0.0f)
+        // //     combinedTeamMsgs.push_back(leaderMsg);
 
-        for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
+        // for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
 
-            std::cout << "Checking " << nonTeamMsgs[i].id << std::endl;
+        //     std::cout << "Checking " << nonTeamMsgs[i].id << std::endl;
 
-            /* Find the distance between itself and the non team robot */
-            Real myDist = nonTeamMsgs[i].direction.Length();
+        //     /* Find the distance between itself and the non team robot */
+        //     Real myDist = nonTeamMsgs[i].direction.Length();
 
-            /* Flag to check whether there is a team robot closer than itself to a non team robot */
-            bool isClosest = true;
+        //     /* Flag to check whether there is a team robot closer than itself to a non team robot */
+        //     bool isClosest = true;
 
-            for(size_t j = 0; j < combinedTeamMsgs.size(); j++) {
+        //     for(size_t j = 0; j < combinedTeamMsgs.size(); j++) {
                 
-                std::vector<std::string> connections = combinedTeamMsgs[j].connections;
+        //         std::vector<std::string> connections = combinedTeamMsgs[j].connections;
 
-                std::cout << "(" << combinedTeamMsgs[j].id << ") ";
-                for(size_t k = 0; k < connections.size(); k++)
-                    std::cout << connections[k] << ", ";
-                std::cout << std::endl;
+        //         std::cout << "(" << combinedTeamMsgs[j].id << ") ";
+        //         for(size_t k = 0; k < connections.size(); k++)
+        //             std::cout << connections[k] << ", ";
+        //         std::cout << std::endl;
 
-                // Check if the team robot has seen the non-team robot 
-                if (std::find(connections.begin(), connections.end(), nonTeamMsgs[i].id) != connections.end()) {
+        //         // Check if the team robot has seen the non-team robot 
+        //         if (std::find(connections.begin(), connections.end(), nonTeamMsgs[i].id) != connections.end()) {
 
-                    /* Check the distance between the team robot and the non team robot*/
-                    CVector2 diff = nonTeamMsgs[i].direction - combinedTeamMsgs[j].direction;
-                    Real dist = diff.Length();
+        //             /* Check the distance between the team robot and the non team robot*/
+        //             CVector2 diff = nonTeamMsgs[i].direction - combinedTeamMsgs[j].direction;
+        //             Real dist = diff.Length();
 
-                    if(dist < myDist) {
-                        isClosest = false;  // Not the closest to the non team robot
-                        break;
-                    }
-                }
-            }
-            if(isClosest) {
-                closestNonTeamRobots.push_back(nonTeamMsgs[i].id);
-                std::cout << "Closest to: " << nonTeamMsgs[i].id << std::endl;
-                break;
-            }
-        }
+        //             if(dist < myDist) {
+        //                 isClosest = false;  // Not the closest to the non team robot
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     if(isClosest) {
+        //         closestNonTeamRobots.push_back(nonTeamMsgs[i].id);
+        //         std::cout << "Closest to: " << nonTeamMsgs[i].id << std::endl;
+        //         break;
+        //     }
+        // }
 
-        if(closestNonTeamRobots.empty())
-            isClosestToNonTeam = false;
-        else
-            isClosestToNonTeam = true;
+        // if(closestNonTeamRobots.empty())
+        //     isClosestToNonTeam = false;
+        // else
+        //     isClosestToNonTeam = true;
 
     } 
     else if(currentState == RobotState::CONNECTOR) {
         
-        /* Find unique team IDs detected */
-        std::set<UInt8> teamIDs;
+        // /* Find unique team IDs detected */
+        // std::set<UInt8> teamIDs;
 
-        std::cout << "Teams found: ";
-        for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
-            teamIDs.insert(nonTeamMsgs[i].teamid);
-            std::cout << nonTeamMsgs[i].teamid << ", ";
-        }
-        std::cout << std::endl;
+        // std::cout << "Teams found: ";
+        // for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
+        //     teamIDs.insert(nonTeamMsgs[i].teamid);
+        //     std::cout << nonTeamMsgs[i].teamid << ", ";
+        // }
+        // std::cout << std::endl;
 
-        teamIDs.erase(255); // Remove team id used by connectors (255)
+        // teamIDs.erase(255); // Remove team id used by connectors (255)
 
-        int isClosestCount = 0;
+        // int isClosestCount = 0;
 
-        /* Check whether itself is closest to a non team robot in every team  */
-        for (auto itr = teamIDs.begin(); itr != teamIDs.end(); ++itr) {
+        // /* Check whether itself is closest to a non team robot in every team  */
+        // for (auto itr = teamIDs.begin(); itr != teamIDs.end(); ++itr) {
 
-            UInt8 tempTeamID = *itr;
+        //     UInt8 tempTeamID = *itr;
 
-            /* Initializa a list of non team robots that this robot is the closest */
-            std::vector<std::string> closestNonTeamRobots; // CURRENTLY CHECKS FOR ONLY ONE FOR OPTIMIZATION
+        //     /* Initializa a list of non team robots that this robot is the closest */
+        //     std::vector<std::string> closestNonTeamRobots; // CURRENTLY CHECKS FOR ONLY ONE FOR OPTIMIZATION
 
-            /* Extract the messages with the team ID considered in the current iteration */
-            std::vector<Message> tempTeamMsgs;
-            std::vector<Message> tempNonTeamMsgs;
+        //     /* Extract the messages with the team ID considered in the current iteration */
+        //     std::vector<Message> tempTeamMsgs;
+        //     std::vector<Message> tempNonTeamMsgs;
 
-            for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
-                if(nonTeamMsgs[i].teamid == tempTeamID)
-                    tempTeamMsgs.push_back(nonTeamMsgs[i]);
-                else
-                    tempNonTeamMsgs.push_back(nonTeamMsgs[i]);
-            }
+        //     for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
+        //         if(nonTeamMsgs[i].teamid == tempTeamID)
+        //             tempTeamMsgs.push_back(nonTeamMsgs[i]);
+        //         else
+        //             tempNonTeamMsgs.push_back(nonTeamMsgs[i]);
+        //     }
 
-            for(size_t i = 0; i < tempNonTeamMsgs.size(); i++) {
+        //     for(size_t i = 0; i < tempNonTeamMsgs.size(); i++) {
 
-                std::cout << "Checking " << tempNonTeamMsgs[i].id << std::endl;
+        //         std::cout << "Checking " << tempNonTeamMsgs[i].id << std::endl;
 
-                /* Find the distance between itself and the non team robot */
-                Real myDist = tempNonTeamMsgs[i].direction.Length();
+        //         /* Find the distance between itself and the non team robot */
+        //         Real myDist = tempNonTeamMsgs[i].direction.Length();
 
-                /* Flag to check whether there is a team robot closer than itself to a non team robot */
-                bool isClosest = true;
+        //         /* Flag to check whether there is a team robot closer than itself to a non team robot */
+        //         bool isClosest = true;
 
-                for(size_t j = 0; j < tempTeamMsgs.size(); j++) {
+        //         for(size_t j = 0; j < tempTeamMsgs.size(); j++) {
                     
-                    std::vector<std::string> connections = tempTeamMsgs[j].connections;
+        //             std::vector<std::string> connections = tempTeamMsgs[j].connections;
 
-                    std::cout << "(" << tempTeamMsgs[j].id << ") ";
-                    for(size_t k = 0; k < connections.size(); k++)
-                        std::cout << connections[k] << ", ";
-                    std::cout << std::endl;
+        //             std::cout << "(" << tempTeamMsgs[j].id << ") ";
+        //             for(size_t k = 0; k < connections.size(); k++)
+        //                 std::cout << connections[k] << ", ";
+        //             std::cout << std::endl;
 
-                    // Check if the team robot has seen the non-team robot 
-                    if (std::find(connections.begin(), connections.end(), tempNonTeamMsgs[i].id) != connections.end()) {
+        //             // Check if the team robot has seen the non-team robot 
+        //             if (std::find(connections.begin(), connections.end(), tempNonTeamMsgs[i].id) != connections.end()) {
 
-                        /* Check the distance between the team robot and the non team robot*/
-                        CVector2 diff = tempNonTeamMsgs[i].direction - tempTeamMsgs[j].direction;
-                        Real dist = diff.Length();
+        //                 /* Check the distance between the team robot and the non team robot*/
+        //                 CVector2 diff = tempNonTeamMsgs[i].direction - tempTeamMsgs[j].direction;
+        //                 Real dist = diff.Length();
 
-                        if(dist < myDist) {
-                            isClosest = false;  // Not the closest to the non team robot
-                            break;
-                        }
-                    }
-                }
-                if(isClosest) {
-                    closestNonTeamRobots.push_back(tempNonTeamMsgs[i].id);
-                    std::cout << "Closest to: " << tempNonTeamMsgs[i].id << std::endl;
-                    break;
-                }
-            }
-            if( !closestNonTeamRobots.empty() )
-                isClosestCount++;
-        }
+        //                 if(dist < myDist) {
+        //                     isClosest = false;  // Not the closest to the non team robot
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //         if(isClosest) {
+        //             closestNonTeamRobots.push_back(tempNonTeamMsgs[i].id);
+        //             std::cout << "Closest to: " << tempNonTeamMsgs[i].id << std::endl;
+        //             break;
+        //         }
+        //     }
+        //     if( !closestNonTeamRobots.empty() )
+        //         isClosestCount++;
+        // }
 
-        /* Must be closest to at least one robot from each team */
-        if(isClosestCount == teamIDs.size())
-            isClosestToNonTeam = true;
-        else
-            isClosestToNonTeam = false;
+        // /* Must be closest to at least one robot from each team */
+        // if(isClosestCount == teamIDs.size())
+        //     isClosestToNonTeam = true;
+        // else
+        //     isClosestToNonTeam = false;
         
+
+
+
+
+
+
+
+
+
+        // /* Check whether a team is within its communication range */
+        // for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
+        //     if(nonTeamMsgs[i].state != RobotState::CONNECTOR) {
+        //         UInt8 team = nonTeamMsgs[i].teamid;
+        //         hops[team].count = 1;
+        //     }
+        // }
+        
+        // for (auto& it: hops) {
+        //     std::cout << "Team: " << it.first << ", Hop: " << it.second.count << std::endl;
+        // }
     }
 }
 
@@ -860,6 +880,7 @@ UInt8 CFollower::GetTeamID() {
 
 void CFollower::SetTeamID(const UInt8 id) {
     teamID = id;
+    currentState = RobotState::FOLLOWER;
 }
 
 /****************************************/
@@ -874,6 +895,56 @@ bool CFollower::IsWorking() {
 
 /* Callback functions (Controllable events) */
 
+// void CFollower::Callback_MoveFlock(void* data) {
+//     std::cout << "Action: moveFlock" <<std::endl;
+//     currentMoveType = MoveType::FLOCK;
+// }
+
+// void CFollower::Callback_MoveStop(void* data) {
+//     std::cout << "Action: moveStop" <<std::endl;
+//     currentMoveType = MoveType::STOP;
+// }
+
+// void CFollower::Callback_TaskBegin(void* data) {
+//     std::cout << "Action: taskBegin" <<std::endl;
+//     performingTask = true;
+// }
+
+// void CFollower::Callback_TaskStop(void* data) {
+//     std::cout << "Action: taskStop" <<std::endl;
+//     performingTask = false;
+// }
+
+// void CFollower::Callback_SetFS(void* data) {
+//     std::cout << "Action: setFS" <<std::endl;
+//     currentState = RobotState::FOLLOWER;
+
+//     /* Join the closest team */
+//     std::vector<Message> msgs(otherTeamMsgs);
+//     msgs.insert(std::end(msgs),
+//                 std::begin(otherLeaderMsgs),
+//                 std::end(otherLeaderMsgs));
+
+//     Real closestTeamDistance = __FLT_MAX__;
+//     UInt8 closestTeamID;
+
+//     for(int i = 0 ; i < msgs.size(); i++) {
+//         Real dist = msgs[i].direction.Length();
+//         if(dist < closestTeamDistance) {
+//             closestTeamDistance = dist;
+//             closestTeamID = msgs[i].teamid;
+//         }
+//     }
+
+//     teamID = closestTeamID;
+// }
+
+// void CFollower::Callback_SetCS(void* data) {
+//     std::cout << "Action: setCS" <<std::endl;
+//     currentState = RobotState::CONNECTOR;
+//     teamID = 255;
+// }
+
 void CFollower::Callback_MoveFlock(void* data) {
     std::cout << "Action: moveFlock" <<std::endl;
     currentMoveType = MoveType::FLOCK;
@@ -884,44 +955,20 @@ void CFollower::Callback_MoveStop(void* data) {
     currentMoveType = MoveType::STOP;
 }
 
-void CFollower::Callback_TaskBegin(void* data) {
-    std::cout << "Action: taskBegin" <<std::endl;
-    performingTask = true;
+void CFollower::Callback_SetF(void* data) {
+    std::cout << "Action: setF" <<std::endl;
 }
 
-void CFollower::Callback_TaskStop(void* data) {
-    std::cout << "Action: taskStop" <<std::endl;
-    performingTask = false;
+void CFollower::Callback_SetC(void* data) {
+    std::cout << "Action: setC" <<std::endl;
 }
 
-void CFollower::Callback_SetFS(void* data) {
-    std::cout << "Action: setFS" <<std::endl;
-    currentState = RobotState::FOLLOWER;
-
-    /* Join the closest team */
-    std::vector<Message> msgs(otherTeamMsgs);
-    msgs.insert(std::end(msgs),
-                std::begin(otherLeaderMsgs),
-                std::end(otherLeaderMsgs));
-
-    Real closestTeamDistance = __FLT_MAX__;
-    UInt8 closestTeamID;
-
-    for(int i = 0 ; i < msgs.size(); i++) {
-        Real dist = msgs[i].direction.Length();
-        if(dist < closestTeamDistance) {
-            closestTeamDistance = dist;
-            closestTeamID = msgs[i].teamid;
-        }
-    }
-
-    teamID = closestTeamID;
+void CFollower::Callback_SendR(void* data) {
+    std::cout << "Action: sendR" <<std::endl;
 }
 
-void CFollower::Callback_SetCS(void* data) {
-    std::cout << "Action: setCS" <<std::endl;
-    currentState = RobotState::CONNECTOR;
-    teamID = 255;
+void CFollower::Callback_SendA(void* data) {
+    std::cout << "Action: sendA" <<std::endl;
 }
 
 /****************************************/
@@ -929,58 +976,110 @@ void CFollower::Callback_SetCS(void* data) {
 
 /* Callback functions (Uncontrollable events) */
 
-unsigned char CFollower::Check_ReceiveTB(void* data) {
-    if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "1") {
-        std::cout << "Event: " << 1 << " - receiveTB" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - receiveTB" << std::endl;
-    return 0;
+// unsigned char CFollower::Check_ReceiveTB(void* data) {
+//     if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "1") {
+//         std::cout << "Event: " << 1 << " - receiveTB" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - receiveTB" << std::endl;
+//     return 0;
+// }
+
+// unsigned char CFollower::Check_ReceiveTS(void* data) {
+//     if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "0") {
+//         std::cout << "Event: " << 1 << " - receiveTS" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
+//     return 0;
+// }
+
+// unsigned char CFollower::Check_DistFar(void* data) {
+//     if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= separationThres) {
+//         std::cout << "Event: " << 1 << " - distFar" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - distFar" << std::endl;
+//     return 0;
+// }
+
+// unsigned char CFollower::Check_DistNear(void* data) {
+//     if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < joiningThres) {
+//         std::cout << "Event: " << 1 << " - distNear" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - distNear" << std::endl;
+//     return 0;
+// }
+
+// unsigned char CFollower::Check_IsNearest(void* data) {
+//     if(isClosestToNonTeam) {
+//         std::cout << "Event: " << 1 << " - isNearest" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - isNearest" << std::endl;
+//     return 0;
+// }
+
+// unsigned char CFollower::Check_NotNearest(void* data) {
+//     if(!isClosestToNonTeam) {
+//         std::cout << "Event: " << 1 << " - notNearest" << std::endl;
+//         return 1;
+//     }
+//     std::cout << "Event: " << 0 << " - notNearest" << std::endl;
+//     return 0;
+// }
+
+unsigned char CFollower::Check_AssignF(void* data) {
+
 }
 
-unsigned char CFollower::Check_ReceiveTS(void* data) {
-    if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "0") {
-        std::cout << "Event: " << 1 << " - receiveTS" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
-    return 0;
+unsigned char CFollower::Check_AssignC(void* data) {
+
 }
 
-unsigned char CFollower::Check_DistFar(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= separationThres) {
-        std::cout << "Event: " << 1 << " - distFar" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - distFar" << std::endl;
-    return 0;
+unsigned char CFollower::Check_CondF1(void* data) {
+
 }
 
-unsigned char CFollower::Check_DistNear(void* data) {
-    if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < joiningThres) {
-        std::cout << "Event: " << 1 << " - distNear" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - distNear" << std::endl;
-    return 0;
+unsigned char CFollower::Check_NotCondF1(void* data) {
+
 }
 
-unsigned char CFollower::Check_IsNearest(void* data) {
-    if(isClosestToNonTeam) {
-        std::cout << "Event: " << 1 << " - isNearest" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - isNearest" << std::endl;
-    return 0;
+unsigned char CFollower::Check_CondF2(void* data) {
+
 }
 
-unsigned char CFollower::Check_NotNearest(void* data) {
-    if(!isClosestToNonTeam) {
-        std::cout << "Event: " << 1 << " - notNearest" << std::endl;
-        return 1;
-    }
-    std::cout << "Event: " << 0 << " - notNearest" << std::endl;
-    return 0;
+unsigned char CFollower::Check_NotCondF2(void* data) {
+
+}
+
+unsigned char CFollower::Check_CondC1(void* data) {
+
+}
+
+unsigned char CFollower::Check_NotCondC1(void* data) {
+
+}
+
+unsigned char CFollower::Check_CondC2(void* data) {
+
+}
+
+unsigned char CFollower::Check_NotCondC2(void* data) {
+
+}
+
+unsigned char CFollower::Check_ReceiveR(void* data) {
+
+}
+
+unsigned char CFollower::Check_ReceiveA(void* data) {
+
+}
+
+unsigned char CFollower::Check_ReceiveNA(void* data) {
+
 }
 
 /*

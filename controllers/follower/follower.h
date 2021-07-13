@@ -267,17 +267,24 @@ protected:
     /* Callback functions */
     virtual void Callback_MoveFlock(void* data);
     virtual void Callback_MoveStop(void* data);
-    virtual void Callback_TaskBegin(void* data);
-    virtual void Callback_TaskStop(void* data);
-    virtual void Callback_SetFS(void* data);
-    virtual void Callback_SetCS(void* data);
+    virtual void Callback_SetF(void* data);
+    virtual void Callback_SetC(void* data);
+    virtual void Callback_SendR(void* data);
+    virtual void Callback_SendA(void* data);
 
-    virtual unsigned char Check_ReceiveTB(void* data);
-    virtual unsigned char Check_ReceiveTS(void* data);
-    virtual unsigned char Check_DistFar(void* data);
-    virtual unsigned char Check_DistNear(void* data);
-    virtual unsigned char Check_IsNearest(void* data);
-    virtual unsigned char Check_NotNearest(void* data);
+    virtual unsigned char Check_AssignF(void* data);
+    virtual unsigned char Check_AssignC(void* data);
+    virtual unsigned char Check_CondF1(void* data);
+    virtual unsigned char Check_NotCondF1(void* data);
+    virtual unsigned char Check_CondF2(void* data);
+    virtual unsigned char Check_NotCondF2(void* data);
+    virtual unsigned char Check_CondC1(void* data);
+    virtual unsigned char Check_NotCondC1(void* data);
+    virtual unsigned char Check_CondC2(void* data);
+    virtual unsigned char Check_NotCondC2(void* data);    
+    virtual unsigned char Check_ReceiveR(void* data);
+    virtual unsigned char Check_ReceiveA(void* data);
+    virtual unsigned char Check_ReceiveNA(void* data);
 
 private:
 
@@ -326,6 +333,9 @@ private:
 
     /* The number of hops from the leader to itself */
     UInt8 hopCountToLeader;  // default to 255 if unknown
+
+    /* The number of hops to each team */
+    std::unordered_map<UInt8, Hop> hops;
 
     /* Sensor reading results */
     Real minNonTeamDistance; // Distance to the closest non-team member
