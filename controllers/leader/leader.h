@@ -123,6 +123,12 @@ public:
         CONNECTOR
     } currentState;
 
+    /* Structure to store the connection to the leader/team */
+    struct Hop {
+        UInt8 count;
+        std::string id;
+    };
+
     /* 
     * Structure to store incoming data received from other robots 
     * 
@@ -146,11 +152,6 @@ public:
     * 
     */
     struct Message {
-        struct Hop {
-            UInt8 count;
-            std::string id;
-        };
-        
         CVector2 direction;
         RobotState state;
         std::string id;
