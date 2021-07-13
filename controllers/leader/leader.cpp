@@ -162,7 +162,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(67, 255);
+    msg = CByteArray(78, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -183,7 +183,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(67, 255);
+    msg = CByteArray(78, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -284,10 +284,12 @@ void CLeader::ControlStep() {
         }
     }
 
+    msg_index += 4; // Skip hop count
+
     /* Set its hop count to 0 since it is te leader */
     msg[msg_index++] = 0;
 
-    msg_index += 2; // Skip connector approval
+    msg_index += 8; // Skip to connections
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -367,73 +369,36 @@ void CLeader::SetTaskDemand(const UInt32 un_demand) {
 /****************************************/
 /****************************************/
 
-// void CLeader::GetMessages() {
-
-//     /* Reset all public event occurances */
-//     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-//         itr->second = false;
-//     }
-
-//     /* Get RAB messages from nearby e-pucks */
-//     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
-
-//     if(! tMsgs.empty()) {
-//         for(size_t i = 0; i < tMsgs.size(); ++i) {
-//             size_t j = 0;
-//             while(tMsgs[i].Data[j] != 255) {    // Check all events in the message
-//                 unsigned char event = tMsgs[i].Data[j];
-//                 pub_events[event] = true;   // If a public event has occured, set it to true
-//                 j++;
-//             }
-//         }
-//     }
-
-//     for(auto itr = pub_events.begin(); itr != pub_events.end(); ++itr) {
-//         std::cout << "key = " << itr->first           // print key
-//                   << ", val = " << itr->second << "\n";    // print value
-//     }
-// }
-
 void CLeader::GetMessages() {
     /* Get RAB messages from nearby e-pucks */
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
 
-    if( !tMsgs.empty()) {
+    if( !tMsgs.empty() ) {
         for(int i = 0; i < tMsgs.size(); i++) {
 
             size_t index = 0;
 
             Message msg = Message();
+            msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
             msg.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
             msg.id = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamid = tMsgs[i].Data[index++];
-            msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
 
-            /* Message from connector robot */
             if(msg.state == RobotState::CONNECTOR) {
                 msg.id = 'F' + msg.id;
                 connectorMsgs.push_back(msg);
             } 
-            /* Message from team */
-            else if(msg.teamid == teamID) {
-                /* Message from follower */
-                if(msg.state == RobotState::FOLLOWER) {
-                    msg.id = 'F' + msg.id;
+            else if(msg.state == RobotState::LEADER) {
+                msg.id = 'L' + msg.id;
+                otherLeaderMsgs.push_back(msg);   
+            }
+            else if(msg.state == RobotState::FOLLOWER) {
+                msg.id = 'F' + msg.id;
+
+                if(msg.teamid == teamID)
                     teamMsgs.push_back(msg);
-                }
-            } 
-            /* Message from other team */
-            else {
-                /* Message from other leader */
-                if(msg.state == RobotState::LEADER) {
-                    msg.id = 'L' + msg.id;
-                    otherLeaderMsgs.push_back(msg);   
-                }
-                /* Message from other follower */
-                else if(msg.state == RobotState::FOLLOWER) {
-                    msg.id = 'F' + msg.id;
-                    otherTeamMsgs.push_back(msg); 
-                }
+                else
+                    otherTeamMsgs.push_back(msg);
             }
         }
     }

@@ -138,19 +138,35 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   |       (4)        |    (5)    |    (6)-(7)    |        (8)-(67)       |  
-    *    ----------------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  |      Signal      | Hop-count |   Connector   |      Connections      |
-    *    | State  |   ID   | Team ID | (Only by leader) | to leader | Approval (ID) | (2 bytes for ID x 30) |
+    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |       (18)-(77)       |  (78) |
+    *    ------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  |  Signal  | Hop count |      Connections      |  End  |
+    *    | State  |   ID   | Team ID |          |           | (2 bytes for ID x 30) | (255) |
+    * 
+    * 
+    * - (4)-(8) Signal
+    *   - Leader    : task signal (1 byte)
+    *   - Follower  : request message (2 bytes for ID)
+    *   - Connector : accept messages (n x 2 bytes for ID)
+    * 
+    * - (9)-(17) Hop count
+    *   - Leader    : 0
+    *   - Follower  : Hop count to leader (1 byte)
+    *   - Connector : Hop count to each team (n x 4 bytes for team ID, hop count, robot ID)
     * 
     */
     struct Message {
+        struct Hop {
+            UInt8 count;
+            std::string id;
+        };
+        
         CVector2 direction;
         RobotState state;
         std::string id;
         UInt8 teamid;
-        UInt8 taskSignal;
-        UInt8 hopCount;
+        std::vector<std::string> contents;
+        std::unordered_map<UInt8, Hop> hops; // Key is teamid
         std::vector<std::string> connections;
     };
 
