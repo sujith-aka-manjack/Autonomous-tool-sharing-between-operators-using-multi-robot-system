@@ -135,9 +135,9 @@
       </team> -->
       <custom_team>
         <robots>
-          <robot type="leader" position="0,0.5" />
-          <robot type="follower" position="0.3,0.35" />
-          <robot type="follower" position="-0.3,0.35" />
+          <robot type="leader" position="0,0.8" />
+          <robot type="follower" position="0.3,0.65" />
+          <robot type="follower" position="-0.1,0.65" />
         </robots>
         <!-- <waypoints>
           <waypoint coord="0.8,0.8" />
@@ -145,9 +145,11 @@
       </custom_team>
       <custom_team>
         <robots>
-          <robot type="leader" position="0,-0.5" />
-          <robot type="follower" position="0.3,-0.35" />
-          <robot type="follower" position="-0.3,-0.35" />
+          <robot type="leader" position="0,-0.8" />
+          <!-- <robot type="follower" position="0.3,-0.65" /> -->
+          <robot type="follower" position="0,0" />
+
+          <!-- <robot type="follower" position="-0.3,-0.65" /> -->
         </robots>
         <!-- <waypoints>
           <waypoint coord="0.8,0.8" />
@@ -203,8 +205,8 @@
       </entity>
     </distribute> -->
 
-    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size="78">
-      <controller config="esc" />
+    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size="81">
+      <controller config="ef" />
       <body position="0.0,0.0,0" orientation="0,0,0" />
     </e-puck> -->
 

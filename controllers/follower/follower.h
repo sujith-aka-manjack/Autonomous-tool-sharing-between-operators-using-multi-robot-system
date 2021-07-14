@@ -144,10 +144,10 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |       (18)-(77)       |  (78) |
-    *    ------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  |  Signal  | Hop count |      Connections      |  End  |
-    *    | State  |   ID   | Team ID |          |           | (2 bytes for ID x 30) | (255) |
+    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |   (18)-(20)   |       (21)-(80)       |  (81) |
+    *    ----------------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  |  Signal  | Hop count | Closest robot |      Connections      |  End  |
+    *    | State  |   ID   | Team ID |          |           |  to the team  | (2 bytes for ID x 30) | (255) |
     * 
     * 
     * - (4)-(8) Signal
@@ -160,14 +160,31 @@ public:
     *   - Follower  : Hop count to leader (1 byte)
     *   - Connector : Hop count to each team (n x 4 bytes for team ID, hop count, robot ID)
     * 
+    * - (18)-(20) Closest robot to the team
+    *   - Leader/Follower : State and distance to the non team member (follower or connector) that is closest to the
+    *                       team and the ID of the closest follower to it (3 bytes for state, distance, follower ID)
+    * 
     */
     struct Message {
+        
+        /* Core */
         CVector2 direction;
         RobotState state;
-        std::string id;
-        UInt8 teamid;
-        std::vector<std::string> contents;
+        std::string ID;
+        UInt8 teamID;
+
+        /* Signal */
+        std::vector<std::string> contents; // signal
+
+        /* Hop count */
         std::unordered_map<UInt8, Hop> hops; // Key is teamid
+
+        /* Closest robot in team */
+        RobotState closeState;
+        Real closeDist;
+        std::string closeID;
+
+        /* Detected neighbors */
         std::vector<std::string> connections;
     };
 
@@ -272,16 +289,16 @@ protected:
     virtual void Callback_SendR(void* data);
     virtual void Callback_SendA(void* data);
 
-    virtual unsigned char Check_AssignF(void* data);
-    virtual unsigned char Check_AssignC(void* data);
-    virtual unsigned char Check_CondF1(void* data);
-    virtual unsigned char Check_NotCondF1(void* data);
-    virtual unsigned char Check_CondF2(void* data);
-    virtual unsigned char Check_NotCondF2(void* data);
+    // virtual unsigned char Check_CondF1(void* data);
+    // virtual unsigned char Check_NotCondF1(void* data);
+    // virtual unsigned char Check_CondF2(void* data);
+    // virtual unsigned char Check_NotCondF2(void* data);
     virtual unsigned char Check_CondC1(void* data);
     virtual unsigned char Check_NotCondC1(void* data);
     virtual unsigned char Check_CondC2(void* data);
-    virtual unsigned char Check_NotCondC2(void* data);    
+    virtual unsigned char Check_NotCondC2(void* data);
+    virtual unsigned char Check_CondC3(void* data);
+    virtual unsigned char Check_NotCondC3(void* data);   
     virtual unsigned char Check_ReceiveR(void* data);
     virtual unsigned char Check_ReceiveA(void* data);
     virtual unsigned char Check_ReceiveNA(void* data);
@@ -338,8 +355,16 @@ private:
     std::unordered_map<UInt8, Hop> hops;
 
     /* Sensor reading results */
-    Real minNonTeamDistance; // Distance to the closest non-team member
-    bool isClosestToNonTeam;
+    // Real minNonTeamDistance; // Distance to the closest non-team member
+    // bool isClosestToNonTeam;
+
+    Message connectionCandidate;
+    bool condC2;
+
+    /* Info of the closest non team member to broadcast */
+    RobotState closeState;
+    Real closeDist;
+    std::string closeID;
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;

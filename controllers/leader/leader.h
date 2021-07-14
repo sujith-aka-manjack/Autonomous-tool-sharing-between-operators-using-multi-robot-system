@@ -134,10 +134,10 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |       (18)-(77)       |  (78) |
-    *    ------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  |  Signal  | Hop count |      Connections      |  End  |
-    *    | State  |   ID   | Team ID |          |           | (2 bytes for ID x 30) | (255) |
+    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |   (18)-(20)   |       (21)-(80)       |  (81) |
+    *    ----------------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  |  Signal  | Hop count | Closest robot |      Connections      |  End  |
+    *    | State  |   ID   | Team ID |          |           |  to the team  | (2 bytes for ID x 30) | (255) |
     * 
     * 
     * - (4)-(8) Signal
@@ -150,14 +150,31 @@ public:
     *   - Follower  : Hop count to leader (1 byte)
     *   - Connector : Hop count to each team (n x 4 bytes for team ID, hop count, robot ID)
     * 
+    * - (18)-(20) Closest robot to the team
+    *   - Leader/Follower : State and distance to the non team member (follower or connector) that is closest to the
+    *                       team and the ID of the closest follower to it (3 bytes for state, distance, follower ID)
+    * 
     */
     struct Message {
+        
+        /* Core */
         CVector2 direction;
         RobotState state;
-        std::string id;
-        UInt8 teamid;
-        std::vector<std::string> contents;
+        std::string ID;
+        UInt8 teamID;
+
+        /* Signal */
+        std::vector<std::string> contents; // signal
+
+        /* Hop count */
         std::unordered_map<UInt8, Hop> hops; // Key is teamid
+
+        /* Closest robot in team */
+        RobotState closeState;
+        Real closeDist;
+        std::string closeID;
+
+        /* Detected neighbors */
         std::vector<std::string> connections;
     };
 
@@ -336,6 +353,11 @@ private:
 
     /* Flag to know whether there is a neighbor */
     bool closeToRobot;
+
+    /* Info of the closest non team member to broadcast */
+    RobotState closeState;
+    Real closeDist;
+    std::string closeID;
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
     // std::map<size_t, bool> pub_events;

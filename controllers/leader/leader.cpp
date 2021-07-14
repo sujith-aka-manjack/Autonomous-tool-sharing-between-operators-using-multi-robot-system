@@ -162,7 +162,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(78, 255);
+    msg = CByteArray(81, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -183,7 +183,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(78, 255);
+    msg = CByteArray(81, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -194,6 +194,10 @@ void CLeader::ControlStep() {
 
     closeToRobot = false;
 
+    closeState = RobotState::FOLLOWER;
+    closeDist = 255;
+    closeID = "";
+
     // for(int i = 0; i < waypoints.size(); i++) {
     //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
     // }
@@ -202,7 +206,7 @@ void CLeader::ControlStep() {
     /* Receive new messages */
     /*----------------------*/
     GetMessages();
-
+    
     /*------------------------*/
     /* Update sensor readings */
     /*------------------------*/
@@ -289,7 +293,15 @@ void CLeader::ControlStep() {
     /* Set its hop count to 0 since it is te leader */
     msg[msg_index++] = 0;
 
-    msg_index += 8; // Skip to connections
+    msg_index += 8; // Skip to closest non team robot
+
+    /* Info of the closest non team robot */
+    if(closeDist < 255 && !closeID.empty()) {
+        msg[msg_index++] = static_cast<UInt8>(closeState);
+        msg[msg_index++] = (UInt8)round(closeDist);
+        msg[msg_index++] = stoi(closeID.substr(1));
+    } else
+        msg_index += 3;
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -298,8 +310,8 @@ void CLeader::ControlStep() {
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
     for(size_t i = 0; i < allMsgs.size(); i++) {
-        msg[msg_index++] = allMsgs[i].id[0];    // First character of ID
-        msg[msg_index++] = stoi(allMsgs[i].id.substr(1));    // ID number
+        msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
+        msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
 
         if(i >= 30)
             break;
@@ -376,26 +388,41 @@ void CLeader::GetMessages() {
     if( !tMsgs.empty() ) {
         for(int i = 0; i < tMsgs.size(); i++) {
 
+            std::cout << tMsgs[i].Data << std::endl;
+
             size_t index = 0;
 
             Message msg = Message();
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
             msg.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
-            msg.id = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
-            msg.teamid = tMsgs[i].Data[index++];
+            msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
+            msg.teamID = tMsgs[i].Data[index++];
 
             if(msg.state == RobotState::CONNECTOR) {
-                msg.id = 'F' + msg.id;
+                msg.ID = 'F' + msg.ID;
                 connectorMsgs.push_back(msg);
             } 
             else if(msg.state == RobotState::LEADER) {
-                msg.id = 'L' + msg.id;
+                msg.ID = 'L' + msg.ID;
+                index += 14;
+
+                /* Closest non team */
+                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                msg.closeDist = tMsgs[i].Data[index++];
+                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+
                 otherLeaderMsgs.push_back(msg);   
             }
             else if(msg.state == RobotState::FOLLOWER) {
-                msg.id = 'F' + msg.id;
+                msg.ID = 'F' + msg.ID;
+                index += 14;
 
-                if(msg.teamid == teamID)
+                /* Closest non team */
+                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                msg.closeDist = tMsgs[i].Data[index++];
+                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+
+                if(msg.teamID == teamID)
                     teamMsgs.push_back(msg);
                 else
                     otherTeamMsgs.push_back(msg);
@@ -427,6 +454,31 @@ void CLeader::UpdateSensors() {
         if(dist < minDistanceFromRobot)
             closeToRobot = true;
     }
+
+    /* Check the team's closest non team robot */
+    // for(size_t i = 0; i < teamMsgs.size(); i++) {
+    //     std::cout << "i: " << i << std::endl;
+
+    //     /* Store the info of the robot with the shortest distance */
+    //     if(teamMsgs[i].closeDist < round(closeDist)) {
+    //         std::cout << "hey: " << std::endl;
+    //         std::cout << "valDist: " << teamMsgs[i].closeDist << std::endl;
+    //         closeState = teamMsgs[i].closeState;
+    //         closeDist = teamMsgs[i].closeDist;
+    //         closeID = teamMsgs[i].closeID;
+    //     }
+    //     else if(teamMsgs[i].closeDist == round(closeDist)) {
+            
+    //         /* If distance is the same, store the info of robot with the smaller ID */
+    //         if(stoi(teamMsgs[i].closeID.substr(1)) < stoi(closeID.substr(1))) {
+    //             closeState = teamMsgs[i].closeState;
+    //             closeDist = teamMsgs[i].closeDist;
+    //             closeID = teamMsgs[i].closeID;
+    //         }
+    //     }
+    //     std::cout << "closeDist " << closeDist << std::endl;
+    //     std::cout << "closeID " << closeID << std::endl;
+    // }
 }
 
 /****************************************/
