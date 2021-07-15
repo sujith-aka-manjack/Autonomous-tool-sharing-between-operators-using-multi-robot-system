@@ -241,6 +241,7 @@ void CLeader::ControlStep() {
         if( !closeToRobot ) {
             /* Stop if other robots are too far from itself */
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            msg_index++;
         }
         else if( !waypoints.empty() ) {
             /* Check if it is near the waypoint */
@@ -288,7 +289,7 @@ void CLeader::ControlStep() {
         }
     }
 
-    msg_index += 4; // Skip hop count
+    msg_index += 4; // Skip to hop count
 
     /* Set its hop count to 0 since it is te leader */
     msg[msg_index++] = 0;
@@ -407,9 +408,12 @@ void CLeader::GetMessages() {
                 index += 14;
 
                 /* Closest non team */
-                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                msg.closeDist = tMsgs[i].Data[index++];
-                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
+                    msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                    msg.closeDist = (Real)tMsgs[i].Data[index++];
+                    msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                } else
+                    index += 3;
 
                 otherLeaderMsgs.push_back(msg);   
             }
@@ -418,9 +422,12 @@ void CLeader::GetMessages() {
                 index += 14;
 
                 /* Closest non team */
-                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                msg.closeDist = tMsgs[i].Data[index++];
-                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
+                    msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                    msg.closeDist = (Real)tMsgs[i].Data[index++];
+                    msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                } else
+                    index += 3;
 
                 if(msg.teamID == teamID)
                     teamMsgs.push_back(msg);
@@ -456,29 +463,30 @@ void CLeader::UpdateSensors() {
     }
 
     /* Check the team's closest non team robot */
-    // for(size_t i = 0; i < teamMsgs.size(); i++) {
-    //     std::cout << "i: " << i << std::endl;
+    for(size_t i = 0; i < teamMsgs.size(); i++) {
+        std::cout << "i: " << i << std::endl;
 
-    //     /* Store the info of the robot with the shortest distance */
-    //     if(teamMsgs[i].closeDist < round(closeDist)) {
-    //         std::cout << "hey: " << std::endl;
-    //         std::cout << "valDist: " << teamMsgs[i].closeDist << std::endl;
-    //         closeState = teamMsgs[i].closeState;
-    //         closeDist = teamMsgs[i].closeDist;
-    //         closeID = teamMsgs[i].closeID;
-    //     }
-    //     else if(teamMsgs[i].closeDist == round(closeDist)) {
-            
-    //         /* If distance is the same, store the info of robot with the smaller ID */
-    //         if(stoi(teamMsgs[i].closeID.substr(1)) < stoi(closeID.substr(1))) {
-    //             closeState = teamMsgs[i].closeState;
-    //             closeDist = teamMsgs[i].closeDist;
-    //             closeID = teamMsgs[i].closeID;
-    //         }
-    //     }
-    //     std::cout << "closeDist " << closeDist << std::endl;
-    //     std::cout << "closeID " << closeID << std::endl;
-    // }
+        if( !teamMsgs[i].closeID.empty() ) {    // Check if entry exists
+
+            /* Store the info of the robot with the shortest distance */
+            if(teamMsgs[i].closeDist < round(closeDist)) {
+                closeState = teamMsgs[i].closeState;
+                closeDist = teamMsgs[i].closeDist;
+                closeID = teamMsgs[i].closeID;
+            }
+            else if(teamMsgs[i].closeDist == round(closeDist)) {
+                
+                /* If distance is the same, store the info of robot with the smaller ID */
+                if(stoi(teamMsgs[i].closeID.substr(1)) < stoi(closeID.substr(1))) {
+                    closeState = teamMsgs[i].closeState;
+                    closeDist = teamMsgs[i].closeDist;
+                    closeID = teamMsgs[i].closeID;
+                }
+            }
+        }
+        std::cout << "closeDist " << closeDist << std::endl;
+        std::cout << "closeID " << closeID << std::endl;
+    }
 }
 
 /****************************************/

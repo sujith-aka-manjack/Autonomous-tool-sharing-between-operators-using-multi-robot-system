@@ -136,7 +136,14 @@ public:
     /* Structure to store the connection to the leader/team */
     struct Hop {
         UInt8 count;
-        std::string id;
+        std::string ID;
+    };
+
+    struct ClosestInfo {
+        RobotState state;
+        Real dist;
+        std::string ID;
+        size_t timestamp;
     };
 
     /* 
@@ -180,9 +187,7 @@ public:
         std::unordered_map<UInt8, Hop> hops; // Key is teamid
 
         /* Closest robot in team */
-        RobotState closeState;
-        Real closeDist;
-        std::string closeID;
+        ClosestInfo closest;
 
         /* Detected neighbors */
         std::vector<std::string> connections;
@@ -362,9 +367,7 @@ private:
     bool condC2;
 
     /* Info of the closest non team member to broadcast */
-    RobotState closeState;
-    Real closeDist;
-    std::string closeID;
+    ClosestInfo myClosest;
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;

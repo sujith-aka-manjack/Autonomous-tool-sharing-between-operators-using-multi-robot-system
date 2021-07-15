@@ -228,9 +228,6 @@ void CFollower::ControlStep() {
 
     /* Reset sensor reading results */
     condC2 = true;
-    closeState = RobotState::FOLLOWER;
-    closeDist = 255;
-    closeID = this->GetId();
 
     /*----------------------*/
     /* Receive new messages */
@@ -297,7 +294,7 @@ void CFollower::ControlStep() {
 
     switch(currentMoveType) {
         case MoveType::FLOCK: {
-            // Flock();
+            Flock();
             break;
         }
         case MoveType::STOP: {
@@ -311,8 +308,9 @@ void CFollower::ControlStep() {
         msg[msg_index++] = static_cast<UInt8>(closeState);
         msg[msg_index++] = (UInt8)round(closeDist);
         msg[msg_index++] = stoi(closeID.substr(1));
+        msg[msg_index++] = (UInt8)closeTimeStamp;
     } else
-        msg_index += 3;
+        msg_index += 4;
     
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -384,11 +382,12 @@ void CFollower::GetMessages() {
                     std::string robotID; // Connector ID that this connector is connected to
                     robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                     robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.hops[team].id = robotID;
+                    msg.hops[team].ID = robotID;
                 }
                 index += (2 - numHops) * 4; // TEMP: Currently assuming only two teams
                 
-                index += 3; // Skip team exclusive part (closest non team member)
+                /* Closest non team */
+                index += 4; // Skip team exclusive part (closest non team member)
 
                 /* Connections */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -413,9 +412,13 @@ void CFollower::GetMessages() {
                 index += 8; // Skip to closest non team
 
                 /* Closest non team */
-                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                msg.closeDist = (Real)tMsgs[i].Data[index++];
-                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
+                    msg.closest.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                    msg.closest.dist = (Real)tMsgs[i].Data[index++];
+                    msg.closest.ID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                    msg.closest.timestamp = (size_t)tMsgs[i].Data[index++];
+                } else
+                    index += 4;
 
                 /* Connections */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -445,9 +448,13 @@ void CFollower::GetMessages() {
                 index += 8; // Skip to closest non team
 
                 /* Closest non team */
-                msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                msg.closeDist = tMsgs[i].Data[index++];
-                msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
+                    msg.closest.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
+                    msg.closest.dist = (Real)tMsgs[i].Data[index++];
+                    msg.closest.ID = 'F' + std::to_string(tMsgs[i].Data[index++]);
+                    msg.closest.timestamp = (size_t)tMsgs[i].Data[index++];
+                } else
+                    index += 4;
 
                 /* Connections */
                 while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -481,16 +488,6 @@ void CFollower::UpdateSensors() {
     //                    std::end(otherLeaderMsgs));
     nonTeamMsgs.insert(std::end(nonTeamMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
-    /* Check the distance to the closest non-team robot */
-    /* Event: distFar, distNear */
-    // for(size_t i = 0 ; i < nonTeamMsgs.size(); i++) {
-    //     Real dist = nonTeamMsgs[i].direction.Length();
-    //     if(dist < minNonTeamDistance)
-    //         minNonTeamDistance = dist;
-    // }
-
-    // std::cout << "Dist to non-team: " << minNonTeamDistance << std::endl;
-
     if(currentState == RobotState::FOLLOWER) {
         /* Check the closest non team member that could potentially connect */
         Real minDist = 255;
@@ -509,38 +506,59 @@ void CFollower::UpdateSensors() {
         combinedTeamMsgs.push_back(leaderMsg);
 
         // Initialize variables with its own values
-        closeState = connectionCandidate.state;
-        closeDist = minDist;
-        closeID = this->GetId();
+        myClosest.state = connectionCandidate.state;
+        myClosest.dist = minDist;
+        myClosest.ID = this->GetId();
+        myClosest.timestamp = 0;
 
-        std::cout << "closeDist " << closeDist << std::endl;
-        std::cout << "closeID " << closeID << std::endl;
+        std::cout << "closeDist " << myClosest.dist << std::endl;
+        std::cout << "closeID " << myClosest.ID << std::endl;
+
+        std::unordered_map<std::string, ClosestInfo> closestFollowers;
+
+        // For each message, store info in a map using its ID as key
+        // Overwrite if message with newer timestamp exists
+        for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
+            
+            std::string id = combinedTeamMsgs[i].closest.ID;
+
+            /* Store if key does not exist OR there is a newer one*/
+            if(closestFollowers.find(id) == closestFollowers.end())
+                closestFollowers[id] = combinedTeamMsgs[i].closest;
+            else if(combinedTeamMsgs[i].closest.timestamp < closestFollowers[id].timestamp)
+                closestFollowers[id] = combinedTeamMsgs[i].closest;
+        }
+
+        // Now iterate through the map to compare the distance
+
+
+
+
+
+
 
         /* Check the team's closest non team robot */
         for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
             std::cout << "i: " << i << std::endl;
 
-            /* Store the info of the robot with the shortest distance */
-            if(combinedTeamMsgs[i].closeDist < round(closeDist)) {
-                std::cout << "hey: " << std::endl;
-                std::cout << "valDist: " << combinedTeamMsgs[i].closeDist << std::endl;
-                condC2 = false;
-                closeState = combinedTeamMsgs[i].closeState;
-                closeDist = combinedTeamMsgs[i].closeDist;
-                closeID = combinedTeamMsgs[i].closeID;
-            }
-            else if(combinedTeamMsgs[i].closeDist == round(closeDist)) {
-                
-                /* If distance is the same, store the info of robot with the smaller ID */
-                if(stoi(combinedTeamMsgs[i].closeID.substr(1)) < stoi(closeID.substr(1))) {
+            if( !combinedTeamMsgs[i].closest.ID.empty() ) {    // Check if entry exists
+
+                /* Store the info of the robot with the shortest distance */
+                if(combinedTeamMsgs[i].closest.dist < round(myClosest.dist)) {
                     condC2 = false;
-                    closeState = combinedTeamMsgs[i].closeState;
-                    closeDist = combinedTeamMsgs[i].closeDist;
-                    closeID = combinedTeamMsgs[i].closeID;
+                    myClosest = combinedTeamMsgs[i].closest;
+                }
+                else if(combinedTeamMsgs[i].closest.dist == round(myClosest.dist)) {
+                    
+                    /* If distance is the same, store the info of robot with the smaller ID */
+                    if(stoi(combinedTeamMsgs[i].closest.ID.substr(1)) < stoi(myClosest.ID.substr(1))) {
+                        condC2 = false;
+                        myClosest = combinedTeamMsgs[i].closest;
+                    }
                 }
             }
-            std::cout << "closeDist " << closeDist << std::endl;
-            std::cout << "closeID " << closeID << std::endl;
+            std::cout << "closeDist " << myClosest.dist << std::endl;
+            std::cout << "closeID " << myClosest.ID << std::endl;
         }
     }
 
@@ -869,9 +887,9 @@ void CFollower::Flock() {
     }
 
     /* Set Wheel Speed */
-    if(sumForce.Length() > 1.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
+    // if(sumForce.Length() > 1.0f)
+    //     SetWheelSpeedsFromVector(sumForce);
+    // else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 }
 
