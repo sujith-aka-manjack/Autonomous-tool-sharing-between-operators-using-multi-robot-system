@@ -145,7 +145,7 @@
       </custom_team>
       <custom_team>
         <robots>
-          <robot type="leader" position="0,-0.8" />
+          <robot type="leader" position="0,-0.2" />
           <!-- <robot type="follower" position="0.3,-0.65" /> -->
           <robot type="follower" position="0,0" />
 

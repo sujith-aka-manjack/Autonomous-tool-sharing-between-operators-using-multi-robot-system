@@ -175,8 +175,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
     sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
     sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-    sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC3,    NULL);
-    sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC3, NULL);
+    sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+    sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
 
     /*
     * Init PID Controller
@@ -246,10 +246,10 @@ void CFollower::ControlStep() {
     // /*--------------------*/
     // /* Run SCT controller */
     // /*--------------------*/
-    // sct->run_step();
+    sct->run_step();
 
-    // sct->print_current_state();
-    // std::cout << std::endl;
+    sct->print_current_state();
+    std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -504,6 +504,8 @@ void CFollower::UpdateSensors() {
             }
         }
 
+        // TODO: Prioritize connectors. Look for other follower if no connectors in range
+
         std::cout << "Dist to candidate: " << minDist << std::endl;
 
         /* Find the hop count to and signal from the leader */
@@ -534,6 +536,16 @@ void CFollower::UpdateSensors() {
                 }
             }
         }
+
+        // Check whether it is the closest to the candidate among other followers in the team that sees it (condC2)
+            // Assume it is the closest to the candidate
+            // Loop teamMsgs
+                // If another follower is closer to the candidate AND it sees the follower (Loop connections)
+                    // not closest = condC2 is false
+
+        /* Check condC2 */
+        // Is this robot closest to the previously found candidate robot?
+
 
         // // Identify ConnectionMsg to relay
         //     // Loop teamMsgs
@@ -1238,11 +1250,13 @@ unsigned char CFollower::Check_NotCondC1(void* data) {
 }
 
 unsigned char CFollower::Check_CondC2(void* data) {
-    
+    std::cout << "Event: " << 0 << " - condC2" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_NotCondC2(void* data) {
-    
+    std::cout << "Event: " << 1 << " - notCondC2" << std::endl;
+    return 1;
 }
 
 unsigned char CFollower::Check_CondC3(void* data) {
