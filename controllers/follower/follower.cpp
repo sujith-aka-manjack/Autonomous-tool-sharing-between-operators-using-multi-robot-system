@@ -267,13 +267,35 @@ void CFollower::ControlStep() {
             std::cout << "State: FOLLOWER" << std::endl;
             m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-            msg_index += 5; // TEMP: Skip signal
+            /* Relay leader signal */
+            msg[msg_index++] = leaderSignal;
 
             /* Set its hop count to the leader */
             std::cout << "HOP = " << hopCountToLeader << std::endl;
+
+            /* Hop count */
+            msg[msg_index++] = 1; // Number of HopMsg
+
             msg[msg_index++] = hopCountToLeader;
-            
-            msg_index += 8; // Skip to connections
+            msg_index += 2; // Skip ID
+            msg[msg_index++] = teamID;
+
+            msg_index += 4; // Skip to next part
+
+            /* Connection message */
+            if(cmsg.type) {
+                msg[msg_index++] = 1; // Number of ConnectionMsg
+                msg[msg_index++] = (UInt8)cmsg.type;
+                msg[msg_index++] = cmsg.to[0];
+                msg[msg_index++] = cmsg.to[1];
+                msg[msg_index++] = cmsg.from[0];
+                msg[msg_index++] = cmsg.from[1];
+            } else {
+                msg[msg_index++] = 0;
+                msg_index += 5;
+            }
+
+            msg_index += 5; // Skip to next part
 
             break;
         }
@@ -281,8 +303,14 @@ void CFollower::ControlStep() {
             std::cout << "State: CONNECTOR" << std::endl;
             m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            msg_index += 5; // TEMP: Skip signal
-            msg_index += 9; // TEMP: Skip hop count
+            /* Leader signal */
+            msg_index++; // Skip to next part
+
+            /* Hop count */
+            msg_index += 9; // TEMP: Skip to next part
+
+            /* Connection Message */
+            msg_index += 11; // TEMP: Skip to next part
 
             break;
         }
@@ -303,20 +331,12 @@ void CFollower::ControlStep() {
         }
     }
 
-    /* Info of the closest non team robot */
-    if(closeDist < 255 && !closeID.empty()) {
-        msg[msg_index++] = static_cast<UInt8>(closeState);
-        msg[msg_index++] = (UInt8)round(closeDist);
-        msg[msg_index++] = stoi(closeID.substr(1));
-        msg[msg_index++] = (UInt8)closeTimeStamp;
-    } else
-        msg_index += 4;
-    
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
     allMsgs.insert(std::end(allMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+
     if(leaderMsg.direction.Length() > 0.0f) {
         allMsgs.push_back(leaderMsg);
     }
@@ -324,8 +344,10 @@ void CFollower::ControlStep() {
     std::cout << "I saw: ";
     for(size_t i = 0; i < allMsgs.size(); i++) {
         std::cout << allMsgs[i].ID << ", ";
+
         msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
         msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
+
         if(i >= 30)
             break;
     }
@@ -354,120 +376,89 @@ void CFollower::GetMessages() {
             size_t index = 0;
 
             Message msg = Message();
+
+            /* Core */
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
             msg.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
             msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamID = tMsgs[i].Data[index++];
 
-            /* Message from a connector robot */
-            if(msg.state == RobotState::CONNECTOR) {
-                msg.ID = 'F' + msg.ID;
+            /* Leader Signal */
+            msg.leaderSignal = tMsgs[i].Data[index++];
 
-                /* Signals */
-                UInt8 numSignal = (tMsgs[i].Data[index] == 255) ? 0 : tMsgs[i].Data[index++];
-                for(size_t i = 0; i < numSignal; i++) {
-                    std::string signal; // Follower ID that this connector has accepted to connect to
-                    signal += (char)tMsgs[i].Data[index++];            // First char of ID
-                    signal += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.contents.push_back(signal);
-                }
-                index += (2 - numSignal) * 2; // TEMP: Currently assuming only two teams
+            /* Hops */
+            UInt8 msg_num = tMsgs[i].Data[index++];
 
-                /* Hops */
-                UInt8 numHops = (tMsgs[i].Data[index] == 255) ? 0 : tMsgs[i].Data[index++];
-                for(size_t i = 0; i < numHops; i++) {
-                    UInt8 team = tMsgs[i].Data[index++];
-                    msg.hops[team].count = tMsgs[i].Data[index++];
+            for(size_t j = 0; j < msg_num; j++) {
 
-                    std::string robotID; // Connector ID that this connector is connected to
-                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.hops[team].ID = robotID;
-                }
-                index += (2 - numHops) * 4; // TEMP: Currently assuming only two teams
-                
-                /* Closest non team */
-                index += 4; // Skip team exclusive part (closest non team member)
+                HopMsg hop;
 
-                /* Connections */
-                while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                    std::string robotID;
-                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.connections.push_back(robotID);
-                }
+                hop.count = tMsgs[i].Data[index++];
 
-                connectorMsgs.push_back(msg);
-            } 
-            else if(msg.state == RobotState::LEADER) {
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                hop.ID = robotID;
+
+                hop.teamID = tMsgs[i].Data[index++];
+
+                msg.hops[msg.teamID] = hop;
+            }
+            index += (2 - msg_num) * 4; // TEMP: Currently assuming only two teams
+
+            /* Connection Message */
+            msg_num = tMsgs[i].Data[index++];
+
+            for(size_t j = 0; j < msg_num; j++) {
+
+                ConnectionMsg cmsg;
+
+                cmsg.type = (char)tMsgs[i].Data[index++];
+
+                std::string robotID;
+
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                cmsg.to = robotID;
+
+                robotID = "";
+
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                cmsg.from = robotID;
+
+                msg.cmsg[msg.teamID] = cmsg;
+            }
+            index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
+            
+            /* Connections */
+            while(tMsgs[i].Data[index] != 255) {    // Check if data exists
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.connections.push_back(robotID);
+            }
+
+            /* Store message */
+            if(msg.state == RobotState::LEADER) {
                 msg.ID = 'L' + msg.ID;
-
-                /* Signal */
-                std::string signal = std::to_string(tMsgs[i].Data[index++]);  // task signal
-                msg.contents.push_back(signal);
-                index += 4; // Skip to hop count
-
-                /* Hops */
-                msg.hops[msg.teamID].count = tMsgs[i].Data[index++];
-                index += 8; // Skip to closest non team
-
-                /* Closest non team */
-                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
-                    msg.closest.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                    msg.closest.dist = (Real)tMsgs[i].Data[index++];
-                    msg.closest.ID = 'F' + std::to_string(tMsgs[i].Data[index++]);
-                    msg.closest.timestamp = (size_t)tMsgs[i].Data[index++];
-                } else
-                    index += 4;
-
-                /* Connections */
-                while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                    std::string robotID;
-                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.connections.push_back(robotID);
-                }
 
                 if(msg.teamID == teamID)
                     leaderMsg = msg;
                 else
                     otherLeaderMsgs.push_back(msg);
-            }
-            else if(msg.state == RobotState::FOLLOWER) {
+
+            } else if(msg.state == RobotState::FOLLOWER) {
                 msg.ID = 'F' + msg.ID;
-
-                /* Signal */
-                std::string signal; // The connector's ID this follower is requesting to connect to
-                signal += (char)tMsgs[i].Data[index++];            // First char of ID
-                signal += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                msg.contents.push_back(signal);
-                index += 3; // Skip to hop count
-
-                /* Hops */
-                msg.hops[msg.teamID].count = tMsgs[i].Data[index++];
-                index += 8; // Skip to closest non team
-
-                /* Closest non team */
-                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
-                    msg.closest.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                    msg.closest.dist = (Real)tMsgs[i].Data[index++];
-                    msg.closest.ID = 'F' + std::to_string(tMsgs[i].Data[index++]);
-                    msg.closest.timestamp = (size_t)tMsgs[i].Data[index++];
-                } else
-                    index += 4;
-
-                /* Connections */
-                while(tMsgs[i].Data[index] != 255) {    // Check if data exists
-                    std::string robotID;
-                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                    msg.connections.push_back(robotID);
-                }
 
                 if(msg.teamID == teamID)
                     teamMsgs.push_back(msg);
                 else
                     otherTeamMsgs.push_back(msg);
+
+            } else if(msg.state == RobotState::CONNECTOR) {
+                msg.ID = 'F' + msg.ID;
+                connectorMsgs.push_back(msg);
             }
         }
     }
@@ -1068,6 +1059,8 @@ void CFollower::Callback_SetC(void* data) {
 
 void CFollower::Callback_SendR(void* data) {
     std::cout << "Action: sendR" <<std::endl;
+
+    // Send request 
 }
 
 void CFollower::Callback_SendA(void* data) {
