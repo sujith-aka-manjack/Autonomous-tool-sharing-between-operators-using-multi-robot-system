@@ -162,7 +162,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(81, 255);
+    msg = CByteArray(85, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -183,7 +183,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(81, 255);
+    msg = CByteArray(85, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -192,11 +192,7 @@ void CLeader::ControlStep() {
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
 
-    closeToRobot = false;
-
-    closeState = RobotState::FOLLOWER;
-    closeDist = 255;
-    closeID = "";
+    // closeToRobot = false;
 
     // for(int i = 0; i < waypoints.size(); i++) {
     //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
@@ -219,90 +215,87 @@ void CLeader::ControlStep() {
     /* Set team ID in msg */
     msg[msg_index++] = teamID;
 
-    /*---------*/
-    /* Control */
-    /*---------*/
+    // /*---------*/
+    // /* Control */
+    // /*---------*/
 
-    /* Is the robot selected? */
-    if(m_bSelected) {
+    // /* Is the robot selected? */
+    // if(m_bSelected) {
 
-        /* Follow the control vector */
-        SetWheelSpeedsFromVector(m_cControl);
-        std::cout << "SIGNAL " << m_bSignal << std::endl; 
+    //     /* Follow the control vector */
+    //     SetWheelSpeedsFromVector(m_cControl);
+    //     std::cout << "SIGNAL " << m_bSignal << std::endl; 
 
-        if(m_bSignal)
-            m_pcLEDs->SetAllColors(CColor::WHITE);
-        else
-            m_pcLEDs->SetAllColors(teamColor[teamID]);
+    //     if(m_bSignal)
+    //         m_pcLEDs->SetAllColors(CColor::WHITE);
+    //     else
+    //         m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-        msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
-    }
-    else {
-        if( !closeToRobot ) {
-            /* Stop if other robots are too far from itself */
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            msg_index++;
-        }
-        else if( !waypoints.empty() ) {
-            /* Check if it is near the waypoint */
-            CVector3 pos3d = m_pcPosSens->GetReading().Position;
-            CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
-            Real dist = (waypoints.front() - pos2d).Length();
-            std::cout << "dist " << dist << std::endl;
+    //     // msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
+    // }
+    // else {
+    //     // if( !closeToRobot ) {
+    //     //     /* Stop if other robots are too far from itself */
+    //     //     m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    //     //     msg_index++;
+    //     // }
+    //     // else if( !waypoints.empty() ) {
+    //     //     /* Check if it is near the waypoint */
+    //     //     CVector3 pos3d = m_pcPosSens->GetReading().Position;
+    //     //     CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+    //     //     Real dist = (waypoints.front() - pos2d).Length();
+    //     //     std::cout << "dist " << dist << std::endl;
 
-            /* Check if task is completed */
-            if(dist < m_sWaypointTrackingParams.thresRange) {
-                if(currentTaskDemand == 0) {
-                    msg[msg_index++] = 0; // send stopTask signal to robots in the team
-                    m_pcLEDs->SetAllColors(teamColor[teamID]);
-                    waypoints.pop(); // Delete waypoint from queue
-                } else {
-                    msg[msg_index++] = 1; // send startTask signal to robots in the team
-                    m_pcLEDs->SetAllColors(CColor::WHITE);
-                }
-            } else
-                msg[msg_index++] = 0; // Leader is not close to a waypoint
+    //     //     /* Check if task is completed */
+    //     //     if(dist < m_sWaypointTrackingParams.thresRange) {
+    //     //         if(currentTaskDemand == 0) {
+    //     //             msg[msg_index++] = 0; // send stopTask signal to robots in the team
+    //     //             m_pcLEDs->SetAllColors(teamColor[teamID]);
+    //     //             waypoints.pop(); // Delete waypoint from queue
+    //     //         } else {
+    //     //             msg[msg_index++] = 1; // send startTask signal to robots in the team
+    //     //             m_pcLEDs->SetAllColors(CColor::WHITE);
+    //     //         }
+    //     //     } else
+    //     //         msg[msg_index++] = 0; // Leader is not close to a waypoint
 
-            /* If current task is completed, move to the next one */
-            if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+    //     //     /* If current task is completed, move to the next one */
+    //     //     if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
 
-                /* Calculate overall force applied to the robot */
-                CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
-                CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
-                CVector2 obstacleForce = GetObstacleRepulsionVector(); // repulsion from obstacles
+    //     //         /* Calculate overall force applied to the robot */
+    //     //         CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
+    //     //         CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
+    //     //         CVector2 obstacleForce = GetObstacleRepulsionVector(); // repulsion from obstacles
 
-                CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
-                std::cout << "waypointForce: " << waypointForce << std::endl;
-                std::cout << "robotForce: " << robotForce << std::endl;
-                std::cout << "obstacleForce: " << obstacleForce << std::endl;
-                std::cout << "sumForce: " << sumForce << std::endl;
+    //     //         CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
+    //     //         std::cout << "waypointForce: " << waypointForce << std::endl;
+    //     //         std::cout << "robotForce: " << robotForce << std::endl;
+    //     //         std::cout << "obstacleForce: " << obstacleForce << std::endl;
+    //     //         std::cout << "sumForce: " << sumForce << std::endl;
 
-                SetWheelSpeedsFromVectorHoming(sumForce);
-            } 
-            else {
-                m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            }
-        }
-        else {
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            msg[msg_index++] = 0; // Leader sends stopTask
-        }
-    }
+    //     //         SetWheelSpeedsFromVectorHoming(sumForce);
+    //     //     } 
+    //     //     else {
+    //     //         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    //     //     }
+    //     // }
+    //     // else {
+    //     //     m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    //     //     msg[msg_index++] = 0; // Leader sends stopTask
+    //     // }
+    // }
+    msg[msg_index++] = 0; // TEMP start signal
+    
+    /* Hop count */
+    msg[msg_index++] = 1; // Number of HopMsg
 
-    msg_index += 4; // Skip to hop count
+    msg[msg_index++] = 0; // Hop count
+    msg_index += 2; // Skip ID
+    msg[msg_index++] = teamID;
 
-    /* Set its hop count to 0 since it is te leader */
-    msg[msg_index++] = 0;
+    msg_index += 4; // Skip to next part
 
-    msg_index += 8; // Skip to closest non team robot
-
-    /* Info of the closest non team robot */
-    if(closeDist < 255 && !closeID.empty()) {
-        msg[msg_index++] = static_cast<UInt8>(closeState);
-        msg[msg_index++] = (UInt8)round(closeDist);
-        msg[msg_index++] = stoi(closeID.substr(1));
-    } else
-        msg_index += 3;
+    msg_index += 11; // TEMP Skip Connection message
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -394,45 +387,91 @@ void CLeader::GetMessages() {
             size_t index = 0;
 
             Message msg = Message();
+
+            /* Core */
             msg.direction = CVector2(tMsgs[i].Range, tMsgs[i].HorizontalBearing);
             msg.state = static_cast<RobotState>(tMsgs[i].Data[index++]);
             msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamID = tMsgs[i].Data[index++];
 
-            if(msg.state == RobotState::CONNECTOR) {
-                msg.ID = 'F' + msg.ID;
-                connectorMsgs.push_back(msg);
-            } 
-            else if(msg.state == RobotState::LEADER) {
-                msg.ID = 'L' + msg.ID;
-                index += 14;
+            /* Leader Signal */
+            msg.leaderSignal = tMsgs[i].Data[index++];
 
-                /* Closest non team */
-                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
-                    msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                    msg.closeDist = (Real)tMsgs[i].Data[index++];
-                    msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
-                } else
-                    index += 3;
+            /* Hops */
+            UInt8 msg_num = tMsgs[i].Data[index++];
 
-                otherLeaderMsgs.push_back(msg);   
+            if(msg_num == 255) // Safety check value
+                msg_num = 0;
+
+            for(size_t j = 0; j < msg_num; j++) {
+
+                HopMsg hop;
+
+                hop.count = tMsgs[i].Data[index++];
+
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                hop.ID = robotID;
+
+                hop.teamID = tMsgs[i].Data[index++];
+
+                msg.hops[msg.teamID] = hop;
             }
-            else if(msg.state == RobotState::FOLLOWER) {
-                msg.ID = 'F' + msg.ID;
-                index += 14;
+            index += (2 - msg_num) * 4; // TEMP: Currently assuming only two teams
 
-                /* Closest non team */
-                if(tMsgs[i].Data[index+1] < 255 && tMsgs[i].Data[index+1] > 0) {
-                    msg.closeState = static_cast<RobotState>(tMsgs[i].Data[index++]);
-                    msg.closeDist = (Real)tMsgs[i].Data[index++];
-                    msg.closeID = 'F' + std::to_string(tMsgs[i].Data[index++]);
-                } else
-                    index += 3;
+            /* Connection Message */
+            msg_num = tMsgs[i].Data[index++];
+
+            if(msg_num == 255)
+                msg_num = 0;
+
+            for(size_t j = 0; j < msg_num; j++) {
+
+                ConnectionMsg conMsg;
+
+                conMsg.type = (char)tMsgs[i].Data[index++];
+
+                std::string robotID;
+
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                conMsg.to = robotID;
+
+                robotID = "";
+
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                conMsg.from = robotID;
+
+                msg.cmsg[msg.teamID] = conMsg;
+            }
+            index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
+            
+            /* Connections */
+            while(tMsgs[i].Data[index] != 255) {    // Check if data exists
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.connections.push_back(robotID);
+            }
+
+            /* Store message */
+            if(msg.state == RobotState::LEADER) {
+                msg.ID = 'L' + msg.ID;
+                otherLeaderMsgs.push_back(msg);
+
+            } else if(msg.state == RobotState::FOLLOWER) {
+                msg.ID = 'F' + msg.ID;
 
                 if(msg.teamID == teamID)
                     teamMsgs.push_back(msg);
                 else
                     otherTeamMsgs.push_back(msg);
+
+            } else if(msg.state == RobotState::CONNECTOR) {
+                msg.ID = 'F' + msg.ID;
+                connectorMsgs.push_back(msg);
             }
         }
     }
@@ -443,50 +482,24 @@ void CLeader::GetMessages() {
 
 void CLeader::UpdateSensors() {
 
-    /* Combine messages received */
-    std::vector<Message> combinedMsgs(connectorMsgs);
-    combinedMsgs.insert(std::end(combinedMsgs),
-                        std::begin(teamMsgs),
-                        std::end(teamMsgs));
-    combinedMsgs.insert(std::end(combinedMsgs),
-                        std::begin(otherLeaderMsgs),
-                        std::end(otherLeaderMsgs));
-    combinedMsgs.insert(std::end(combinedMsgs),
-                        std::begin(otherTeamMsgs),
-                        std::end(otherTeamMsgs));
+    // /* Combine messages received */
+    // std::vector<Message> combinedMsgs(connectorMsgs);
+    // combinedMsgs.insert(std::end(combinedMsgs),
+    //                     std::begin(teamMsgs),
+    //                     std::end(teamMsgs));
+    // combinedMsgs.insert(std::end(combinedMsgs),
+    //                     std::begin(otherLeaderMsgs),
+    //                     std::end(otherLeaderMsgs));
+    // combinedMsgs.insert(std::end(combinedMsgs),
+    //                     std::begin(otherTeamMsgs),
+    //                     std::end(otherTeamMsgs));
 
-    /* Check whether there is a neighbor (within threshold) */
-    for(int i = 0 ; i < combinedMsgs.size(); i++) {
-        Real dist = combinedMsgs[i].direction.Length();
-        if(dist < minDistanceFromRobot)
-            closeToRobot = true;
-    }
-
-    /* Check the team's closest non team robot */
-    for(size_t i = 0; i < teamMsgs.size(); i++) {
-        std::cout << "i: " << i << std::endl;
-
-        if( !teamMsgs[i].closeID.empty() ) {    // Check if entry exists
-
-            /* Store the info of the robot with the shortest distance */
-            if(teamMsgs[i].closeDist < round(closeDist)) {
-                closeState = teamMsgs[i].closeState;
-                closeDist = teamMsgs[i].closeDist;
-                closeID = teamMsgs[i].closeID;
-            }
-            else if(teamMsgs[i].closeDist == round(closeDist)) {
-                
-                /* If distance is the same, store the info of robot with the smaller ID */
-                if(stoi(teamMsgs[i].closeID.substr(1)) < stoi(closeID.substr(1))) {
-                    closeState = teamMsgs[i].closeState;
-                    closeDist = teamMsgs[i].closeDist;
-                    closeID = teamMsgs[i].closeID;
-                }
-            }
-        }
-        std::cout << "closeDist " << closeDist << std::endl;
-        std::cout << "closeID " << closeID << std::endl;
-    }
+    // /* Check whether there is a neighbor (within threshold) */
+    // for(int i = 0 ; i < combinedMsgs.size(); i++) {
+    //     Real dist = combinedMsgs[i].direction.Length();
+    //     if(dist < minDistanceFromRobot)
+    //         closeToRobot = true;
+    // }
 }
 
 /****************************************/

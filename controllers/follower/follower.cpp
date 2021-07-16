@@ -198,7 +198,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(81, 255);
+    msg = CByteArray(85, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -216,7 +216,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(81, 255);
+    msg = CByteArray(85, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -225,6 +225,10 @@ void CFollower::ControlStep() {
     connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
+
+    leaderSignal = 255; // Default value for no signal
+    hopCountToLeader = 255; // Default value for not known hop count to the leader
+    cmsg = ConnectionMsg();
 
     /* Reset sensor reading results */
     condC2 = true;
@@ -239,13 +243,13 @@ void CFollower::ControlStep() {
     /*------------------------*/
     UpdateSensors();
 
-    /*--------------------*/
-    /* Run SCT controller */
-    /*--------------------*/
-    sct->run_step();
+    // /*--------------------*/
+    // /* Run SCT controller */
+    // /*--------------------*/
+    // sct->run_step();
 
-    sct->print_current_state();
-    std::cout << std::endl;
+    // sct->print_current_state();
+    // std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -282,8 +286,10 @@ void CFollower::ControlStep() {
 
             msg_index += 4; // Skip to next part
 
+            std::cout << "type: " << cmsg.type << std::endl;
+
             /* Connection message */
-            if(cmsg.type) {
+            if(cmsg.type != 'N') {
                 msg[msg_index++] = 1; // Number of ConnectionMsg
                 msg[msg_index++] = (UInt8)cmsg.type;
                 msg[msg_index++] = cmsg.to[0];
@@ -291,7 +297,7 @@ void CFollower::ControlStep() {
                 msg[msg_index++] = cmsg.from[0];
                 msg[msg_index++] = cmsg.from[1];
             } else {
-                msg[msg_index++] = 0;
+                msg[msg_index++] = 0; // Number of ConnectionMsg
                 msg_index += 5;
             }
 
@@ -299,37 +305,37 @@ void CFollower::ControlStep() {
 
             break;
         }
-        case RobotState::CONNECTOR: {
-            std::cout << "State: CONNECTOR" << std::endl;
-            m_pcLEDs->SetAllColors(CColor::CYAN);
+    //     case RobotState::CONNECTOR: {
+    //         std::cout << "State: CONNECTOR" << std::endl;
+    //         m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            /* Leader signal */
-            msg_index++; // Skip to next part
+    //         /* Leader signal */
+    //         msg_index++; // Skip to next part
 
-            /* Hop count */
-            msg_index += 9; // TEMP: Skip to next part
+    //         /* Hop count */
+    //         msg_index += 9; // TEMP: Skip to next part
 
-            /* Connection Message */
-            msg_index += 11; // TEMP: Skip to next part
+    //         /* Connection Message */
+    //         msg_index += 11; // TEMP: Skip to next part
 
-            break;
-        }
+    //         break;
+    //     }
         case RobotState::LEADER: {
             std::cout << "State: LEADER. Something went wrong." << std::endl;
             break;
         }
     }
 
-    switch(currentMoveType) {
-        case MoveType::FLOCK: {
-            Flock();
-            break;
-        }
-        case MoveType::STOP: {
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            break;
-        }
-    }
+    // switch(currentMoveType) {
+    //     case MoveType::FLOCK: {
+    //         Flock();
+    //         break;
+    //     }
+    //     case MoveType::STOP: {
+    //         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    //         break;
+    //     }
+    // }
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -389,6 +395,9 @@ void CFollower::GetMessages() {
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
 
+            if(msg_num == 255) // Safety check value
+                msg_num = 0;
+
             for(size_t j = 0; j < msg_num; j++) {
 
                 HopMsg hop;
@@ -409,25 +418,28 @@ void CFollower::GetMessages() {
             /* Connection Message */
             msg_num = tMsgs[i].Data[index++];
 
+            if(msg_num == 255)
+                msg_num = 0;
+
             for(size_t j = 0; j < msg_num; j++) {
 
-                ConnectionMsg cmsg;
+                ConnectionMsg conMsg;
 
-                cmsg.type = (char)tMsgs[i].Data[index++];
+                conMsg.type = (char)tMsgs[i].Data[index++];
 
                 std::string robotID;
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                cmsg.to = robotID;
+                conMsg.to = robotID;
 
                 robotID = "";
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                cmsg.from = robotID;
+                conMsg.from = robotID;
 
-                msg.cmsg[msg.teamID] = cmsg;
+                msg.cmsg[msg.teamID] = conMsg;
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
             
@@ -480,6 +492,7 @@ void CFollower::UpdateSensors() {
     nonTeamMsgs.insert(std::end(nonTeamMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
     if(currentState == RobotState::FOLLOWER) {
+
         /* Check the closest non team member that could potentially connect */
         Real minDist = 255;
         for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
@@ -493,32 +506,108 @@ void CFollower::UpdateSensors() {
 
         std::cout << "Dist to candidate: " << minDist << std::endl;
 
-        std::vector<Message> combinedTeamMsgs(teamMsgs);
-        combinedTeamMsgs.push_back(leaderMsg);
+        /* Find the hop count to and signal from the leader */
+        if(leaderMsg.direction.Length() > 0.0f) { // Leader is in range
 
-        // Initialize variables with its own values
-        myClosest.state = connectionCandidate.state;
-        myClosest.dist = minDist;
-        myClosest.ID = this->GetId();
-        myClosest.timestamp = 0;
+            hopCountToLeader = 1;
+            leaderSignal = leaderMsg.leaderSignal;
 
-        std::cout << "closeDist " << myClosest.dist << std::endl;
-        std::cout << "closeID " << myClosest.ID << std::endl;
+        } else { // Leader is not in range. Relay signal
 
-        std::unordered_map<std::string, ClosestInfo> closestFollowers;
+            UInt8 minCount = 255;
 
-        // For each message, store info in a map using its ID as key
-        // Overwrite if message with newer timestamp exists
-        for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
-            
-            std::string id = combinedTeamMsgs[i].closest.ID;
+            /* Find the smallest hop count among team members */
+            for(size_t i = 0; i < teamMsgs.size(); i++) {
+                if(teamMsgs[i].hops[teamID].count < minCount) 
+                    minCount = teamMsgs[i].hops[teamID].count;
+            }
 
-            /* Store if key does not exist OR there is a newer one*/
-            if(closestFollowers.find(id) == closestFollowers.end())
-                closestFollowers[id] = combinedTeamMsgs[i].closest;
-            else if(combinedTeamMsgs[i].closest.timestamp < closestFollowers[id].timestamp)
-                closestFollowers[id] = combinedTeamMsgs[i].closest;
+            /* Record its own hop count */
+            if(minCount < 255)
+                hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
+
+            for(size_t i = 0; i < teamMsgs.size(); i++) {
+
+                if(teamMsgs[i].hops[0].count < hopCountToLeader) { // Follower will only have one HopMsg so read the first item
+                    leaderSignal = teamMsgs[i].leaderSignal;
+                    break;
+                }
+            }
         }
+
+        // // Identify ConnectionMsg to relay
+        //     // Loop teamMsgs
+        //         // If message is accept and hop count is smaller, choose that
+        //             // break
+        //         // If message is request and hop count is larger, choose that
+        //         // If message is update and hop count is larger, choose that
+        
+        /* Identify ConnectionMsg to send/relay */
+        // std::vector<Message> combinedTeamMsgs(teamMsgs);
+        // combinedTeamMsgs.push_back(leaderMsg);
+
+        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
+
+        //     Message msg = combinedTeamMsgs[i];
+        //     ConnectionMsg conMsg = msg.cmsg[0]; // Leader/Follower will only have one ConnectionMsg so read the first item
+            
+        //     if(conMsg.type == 'A' && msg.hops[0].count < hopCountToLeader) {
+        //         cmsg = conMsg;
+        //         break;
+        //     } 
+            
+        //     if(msg.hops[0].count > hopCountToLeader) {
+
+        //         std::string leaderID = "L" + std::to_string(teamID);
+
+        //         // Relay request if the type = 'R' and it is directed to the leader
+        //         if(conMsg.type == 'R' && conMsg.to == leaderID)
+        //             cmsg = conMsg;
+        //     }
+        // }
+
+        /* If Accept or Request message was not present, relay an update message */
+        // if(cmsg.type == 255) {
+
+        //     for(size_t i = 0; i < teamMsgs.size(); i++) {
+        //         if(teamMsgs[i].hops[0].count > hopCountToLeader)
+        //     }
+        // }
+
+
+
+
+        // Send request (in callback)
+            // Create ConnectionMsg
+            // Overwrite ConnectionMsg
+
+
+        // std::vector<Message> combinedTeamMsgs(teamMsgs);
+        // combinedTeamMsgs.push_back(leaderMsg);
+
+        // // Initialize variables with its own values
+        // myClosest.state = connectionCandidate.state;
+        // myClosest.dist = minDist;
+        // myClosest.ID = this->GetId();
+        // myClosest.timestamp = 0;
+
+        // std::cout << "closeDist " << myClosest.dist << std::endl;
+        // std::cout << "closeID " << myClosest.ID << std::endl;
+
+        // std::unordered_map<std::string, ClosestInfo> closestFollowers;
+
+        // // For each message, store info in a map using its ID as key
+        // // Overwrite if message with newer timestamp exists
+        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
+            
+        //     std::string id = combinedTeamMsgs[i].closest.ID;
+
+        //     /* Store if key does not exist OR there is a newer one*/
+        //     if(closestFollowers.find(id) == closestFollowers.end())
+        //         closestFollowers[id] = combinedTeamMsgs[i].closest;
+        //     else if(combinedTeamMsgs[i].closest.timestamp < closestFollowers[id].timestamp)
+        //         closestFollowers[id] = combinedTeamMsgs[i].closest;
+        // }
 
         // Now iterate through the map to compare the distance
 
@@ -529,28 +618,28 @@ void CFollower::UpdateSensors() {
 
 
         /* Check the team's closest non team robot */
-        for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
-            std::cout << "i: " << i << std::endl;
+        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
+        //     std::cout << "i: " << i << std::endl;
 
-            if( !combinedTeamMsgs[i].closest.ID.empty() ) {    // Check if entry exists
+        //     if( !combinedTeamMsgs[i].closest.ID.empty() ) {    // Check if entry exists
 
-                /* Store the info of the robot with the shortest distance */
-                if(combinedTeamMsgs[i].closest.dist < round(myClosest.dist)) {
-                    condC2 = false;
-                    myClosest = combinedTeamMsgs[i].closest;
-                }
-                else if(combinedTeamMsgs[i].closest.dist == round(myClosest.dist)) {
+        //         /* Store the info of the robot with the shortest distance */
+        //         if(combinedTeamMsgs[i].closest.dist < round(myClosest.dist)) {
+        //             condC2 = false;
+        //             myClosest = combinedTeamMsgs[i].closest;
+        //         }
+        //         else if(combinedTeamMsgs[i].closest.dist == round(myClosest.dist)) {
                     
-                    /* If distance is the same, store the info of robot with the smaller ID */
-                    if(stoi(combinedTeamMsgs[i].closest.ID.substr(1)) < stoi(myClosest.ID.substr(1))) {
-                        condC2 = false;
-                        myClosest = combinedTeamMsgs[i].closest;
-                    }
-                }
-            }
-            std::cout << "closeDist " << myClosest.dist << std::endl;
-            std::cout << "closeID " << myClosest.ID << std::endl;
-        }
+        //             /* If distance is the same, store the info of robot with the smaller ID */
+        //             if(stoi(combinedTeamMsgs[i].closest.ID.substr(1)) < stoi(myClosest.ID.substr(1))) {
+        //                 condC2 = false;
+        //                 myClosest = combinedTeamMsgs[i].closest;
+        //             }
+        //         }
+        //     }
+        //     std::cout << "closeDist " << myClosest.dist << std::endl;
+        //     std::cout << "closeID " << myClosest.ID << std::endl;
+        // }
     }
 
     // Receive info about closest non team members from other followers
@@ -732,35 +821,23 @@ void CFollower::UpdateSensors() {
 /****************************************/
 
 CVector2 CFollower::GetTeamFlockingVector() {
+
     CVector2 resVec = CVector2();
 
     if(leaderMsg.direction.Length() > 0.0f) {
-        hopCountToLeader = 1; // Record its own hop count
+
         resVec = leaderMsg.direction;
+
     } else {
         
-        UInt8 minCount = 255;
-
-        /* Find the smallest hop count among team members */
-        for(size_t i = 0; i < teamMsgs.size(); i++) {
-            if(teamMsgs[i].hops[teamID].count < minCount) {    
-                minCount = teamMsgs[i].hops[teamID].count;
-            }
-        }
-
-        // Record its own hop count
-        if(minCount != 255)
-            hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
-        else {
-            hopCountToLeader = minCount; // No neighbours have a valid hop count to the leader
-            return resVec;
-        }
-
+        if(hopCountToLeader == 255)
+            return CVector2();  // No attraction
+        
         size_t numAttract = 0;
 
-        /* Calculate attractive force towards team members with the smallest hop count */
+        /* Calculate attractive force towards team members with a smaller hop count */
         for(size_t i = 0; i < teamMsgs.size(); i++) {
-            if(teamMsgs[i].hops[teamID].count == minCount) {
+            if(teamMsgs[i].hops[teamID].count < hopCountToLeader) {
                 resVec += teamMsgs[i].direction;
                 numAttract++;
             }

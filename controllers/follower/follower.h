@@ -141,7 +141,7 @@ public:
     };
 
     struct ConnectionMsg {
-        char type; // R or A or U or None(255)
+        char type = 'N'; // R or A or U or N (none)
         std::string to;
         std::string from;
     };
@@ -189,7 +189,7 @@ public:
         std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
 
         /* Connection Message*/
-        std::unordered_map<UInt8, ConnectionMsg> cmsg; // Key is teamID
+        std::unordered_map<UInt8, ConnectionMsg> cmsg; // Key is team
 
         /* Detected neighbors */
         std::vector<std::string> connections;

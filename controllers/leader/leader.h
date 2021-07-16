@@ -124,9 +124,16 @@ public:
     } currentState;
 
     /* Structure to store the connection to the leader/team */
-    struct Hop {
+    struct HopMsg {
         UInt8 count;
-        std::string id;
+        std::string ID; // Robot with lower hop value (only used by connectors)
+        UInt8 teamID;
+    };
+
+    struct ConnectionMsg {
+        char type = 'N'; // R or A or U or N (none)
+        std::string to;
+        std::string from;
     };
 
     /* 
@@ -134,25 +141,27 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   | (4)-(8)  |  (9)-(17) |   (18)-(20)   |       (21)-(80)       |  (81) |
-    *    ----------------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  |  Signal  | Hop count | Closest robot |      Connections      |  End  |
-    *    | State  |   ID   | Team ID |          |           |  to the team  | (2 bytes for ID x 30) | (255) |
+    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(24) |       (25)-(84)       |  (85) |
+    *    -----------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |      Connections      |  End  |
+    *    | State  |   ID   | Team ID | Signal |           |  Message   | (2 bytes for ID x 30) | (255) |
     * 
     * 
-    * - (4)-(8) Signal
-    *   - Leader    : task signal (1 byte)
-    *   - Follower  : request message (2 bytes for ID)
-    *   - Connector : accept messages (n x 2 bytes for ID)
+    * - (4) Leader Signal
+    *   - Leader    : task signal [1]
     * 
-    * - (9)-(17) Hop count
-    *   - Leader    : 0
-    *   - Follower  : Hop count to leader (1 byte)
-    *   - Connector : Hop count to each team (n x 4 bytes for team ID, hop count, robot ID)
+    * - (5)-(13) Hop count
+    *   Prefix with number of messages (max 2) [1]
+    *   - HopMsg (count [1], ID [2], teamID [1])
     * 
-    * - (18)-(20) Closest robot to the team
-    *   - Leader/Follower : State and distance to the non team member (follower or connector) that is closest to the
-    *                       team and the ID of the closest follower to it (3 bytes for state, distance, follower ID)
+    * - (14)-(24) Connection Message
+    *   Prefix with number of messages (max 2) [1]
+    *   - ConnectionMsg
+    *       1) R (Request) : Follower sends to leader or connector (Type [1], recipient ID [2], sender ID [2])
+    *       2) A (Accept)  : Leader or connector sends to follower (Type [1], recipient ID [2], sender ID [2])
+    *       3) U (Update)  : Follower sends to leader (Type [1], recipient ID [2], sender ID [2])
+    * 
+    *       Connection message priority: (HIGH) A -> R -> U (LOW)
     * 
     */
     struct Message {
@@ -163,16 +172,14 @@ public:
         std::string ID;
         UInt8 teamID;
 
-        /* Signal */
-        std::vector<std::string> contents; // signal
+        /* Leader Signal */
+        UInt8 leaderSignal;
 
-        /* Hop count */
-        std::unordered_map<UInt8, Hop> hops; // Key is teamid
+        /* Hop Count */
+        std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
 
-        /* Closest robot in team */
-        RobotState closeState;
-        Real closeDist;
-        std::string closeID;
+        /* Connection Message*/
+        std::unordered_map<UInt8, ConnectionMsg> cmsg; // Key is team
 
         /* Detected neighbors */
         std::vector<std::string> connections;
