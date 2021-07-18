@@ -130,6 +130,15 @@ public:
         UInt8 teamID;
     };
 
+    /*
+    * Structure to store request/approval messages for extending the chain.
+    * 
+    *   1) R (Request) : Follower sends to leader or connector (Type [1], recipient ID [2], sender ID [2])
+    *   2) A (Accept)  : Leader or connector sends to follower (Type [1], recipient ID [2], sender ID [2])
+    *   3) U (Update)  : Follower sends to leader (Type [1], recipient ID [2], sender ID [2])
+    * 
+    *       Connection message priority: (HIGH) A -> R -> U (LOW)
+    */
     struct ConnectionMsg {
         char type = 'N'; // R or A or U or N (none)
         std::string to;
@@ -156,13 +165,15 @@ public:
     * 
     * - (14)-(24) Connection Message
     *   Prefix with number of messages (max 2) [1]
-    *   - ConnectionMsg
-    *       1) R (Request) : Follower sends to leader or connector (Type [1], recipient ID [2], sender ID [2])
-    *       2) A (Accept)  : Leader or connector sends to follower (Type [1], recipient ID [2], sender ID [2])
-    *       3) U (Update)  : Follower sends to leader (Type [1], recipient ID [2], sender ID [2])
+    *   - ConnectionMsg [5]
     * 
-    *       Connection message priority: (HIGH) A -> R -> U (LOW)
-    * 
+    *       - Exchanging ConnectionMsg within a team:
+    *           - If message destination is to leader, relay upstream
+    *           - If message sender is the leader, relay downstream
+    *
+    *       - Exchanging ConnectionMsg between follower and connector:
+    *           - Follower will send up to one request message (R)
+    *           - Connector will send up to two approval messages (A)
     */
     struct Message {
         

@@ -376,6 +376,7 @@ void CLeader::SetTaskDemand(const UInt32 un_demand) {
 /****************************************/
 
 void CLeader::GetMessages() {
+    
     /* Get RAB messages from nearby e-pucks */
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
 
@@ -437,12 +438,16 @@ void CLeader::GetMessages() {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
+                
+                std::cout << "TO: " << conMsg.to << std::endl;
 
                 robotID = "";
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
+
+                std::cout << "FROM: " << conMsg.from << std::endl;
 
                 msg.cmsg[msg.teamID] = conMsg;
             }
