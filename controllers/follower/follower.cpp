@@ -228,7 +228,7 @@ void CFollower::ControlStep() {
 
     leaderSignal = 255; // Default value for no signal
     hopCountToLeader = 255; // Default value for not known hop count to the leader
-    cmsg = ConnectionMsg();
+    cmsg1 = ConnectionMsg();
 
     /* Reset sensor reading results */
     condC2 = true;
@@ -286,22 +286,31 @@ void CFollower::ControlStep() {
 
             msg_index += 4; // Skip to next part
 
-            std::cout << "type: " << cmsg.type << std::endl;
+            /* Connection Message */
+            UInt8 msg_num = 0;  // Check how many messages there are to send
+            if(cmsg1.type != 'N')
+                msg_num++;
+            if(cmsg2.type != 'N')
+                msg_num++;
+            msg[msg_index++] = msg_num; // Number of ConnectionMsg
 
-            /* Connection message */
-            if(cmsg.type != 'N') {
-                msg[msg_index++] = 1; // Number of ConnectionMsg
-                msg[msg_index++] = (UInt8)cmsg.type;
-                msg[msg_index++] = cmsg.to[0];
-                msg[msg_index++] = cmsg.to[1];
-                msg[msg_index++] = cmsg.from[0];
-                msg[msg_index++] = cmsg.from[1];
-            } else {
-                msg[msg_index++] = 0; // Number of ConnectionMsg
+            if(cmsg1.type != 'N') {
+                msg[msg_index++] = (UInt8)cmsg1.type;
+                msg[msg_index++] = cmsg1.to[0];
+                msg[msg_index++] = stoi(cmsg1.to.substr(1));
+                msg[msg_index++] = cmsg1.from[0];
+                msg[msg_index++] = stoi(cmsg1.from.substr(1));
+            } else
                 msg_index += 5;
-            }
 
-            msg_index += 5; // Skip to next part
+            if(cmsg2.type != 'N') {
+                msg[msg_index++] = (UInt8)cmsg2.type;
+                msg[msg_index++] = cmsg2.to[0];
+                msg[msg_index++] = stoi(cmsg2.to.substr(1));
+                msg[msg_index++] = cmsg2.from[0];
+                msg[msg_index++] = stoi(cmsg2.from.substr(1));
+            } else
+                msg_index += 5;
 
             break;
         }
@@ -432,12 +441,16 @@ void CFollower::GetMessages() {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
+                
+                std::cout << "TO: " << conMsg.to << std::endl;
 
                 robotID = "";
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
+
+                std::cout << "FROM: " << conMsg.from << std::endl;
 
                 msg.cmsg[msg.teamID] = conMsg;
             }
@@ -485,28 +498,11 @@ void CFollower::UpdateSensors() {
     std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
 
     /* Combine messages received from all non-team entities */
-    std::vector<Message> nonTeamMsgs(connectorMsgs);
-    // nonTeamMsgs.insert(std::end(nonTeamMsgs),
-    //                    std::begin(otherLeaderMsgs),
-    //                    std::end(otherLeaderMsgs));
-    nonTeamMsgs.insert(std::end(nonTeamMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    // std::vector<Message> nonTeamMsgs(connectorMsgs);
+    // nonTeamMsgs.insert(std::end(nonTeamMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    // nonTeamMsgs.insert(std::end(nonTeamMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
     if(currentState == RobotState::FOLLOWER) {
-
-        /* Check the closest non team member that could potentially connect */
-        Real minDist = 255;
-        for(size_t i = 0; i < nonTeamMsgs.size(); i++) {
-            Real dist = nonTeamMsgs[i].direction.Length();
-            std::cout << "dist " << dist << std::endl;
-            if(dist < minDist) {
-                minDist = dist;
-                connectionCandidate = nonTeamMsgs[i];
-            }
-        }
-
-        // TODO: Prioritize connectors. Look for other follower if no connectors in range
-
-        std::cout << "Dist to candidate: " << minDist << std::endl;
 
         /* Find the hop count to and signal from the leader */
         if(leaderMsg.direction.Length() > 0.0f) { // Leader is in range
@@ -529,7 +525,6 @@ void CFollower::UpdateSensors() {
                 hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
 
             for(size_t i = 0; i < teamMsgs.size(); i++) {
-
                 if(teamMsgs[i].hops[0].count < hopCountToLeader) { // Follower will only have one HopMsg so read the first item
                     leaderSignal = teamMsgs[i].leaderSignal;
                     break;
@@ -537,7 +532,54 @@ void CFollower::UpdateSensors() {
             }
         }
 
-        // Check whether it is the closest to the candidate among other followers in the team that sees it (condC2)
+        /* Check for the robot that this robot can connect */
+        Real minDist = 255;
+        std::vector<Message> candidateMsgs;
+
+        // Prioritize connectors over other team members
+        if( !connectorMsgs.empty() ) {
+            candidateMsgs = connectorMsgs;            
+        } else {
+            candidateMsgs = otherLeaderMsgs;
+            candidateMsgs.insert(std::end(candidateMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+        }
+
+        // Find the closest non team robot
+        for(size_t i = 0; i < candidateMsgs.size(); i++) {
+            Real dist = candidateMsgs[i].direction.Length();
+            if(dist < minDist) {
+                minDist = dist;
+                connectionCandidate = candidateMsgs[i];
+            }
+        }
+
+        if(minDist < 255)
+            std::cout << "Dist to candidate: " << minDist << std::endl;
+
+        /* Check whether it is the closest to the candidate among other followers in the team that sees it (condC2) */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+
+            std::vector<std::string> connections = teamMsgs[i].connections;
+
+            // std::cout << teamMsgs[i].ID << ": ";
+            // for(size_t j = 0; j < teamMsgs[i].connections.size(); j++)
+            //     std::cout << teamMsgs[i].connections[j] << ", ";
+            // std::cout << std::endl;
+
+            // Check if the team robot has seen the non-team robot 
+            if (std::find(connections.begin(), connections.end(), connectionCandidate.ID) != connections.end()) {
+
+                /* Check the distance between its candidate and nearby team robots */
+                CVector2 diff = connectionCandidate.direction - teamMsgs[i].direction;
+                Real dist = diff.Length();
+
+                if(dist < minDist) {
+                    condC2 = false;  // Not the closest to the candidate robot
+                    break;
+                }
+            }
+        }
+
             // Assume it is the closest to the candidate
             // Loop teamMsgs
                 // If another follower is closer to the candidate AND it sees the follower (Loop connections)
@@ -1149,7 +1191,11 @@ void CFollower::Callback_SetC(void* data) {
 void CFollower::Callback_SendR(void* data) {
     std::cout << "Action: sendR" <<std::endl;
 
-    // Send request 
+    /* Set request to send */
+    cmsg1.type = 'R';
+    cmsg1.to = "L" + std::to_string(teamID); // TEMP send to leader
+    cmsg1.from = this->GetId();
+
 }
 
 void CFollower::Callback_SendA(void* data) {
@@ -1250,13 +1296,13 @@ unsigned char CFollower::Check_NotCondC1(void* data) {
 }
 
 unsigned char CFollower::Check_CondC2(void* data) {
-    std::cout << "Event: " << 0 << " - condC2" << std::endl;
-    return 0;
+    std::cout << "Event: " << condC2 << " - condC2" << std::endl;
+    return condC2;
 }
 
 unsigned char CFollower::Check_NotCondC2(void* data) {
-    std::cout << "Event: " << 1 << " - notCondC2" << std::endl;
-    return 1;
+    std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
+    return !condC2;
 }
 
 unsigned char CFollower::Check_CondC3(void* data) {
