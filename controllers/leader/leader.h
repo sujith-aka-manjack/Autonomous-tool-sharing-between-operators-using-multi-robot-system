@@ -190,7 +190,7 @@ public:
         std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
 
         /* Connection Message*/
-        std::unordered_map<UInt8, ConnectionMsg> cmsg; // Key is team
+        std::vector<ConnectionMsg> cmsg; // Key is team
 
         /* Detected neighbors */
         std::vector<std::string> connections;
@@ -202,7 +202,7 @@ public:
     CLeader();
 
     /* Class destructor. */
-    virtual ~CLeader() {}
+    virtual ~CLeader();
 
     /*
     * This function initializes the controller.
@@ -379,6 +379,9 @@ private:
 
     /* Incoming message buffer (occurances of public uncontrollable events) */
     // std::map<size_t, bool> pub_events;
+
+    /* Connection related info to send in the current timestep */
+    std::vector<ConnectionMsg> cmsgToSend; 
 
     /*
     * The following variables are used as parameters for the

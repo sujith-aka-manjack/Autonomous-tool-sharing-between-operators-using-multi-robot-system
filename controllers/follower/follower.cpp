@@ -452,7 +452,7 @@ void CFollower::GetMessages() {
 
                 std::cout << "FROM: " << conMsg.from << std::endl;
 
-                msg.cmsg[msg.teamID] = conMsg;
+                msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
             

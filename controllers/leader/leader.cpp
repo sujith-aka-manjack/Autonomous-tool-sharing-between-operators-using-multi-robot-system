@@ -158,6 +158,13 @@ void CLeader::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
+CLeader::~CLeader() {
+    delete PIDHeading;
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
@@ -191,6 +198,8 @@ void CLeader::ControlStep() {
     connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
+
+    cmsgToSend.clear();
 
     // closeToRobot = false;
 
@@ -295,7 +304,18 @@ void CLeader::ControlStep() {
 
     msg_index += 4; // Skip to next part
 
-    msg_index += 11; // TEMP Skip Connection message
+    /* Connection Message */
+    std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+    msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
+    for(const auto& conMsg : cmsgToSend) {
+        msg[msg_index++] = (UInt8)conMsg.type;
+        msg[msg_index++] = conMsg.to[0];
+        msg[msg_index++] = stoi(conMsg.to.substr(1));
+        msg[msg_index++] = conMsg.from[0];
+        msg[msg_index++] = stoi(conMsg.from.substr(1));
+    }
+    // Skip if not all bytes are used
+    msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -449,7 +469,7 @@ void CLeader::GetMessages() {
 
                 std::cout << "FROM: " << conMsg.from << std::endl;
 
-                msg.cmsg[msg.teamID] = conMsg;
+                msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
             
@@ -505,6 +525,39 @@ void CLeader::UpdateSensors() {
     //     if(dist < minDistanceFromRobot)
     //         closeToRobot = true;
     // }
+
+    /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
+    ConnectionMsg acceptTo;
+    acceptTo.type = 'A';
+    acceptTo.from = this->GetId();
+    
+    for(const auto& teamMsg : teamMsgs) {
+
+        for(const auto& cmsg : teamMsg.cmsg) {
+
+            if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+
+                /* Set the ID of the first follower request seen */
+                if(acceptTo.to.empty()) {
+                    acceptTo.to = cmsg.from;
+                    continue;
+                }
+                
+                UInt8 currentFID = stoi(acceptTo.to.substr(1));
+                UInt8 newFID = stoi(cmsg.from.substr(1));
+
+                /* Send an accept message to the follower with the smallest ID */
+                if(newFID < currentFID)
+                    acceptTo.to = cmsg.from;
+            }
+        }
+    }
+
+    std::cout << "acceptTo: " << acceptTo.to << std::endl;
+
+    /* Add accept message to be sent */
+    if( !acceptTo.to.empty() )
+        cmsgToSend.push_back(acceptTo);
 }
 
 /****************************************/

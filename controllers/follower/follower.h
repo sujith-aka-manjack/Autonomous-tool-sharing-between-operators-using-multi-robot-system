@@ -200,7 +200,7 @@ public:
         std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
 
         /* Connection Message*/
-        std::unordered_map<UInt8, ConnectionMsg> cmsg; // Key is team
+        std::vector<ConnectionMsg> cmsg; // Key is team
 
         /* Detected neighbors */
         std::vector<std::string> connections;
