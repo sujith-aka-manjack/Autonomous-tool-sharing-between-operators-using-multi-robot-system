@@ -382,7 +382,7 @@ void CFollower::GetMessages() {
     if( !tMsgs.empty() ) {
         for(int i = 0; i < tMsgs.size(); i++) {
 
-            std::cout << tMsgs[i].Data << std::endl;
+            // std::cout << tMsgs[i].Data << std::endl;
 
             size_t index = 0;
 
@@ -576,21 +576,123 @@ void CFollower::UpdateSensors() {
             }
         }
 
-        /* Check whether this robot has received a ConnectionMsg */
-        std::vector<Message> combinedTeamMsgs(teamMsgs);
-        if(leaderMsg.direction.Length() > 0.0f)
-            combinedTeamMsgs.push_back(leaderMsg);
+        /* Check whether this robot has received an Accept message from the leader */
+        // std::vector<Message> combinedTeamMsgs(teamMsgs);
+        // if(leaderMsg.direction.Length() > 0.0f)
+        //     combinedTeamMsgs.push_back(leaderMsg);
 
-        for(const auto& teamMsg : combinedTeamMsgs) {
-            for(const auto& cmsg : teamMsg.cmsg) {
-                if(cmsg.type == 'A'){
-                    if(cmsg.to == this->GetId())
-                        receiveA = true;
-                    else
-                        receiveNA = true;
+        // for(const auto& teamMsg : combinedTeamMsgs) {
+        //     for(const auto& cmsg : teamMsg.cmsg) {
+        //         if(cmsg.type == 'A'){
+        //             // if(cmsg.to == this->GetId())
+        //             //     receiveA = true;
+        //             // else
+        //             //     receiveNA = true;
+        //             acceptMsgs.push_back(cmsg);
+        //         }
+        //     }
+        // }
+
+        /* Check whether it has received an accept message */
+        if(currentRequest.type == 'R') {
+
+            /* Request sent to leader */
+            if(currentRequest.to[0] == 'L') {
+
+                std::vector<Message> combinedTeamMsgs(teamMsgs);
+                if(leaderMsg.direction.Length() > 0.0f)
+                    combinedTeamMsgs.push_back(leaderMsg);
+
+                for(const auto& teamMsg : combinedTeamMsgs) {
+                    for(const auto& cmsg : teamMsg.cmsg) {
+                        if(cmsg.type == 'A'){
+
+                            if(cmsg.to == this->GetId())    // Request approved for this follower
+                                receiveA = true;
+                            else                            // Request approved for another follower
+                                receiveNA = true;
+
+                            currentRequest = ConnectionMsg(); // Clear current request
+                        }
+                    }
+                }
+            } 
+            /* Request sent to connector */
+            else {
+
+                for(const auto& msg : connectorMsgs) {
+                    for(const auto& cmsg : msg.cmsg) {
+                        if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
+
+                            /* Check the connector matches its original request */
+                            if(cmsg.from == currentRequest.to) {
+
+                                if(cmsg.to == this->GetId())    // Request approved for this follower
+                                    receiveA = true;
+                                else                            // Request approved for another follower
+                                    receiveNA = true;
+
+                                currentRequest = ConnectionMsg(); // Clear current request
+                            }
+                        }
+                    }
                 }
             }
         }
+        
+        // Remember currently sending request? (with timesteps to continue sending?)
+
+
+    } else if(currentState == RobotState::CONNECTOR) {
+
+        // Update hop to teams?
+
+
+        // Check all requests sent to itself and choose one to respond (if possible)
+            // If hop count to the sender's team = 1
+            // Choose follower with the smallest ID
+            // Could be multiple
+
+        /* Check if any request message has been received and reply if connection is available */
+        // ConnectionMsg acceptTo;
+        // acceptTo.type = 'A';
+        // acceptTo.from = this->GetId();
+        
+        // for(const auto& teamMsg : teamMsgs) {
+
+        //     for(const auto& cmsg : teamMsg.cmsg) {
+
+        //         if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+
+        //             /* Set the ID of the first follower request seen */
+        //             if(acceptTo.to.empty()) {
+        //                 acceptTo.to = cmsg.from;
+        //                 continue;
+        //             }
+                    
+        //             UInt8 currentFID = stoi(acceptTo.to.substr(1));
+        //             UInt8 newFID = stoi(cmsg.from.substr(1));
+
+        //             /* Send an accept message to the follower with the smallest ID */
+        //             if(newFID < currentFID)
+        //                 acceptTo.to = cmsg.from;
+        //         }
+        //     }
+        // }
+
+        // std::cout << "acceptTo: " << acceptTo.to << std::endl;
+
+        // /* Add accept message to be sent */
+        // if( !acceptTo.to.empty() )
+        //     cmsgToSend.push_back(acceptTo);
+    }
+
+
+
+
+
+
+
 
         // Loop all msgs (leader + team + otherTeam + connector)
             // If A received from leader and it is itself, set state to connector (trigger receiveA)
@@ -715,7 +817,7 @@ void CFollower::UpdateSensors() {
         //     std::cout << "closeDist " << myClosest.dist << std::endl;
         //     std::cout << "closeID " << myClosest.ID << std::endl;
         // }
-    }
+    
 
     // Receive info about closest non team members from other followers
     // If distance is smaller than its own or distance is same and own ID is larger, continue
@@ -1141,16 +1243,6 @@ bool CFollower::IsWorking() {
 
 /* Callback functions (Controllable events) */
 
-// void CFollower::Callback_MoveFlock(void* data) {
-//     std::cout << "Action: moveFlock" <<std::endl;
-//     currentMoveType = MoveType::FLOCK;
-// }
-
-// void CFollower::Callback_MoveStop(void* data) {
-//     std::cout << "Action: moveStop" <<std::endl;
-//     currentMoveType = MoveType::STOP;
-// }
-
 // void CFollower::Callback_TaskBegin(void* data) {
 //     std::cout << "Action: taskBegin" <<std::endl;
 //     performingTask = true;
@@ -1217,14 +1309,24 @@ void CFollower::Callback_SendRL(void* data) {
     /* Set request to send */
     ConnectionMsg cmsg;
     cmsg.type = 'R';
-    cmsg.to = "L" + std::to_string(teamID); // TEMP send to leader
     cmsg.from = this->GetId();
+    cmsg.to = "L" + std::to_string(teamID);
     cmsgToSend.push_back(cmsg);
 
+    currentRequest = cmsg;
 }
 
 void CFollower::Callback_SendRC(void* data) {
     std::cout << "Action: sendRC" <<std::endl;
+
+    /* Set request to send */
+    ConnectionMsg cmsg;
+    cmsg.type = 'R';
+    cmsg.from = this->GetId();
+    cmsg.to = connectionCandidate.ID;
+    cmsgToSend.push_back(cmsg);
+
+    currentRequest = cmsg;
 }
 
 void CFollower::Callback_SendA(void* data) {
@@ -1251,42 +1353,6 @@ void CFollower::Callback_SendA(void* data) {
 //         return 1;
 //     }
 //     std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
-//     return 0;
-// }
-
-// unsigned char CFollower::Check_DistFar(void* data) {
-//     if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance >= separationThres) {
-//         std::cout << "Event: " << 1 << " - distFar" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - distFar" << std::endl;
-//     return 0;
-// }
-
-// unsigned char CFollower::Check_DistNear(void* data) {
-//     if(minNonTeamDistance != __FLT_MAX__ && minNonTeamDistance < joiningThres) {
-//         std::cout << "Event: " << 1 << " - distNear" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - distNear" << std::endl;
-//     return 0;
-// }
-
-// unsigned char CFollower::Check_IsNearest(void* data) {
-//     if(isClosestToNonTeam) {
-//         std::cout << "Event: " << 1 << " - isNearest" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - isNearest" << std::endl;
-//     return 0;
-// }
-
-// unsigned char CFollower::Check_NotNearest(void* data) {
-//     if(!isClosestToNonTeam) {
-//         std::cout << "Event: " << 1 << " - notNearest" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - notNearest" << std::endl;
 //     return 0;
 // }
 
