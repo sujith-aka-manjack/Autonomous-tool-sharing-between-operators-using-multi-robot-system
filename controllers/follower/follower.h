@@ -151,8 +151,8 @@ public:
     */
     struct ConnectionMsg {
         char type = 'N'; // R or A or U or N (none)
-        std::string to;
         std::string from;
+        std::string to;
     };
 
     /* 
@@ -380,7 +380,7 @@ private:
     bool condC2;
 
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task
-    ConnectionMsg cmsg1, cmsg2;
+    std::vector<ConnectionMsg> cmsgToSend;
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;

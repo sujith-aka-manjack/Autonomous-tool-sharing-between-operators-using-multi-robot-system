@@ -228,7 +228,6 @@ void CFollower::ControlStep() {
 
     leaderSignal = 255; // Default value for no signal
     hopCountToLeader = 255; // Default value for not known hop count to the leader
-    cmsg1 = ConnectionMsg();
 
     /* Reset sensor reading results */
     condC2 = true;
@@ -287,30 +286,17 @@ void CFollower::ControlStep() {
             msg_index += 4; // Skip to next part
 
             /* Connection Message */
-            UInt8 msg_num = 0;  // Check how many messages there are to send
-            if(cmsg1.type != 'N')
-                msg_num++;
-            if(cmsg2.type != 'N')
-                msg_num++;
-            msg[msg_index++] = msg_num; // Number of ConnectionMsg
-
-            if(cmsg1.type != 'N') {
-                msg[msg_index++] = (UInt8)cmsg1.type;
-                msg[msg_index++] = cmsg1.to[0];
-                msg[msg_index++] = stoi(cmsg1.to.substr(1));
-                msg[msg_index++] = cmsg1.from[0];
-                msg[msg_index++] = stoi(cmsg1.from.substr(1));
-            } else
-                msg_index += 5;
-
-            if(cmsg2.type != 'N') {
-                msg[msg_index++] = (UInt8)cmsg2.type;
-                msg[msg_index++] = cmsg2.to[0];
-                msg[msg_index++] = stoi(cmsg2.to.substr(1));
-                msg[msg_index++] = cmsg2.from[0];
-                msg[msg_index++] = stoi(cmsg2.from.substr(1));
-            } else
-                msg_index += 5;
+            std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+            msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
+            for(const auto& conMsg : cmsgToSend) {
+                msg[msg_index++] = (UInt8)conMsg.type;
+                msg[msg_index++] = conMsg.from[0];
+                msg[msg_index++] = stoi(conMsg.from.substr(1));
+                msg[msg_index++] = conMsg.to[0];
+                msg[msg_index++] = stoi(conMsg.to.substr(1));
+            }
+            // Skip if not all bytes are used
+            msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
 
             break;
         }
@@ -440,18 +426,18 @@ void CFollower::GetMessages() {
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                conMsg.to = robotID;
-                
-                std::cout << "TO: " << conMsg.to << std::endl;
+                conMsg.from = robotID;
+
+                std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                conMsg.from = robotID;
-
-                std::cout << "FROM: " << conMsg.from << std::endl;
-
+                conMsg.to = robotID;
+                
+                std::cout << "TO: " << conMsg.to << std::endl;
+                
                 msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
@@ -1192,9 +1178,11 @@ void CFollower::Callback_SendR(void* data) {
     std::cout << "Action: sendR" <<std::endl;
 
     /* Set request to send */
-    cmsg1.type = 'R';
-    cmsg1.to = "L" + std::to_string(teamID); // TEMP send to leader
-    cmsg1.from = this->GetId();
+    ConnectionMsg cmsg;
+    cmsg.type = 'R';
+    cmsg.to = "L" + std::to_string(teamID); // TEMP send to leader
+    cmsg.from = this->GetId();
+    cmsgToSend.push_back(cmsg);
 
 }
 

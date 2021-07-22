@@ -141,8 +141,8 @@ public:
     */
     struct ConnectionMsg {
         char type = 'N'; // R or A or U or N (none)
-        std::string to;
         std::string from;
+        std::string to;
     };
 
     /* 

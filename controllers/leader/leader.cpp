@@ -309,10 +309,10 @@ void CLeader::ControlStep() {
     msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
         msg[msg_index++] = (UInt8)conMsg.type;
-        msg[msg_index++] = conMsg.to[0];
-        msg[msg_index++] = stoi(conMsg.to.substr(1));
         msg[msg_index++] = conMsg.from[0];
         msg[msg_index++] = stoi(conMsg.from.substr(1));
+        msg[msg_index++] = conMsg.to[0];
+        msg[msg_index++] = stoi(conMsg.to.substr(1));
     }
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
@@ -457,18 +457,18 @@ void CLeader::GetMessages() {
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                conMsg.to = robotID;
-                
-                std::cout << "TO: " << conMsg.to << std::endl;
+                conMsg.from = robotID;
+
+                std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
 
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                conMsg.from = robotID;
-
-                std::cout << "FROM: " << conMsg.from << std::endl;
-
+                conMsg.to = robotID;
+                
+                std::cout << "TO: " << conMsg.to << std::endl;
+                
                 msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
