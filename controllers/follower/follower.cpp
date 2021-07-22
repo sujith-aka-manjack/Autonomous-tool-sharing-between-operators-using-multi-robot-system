@@ -607,9 +607,10 @@ void CFollower::UpdateSensors() {
                     for(const auto& cmsg : teamMsg.cmsg) {
                         if(cmsg.type == 'A'){
 
-                            if(cmsg.to == this->GetId())    // Request approved for this follower
+                            if(cmsg.to == this->GetId()) {    // Request approved for this follower
                                 receiveA = true;
-                            else                            // Request approved for another follower
+                                currentAccept = cmsg;
+                            } else                            // Request approved for another follower
                                 receiveNA = true;
 
                             currentRequest = ConnectionMsg(); // Clear current request
@@ -627,9 +628,10 @@ void CFollower::UpdateSensors() {
                             /* Check the connector matches its original request */
                             if(cmsg.from == currentRequest.to) {
 
-                                if(cmsg.to == this->GetId())    // Request approved for this follower
+                                if(cmsg.to == this->GetId()) {    // Request approved for this follower
                                     receiveA = true;
-                                else                            // Request approved for another follower
+                                    currentAccept = cmsg;
+                                } else                            // Request approved for another follower
                                     receiveNA = true;
 
                                 currentRequest = ConnectionMsg(); // Clear current request
@@ -1299,6 +1301,30 @@ void CFollower::Callback_SetF(void* data) {
 
 void CFollower::Callback_SetC(void* data) {
     std::cout << "Action: setC" <<std::endl;
+    
+    /* Set hop count to the team it is leaving to 1 */
+    HopMsg hop;
+    hop.count = 1;
+    hops[teamID] = hop;
+    std::cout << "New hop team: " << teamID << ", count: " << hops[teamID].count << std::endl;
+
+    if(currentAccept.from[0] == 'L') {
+
+        /* Add every other visible team to hop map */
+        for(const auto& msg : otherTeamMsgs) {
+
+            /* Add hop count entry if not yet registered */
+            if(hops.find(msg.teamID) == hops.end()) {
+                hops[msg.teamID] = hop;
+                std::cout << "New hop team: " << msg.teamID << ", count: " << hops[msg.teamID].count << std::endl;
+            }
+        }
+    } else {
+        // TODO: Use the connector to generate its hop count to other teams
+    }
+
+    currentAccept = ConnectionMsg(); // Reset
+
     currentState = RobotState::CONNECTOR;
     teamID = 255;
 }
@@ -1331,6 +1357,7 @@ void CFollower::Callback_SendRC(void* data) {
 
 void CFollower::Callback_SendA(void* data) {
     std::cout << "Action: sendA" <<std::endl;
+    // Update hop count to the team using the new connector
 }
 
 /****************************************/
@@ -1435,6 +1462,7 @@ unsigned char CFollower::Check_NotCondF2(void* data) {
 }
 
 unsigned char CFollower::Check_ReceiveR(void* data) {
+    // If size of request messages not empty, return 1
     return 0;
 }
 

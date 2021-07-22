@@ -137,7 +137,7 @@ public:
     struct HopMsg {
         UInt8 count;
         std::string ID; // Robot with lower hop value (only used by connectors)
-        UInt8 teamID;
+        UInt8 teamID; // POSSIBLY DELETE?
     };
 
     /*
@@ -372,7 +372,7 @@ private:
     /* The number of hops from the leader to itself */
     UInt8 hopCountToLeader;  // default to 255 if unknown
 
-    /* The number of hops to each team */
+    /* The number of hops to each team (used in the CONNECTOR state)*/
     std::unordered_map<UInt8, HopMsg> hops;
 
     /* Sensor reading results */
@@ -382,7 +382,7 @@ private:
     Message connectionCandidate;
     bool condC2;
     bool receiveA, receiveNA;
-    ConnectionMsg currentRequest;
+    ConnectionMsg currentRequest, currentAccept;
 
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task
     std::vector<ConnectionMsg> cmsgToSend;
