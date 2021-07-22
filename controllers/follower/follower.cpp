@@ -177,6 +177,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
     sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
     sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+    sct->add_callback(this, EV_receiveA,  NULL, &CFollower::Check_ReceiveA,  NULL);
+    sct->add_callback(this, EV_receiveNA, NULL, &CFollower::Check_ReceiveNA, NULL);
 
     /*
     * Init PID Controller
@@ -226,11 +228,15 @@ void CFollower::ControlStep() {
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
 
+    cmsgToSend.clear();
+
     leaderSignal = 255; // Default value for no signal
     hopCountToLeader = 255; // Default value for not known hop count to the leader
 
     /* Reset sensor reading results */
     condC2 = true;
+    receiveA = false;
+    receiveNA = false;
 
     /*----------------------*/
     /* Receive new messages */
@@ -300,21 +306,21 @@ void CFollower::ControlStep() {
 
             break;
         }
-    //     case RobotState::CONNECTOR: {
-    //         std::cout << "State: CONNECTOR" << std::endl;
-    //         m_pcLEDs->SetAllColors(CColor::CYAN);
+        case RobotState::CONNECTOR: {
+            std::cout << "State: CONNECTOR" << std::endl;
+            m_pcLEDs->SetAllColors(CColor::CYAN);
 
-    //         /* Leader signal */
-    //         msg_index++; // Skip to next part
+            /* Leader signal */
+            msg_index++; // Skip to next part
 
-    //         /* Hop count */
-    //         msg_index += 9; // TEMP: Skip to next part
+            /* Hop count */
+            msg_index += 9; // TEMP: Skip to next part
 
-    //         /* Connection Message */
-    //         msg_index += 11; // TEMP: Skip to next part
+            /* Connection Message */
+            msg_index += 11; // TEMP: Skip to next part
 
-    //         break;
-    //     }
+            break;
+        }
         case RobotState::LEADER: {
             std::cout << "State: LEADER. Something went wrong." << std::endl;
             break;
@@ -565,6 +571,31 @@ void CFollower::UpdateSensors() {
                 }
             }
         }
+
+        /* Check whether this robot has received a ConnectionMsg */
+        std::vector<Message> combinedTeamMsgs(teamMsgs);
+        if(leaderMsg.direction.Length() > 0.0f)
+            combinedTeamMsgs.push_back(leaderMsg);
+
+        for(const auto& teamMsg : combinedTeamMsgs) {
+            for(const auto& cmsg : teamMsg.cmsg) {
+                if(cmsg.type == 'A'){
+                    if(cmsg.to == this->GetId())
+                        receiveA = true;
+                    else
+                        receiveNA = true;
+                }
+            }
+        }
+
+        // Loop all msgs (leader + team + otherTeam + connector)
+            // If A received from leader and it is itself, set state to connector (trigger receiveA)
+            // If A received from leader and its not itself, don't become a connector (trigger receiveNA)
+
+
+
+
+
 
             // Assume it is the closest to the candidate
             // Loop teamMsgs
@@ -1172,6 +1203,8 @@ void CFollower::Callback_SetF(void* data) {
 
 void CFollower::Callback_SetC(void* data) {
     std::cout << "Action: setC" <<std::endl;
+    currentState = RobotState::CONNECTOR;
+    teamID = 255;
 }
 
 void CFollower::Callback_SendR(void* data) {
@@ -1320,11 +1353,13 @@ unsigned char CFollower::Check_ReceiveR(void* data) {
 }
 
 unsigned char CFollower::Check_ReceiveA(void* data) {
-
+    std::cout << "Event: " << receiveA << " - receiveA" << std::endl;
+    return receiveA;
 }
 
 unsigned char CFollower::Check_ReceiveNA(void* data) {
-
+    std::cout << "Event: " << receiveNA << " - receiveNA" << std::endl;
+    return receiveNA;
 }
 
 /*

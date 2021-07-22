@@ -378,6 +378,7 @@ private:
 
     Message connectionCandidate;
     bool condC2;
+    bool receiveA, receiveNA;
 
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task
     std::vector<ConnectionMsg> cmsgToSend;

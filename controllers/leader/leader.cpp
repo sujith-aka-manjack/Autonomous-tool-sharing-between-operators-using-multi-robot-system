@@ -507,25 +507,6 @@ void CLeader::GetMessages() {
 
 void CLeader::UpdateSensors() {
 
-    // /* Combine messages received */
-    // std::vector<Message> combinedMsgs(connectorMsgs);
-    // combinedMsgs.insert(std::end(combinedMsgs),
-    //                     std::begin(teamMsgs),
-    //                     std::end(teamMsgs));
-    // combinedMsgs.insert(std::end(combinedMsgs),
-    //                     std::begin(otherLeaderMsgs),
-    //                     std::end(otherLeaderMsgs));
-    // combinedMsgs.insert(std::end(combinedMsgs),
-    //                     std::begin(otherTeamMsgs),
-    //                     std::end(otherTeamMsgs));
-
-    // /* Check whether there is a neighbor (within threshold) */
-    // for(int i = 0 ; i < combinedMsgs.size(); i++) {
-    //     Real dist = combinedMsgs[i].direction.Length();
-    //     if(dist < minDistanceFromRobot)
-    //         closeToRobot = true;
-    // }
-
     /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
     ConnectionMsg acceptTo;
     acceptTo.type = 'A';
