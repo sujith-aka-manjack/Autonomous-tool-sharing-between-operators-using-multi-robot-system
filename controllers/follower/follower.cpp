@@ -163,22 +163,26 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
     sct->add_callback(this, EV_setF,      &CFollower::Callback_SetF,      NULL, NULL);
     sct->add_callback(this, EV_setC,      &CFollower::Callback_SetC,      NULL, NULL);
-    sct->add_callback(this, EV_sendR,     &CFollower::Callback_SendR,     NULL, NULL);
+    sct->add_callback(this, EV_sendRL,    &CFollower::Callback_SendRL,    NULL, NULL);
+    sct->add_callback(this, EV_sendRC,    &CFollower::Callback_SendRC,    NULL, NULL);
     sct->add_callback(this, EV_sendA,     &CFollower::Callback_SendA,     NULL, NULL);
     
     /* Register uncontrollable events */
-    // sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
-    // sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
-    // sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
-    // sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
     sct->add_callback(this, EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
     sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
     sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
     sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
     sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
     sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+    sct->add_callback(this, EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
+    sct->add_callback(this, EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
+    sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
+    sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
+    sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
+    sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
     sct->add_callback(this, EV_receiveA,  NULL, &CFollower::Check_ReceiveA,  NULL);
     sct->add_callback(this, EV_receiveNA, NULL, &CFollower::Check_ReceiveNA, NULL);
+    sct->add_callback(this, EV_receiveR,  NULL, &CFollower::Check_ReceiveR,  NULL);
 
     /*
     * Init PID Controller
@@ -1207,8 +1211,8 @@ void CFollower::Callback_SetC(void* data) {
     teamID = 255;
 }
 
-void CFollower::Callback_SendR(void* data) {
-    std::cout << "Action: sendR" <<std::endl;
+void CFollower::Callback_SendRL(void* data) {
+    std::cout << "Action: sendRL" <<std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1217,6 +1221,10 @@ void CFollower::Callback_SendR(void* data) {
     cmsg.from = this->GetId();
     cmsgToSend.push_back(cmsg);
 
+}
+
+void CFollower::Callback_SendRC(void* data) {
+    std::cout << "Action: sendRC" <<std::endl;
 }
 
 void CFollower::Callback_SendA(void* data) {
@@ -1282,22 +1290,6 @@ void CFollower::Callback_SendA(void* data) {
 //     return 0;
 // }
 
-// unsigned char CFollower::Check_CondF1(void* data) {
-
-// }
-
-// unsigned char CFollower::Check_NotCondF1(void* data) {
-
-// }
-
-// unsigned char CFollower::Check_CondF2(void* data) {
-
-// }
-
-// unsigned char CFollower::Check_NotCondF2(void* data) {
-
-// }
-
 unsigned char CFollower::Check_CondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
         std::cout << "Event: " << 1 << " - condC1" << std::endl;
@@ -1348,8 +1340,36 @@ unsigned char CFollower::Check_NotCondC3(void* data) {
     return 1;
 }
 
-unsigned char CFollower::Check_ReceiveR(void* data) {
+unsigned char CFollower::Check_NearC(void* data) {
+    bool connectorSeen = !connectorMsgs.empty();
+    std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
+    return connectorSeen;
+}
 
+unsigned char CFollower::Check_NotNearC(void* data) {
+    bool connectorSeen = !connectorMsgs.empty();
+    std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
+    return !connectorSeen;
+}
+
+unsigned char CFollower::Check_CondF1(void* data) {
+    return 0;
+}
+
+unsigned char CFollower::Check_NotCondF1(void* data) {
+    return 1;
+}
+
+unsigned char CFollower::Check_CondF2(void* data) {
+    return 0;
+}
+
+unsigned char CFollower::Check_NotCondF2(void* data) {
+    return 1;
+}
+
+unsigned char CFollower::Check_ReceiveR(void* data) {
+    return 0;
 }
 
 unsigned char CFollower::Check_ReceiveA(void* data) {

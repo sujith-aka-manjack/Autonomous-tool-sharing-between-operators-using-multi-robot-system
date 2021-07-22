@@ -304,19 +304,22 @@ protected:
     virtual void Callback_MoveStop(void* data);
     virtual void Callback_SetF(void* data);
     virtual void Callback_SetC(void* data);
-    virtual void Callback_SendR(void* data);
+    virtual void Callback_SendRL(void* data);
+    virtual void Callback_SendRC(void* data);
     virtual void Callback_SendA(void* data);
 
-    // virtual unsigned char Check_CondF1(void* data);
-    // virtual unsigned char Check_NotCondF1(void* data);
-    // virtual unsigned char Check_CondF2(void* data);
-    // virtual unsigned char Check_NotCondF2(void* data);
     virtual unsigned char Check_CondC1(void* data);
     virtual unsigned char Check_NotCondC1(void* data);
     virtual unsigned char Check_CondC2(void* data);
     virtual unsigned char Check_NotCondC2(void* data);
     virtual unsigned char Check_CondC3(void* data);
     virtual unsigned char Check_NotCondC3(void* data);   
+    virtual unsigned char Check_NearC(void* data);
+    virtual unsigned char Check_NotNearC(void* data);
+    virtual unsigned char Check_CondF1(void* data);
+    virtual unsigned char Check_NotCondF1(void* data);
+    virtual unsigned char Check_CondF2(void* data);
+    virtual unsigned char Check_NotCondF2(void* data);
     virtual unsigned char Check_ReceiveR(void* data);
     virtual unsigned char Check_ReceiveA(void* data);
     virtual unsigned char Check_ReceiveNA(void* data);

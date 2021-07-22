@@ -10,8 +10,8 @@
 #include <iostream>
 
 /* Supervisor Info */
-#define NUM_EVENTS 15
-#define NUM_SUPERVISORS 6
+#define NUM_EVENTS 22
+#define NUM_SUPERVISORS 9
 
 /* Event Info */
 #define EV_moveStop 0
@@ -26,23 +26,37 @@
 
 #define EV_sendA 5
 
-#define EV_sendR 6
+#define EV_sendRL 6
 
 #define EV_receiveNA 7
 
 #define EV_receiveA 8
 
-#define EV_notCondC1 9
+#define EV_sendRC 9
 
-#define EV_condC1 10
+#define EV_notCondC1 10
 
-#define EV_notCondC2 11
+#define EV_condC1 11
 
-#define EV_condC2 12
+#define EV_notCondC2 12
 
-#define EV_notCondC3 13
+#define EV_condC2 13
 
-#define EV_condC3 14
+#define EV_notCondC3 14
+
+#define EV_condC3 15
+
+#define EV_nearC 16
+
+#define EV_notNearC 17
+
+#define EV_notCondF1 18
+
+#define EV_condF1 19
+
+#define EV_notCondF2 20
+
+#define EV_condF2 21
 
 
 /* Structure to store member functions */
@@ -133,13 +147,12 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[15] = { 1,1,1,1,0,1,1,0,0,0,0,0,0,0,0 };
-    const unsigned char     sup_events[6][15] = { { 1,1,1,1,0,0,0,0,0,0,0,0,0,0,0 },{ 1,1,1,1,1,1,1,1,1,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,1,1,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,0,0,1,1,0,0 },{ 0,0,0,0,0,1,1,0,0,0,0,0,0,1,1 },{ 0,0,1,1,1,1,1,1,1,0,0,0,0,0,0 } };
-    const unsigned long int sup_init_state[6]     = { 0,0,0,0,0,0 };
-    unsigned long int       sup_current_state[6]  = { 0,0,0,0,0,0 };    
-    const unsigned long int sup_data_pos[6] = { 0,25,168,185,202,219 };
-    const unsigned char     sup_data[ 267 ] = { 2,EV_moveFlock,0,1,EV_setC,0,2,2,EV_moveStop,0,0,EV_setC,0,3,1,EV_setF,0,0,2,EV_moveStop,0,2,EV_setF,0,1,5,EV_receiveR,0,1,EV_sendR,0,2,EV_receiveNA,0,0,EV_moveFlock,0,3,EV_receiveA,0,0,4,EV_receiveR,0,1,EV_receiveNA,0,1,EV_moveFlock,0,4,EV_receiveA,0,1,4,EV_receiveR,0,1,EV_receiveNA,0,2,EV_moveFlock,0,5,EV_receiveA,0,2,4,EV_receiveR,0,4,EV_sendR,0,5,EV_receiveNA,0,3,EV_receiveA,0,3,4,EV_receiveR,0,4,EV_receiveNA,0,4,EV_moveStop,0,6,EV_receiveA,0,4,4,EV_receiveR,0,4,EV_receiveNA,0,5,EV_moveStop,0,7,EV_receiveA,0,5,4,EV_receiveR,0,6,EV_sendA,0,8,EV_receiveNA,0,6,EV_receiveA,0,6,3,EV_receiveR,0,6,EV_receiveNA,0,9,EV_receiveA,0,8,4,EV_receiveR,0,8,EV_setC,0,10,EV_receiveNA,0,8,EV_receiveA,0,8,4,EV_receiveR,0,6,EV_receiveNA,0,9,EV_moveFlock,0,3,EV_receiveA,0,9,4,EV_receiveR,0,10,EV_receiveNA,0,10,EV_setF,0,0,EV_receiveA,0,10,2,EV_sendA,0,0,EV_condC1,0,1,3,EV_notCondC1,0,0,EV_sendA,0,1,EV_sendR,0,1,2,EV_sendA,0,0,EV_condC2,0,1,3,EV_notCondC2,0,0,EV_sendA,0,1,EV_sendR,0,1,2,EV_sendA,0,0,EV_condC3,0,1,3,EV_notCondC3,0,0,EV_sendR,0,1,EV_sendA,0,1,5,EV_receiveNA,0,0,EV_setC,0,1,EV_receiveR,0,0,EV_receiveA,0,0,EV_sendR,0,0,5,EV_receiveNA,0,1,EV_receiveR,0,2,EV_setF,0,0,EV_receiveA,0,1,EV_sendR,0,1,5,EV_receiveNA,0,2,EV_sendA,0,1,EV_receiveR,0,2,EV_receiveA,0,2,EV_sendR,0,2 };
-
+    const unsigned char     ev_controllable[22] = { 1,1,1,1,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0 };
+    const unsigned char     sup_events[9][22] = { { 1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,1,1,0,0,0,0 },{ 0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0 },{ 0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 } };
+    const unsigned long int sup_init_state[9]     = { 0,0,0,0,0,0,0,0,0 };
+    unsigned long int       sup_current_state[9]  = { 0,0,0,0,0,0,0,0,0 };    
+    const unsigned long int sup_data_pos[9] = { 0,25,159,179,199,219,239,296,321 };
+    const unsigned char     sup_data[ 346 ] = { 2,EV_moveFlock,0,1,EV_setC,0,2,2,EV_moveStop,0,0,EV_setC,0,3,1,EV_setF,0,0,2,EV_moveStop,0,2,EV_setF,0,1,7,EV_receiveR,0,0,EV_sendA,0,0,EV_sendRL,0,1,EV_receiveNA,0,0,EV_moveFlock,0,2,EV_receiveA,0,0,EV_sendRC,0,1,5,EV_receiveR,0,1,EV_sendA,0,1,EV_receiveNA,0,1,EV_moveFlock,0,3,EV_receiveA,0,1,6,EV_receiveR,0,2,EV_sendA,0,2,EV_sendRL,0,3,EV_receiveNA,0,2,EV_receiveA,0,2,EV_sendRC,0,3,5,EV_receiveR,0,3,EV_sendA,0,3,EV_receiveNA,0,3,EV_moveStop,0,4,EV_receiveA,0,3,4,EV_receiveR,0,4,EV_sendA,0,4,EV_receiveNA,0,5,EV_receiveA,0,6,5,EV_receiveR,0,5,EV_sendA,0,5,EV_receiveNA,0,5,EV_moveFlock,0,2,EV_receiveA,0,5,5,EV_receiveR,0,6,EV_sendA,0,6,EV_setC,0,7,EV_receiveNA,0,6,EV_receiveA,0,6,5,EV_receiveR,0,7,EV_sendA,0,7,EV_receiveNA,0,7,EV_receiveA,0,7,EV_setF,0,0,2,EV_condC1,0,1,EV_sendA,0,0,4,EV_notCondC1,0,0,EV_sendA,0,1,EV_sendRC,0,1,EV_sendRL,0,1,2,EV_condC2,0,1,EV_sendA,0,0,4,EV_notCondC2,0,0,EV_sendA,0,1,EV_sendRC,0,1,EV_sendRL,0,1,2,EV_sendA,0,0,EV_condC3,0,1,4,EV_sendA,0,1,EV_notCondC3,0,0,EV_sendRL,0,1,EV_sendRC,0,1,3,EV_nearC,0,1,EV_sendA,0,0,EV_sendRL,0,0,3,EV_sendA,0,1,EV_notNearC,0,0,EV_sendRC,0,1,6,EV_receiveNA,0,0,EV_receiveR,0,0,EV_setC,0,1,EV_receiveA,0,0,EV_sendRC,0,0,EV_sendRL,0,0,6,EV_receiveNA,0,1,EV_receiveR,0,2,EV_setF,0,0,EV_receiveA,0,1,EV_sendRC,0,1,EV_sendRL,0,1,6,EV_receiveNA,0,2,EV_receiveR,0,2,EV_sendA,0,1,EV_receiveA,0,2,EV_sendRC,0,2,EV_sendRL,0,2,2,EV_setC,0,1,EV_condF1,0,2,1,EV_condF1,0,3,2,EV_setC,0,3,EV_notCondF1,0,0,2,EV_notCondF1,0,1,EV_setF,0,2,2,EV_condF2,0,1,EV_setC,0,2,2,EV_notCondF2,0,0,EV_setC,0,3,1,EV_condF2,0,3,2,EV_setF,0,1,EV_notCondF2,0,2 };
 };
 
 /****************************************/
@@ -174,10 +187,10 @@ protected:
     virtual float get_active_controllable_events_prob( float *events );
 
     /* Probability info of supervisors */
-    const unsigned long int sup_data_prob_pos[6] = { 0,11,33,38,43,48 };
-    const float             sup_data_prob[ 57 ] = { 2,0.50000000,0.50000000,2,0.50000000,0.50000000,1,1,2,0.50000000,0.50000000,2,0.50000000,0.50000000,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,2,0.50000000,0.50000000,1,1,2,0.50000000,0.50000000,1,1,2,0.50000000,0.50000000,2,0.50000000,0.50000000,2,0.50000000,0.50000000,2,0.50000000,0.50000000 };
-    const unsigned long int sup_data_var_prob_pos[6] = { 0,7,18,21,24,27 };
-    const unsigned char     sup_data_var_prob[ 33 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    const unsigned long int sup_data_prob_pos[9] = { 0,11,37,43,49,55,61,73,80 };
+    const float             sup_data_prob[ 87 ] = { 2,0.50000000,0.50000000,2,0.50000000,0.50000000,1,1,2,0.50000000,0.50000000,4,0.25000000,0.25000000,0.25000000,0.25000000,2,0.50000000,0.50000000,3,0.33333333,0.33333333,0.33333333,2,0.50000000,0.50000000,1,1,2,0.50000000,0.50000000,2,0.50000000,0.50000000,2,0.50000000,0.50000000,1,1,3,0.33333333,0.33333333,0.33333333,1,1,3,0.33333333,0.33333333,0.33333333,1,1,3,0.33333333,0.33333333,0.33333333,2,0.50000000,0.50000000,2,0.50000000,0.50000000,3,0.33333333,0.33333333,0.33333333,3,0.33333333,0.33333333,0.33333333,3,0.33333333,0.33333333,0.33333333,1,1,0,1,1,1,1,1,1,1,1,0,1,1 };
+    const unsigned long int sup_data_var_prob_pos[9] = { 0,7,25,29,33,37,41,50,53 };
+    const unsigned char     sup_data_var_prob[ 56 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
     float                   current_var_prob[0] = {  };
 
 };
