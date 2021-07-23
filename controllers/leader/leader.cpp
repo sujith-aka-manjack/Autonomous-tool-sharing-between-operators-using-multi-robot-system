@@ -428,16 +428,17 @@ void CLeader::GetMessages() {
 
                 HopMsg hop;
 
+                UInt8 tmpTeamID = tMsgs[i].Data[index++];
                 hop.count = tMsgs[i].Data[index++];
 
-                std::string robotID;
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                hop.ID = robotID;
-
-                hop.teamID = tMsgs[i].Data[index++];
-
-                msg.hops[msg.teamID] = hop;
+                if(hop.count > 1) {
+                    std::string robotID;
+                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    hop.ID = robotID;
+                }
+                
+                msg.hops[tmpTeamID] = hop;
             }
             index += (2 - msg_num) * 4; // TEMP: Currently assuming only two teams
 

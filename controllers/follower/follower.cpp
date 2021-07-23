@@ -295,19 +295,6 @@ void CFollower::ControlStep() {
 
             msg_index += 4; // Skip to next part
 
-            /* Connection Message */
-            std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
-            msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
-            for(const auto& conMsg : cmsgToSend) {
-                msg[msg_index++] = (UInt8)conMsg.type;
-                msg[msg_index++] = conMsg.from[0];
-                msg[msg_index++] = stoi(conMsg.from.substr(1));
-                msg[msg_index++] = conMsg.to[0];
-                msg[msg_index++] = stoi(conMsg.to.substr(1));
-            }
-            // Skip if not all bytes are used
-            msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
-
             break;
         }
         case RobotState::CONNECTOR: {
@@ -318,10 +305,23 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            msg_index += 9; // TEMP: Skip to next part
+            // msg_index += 9; // TEMP: Skip to next part
 
-            /* Connection Message */
-            msg_index += 11; // TEMP: Skip to next part
+            std::cout << "hops.size: " << hops.size() << std::endl; // TEMP: Should always be 2 for now
+            msg[msg_index++] = hops.size(); // Set the number of hops
+
+            for(const auto& it : hops) {
+
+                msg[msg_index++] = it.first;                     // Team ID
+                msg[msg_index++] = it.second.count;              // Count
+
+                if( it.second.ID.empty() )
+                    msg_index += 2; // Skip
+                else {
+                    msg[msg_index++] = it.second.ID[0];              // ID
+                    msg[msg_index++] = stoi(it.second.ID.substr(1)); // ID
+                }
+            }
 
             break;
         }
@@ -341,6 +341,19 @@ void CFollower::ControlStep() {
     //         break;
     //     }
     // }
+
+    /* Connection Message */
+    std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+    msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
+    for(const auto& conMsg : cmsgToSend) {
+        msg[msg_index++] = (UInt8)conMsg.type;
+        msg[msg_index++] = conMsg.from[0];
+        msg[msg_index++] = stoi(conMsg.from.substr(1));
+        msg[msg_index++] = conMsg.to[0];
+        msg[msg_index++] = stoi(conMsg.to.substr(1));
+    }
+    // Skip if not all bytes are used
+    msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -407,16 +420,17 @@ void CFollower::GetMessages() {
 
                 HopMsg hop;
 
+                UInt8 tmpTeamID = tMsgs[i].Data[index++];
                 hop.count = tMsgs[i].Data[index++];
 
-                std::string robotID;
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                hop.ID = robotID;
-
-                hop.teamID = tMsgs[i].Data[index++];
-
-                msg.hops[msg.teamID] = hop;
+                if(hop.count > 1) {
+                    std::string robotID;
+                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    hop.ID = robotID;
+                }
+                
+                msg.hops[tmpTeamID] = hop;
             }
             index += (2 - msg_num) * 4; // TEMP: Currently assuming only two teams
 
@@ -631,13 +645,21 @@ void CFollower::UpdateSensors() {
 
     } else if(currentState == RobotState::CONNECTOR) {
 
-        // Update hop to teams?
+        // TODO: Check if connections with connectors are all present
+            // Extract ID in hops to a vector (no duplicate)
+            // Loop connectorMsgs
+                // Delete seen connector IDs
+            // If no duplicate vector is empty, all connections with connectors remain
+        
 
-
-        // Check all requests sent to itself and choose one to respond (if possible)
+        // TODO: Check all requests sent to itself and choose one to respond (if possible)
             // If hop count to the sender's team = 1
             // Choose follower with the smallest ID
             // Could be multiple
+
+
+
+
 
         /* Check if any request message has been received and reply if connection is available */
         // ConnectionMsg acceptTo;
@@ -1330,7 +1352,7 @@ void CFollower::Callback_SendRL(void* data) {
     ConnectionMsg cmsg;
     cmsg.type = 'R';
     cmsg.from = this->GetId();
-    cmsg.to = "L" + std::to_string(teamID);
+    cmsg.to   = "L" + std::to_string(teamID);
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
@@ -1343,7 +1365,7 @@ void CFollower::Callback_SendRC(void* data) {
     ConnectionMsg cmsg;
     cmsg.type = 'R';
     cmsg.from = this->GetId();
-    cmsg.to = connectionCandidate.ID;
+    cmsg.to   = connectionCandidate.ID;
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
@@ -1351,7 +1373,15 @@ void CFollower::Callback_SendRC(void* data) {
 
 void CFollower::Callback_SendA(void* data) {
     std::cout << "Action: sendA" <<std::endl;
+
+    ConnectionMsg cmsg;
+    cmsg.type = 'A';
+    cmsg.from = this->GetId();
+    // cmsg.to   = 
+    cmsgToSend.push_back(cmsg);
+
     // Update hop count to the team using the new connector
+
 }
 
 /****************************************/

@@ -127,7 +127,6 @@ public:
     struct HopMsg {
         UInt8 count;
         std::string ID; // Robot with lower hop value (only used by connectors)
-        UInt8 teamID;
     };
 
     /*
@@ -161,7 +160,7 @@ public:
     * 
     * - (5)-(13) Hop count
     *   Prefix with number of messages (max 2) [1]
-    *   - HopMsg (count [1], ID [2], teamID [1])
+    *   - HopMsg (teamID [1], count [1], ID [2])
     * 
     * - (14)-(24) Connection Message
     *   Prefix with number of messages (max 2) [1]
