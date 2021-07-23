@@ -694,7 +694,14 @@ void CFollower::UpdateSensors() {
             // Loop connectorMsgs
                 // Delete seen connector IDs
             // If no duplicate vector is empty, all connections with connectors remain
-               
+        
+        // DEBUG
+        std::cout << "--- HOPS ---" << std::endl;
+        for(const auto& it : hops) {
+            std::cout << "Team: " << it.first << std::endl;
+            std::cout << "Count: " << it.second.count << std::endl;
+            std::cout << "ID: " << it.second.ID << std::endl;
+        }
 
         /* Check all requests sent to itself and choose one to respond to each team */
         for(const auto& msg : otherTeamMsgs) {
@@ -1035,34 +1042,34 @@ void CFollower::Callback_SetF(void* data) {
 void CFollower::Callback_SetC(void* data) {
     std::cout << "Action: setC" <<std::endl;
     
-    /* Set hop count to the team it is leaving to 1 */
-    HopMsg hop;
-    hop.count = 1;
-    hops[teamID] = hop;
-    std::cout << "New hop team: " << teamID << ", count: " << hops[teamID].count << std::endl;
-
-    if(currentAccept.from[0] == 'L') {
+    if(currentAccept.from[0] == 'L') {  // Accept received from the leader
 
         /* Add every other visible team to hop map */
         for(const auto& msg : otherTeamMsgs) {
 
             /* Add hop count entry if not yet registered */
             if(hops.find(msg.teamID) == hops.end()) {
+                HopMsg hop;
+                hop.count = 1;
                 hops[msg.teamID] = hop;
-                std::cout << "New hop team: " << msg.teamID << ", count: " << hops[msg.teamID].count << std::endl;
             }
         }
-    } else {
+    } else {    // Accept received from a connector
+
         /* Use the connector to generate its hop count to other teams */
         hopsToUse.erase(teamID);            // Delete entry of its own team
 
         for(auto& it : hopsToUse) {         // Loop to add hop count of 1 to each item
             it.second.count++;
             it.second.ID = currentAccept.from;
-            std::cout << "Team: " << it.first << " ID: " << it.second.ID << " count: " << it.second.count << std::endl;
         }
         hops = hopsToUse;                   // Set to its hops
     }
+
+    /* Set hop count to the team it is leaving to 1 */
+    HopMsg hop;
+    hop.count = 1;
+    hops[teamID] = hop;
 
     // Reset
     currentAccept = ConnectionMsg(); 
