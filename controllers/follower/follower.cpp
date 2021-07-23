@@ -239,8 +239,11 @@ void CFollower::ControlStep() {
 
     /* Reset sensor reading results */
     condC2 = true;
-    receiveA = false;
+    receiveR  = false;
+    receiveA  = false;
     receiveNA = false;
+
+    robotsToAccept.clear();
 
     /*----------------------*/
     /* Receive new messages */
@@ -283,15 +286,14 @@ void CFollower::ControlStep() {
             /* Relay leader signal */
             msg[msg_index++] = leaderSignal;
 
+            /* Hop count */
             /* Set its hop count to the leader */
             std::cout << "HOP = " << hopCountToLeader << std::endl;
-
-            /* Hop count */
             msg[msg_index++] = 1; // Number of HopMsg
 
+            msg[msg_index++] = teamID;
             msg[msg_index++] = hopCountToLeader;
             msg_index += 2; // Skip ID
-            msg[msg_index++] = teamID;
 
             msg_index += 4; // Skip to next part
 
@@ -305,8 +307,6 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            // msg_index += 9; // TEMP: Skip to next part
-
             std::cout << "hops.size: " << hops.size() << std::endl; // TEMP: Should always be 2 for now
             msg[msg_index++] = hops.size(); // Set the number of hops
 
@@ -428,7 +428,8 @@ void CFollower::GetMessages() {
                     robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                     robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                     hop.ID = robotID;
-                }
+                } else
+                    index += 2;
                 
                 msg.hops[tmpTeamID] = hop;
             }
@@ -617,9 +618,10 @@ void CFollower::UpdateSensors() {
             } 
             /* Request sent to connector */
             else {
-
                 for(const auto& msg : connectorMsgs) {
+
                     for(const auto& cmsg : msg.cmsg) {
+
                         if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
 
                             /* Check the connector matches its original request */
@@ -650,15 +652,33 @@ void CFollower::UpdateSensors() {
             // Loop connectorMsgs
                 // Delete seen connector IDs
             // If no duplicate vector is empty, all connections with connectors remain
-        
+               
 
-        // TODO: Check all requests sent to itself and choose one to respond (if possible)
-            // If hop count to the sender's team = 1
-            // Choose follower with the smallest ID
-            // Could be multiple
+        /* Check all requests sent to itself and choose one to respond to each team */
+        for(const auto& msg : otherTeamMsgs) {
+            for(const auto& cmsg : msg.cmsg) {
+                if(cmsg.to == this->GetId() && cmsg.type == 'R') {
 
+                    receiveR = true;
 
+                    if(hops[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
 
+                        /* Accept first request seen for a team */
+                        if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
+                            robotsToAccept[msg.teamID] = cmsg.from;
+                            continue;
+                        }
+
+                        UInt8 currentFID = stoi(robotsToAccept[msg.teamID].substr(1));
+                        UInt8 newFID = stoi(cmsg.from.substr(1));
+
+                        /* Send an accept message to the follower with the smallest ID */
+                        if(newFID < currentFID)
+                            robotsToAccept[msg.teamID] = cmsg.from;
+                    }
+                }
+            }
+        }
 
 
         /* Check if any request message has been received and reply if connection is available */
@@ -1374,14 +1394,17 @@ void CFollower::Callback_SendRC(void* data) {
 void CFollower::Callback_SendA(void* data) {
     std::cout << "Action: sendA" <<std::endl;
 
-    ConnectionMsg cmsg;
-    cmsg.type = 'A';
-    cmsg.from = this->GetId();
-    // cmsg.to   = 
-    cmsgToSend.push_back(cmsg);
+    for(const auto& it : robotsToAccept) {
+        ConnectionMsg cmsg;
+        cmsg.type = 'A';
+        cmsg.from = this->GetId();
+        cmsg.to   = it.second;
+        cmsgToSend.push_back(cmsg);
 
-    // Update hop count to the team using the new connector
-
+        /* Update hop count to the team using the new connector */
+        hops[it.first].count++; // 1 -> 2
+        hops[it.first].ID = it.second;
+    }
 }
 
 /****************************************/
@@ -1486,8 +1509,8 @@ unsigned char CFollower::Check_NotCondF2(void* data) {
 }
 
 unsigned char CFollower::Check_ReceiveR(void* data) {
-    // If size of request messages not empty, return 1
-    return 0;
+    std::cout << "Event: " << receiveR << " - receiveR" << std::endl;
+    return receiveR;
 }
 
 unsigned char CFollower::Check_ReceiveA(void* data) {

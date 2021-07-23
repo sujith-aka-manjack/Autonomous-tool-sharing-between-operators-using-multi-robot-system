@@ -298,9 +298,9 @@ void CLeader::ControlStep() {
     /* Hop count */
     msg[msg_index++] = 1; // Number of HopMsg
 
+    msg[msg_index++] = teamID;
     msg[msg_index++] = 0; // Hop count
     msg_index += 2; // Skip ID
-    msg[msg_index++] = teamID;
 
     msg_index += 4; // Skip to next part
 
@@ -436,7 +436,8 @@ void CLeader::GetMessages() {
                     robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                     robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                     hop.ID = robotID;
-                }
+                } else
+                    index += 2;
                 
                 msg.hops[tmpTeamID] = hop;
             }

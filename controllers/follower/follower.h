@@ -369,21 +369,23 @@ private:
     std::vector<Message> otherTeamMsgs;
 
     /* The number of hops from the leader to itself */
-    UInt8 hopCountToLeader;  // default to 255 if unknown
+    UInt8 hopCountToLeader;  // default to 255 if unknown // (used in the FOLLOWER state)
 
-    /* The number of hops to each team (used in the CONNECTOR state)*/
+    /* The number of hops to each team (used in the CONNECTOR state) */
     std::unordered_map<UInt8, HopMsg> hops;
 
     /* Sensor reading results */
-    Message connectionCandidate;
+    Message connectionCandidate; // (used in the FOLLOWER state)
 
     bool condC2;
-    bool receiveA, receiveNA;
+    bool receiveR, receiveA, receiveNA;
 
-    ConnectionMsg currentRequest, currentAccept;
-    std::unordered_map<UInt8, HopMsg> hopsToUse;  // The hop count info of the connector this robot will connect with
+    ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
+    std::unordered_map<UInt8, HopMsg> hopsToUse;  // The hop count info of the connector this robot will connect with (used in the FOLLOWER state)
+    UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
 
-    UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task
+    std::unordered_map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
+
     std::vector<ConnectionMsg> cmsgToSend;
 
     /* Flag to indicate whether this robot is working on a task */
