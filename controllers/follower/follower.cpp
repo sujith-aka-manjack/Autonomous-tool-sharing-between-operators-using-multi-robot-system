@@ -576,23 +576,6 @@ void CFollower::UpdateSensors() {
             }
         }
 
-        /* Check whether this robot has received an Accept message from the leader */
-        // std::vector<Message> combinedTeamMsgs(teamMsgs);
-        // if(leaderMsg.direction.Length() > 0.0f)
-        //     combinedTeamMsgs.push_back(leaderMsg);
-
-        // for(const auto& teamMsg : combinedTeamMsgs) {
-        //     for(const auto& cmsg : teamMsg.cmsg) {
-        //         if(cmsg.type == 'A'){
-        //             // if(cmsg.to == this->GetId())
-        //             //     receiveA = true;
-        //             // else
-        //             //     receiveNA = true;
-        //             acceptMsgs.push_back(cmsg);
-        //         }
-        //     }
-        // }
-
         /* Check whether it has received an accept message */
         if(currentRequest.type == 'R') {
 
@@ -631,6 +614,7 @@ void CFollower::UpdateSensors() {
                                 if(cmsg.to == this->GetId()) {    // Request approved for this follower
                                     receiveA = true;
                                     currentAccept = cmsg;
+                                    hopsToUse = msg.hops;
                                 } else                            // Request approved for another follower
                                     receiveNA = true;
 
@@ -1320,10 +1304,20 @@ void CFollower::Callback_SetC(void* data) {
             }
         }
     } else {
-        // TODO: Use the connector to generate its hop count to other teams
+        /* Use the connector to generate its hop count to other teams */
+        hopsToUse.erase(teamID);            // Delete entry of its own team
+
+        for(auto& it : hopsToUse) {         // Loop to add hop count of 1 to each item
+            it.second.count++;
+            it.second.ID = currentAccept.from;
+            std::cout << "Team: " << it.first << " ID: " << it.second.ID << " count: " << it.second.count << std::endl;
+        }
+        hops = hopsToUse;                   // Set to its hops
     }
 
-    currentAccept = ConnectionMsg(); // Reset
+    // Reset
+    currentAccept = ConnectionMsg(); 
+    hopsToUse.clear();
 
     currentState = RobotState::CONNECTOR;
     teamID = 255;

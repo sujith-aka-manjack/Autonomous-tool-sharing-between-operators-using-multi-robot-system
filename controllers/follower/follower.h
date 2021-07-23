@@ -376,13 +376,13 @@ private:
     std::unordered_map<UInt8, HopMsg> hops;
 
     /* Sensor reading results */
-    // Real minNonTeamDistance; // Distance to the closest non-team member
-    // bool isClosestToNonTeam;
-
     Message connectionCandidate;
+
     bool condC2;
     bool receiveA, receiveNA;
+
     ConnectionMsg currentRequest, currentAccept;
+    std::unordered_map<UInt8, HopMsg> hopsToUse;  // The hop count info of the connector this robot will connect with
 
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task
     std::vector<ConnectionMsg> cmsgToSend;
