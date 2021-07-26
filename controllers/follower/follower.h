@@ -269,7 +269,51 @@ protected:
     /* 
     * Update sensor readings.
     */
-    virtual void UpdateSensors();
+    virtual void Update();
+
+    /*
+    * Extract information about the leader from the team messages received.
+    */
+    virtual void GetLeaderInfo();
+
+    /*
+    * Return the closest non-team robot within its range.
+    *
+    * Connectors have higher priority than followers from another team.
+    * @return Message received from the closest robot.
+    */
+    virtual Message GetClosestNonTeam();
+
+    /*
+    * Check whether it is the closest to a robot among its neighboring
+    * team members that have observed that robot.
+    * 
+    * @param msg Message of the robot to check the distance with other team members.
+    * @return boolean
+    */
+    virtual bool IsClosestToRobot(Message msg);
+
+    /*
+    * Check whether it has received an accept message.
+    */
+    virtual void CheckAccept();
+
+    /*
+    * Find the messages that needs to be relayed within the team.
+    */
+    // virtual void GetMessageToRelay();
+
+    /*
+    * Check whether it has received any request messages and decide which to accept.
+    *
+    * Check all requests sent to itself and choose one to respond for each team.
+    */
+    virtual void CheckRequests();
+
+    /*
+    * Move wheels according to flocking vector
+    */
+    virtual void Flock();
 
     /* 
     * Get a flocking vector between itself and team members with the smallest hop count.
@@ -285,11 +329,6 @@ protected:
     * Get a repulsion vector from obstacles.
     */
     virtual CVector2 GetObstacleRepulsionVector();
-
-    /*
-    * Move wheels according to flocking vector
-    */
-    virtual void Flock();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.

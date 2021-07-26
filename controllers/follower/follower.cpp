@@ -212,6 +212,28 @@ void CFollower::Reset() {
 /****************************************/
 /****************************************/
 
+UInt8 CFollower::GetTeamID() {
+    return teamID;
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::SetTeamID(const UInt8 id) {
+    teamID = id;
+    currentState = RobotState::FOLLOWER;
+}
+
+/****************************************/
+/****************************************/
+
+bool CFollower::IsWorking() {
+    return performingTask;
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::ControlStep() {
 
     std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
@@ -252,7 +274,7 @@ void CFollower::ControlStep() {
     /*------------------------*/
     /* Update sensor readings */
     /*------------------------*/
-    UpdateSensors();
+    Update();
 
     // /*--------------------*/
     // /* Run SCT controller */
@@ -504,7 +526,7 @@ void CFollower::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CFollower::UpdateSensors() {
+void CFollower::Update() {
 
     std::cout << "leaderMsg = " << (leaderMsg.direction.Length() > 0.0f) << std::endl;
     std::cout << "teamMsg = " << teamMsgs.size() << std::endl;
@@ -514,134 +536,21 @@ void CFollower::UpdateSensors() {
 
     if(currentState == RobotState::FOLLOWER) {
 
-        /* Find the hop count to and signal from the leader */
-        if(leaderMsg.direction.Length() > 0.0f) { // Leader is in range
+        GetLeaderInfo();
+    
+        connectionCandidate = GetClosestNonTeam();
 
-            hopCountToLeader = 1;
-            leaderSignal = leaderMsg.leaderSignal;
-
-        } else { // Leader is not in range. Relay leader signal
-
-            UInt8 minCount = 255;
-
-            /* Find the smallest hop count among team members */
-            for(size_t i = 0; i < teamMsgs.size(); i++) {
-                if(teamMsgs[i].hops[teamID].count < minCount) 
-                    minCount = teamMsgs[i].hops[teamID].count;
-            }
-
-            /* Record its own hop count */
-            if(minCount < 255)
-                hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
-
-            for(size_t i = 0; i < teamMsgs.size(); i++) {
-                if(teamMsgs[i].hops[0].count < hopCountToLeader) { // Follower will only have one HopMsg so read the first item
-                    leaderSignal = teamMsgs[i].leaderSignal;
-                    break;
-                }
-            }
-        }
-
-        /* Check for the robot that this robot can connect */
-        Real minDist = 255;
-        std::vector<Message> candidateMsgs;
-
-        /* Prioritize connectors over other team members */
-        if( !connectorMsgs.empty() ) {
-            candidateMsgs = connectorMsgs;            
-        } else {
-            candidateMsgs = otherLeaderMsgs;
-            candidateMsgs.insert(std::end(candidateMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
-        }
-
-        /* Find the closest non team robot */
-        for(size_t i = 0; i < candidateMsgs.size(); i++) {
-            Real dist = candidateMsgs[i].direction.Length();
-            if(dist < minDist) {
-                minDist = dist;
-                connectionCandidate = candidateMsgs[i];
-            }
-        }
-
-        if(minDist < 255)
-            std::cout << "Dist to candidate: " << minDist << std::endl;
-
-        /* Check whether it is the closest to the candidate among other followers in the team that sees it (condC2) */
-        for(size_t i = 0; i < teamMsgs.size(); i++) {
-
-            std::vector<std::string> connections = teamMsgs[i].connections;
-
-            // std::cout << teamMsgs[i].ID << ": ";
-            // for(size_t j = 0; j < teamMsgs[i].connections.size(); j++)
-            //     std::cout << teamMsgs[i].connections[j] << ", ";
-            // std::cout << std::endl;
-
-            // Check if the team robot has seen the non-team robot 
-            if (std::find(connections.begin(), connections.end(), connectionCandidate.ID) != connections.end()) {
-
-                /* Check the distance between its candidate and nearby team robots */
-                CVector2 diff = connectionCandidate.direction - teamMsgs[i].direction;
-                Real dist = diff.Length();
-
-                if(dist < minDist) {
-                    condC2 = false;  // Not the closest to the candidate robot
-                    break;
-                }
-            }
-        }
+        if(connectionCandidate.direction.Length() > 0.0f)
+            condC2 = IsClosestToRobot(connectionCandidate);
 
         /* Check whether it has received an accept message */
-        if(currentRequest.type == 'R') {
-
-            /* Request sent to leader */
-            if(currentRequest.to[0] == 'L') {
-
-                std::vector<Message> combinedTeamMsgs(teamMsgs);
-                if(leaderMsg.direction.Length() > 0.0f)
-                    combinedTeamMsgs.push_back(leaderMsg);
-
-                for(const auto& teamMsg : combinedTeamMsgs) {
-                    for(const auto& cmsg : teamMsg.cmsg) {
-                        if(cmsg.type == 'A'){
-
-                            if(cmsg.to == this->GetId()) {    // Request approved for this follower
-                                receiveA = true;
-                                currentAccept = cmsg;
-                            } else                            // Request approved for another follower
-                                receiveNA = true;
-
-                            currentRequest = ConnectionMsg(); // Clear current request
-                        }
-                    }
-                }
-            } 
-            /* Request sent to connector */
-            else {
-                for(const auto& msg : connectorMsgs) {
-                    for(const auto& cmsg : msg.cmsg) {
-                        if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
-
-                            /* Check the connector matches its original request and is directed to its current team */
-                            if(cmsg.from == currentRequest.to && cmsg.toTeam == teamID) {
-
-                                if(cmsg.to == this->GetId()) {    // Request approved for this follower
-                                    receiveA = true;
-                                    currentAccept = cmsg;
-                                    hopsToUse = msg.hops;
-                                } else                            // Request approved for another follower
-                                    receiveNA = true;
-
-                                currentRequest = ConnectionMsg(); // Clear current request
-                            }
-                        }
-                    }
-                }
-            }
-
+        if(currentRequest.type == 'R')
+            CheckAccept();
+            
             // Remember currently sending request? (with timesteps to continue sending?)
 
-        }
         
+
         /* Relay message */
 
         // TODO: 
@@ -702,32 +611,215 @@ void CFollower::UpdateSensors() {
             std::cout << "ID: " << it.second.ID << std::endl;
         }
 
-        /* Check all requests sent to itself and choose one to respond to each team */
-        for(const auto& msg : otherTeamMsgs) {
+        CheckRequests();
+
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::GetLeaderInfo() {
+
+    /* Find the hop count to and signal from the leader */
+    if(leaderMsg.direction.Length() > 0.0f) { // Leader is in range
+
+        hopCountToLeader = 1;
+        leaderSignal = leaderMsg.leaderSignal;
+
+    } else { // Leader is not in range. Relay leader signal
+
+        UInt8 minCount = 255;
+
+        /* Find the smallest hop count among team members */
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hops[teamID].count < minCount) 
+                minCount = teamMsgs[i].hops[teamID].count;
+        }
+
+        /* Record its own hop count */
+        if(minCount < 255)
+            hopCountToLeader = minCount + 1; // Set its count to +1 the smallest value
+
+        for(size_t i = 0; i < teamMsgs.size(); i++) {
+            if(teamMsgs[i].hops[0].count < hopCountToLeader) { // Follower will only have one HopMsg so read the first item
+                leaderSignal = teamMsgs[i].leaderSignal;
+                break;
+            }
+        }
+    }
+}
+
+/****************************************/
+/****************************************/
+
+CFollower::Message CFollower::GetClosestNonTeam() {
+    
+    /* Check for the robot that this robot can connect */
+    Real minDist = 255;
+    std::vector<Message> candidateMsgs;
+    Message closestRobot;
+
+    /* Prioritize connectors over other team members */
+    if( !connectorMsgs.empty() ) {
+        candidateMsgs = connectorMsgs;            
+    } else {
+        candidateMsgs = otherLeaderMsgs;
+        candidateMsgs.insert(std::end(candidateMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    }
+
+    /* Find the closest non team robot */
+    for(size_t i = 0; i < candidateMsgs.size(); i++) {
+        Real dist = candidateMsgs[i].direction.Length();
+        if(dist < minDist) {
+            minDist = dist;
+            closestRobot = candidateMsgs[i];
+        }
+    }
+
+    if(minDist < 255)
+        std::cout << "Dist to candidate: " << minDist << std::endl;
+    
+    return closestRobot;
+}
+
+/****************************************/
+/****************************************/
+
+bool CFollower::IsClosestToRobot(Message msg) {
+    
+    Real myDist = msg.direction.Length();
+
+    /* Check whether it is the closest to the candidate among other followers in the team that sees it (condC2) */
+    for(size_t i = 0; i < teamMsgs.size(); i++) {
+
+        std::vector<std::string> connections = teamMsgs[i].connections;
+
+        // std::cout << teamMsgs[i].ID << ": ";
+        // for(size_t j = 0; j < teamMsgs[i].connections.size(); j++)
+        //     std::cout << teamMsgs[i].connections[j] << ", ";
+        // std::cout << std::endl;
+
+        // Check if the team robot has seen the non-team robot 
+        if (std::find(connections.begin(), connections.end(), msg.ID) != connections.end()) {
+
+            /* Check the distance between its candidate and nearby team robots */
+            CVector2 diff = msg.direction - teamMsgs[i].direction;
+            Real dist = diff.Length();
+
+            if(dist < myDist)
+                return false;  // Not the closest to the candidate robot
+        }
+    }
+    return true;
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::CheckAccept() {
+
+    /* Request sent to leader */
+    if(currentRequest.to[0] == 'L') {
+
+        std::vector<Message> combinedTeamMsgs(teamMsgs);
+        if(leaderMsg.direction.Length() > 0.0f)
+            combinedTeamMsgs.push_back(leaderMsg);
+
+        for(const auto& teamMsg : combinedTeamMsgs) {
+            for(const auto& cmsg : teamMsg.cmsg) {
+                if(cmsg.type == 'A'){
+
+                    if(cmsg.to == this->GetId()) {    // Request approved for this follower
+                        receiveA = true;
+                        currentAccept = cmsg;
+                    } else                            // Request approved for another follower
+                        receiveNA = true;
+
+                    currentRequest = ConnectionMsg(); // Clear current request
+                }
+            }
+        }
+    } 
+    /* Request sent to connector */
+    else {
+        for(const auto& msg : connectorMsgs) {
             for(const auto& cmsg : msg.cmsg) {
-                if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+                if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
 
-                    receiveR = true;
+                    /* Check the connector matches its original request and is directed to its current team */
+                    if(cmsg.from == currentRequest.to && cmsg.toTeam == teamID) {
 
-                    if(hops[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
+                        if(cmsg.to == this->GetId()) {    // Request approved for this follower
+                            receiveA = true;
+                            currentAccept = cmsg;
+                            hopsToUse = msg.hops;
+                        } else                            // Request approved for another follower
+                            receiveNA = true;
 
-                        /* Accept first request seen for a team */
-                        if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
-                            robotsToAccept[msg.teamID] = cmsg.from;
-                            continue;
-                        }
-
-                        UInt8 currentFID = stoi(robotsToAccept[msg.teamID].substr(1));
-                        UInt8 newFID = stoi(cmsg.from.substr(1));
-
-                        /* Send an accept message to the follower with the smallest ID */
-                        if(newFID < currentFID)
-                            robotsToAccept[msg.teamID] = cmsg.from;
+                        currentRequest = ConnectionMsg(); // Clear current request
                     }
                 }
             }
         }
     }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::CheckRequests() {
+
+    /* Check all requests sent to itself and choose one to respond to each team */
+    for(const auto& msg : otherTeamMsgs) {
+        for(const auto& cmsg : msg.cmsg) {
+            if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+
+                receiveR = true;
+
+                if(hops[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
+
+                    /* Accept first request seen for a team */
+                    if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
+                        robotsToAccept[msg.teamID] = cmsg.from;
+                        continue;
+                    }
+
+                    UInt8 currentFID = stoi(robotsToAccept[msg.teamID].substr(1));
+                    UInt8 newFID = stoi(cmsg.from.substr(1));
+
+                    /* Send an accept message to the follower with the smallest ID */
+                    if(newFID < currentFID)
+                        robotsToAccept[msg.teamID] = cmsg.from;
+                }
+            }
+        }
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::Flock() {
+    /* Calculate overall force applied to the robot */
+    CVector2 teamForce     = GetTeamFlockingVector();
+    CVector2 robotForce    = GetRobotRepulsionVector();
+    CVector2 obstacleForce = GetObstacleRepulsionVector();
+    CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
+
+    /* DEBUGGING */
+    if(this->GetId() == "F1") {
+        std::cout << "team: " << teamForce.Length() << std::endl;
+        std::cout << "robot: " << robotForce.Length() << std::endl;
+        std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
+        std::cout << "sum: " << sumForce.Length() << std::endl;
+    }
+
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 1.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 }
 
 /****************************************/
@@ -852,31 +944,6 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 /****************************************/
 /****************************************/
 
-void CFollower::Flock() {
-    /* Calculate overall force applied to the robot */
-    CVector2 teamForce     = GetTeamFlockingVector();
-    CVector2 robotForce    = GetRobotRepulsionVector();
-    CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
-
-    /* DEBUGGING */
-    if(this->GetId() == "F1") {
-        std::cout << "team: " << teamForce.Length() << std::endl;
-        std::cout << "robot: " << robotForce.Length() << std::endl;
-        std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
-        std::cout << "sum: " << sumForce.Length() << std::endl;
-    }
-
-    /* Set Wheel Speed */
-    if(sumForce.Length() > 1.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-}
-
-/****************************************/
-/****************************************/
-
 void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Get the heading angle */
     CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
@@ -950,28 +1017,6 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 
 void CFollower::PrintName() {
     std::cout << "[" << this->GetId() << "] ";
-}
-
-/****************************************/
-/****************************************/
-
-UInt8 CFollower::GetTeamID() {
-    return teamID;
-}
-
-/****************************************/
-/****************************************/
-
-void CFollower::SetTeamID(const UInt8 id) {
-    teamID = id;
-    currentState = RobotState::FOLLOWER;
-}
-
-/****************************************/
-/****************************************/
-
-bool CFollower::IsWorking() {
-    return performingTask;
 }
 
 /****************************************/
