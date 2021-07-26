@@ -110,6 +110,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                     m_cWaypointPos.push_back(coord);
                     waypoints.push(coord);
                 }
+
                 /* Get the newly created leader */
                 std::ostringstream cEPId;
                 cEPId.str("");
@@ -149,6 +150,33 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
                     else if(str_type == "follower")
                         unNextRobotId++;
                 }
+
+                /* Get the waypoints node */
+                std::queue<CVector2> waypoints; // Queue to provide to the robot
+                TConfigurationNode& ew_tree = GetNode(tDistr, "waypoints");
+                /* Go through the nodes (waypoints) */
+                TConfigurationNodeIterator itWaypt;
+                for(itWaypt = itWaypt.begin(&ew_tree);
+                    itWaypt != itWaypt.end();
+                    ++itWaypt) {
+
+                    /* Get current node (waypoint) */
+                    TConfigurationNode& tWaypt = *itWaypt;
+                    /* Coordinate of waypoint */
+                    CVector2 coord;
+                    GetNodeAttribute(tWaypt, "coord", coord);
+                    m_cWaypointPos.push_back(coord);
+                    waypoints.push(coord);
+                }
+
+                /* Get the newly created leader */
+                std::ostringstream cEPId;
+                cEPId.str("");
+                cEPId << "L" << unNextLeaderId;
+                CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+                /* Set list of waypoints to leader */
+                cController.SetWaypoints(waypoints);
 
                 /* Update robot count */
                 unNextLeaderId += unLeaders;
