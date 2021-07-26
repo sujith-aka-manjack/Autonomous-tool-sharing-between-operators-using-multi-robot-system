@@ -207,44 +207,53 @@ void CManualControlQTUserFunctions::DrawInWorld() {
    */
 
    /* Get all the circle tasks */
-   CSpace::TMapPerType& m_cCircleTasks = CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+   // CSpace::TMapPerType& m_cCircleTasks = CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
    
-   for(CSpace::TMapPerType::iterator it = m_cCircleTasks.begin();
-       it != m_cCircleTasks.end();
+   CSpace::TMapPerType* m_cCircleTasks;
+   try {
+      m_cCircleTasks = &CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+   } catch(CARGoSException& ex) {
+      std::cout << "No circle task found in argos file (DrawInWorld)" << std::endl;
+   }
+
+   if( !m_cCircleTasks->empty() ) {
+      for(CSpace::TMapPerType::iterator it = m_cCircleTasks->begin();
+       it != m_cCircleTasks->end();
        ++it) {
 
-      /* Get handle to the circle task entity */
-      CCircleTaskEntity& cCircleTask = *any_cast<CCircleTaskEntity*>(it->second);
+         /* Get handle to the circle task entity */
+         CCircleTaskEntity& cCircleTask = *any_cast<CCircleTaskEntity*>(it->second);
 
-      /* Draw circle task */
-      CVector2 pos = cCircleTask.GetPosition();
-      UInt32 demand = cCircleTask.GetDemand();
-      if(demand > 0) {
-         DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
-                    CQuaternion(),
-                    cCircleTask.GetRadius(),
-                    CColor(255U, 128U, 128U, 255U),
-                    true,
-                    40U);
-      } else {
-         DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
-                    CQuaternion(),
-                    cCircleTask.GetRadius(),
-                    CColor(128U, 255U, 128U, 255U),
-                    true,
-                    40U);
+         /* Draw circle task */
+         CVector2 pos = cCircleTask.GetPosition();
+         UInt32 demand = cCircleTask.GetDemand();
+         if(demand > 0) {
+            DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                     CQuaternion(),
+                     cCircleTask.GetRadius(),
+                     CColor(255U, 128U, 128U, 255U),
+                     true,
+                     40U);
+         } else {
+            DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                     CQuaternion(),
+                     cCircleTask.GetRadius(),
+                     CColor(128U, 255U, 128U, 255U),
+                     true,
+                     40U);
+         }
+         
+         /* Draw task info */
+         std::ostringstream cText;
+         cText.str("");
+         // cText << ceil(cCircleTask.GetDemand() / 10);
+         cText << cCircleTask.GetDemand();
+         QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
+         DrawText(CVector3(pos.GetX(), pos.GetY()+cCircleTask.GetRadius()/2, 0.01),
+                  cText.str(),
+                  CColor::BLACK,
+                  taskFont);
       }
-      
-      /* Draw task info */
-      std::ostringstream cText;
-      cText.str("");
-      // cText << ceil(cCircleTask.GetDemand() / 10);
-      cText << cCircleTask.GetDemand();
-      QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
-      DrawText(CVector3(pos.GetX(), pos.GetY()+cCircleTask.GetRadius()/2, 0.01),
-               cText.str(),
-               CColor::BLACK,
-               taskFont);
    }
 }
 

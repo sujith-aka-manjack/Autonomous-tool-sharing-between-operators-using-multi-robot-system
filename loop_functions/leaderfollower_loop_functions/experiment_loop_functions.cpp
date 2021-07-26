@@ -259,14 +259,25 @@ void CExperimentLoopFunctions::PreStep() {
     std::unordered_map<std::string,UInt32> taskWithRobot; // Store the number of e-pucks that have worked on each task in the previous timestep
 
     /* Add existing task id to the map */
-    CSpace::TMapPerType& m_cCTasks = GetSpace().GetEntitiesByType("circle_task");
-    for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
-        itTask != m_cCTasks.end();
-        ++itTask) {
-        
-        /* Initialize each task with zero e-pucks working on it */
-        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-        taskWithRobot[cCTask.GetId()] = 0;
+    CSpace::TMapPerType* m_cCTasks;
+    bool taskExists;
+    try {
+        m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
+        taskExists = true;
+    } catch(CARGoSException& ex) {
+        std::cout << "No circle task found in argos file (PreStep)" << std::endl;
+        taskExists = false;
+    }
+
+    if(taskExists) {
+        for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+            itTask != m_cCTasks->end();
+            ++itTask) {
+            
+            /* Initialize each task with zero e-pucks working on it */
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            taskWithRobot[cCTask.GetId()] = 0;
+        }
     }
 
     /* Loop leaders */
@@ -286,18 +297,22 @@ void CExperimentLoopFunctions::PreStep() {
 
         /* Give the leader its next task info if it is within the task range */
         CVector2 nextTaskPos = cController.GetNextWaypoint();
-        for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
-            itTask != m_cCTasks.end();
-            ++itTask) {
+        
+        if(taskExists) {
 
-            /* Task location */
-            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-            CVector2 cTaskPos = cCTask.GetPosition();
+            for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+                itTask != m_cCTasks->end();
+                ++itTask) {
 
-            /* If there is a task with the given task position AND leader is within the task range, return task demand */
-            if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                cController.SetTaskDemand(cCTask.GetDemand());
-                break;
+                /* Task location */
+                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                CVector2 cTaskPos = cCTask.GetPosition();
+
+                /* If there is a task with the given task position AND leader is within the task range, return task demand */
+                if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                    cController.SetTaskDemand(cCTask.GetDemand());
+                    break;
+                }
             }
         }
     }
@@ -334,22 +349,25 @@ void CExperimentLoopFunctions::PreStep() {
                 cLeaderId << "L" << unTeamId;
                 CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
 
-                for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
-                    itTask != m_cCTasks.end();
-                    ++itTask) {
+                if(taskExists) {
 
-                    /* Task location */
-                    CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                    CVector2 cTaskPos = cCTask.GetPosition();
+                    for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+                        itTask != m_cCTasks->end();
+                        ++itTask) {
 
-                    /* Check if robot is working on a task */
-                    if(cController.IsWorking()) {
-                        /* Check e-puck and its leader is within the range of a task */
-                        if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                        (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                            
-                            taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
-                            break;
+                        /* Task location */
+                        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                        CVector2 cTaskPos = cCTask.GetPosition();
+
+                        /* Check if robot is working on a task */
+                        if(cController.IsWorking()) {
+                            /* Check e-puck and its leader is within the range of a task */
+                            if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                            (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                                
+                                taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                                break;
+                            }
                         }
                     }
                 }
@@ -367,23 +385,26 @@ void CExperimentLoopFunctions::PreStep() {
     }
 
     /* Update task demands */
-    for(CSpace::TMapPerType::iterator itTask = m_cCTasks.begin();
-        itTask != m_cCTasks.end();
-        ++itTask) {
+    if(taskExists) {
 
-        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-        UInt32 currentDemand = cCTask.GetDemand();
+        for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+            itTask != m_cCTasks->end();
+            ++itTask) {
 
-        /* Check if there is enough robots working on the task */
-        if(taskWithRobot[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
-            if(currentDemand < taskWithRobot[cCTask.GetId()]) {
-                cCTask.SetDemand(0);
-            } else {
-                cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            UInt32 currentDemand = cCTask.GetDemand();
+
+            /* Check if there is enough robots working on the task */
+            if(taskWithRobot[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
+                if(currentDemand < taskWithRobot[cCTask.GetId()]) {
+                    cCTask.SetDemand(0);
+                } else {
+                    cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+                }
             }
-        }
 
-        // TODO: Record task demand
+            // TODO: Record task demand
+        }
     }
 
     /* Output stuff to file */
