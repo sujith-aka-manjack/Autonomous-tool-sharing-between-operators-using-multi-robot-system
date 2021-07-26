@@ -556,10 +556,8 @@ void CFollower::Update() {
             
             // Remember currently sending request? (with timesteps to continue sending?)
 
-        
-        GetUpdatesToRelay();
-        
-        
+        GetCMsgsToRelay();
+        GetUMsgsToRelay();
         
     } else if(currentState == RobotState::CONNECTOR) {
 
@@ -766,17 +764,60 @@ void CFollower::CheckRequests() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetUpdatesToRelay() {
-    /* Relay message */
+void CFollower::GetCMsgsToRelay() {
 
-        // TODO: 
+    // TODO:
 
-        // // Identify ConnectionMsg to relay
-        //     // Loop teamMsgs
-        //         // If message is accept and hop count is smaller, choose that
-        //             // break
-        //         // If message is request and hop count is larger, choose that
-        //         // If message is update and hop count is larger, choose that
+        // Relay Request messge received from robots with greater hop count
+        // Relat Accept message received from robots with smaller hop count
+
+        // Only relay Request message if itself is not currently requesting
+
+        // Loop teamMsgs + leaderMsg
+            // Loop cmsg (max 2)
+                // If request message received and hop is greater
+                    // If currently not requesting
+                        // Add that cmsg to cmsgToSend
+                // If accept message received and hop is smaller
+                    // Add that cmsg to cmsgToSend
+
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::GetUMsgsToRelay() {
+
+    // TODO: 
+
+        // Add new class variable closestToTeam (closest connector to the team)
+
+        // Relay 1 upstream update message
+        // Relay 1 downstream update message
+
+        // Loop through teamMsgs + leaderMsg to organize all usmg into upstream and downstream
+            // Filter according to hop count
+                // If to leader and hop count is greater -> upstream
+                // If to follower and hop count is smaller -> downstream
+
+        // UPSTREAM
+        // If connector with hop count = 1 found
+            // Send found connector
+        // Else
+            // Loop upstream
+                // Find value that's different from known connector.
+                // If only same info, send the same connector.
+                // If no upstream exists, send nothing
+        
+        // DOWNSTREAM
+        // Loop downstream
+            // Relay first seen usmg from leader O(1)
+            // If no downstream exists, send nothing
+
+
+
+
+
         
         /* Identify ConnectionMsg to send/relay */
         // std::vector<Message> combinedTeamMsgs(teamMsgs);

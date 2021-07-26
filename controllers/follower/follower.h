@@ -146,12 +146,10 @@ public:
     *   2) A (Accept)  : Leader or connector sends to follower
     *   3) U (Update)  : Follower sends to leader
     * 
-    *       Structure: Type [1], sender ID [2], recipient ID [2], recipient team ID [1] (for Connector -> Follower accepts)
-    * 
-    *       Connection message priority: (HIGH) A -> R -> U (LOW)
+    *       Structure: Type [1], sender ID [2], recipient ID [2], recipient team ID [1] (for Connector -> Follower accepts) 
     */
     struct ConnectionMsg {
-        char type = 'N'; // R or A or U or N (none)
+        char type = 'N'; // R or A or N (none)
         std::string from;
         std::string to;
         UInt8 toTeam;
@@ -317,9 +315,14 @@ protected:
     virtual void CheckAccept();
 
     /*
-    * Find the closest connector info that needs to be relayed within the team.
+    * Relay Request and Accept messages.
     */
-    virtual void GetUpdatesToRelay();
+    virtual void GetCMsgsToRelay();
+
+    /*
+    * Find the closest connector info that needs to be shared within the team.
+    */
+    virtual void GetUMsgsToRelay();
 
     /*
     * Check whether it has received any request messages and decide which to accept.
