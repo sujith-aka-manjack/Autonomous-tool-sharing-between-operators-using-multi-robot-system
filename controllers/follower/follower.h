@@ -142,9 +142,11 @@ public:
     /*
     * Structure to store request/approval messages for extending the chain.
     * 
-    *   1) R (Request) : Follower sends to leader or connector (Type [1], recipient ID [2], sender ID [2])
-    *   2) A (Accept)  : Leader or connector sends to follower (Type [1], recipient ID [2], sender ID [2])
-    *   3) U (Update)  : Follower sends to leader (Type [1], recipient ID [2], sender ID [2])
+    *   1) R (Request) : Follower sends to leader or connector 
+    *   2) A (Accept)  : Leader or connector sends to follower
+    *   3) U (Update)  : Follower sends to leader
+    * 
+    *       Structure: Type [1], sender ID [2], recipient ID [2], recipient team ID [1] (for Connector -> Follower accepts)
     * 
     *       Connection message priority: (HIGH) A -> R -> U (LOW)
     */
@@ -152,6 +154,7 @@ public:
         char type = 'N'; // R or A or U or N (none)
         std::string from;
         std::string to;
+        UInt8 toTeam;
     };
 
     /* 
@@ -159,7 +162,7 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(24) |       (25)-(84)       |  (85) |
+    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) |       (27)-(86)       |  (87) |
     *    -----------------------------------------------------------------------------------------------
     *    | Sender | Sender | Sender  | Leader | Hop count | Connection |      Connections      |  End  |
     *    | State  |   ID   | Team ID | Signal |           |  Message   | (2 bytes for ID x 30) | (255) |

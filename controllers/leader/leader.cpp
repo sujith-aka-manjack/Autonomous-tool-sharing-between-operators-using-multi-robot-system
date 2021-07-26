@@ -169,7 +169,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(85, 255);
+    msg = CByteArray(87, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -190,7 +190,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(85, 255);
+    msg = CByteArray(87, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -313,6 +313,7 @@ void CLeader::ControlStep() {
         msg[msg_index++] = stoi(conMsg.from.substr(1));
         msg[msg_index++] = conMsg.to[0];
         msg[msg_index++] = stoi(conMsg.to.substr(1));
+        msg[msg_index++] = conMsg.toTeam;
     }
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
@@ -456,7 +457,6 @@ void CLeader::GetMessages() {
                 conMsg.type = (char)tMsgs[i].Data[index++];
 
                 std::string robotID;
-
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
@@ -464,13 +464,14 @@ void CLeader::GetMessages() {
                 std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
-
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
                 
                 std::cout << "TO: " << conMsg.to << std::endl;
                 
+                conMsg.toTeam = tMsgs[i].Data[index++]; 
+
                 msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
@@ -511,8 +512,9 @@ void CLeader::UpdateSensors() {
 
     /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
     ConnectionMsg acceptTo;
-    acceptTo.type = 'A';
-    acceptTo.from = this->GetId();
+    acceptTo.type   = 'A';
+    acceptTo.from   = this->GetId();
+    acceptTo.toTeam = teamID;
     
     for(const auto& teamMsg : teamMsgs) {
 

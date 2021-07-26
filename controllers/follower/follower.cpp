@@ -5,7 +5,6 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include <utility/team_color.h>
 #include <algorithm>
-#include <set>
 
 /****************************************/
 /****************************************/
@@ -204,7 +203,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(85, 255);
+    msg = CByteArray(87, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -222,7 +221,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(85, 255);
+    msg = CByteArray(87, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -351,6 +350,7 @@ void CFollower::ControlStep() {
         msg[msg_index++] = stoi(conMsg.from.substr(1));
         msg[msg_index++] = conMsg.to[0];
         msg[msg_index++] = stoi(conMsg.to.substr(1));
+        msg[msg_index++] = conMsg.toTeam;
     }
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
@@ -448,7 +448,6 @@ void CFollower::GetMessages() {
                 conMsg.type = (char)tMsgs[i].Data[index++];
 
                 std::string robotID;
-
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
@@ -456,13 +455,14 @@ void CFollower::GetMessages() {
                 std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
-
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
                 
                 std::cout << "TO: " << conMsg.to << std::endl;
                 
+                conMsg.toTeam = tMsgs[i].Data[index++]; 
+
                 msg.cmsg.push_back(conMsg);
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
@@ -617,9 +617,7 @@ void CFollower::UpdateSensors() {
             /* Request sent to connector */
             else {
                 for(const auto& msg : connectorMsgs) {
-
                     for(const auto& cmsg : msg.cmsg) {
-
                         if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
 
                             /* Check the connector matches its original request */
@@ -1084,9 +1082,10 @@ void CFollower::Callback_SendRL(void* data) {
 
     /* Set request to send */
     ConnectionMsg cmsg;
-    cmsg.type = 'R';
-    cmsg.from = this->GetId();
-    cmsg.to   = "L" + std::to_string(teamID);
+    cmsg.type   = 'R';
+    cmsg.from   = this->GetId();
+    cmsg.to     = "L" + std::to_string(teamID);
+    cmsg.toTeam = teamID;
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
@@ -1097,9 +1096,10 @@ void CFollower::Callback_SendRC(void* data) {
 
     /* Set request to send */
     ConnectionMsg cmsg;
-    cmsg.type = 'R';
-    cmsg.from = this->GetId();
-    cmsg.to   = connectionCandidate.ID;
+    cmsg.type   = 'R';
+    cmsg.from   = this->GetId();
+    cmsg.to     = connectionCandidate.ID;
+    cmsg.toTeam = 255; // No team
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
@@ -1110,9 +1110,10 @@ void CFollower::Callback_SendA(void* data) {
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
-        cmsg.type = 'A';
-        cmsg.from = this->GetId();
-        cmsg.to   = it.second;
+        cmsg.type   = 'A';
+        cmsg.from   = this->GetId();
+        cmsg.to     = it.second;
+        cmsg.toTeam = it.first;
         cmsgToSend.push_back(cmsg);
 
         /* Update hop count to the team using the new connector */
