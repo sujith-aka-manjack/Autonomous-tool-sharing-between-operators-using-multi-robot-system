@@ -136,7 +136,7 @@
       <custom_team>
         <robots>
           <robot type="leader" position="0,0.95" />
-          <robot type="follower" position="0.2,0.75" />
+          <robot type="follower" position="0,0.75" />
           <robot type="follower" position="-0.2,0.75" />
         </robots>
         <!-- <waypoints>

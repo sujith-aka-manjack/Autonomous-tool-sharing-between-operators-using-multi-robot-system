@@ -620,7 +620,7 @@ void CFollower::UpdateSensors() {
                     for(const auto& cmsg : msg.cmsg) {
                         if(cmsg.type == 'A') {  // TEMP: Connector always sends accept messages
 
-                            /* Check the connector matches its original request */
+                            /* Check the connector matches its original request and is directed to its current team */
                             if(cmsg.from == currentRequest.to && cmsg.toTeam == teamID) {
 
                                 if(cmsg.to == this->GetId()) {    // Request approved for this follower
