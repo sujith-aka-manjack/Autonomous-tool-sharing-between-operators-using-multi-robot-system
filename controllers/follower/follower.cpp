@@ -330,16 +330,17 @@ void CFollower::ControlStep() {
         }
     }
 
-    // switch(currentMoveType) {
-    //     case MoveType::FLOCK: {
-    //         Flock();
-    //         break;
-    //     }
-    //     case MoveType::STOP: {
-    //         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-    //         break;
-    //     }
-    // }
+    /* Movement */
+    switch(currentMoveType) {
+        case MoveType::FLOCK: {
+            Flock();
+            break;
+        }
+        case MoveType::STOP: {
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            break;
+        }
+    }
 
     /* Connection Message */
     std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
@@ -727,41 +728,6 @@ void CFollower::UpdateSensors() {
             }
         }
     }
-
-        // Send request (in callback)
-            // Create ConnectionMsg
-            // Overwrite ConnectionMsg
-
-
-        // std::vector<Message> combinedTeamMsgs(teamMsgs);
-        // combinedTeamMsgs.push_back(leaderMsg);
-
-        // // Initialize variables with its own values
-        // myClosest.state = connectionCandidate.state;
-        // myClosest.dist = minDist;
-        // myClosest.ID = this->GetId();
-        // myClosest.timestamp = 0;
-
-        // std::cout << "closeDist " << myClosest.dist << std::endl;
-        // std::cout << "closeID " << myClosest.ID << std::endl;
-
-        // std::unordered_map<std::string, ClosestInfo> closestFollowers;
-
-        // // For each message, store info in a map using its ID as key
-        // // Overwrite if message with newer timestamp exists
-        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
-            
-        //     std::string id = combinedTeamMsgs[i].closest.ID;
-
-        //     /* Store if key does not exist OR there is a newer one*/
-        //     if(closestFollowers.find(id) == closestFollowers.end())
-        //         closestFollowers[id] = combinedTeamMsgs[i].closest;
-        //     else if(combinedTeamMsgs[i].closest.timestamp < closestFollowers[id].timestamp)
-        //         closestFollowers[id] = combinedTeamMsgs[i].closest;
-        // }
-
-        // Now iterate through the map to compare the distance
-
 }
 
 /****************************************/
@@ -902,9 +868,9 @@ void CFollower::Flock() {
     }
 
     /* Set Wheel Speed */
-    // if(sumForce.Length() > 1.0f)
-    //     SetWheelSpeedsFromVector(sumForce);
-    // else
+    if(sumForce.Length() > 1.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 }
 
