@@ -147,15 +147,22 @@ public:
         UInt8 toTeam;
     };
 
+    /* Structure to store update messages about the closest connnector to the team (with hop count = 1 to the team) */
+    struct UpdateMsg {
+        std::string from;
+        std::string to;
+        std::string connector;
+    };
+
     /* 
     * Structure to store incoming data received from other robots 
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) |       (27)-(86)       |  (87) |
-    *    -----------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |      Connections      |  End  |
-    *    | State  |   ID   | Team ID | Signal |           |  Message   | (2 bytes for ID x 30) | (255) |
+    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(39) |       (40)-(99)       | (100) |
+    *    -----------------------------------------------------------------------------------------------------------
+    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Update   |      Connections      |  End  |
+    *    | State  |   ID   | Team ID | Signal |           |  Message   |  Message  | (2 bytes for ID x 30) | (255) |
     * 
     * 
     * - (4) Leader Signal
@@ -165,9 +172,9 @@ public:
     *   Prefix with number of messages (max 2) [1]
     *   - HopMsg (teamID [1], count [1], ID [2])
     * 
-    * - (14)-(24) Connection Message
+    * - (14)-(26) Connection Message
     *   Prefix with number of messages (max 2) [1]
-    *   - ConnectionMsg [5]
+    *   - ConnectionMsg [6]
     * 
     *       - Exchanging ConnectionMsg within a team:
     *           - If message destination is to leader, relay upstream
@@ -176,6 +183,14 @@ public:
     *       - Exchanging ConnectionMsg between follower and connector:
     *           - Follower will send up to one request message (R)
     *           - Connector will send up to two approval messages (A)
+    * 
+    * - (27)-(39) Update Message
+    *   Prefix with number of messages (max 2) [1]
+    *   - UpdateMsg [6]
+    * 
+    *       - Share information about the closest connector to the team
+    *           - Upstream   : Follower to Leader
+    *           - Downstream : Leader to Follower
     */
     struct Message {
         
@@ -193,6 +208,9 @@ public:
 
         /* Connection Message*/
         std::vector<ConnectionMsg> cmsg; // Key is team
+
+        /* Update Message */
+        std::vector<UpdateMsg> umsg; // key is 'up' or 'down'
 
         /* Detected neighbors */
         std::vector<std::string> connections;
@@ -384,6 +402,7 @@ private:
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend; 
+    std::vector<UpdateMsg> umsgToSend;
 
     /*
     * The following variables are used as parameters for the

@@ -169,7 +169,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(87, 255);
+    msg = CByteArray(100, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -190,7 +190,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(87, 255);
+    msg = CByteArray(100, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -200,6 +200,7 @@ void CLeader::ControlStep() {
     otherTeamMsgs.clear();
 
     cmsgToSend.clear();
+    umsgToSend.clear();
 
     closeToRobot = false;
 
@@ -321,6 +322,9 @@ void CLeader::ControlStep() {
     }
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
+
+    /* Update Message */
+    msg_index += 13; // TEMP skip
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -480,6 +484,9 @@ void CLeader::GetMessages() {
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
             
+            /* Update Message */
+            index += 13; // TEMP skip
+
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
                 std::string robotID;

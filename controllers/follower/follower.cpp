@@ -203,7 +203,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(87, 255);
+    msg = CByteArray(100, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -243,7 +243,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(87, 255);
+    msg = CByteArray(100, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -254,12 +254,13 @@ void CFollower::ControlStep() {
     otherTeamMsgs.clear();
 
     cmsgToSend.clear();
+    umsgToSend.clear();
 
     leaderSignal = 255; // Default value for no signal
     hopCountToLeader = 255; // Default value for not known hop count to the leader
 
     /* Reset sensor reading results */
-    condC2 = true;
+    condC2 = false;
     receiveR  = false;
     receiveA  = false;
     receiveNA = false;
@@ -378,6 +379,9 @@ void CFollower::ControlStep() {
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
 
+    /* Update Message */
+    msg_index += 13; // TEMP skip
+
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
     allMsgs.insert(std::end(allMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
@@ -490,6 +494,9 @@ void CFollower::GetMessages() {
             }
             index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
             
+            /* Update Message */
+            index += 13; // TEMP skip
+
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
                 std::string robotID;
@@ -550,49 +557,8 @@ void CFollower::Update() {
             // Remember currently sending request? (with timesteps to continue sending?)
 
         
-
-        /* Relay message */
-
-        // TODO: 
-
-        // // Identify ConnectionMsg to relay
-        //     // Loop teamMsgs
-        //         // If message is accept and hop count is smaller, choose that
-        //             // break
-        //         // If message is request and hop count is larger, choose that
-        //         // If message is update and hop count is larger, choose that
+        GetUpdatesToRelay();
         
-        /* Identify ConnectionMsg to send/relay */
-        // std::vector<Message> combinedTeamMsgs(teamMsgs);
-        // combinedTeamMsgs.push_back(leaderMsg);
-
-        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
-
-        //     Message msg = combinedTeamMsgs[i];
-        //     ConnectionMsg conMsg = msg.cmsg[0]; // Leader/Follower will only have one ConnectionMsg so read the first item
-            
-        //     if(conMsg.type == 'A' && msg.hops[0].count < hopCountToLeader) {
-        //         cmsg = conMsg;
-        //         break;
-        //     } 
-            
-        //     if(msg.hops[0].count > hopCountToLeader) {
-
-        //         std::string leaderID = "L" + std::to_string(teamID);
-
-        //         // Relay request if the type = 'R' and it is directed to the leader
-        //         if(conMsg.type == 'R' && conMsg.to == leaderID)
-        //             cmsg = conMsg;
-        //     }
-        // }
-
-        /* If Accept or Request message was not present, relay an update message */
-        // if(cmsg.type == 255) {
-
-        //     for(size_t i = 0; i < teamMsgs.size(); i++) {
-        //         if(teamMsgs[i].hops[0].count > hopCountToLeader)
-        //     }
-        // }
         
         
     } else if(currentState == RobotState::CONNECTOR) {
@@ -686,7 +652,7 @@ CFollower::Message CFollower::GetClosestNonTeam() {
 /****************************************/
 /****************************************/
 
-bool CFollower::IsClosestToRobot(Message msg) {
+bool CFollower::IsClosestToRobot(const Message& msg) {
     
     Real myDist = msg.direction.Length();
 
@@ -795,6 +761,54 @@ void CFollower::CheckRequests() {
             }
         }
     }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::GetUpdatesToRelay() {
+    /* Relay message */
+
+        // TODO: 
+
+        // // Identify ConnectionMsg to relay
+        //     // Loop teamMsgs
+        //         // If message is accept and hop count is smaller, choose that
+        //             // break
+        //         // If message is request and hop count is larger, choose that
+        //         // If message is update and hop count is larger, choose that
+        
+        /* Identify ConnectionMsg to send/relay */
+        // std::vector<Message> combinedTeamMsgs(teamMsgs);
+        // combinedTeamMsgs.push_back(leaderMsg);
+
+        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
+
+        //     Message msg = combinedTeamMsgs[i];
+        //     ConnectionMsg conMsg = msg.cmsg[0]; // Leader/Follower will only have one ConnectionMsg so read the first item
+            
+        //     if(conMsg.type == 'A' && msg.hops[0].count < hopCountToLeader) {
+        //         cmsg = conMsg;
+        //         break;
+        //     } 
+            
+        //     if(msg.hops[0].count > hopCountToLeader) {
+
+        //         std::string leaderID = "L" + std::to_string(teamID);
+
+        //         // Relay request if the type = 'R' and it is directed to the leader
+        //         if(conMsg.type == 'R' && conMsg.to == leaderID)
+        //             cmsg = conMsg;
+        //     }
+        // }
+
+        /* If Accept or Request message was not present, relay an update message */
+        // if(cmsg.type == 255) {
+
+        //     for(size_t i = 0; i < teamMsgs.size(); i++) {
+        //         if(teamMsgs[i].hops[0].count > hopCountToLeader)
+        //     }
+        // }
 }
 
 /****************************************/
