@@ -377,10 +377,22 @@ void CFollower::ControlStep() {
         msg[msg_index++] = conMsg.toTeam;
     }
     // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
+    msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
     /* Update Message */
-    msg_index += 13; // TEMP skip
+    // msg_index += 13; // TEMP skip
+    std::cout << "umsgToSend.size: " << umsgToSend.size() << std::endl;
+    msg[msg_index++] = umsgToSend.size(); // Set the number of UpdateMsg
+    for(const auto& updMsg : umsgToSend) {
+        msg[msg_index++] = updMsg.from[0];
+        msg[msg_index++] = stoi(updMsg.from.substr(1));
+        msg[msg_index++] = updMsg.to[0];
+        msg[msg_index++] = stoi(updMsg.to.substr(1));
+        msg[msg_index++] = updMsg.connector[0];
+        msg[msg_index++] = stoi(updMsg.connector.substr(1));
+    }
+    // Skip if not all bytes are used
+    msg_index += (2 - cmsgToSend.size()) * 6; // Assumes two messages. One for upstream and one for downstream
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -492,10 +504,43 @@ void CFollower::GetMessages() {
 
                 msg.cmsg.push_back(conMsg);
             }
-            index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
+            index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
             
             /* Update Message */
-            index += 13; // TEMP skip
+            // index += 13; // TEMP skip
+            msg_num = tMsgs[i].Data[index++];
+
+            if(msg_num == 255)
+                msg_num = 0;
+
+            for(size_t j = 0; j < msg_num; j++) {
+
+                UpdateMsg updMsg;
+
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                updMsg.from = robotID;
+
+                std::cout << "FROM: " << updMsg.from << std::endl;
+
+                robotID = "";
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                updMsg.to = robotID;
+                
+                std::cout << "TO: " << updMsg.to << std::endl;
+
+                robotID = "";
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                updMsg.connector = robotID;
+                
+                std::cout << "CONNECTOR: " << updMsg.connector << std::endl;
+
+                msg.umsg.push_back(updMsg);
+            }
+            index += (2 - msg_num) * 6; // Assumes two messages. One for upstream and one for downstream
 
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
