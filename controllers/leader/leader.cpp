@@ -93,6 +93,16 @@ Real CLeader::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Real 
 /****************************************/
 /****************************************/
 
+/* 
+* Checks whethe the Message is empty or not by checking the direction it was received from
+*/
+bool CLeader::Message::Empty() {
+    return direction.Length() == 0.0f;
+}
+
+/****************************************/
+/****************************************/
+
 CLeader::CLeader() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),

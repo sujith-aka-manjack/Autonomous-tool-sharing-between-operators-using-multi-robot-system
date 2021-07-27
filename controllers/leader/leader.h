@@ -212,6 +212,8 @@ public:
 
         /* Detected neighbors */
         std::vector<std::string> connections;
+
+        bool Empty();
     };
 
 public:
