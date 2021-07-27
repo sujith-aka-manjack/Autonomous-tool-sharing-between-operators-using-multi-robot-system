@@ -585,7 +585,8 @@ void CFollower::Update() {
     if(currentState == RobotState::FOLLOWER) {
 
         GetLeaderInfo();
-    
+        SetConnectorToRelay();
+
         connectionCandidate = GetClosestNonTeam();
 
         if( !connectionCandidate.Empty() )
@@ -597,8 +598,7 @@ void CFollower::Update() {
             
             // Remember currently sending request? (with timesteps to continue sending?)
 
-        GetCMsgsToRelay();
-        GetUMsgsToRelay();
+        SetCMsgsToRelay();
         
     } else if(currentState == RobotState::CONNECTOR) {
 
@@ -700,6 +700,12 @@ CFollower::Message CFollower::GetClosestNonTeam() {
 bool CFollower::IsClosestToRobot(const Message& msg) {
     
     Real myDist = msg.direction.Length();
+
+    /* If the team has identified the next connector to connect to, check if it is the same */
+    if( !shareToTeam.empty() ) {
+        if(msg.ID != shareToTeam)
+            return false;
+    }
 
     /* Check whether it is the closest to the candidate among other followers in the team that sees it (condC2) */
     for(size_t i = 0; i < teamMsgs.size(); i++) {
@@ -811,7 +817,7 @@ void CFollower::CheckRequests() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetCMsgsToRelay() {
+void CFollower::SetCMsgsToRelay() {
 
     /* Combine messages from the leader and other followers that belong in the same team */
     std::vector<Message> combinedTeamMsgs(teamMsgs);
@@ -841,39 +847,16 @@ void CFollower::GetCMsgsToRelay() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetUMsgsToRelay() {
-
-    // TODO: 
-
-        // Add new class variable closestToTeam (closest connector to the team)
-
-        // Relay 1 upstream update message
-        // Relay 1 downstream update message
-
-        // Loop through teamMsgs + leaderMsg to organize all usmg into upstream and downstream
-            // Filter according to hop count
-                // If to leader and hop count is greater -> upstream
-                // If to follower and hop count is smaller -> downstream
-
-        // UPSTREAM
-        // If connector with hop count = 1 found
-            // Send found connector
-        // Else
-            // Loop upstream
-                // Find value that's different from known connector.
-                // If only same info, send the same connector.
-                // If no upstream exists, send nothing
-        
-        // DOWNSTREAM
-        // Loop downstream
-            // Relay first seen usmg from leader O(1)
-            // If no downstream exists, send nothing
+void CFollower::SetConnectorToRelay() {
  
     /* Check if a connector with a hop count = 1 to its current team is nearby */
     bool foundFirstConnector = false;
     for(const auto& msg : connectorMsgs) {
         auto hopInfo = msg.hops;
+
         if(hopInfo[teamID].count == 1) {
+
+            /* Send info of connector found */
             shareToLeader = msg.ID;
             foundFirstConnector = true;
             break;
@@ -896,8 +879,10 @@ void CFollower::GetUMsgsToRelay() {
 
                 if(hopInfo[teamID].count > hopCountToLeader) {
                     if(msg.shareToLeader == shareToLeader)
-                        previousSeen = true;
+                        previousSeen = true; // If only same info, send the same connector
                     else if( !msg.shareToLeader.empty() ) {
+
+                        /* Update to connector info that's different from previous */
                         shareToLeader = msg.shareToLeader;
                         newValue = true;
                         break;
@@ -905,10 +890,10 @@ void CFollower::GetUMsgsToRelay() {
                 }
             }
 
-            if( !previousSeen && !newValue )
+            if( !previousSeen && !newValue ) // If previous info not received and no new info, send nothing
                 shareToLeader = "";
             
-        } else
+        } else // If no upstream exists, send nothing
             shareToLeader = "";
     }
 
@@ -916,12 +901,14 @@ void CFollower::GetUMsgsToRelay() {
     if( !combinedTeamMsgs.empty() ) {
         for(const auto& msg : combinedTeamMsgs) {
             auto hopInfo = msg.hops;
+
+            /* Relay the first seen connector info from leader O(1) */
             if(hopInfo[teamID].count < hopCountToLeader) {
                 shareToTeam = msg.shareToTeam;
                 break;
             }
         }
-    } else
+    } else // If no downstream exists, send nothing
         shareToTeam = "";
 }
 
@@ -1208,9 +1195,11 @@ void CFollower::Callback_SetC(void* data) {
     hop.count = 1;
     hops[teamID] = hop;
 
-    // Reset
+    /* Reset variables */
     currentAccept = ConnectionMsg(); 
     hopsToUse.clear();
+    shareToLeader = "";
+    shareToTeam = "";
 
     currentState = RobotState::CONNECTOR;
     teamID = 255;

@@ -135,11 +135,11 @@
       </team> -->
       <custom_team>
         <robots>
-          <robot type="leader" position="0,1.5" />
-          <robot type="follower" position="0.2,1.0" />
-          <robot type="follower" position="-0.2,1.0" />
+          <robot type="leader" position="0,1.2" />
+          <robot type="follower" position="0.2,0.7" />
+          <robot type="follower" position="-0.2,1.2" />
           <robot type="follower" position="0.2,0.25" />
-          <robot type="follower" position="-0.2,0.25" />
+          <!-- <robot type="follower" position="-0.2,0.25" /> -->
           <!-- <robot type="follower" position="-0.3,0.85" /> -->
         </robots>
         <waypoints>

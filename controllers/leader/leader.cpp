@@ -113,7 +113,7 @@ CLeader::CLeader() :
     m_bSelected(false),
     m_bSignal(false),
     PIDHeading(NULL),
-    closeToRobot(false) {}
+    nearRobot(false) {}
 
 /****************************************/
 /****************************************/
@@ -213,7 +213,7 @@ void CLeader::ControlStep() {
 
     cmsgToSend.clear();
 
-    closeToRobot = false;
+    nearRobot = false;
 
     // for(int i = 0; i < waypoints.size(); i++) {
     //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
@@ -227,7 +227,7 @@ void CLeader::ControlStep() {
     /*------------------------*/
     /* Update sensor readings */
     /*------------------------*/
-    UpdateSensors();
+    Update();
     
     /* Set its state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
@@ -255,7 +255,7 @@ void CLeader::ControlStep() {
         msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
     }
     else {
-        if( !closeToRobot ) {
+        if( !nearRobot ) {
             std::cout << "[LOG] Robot is far" << std::endl;
 
             /* Stop if other robots are too far from itself */
@@ -556,8 +556,20 @@ void CLeader::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CLeader::UpdateSensors() {
+void CLeader::Update() {
 
+    nearRobot = IsNearRobot();
+
+    SetConnectorToRelay();
+
+    ReplyToRequest();
+}
+
+/****************************************/
+/****************************************/
+
+bool CLeader::IsNearRobot() {
+    
     /* Combine messages received */
     std::vector<Message> combinedMsgs(connectorMsgs);
     combinedMsgs.insert(std::end(combinedMsgs),
@@ -574,8 +586,15 @@ void CLeader::UpdateSensors() {
     for(int i = 0 ; i < combinedMsgs.size(); i++) {
         Real dist = combinedMsgs[i].direction.Length();
         if(dist < minDistanceFromRobot)
-            closeToRobot = true;
+            return true;
     }
+    return false;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::ReplyToRequest() {
 
     /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
     ConnectionMsg acceptTo;
@@ -584,10 +603,9 @@ void CLeader::UpdateSensors() {
     acceptTo.toTeam = teamID;
     
     for(const auto& teamMsg : teamMsgs) {
-
         for(const auto& cmsg : teamMsg.cmsg) {
 
-            if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+            if(cmsg.to == this->GetId() && cmsg.type == 'R' && shareToTeam.empty()) {
 
                 /* Set the ID of the first follower request seen */
                 if(acceptTo.to.empty()) {
@@ -610,6 +628,53 @@ void CLeader::UpdateSensors() {
     /* Add accept message to be sent */
     if( !acceptTo.to.empty() )
         cmsgToSend.push_back(acceptTo);
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetConnectorToRelay() {
+
+    /* Check if a connector with a hop count = 1 to its current team is nearby */
+    bool foundFirstConnector = false;
+    for(const auto& msg : connectorMsgs) {
+        auto hopInfo = msg.hops;
+
+        if(hopInfo[teamID].count == 1) {
+
+            /* Send info of connector found */
+            shareToTeam = msg.ID;
+            foundFirstConnector = true;
+            break;
+        }
+    }
+
+    /* If the first connector is not nearby, check which it should relay upstream */
+    if( !foundFirstConnector ) {
+        if( !teamMsgs.empty() ) {
+
+            bool previousSeen = false;
+            bool newValue = false;
+
+            for(const auto& msg : teamMsgs) {
+
+                if(msg.shareToLeader == shareToTeam)
+                    previousSeen = true; // If only same info, send the same connector
+                else if( !msg.shareToLeader.empty() ) {
+
+                    /* Update to connector info that's different from previous */
+                    shareToTeam = msg.shareToLeader;
+                    newValue = true;
+                    break;
+                }
+            }
+
+            if( !previousSeen && !newValue ) // If previous info not received and no new info, send nothing
+                shareToTeam = "";
+            
+        } else // If no upstream exists, send nothing
+            shareToTeam = "";
+    }
 }
 
 /****************************************/

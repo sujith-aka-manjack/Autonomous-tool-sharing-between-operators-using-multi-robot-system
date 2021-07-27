@@ -151,7 +151,7 @@ public:
     * 
     *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) |       (31)-(90)       | (91)  |
     *    -----------------------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Update   |      Connections      |  End  |
+    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |      Connections      |  End  |
     *    | State  |   ID   | Team ID | Signal |           |  Message   |  Message  | (2 bytes for ID x 30) | (255) |
     * 
     * 
@@ -174,7 +174,7 @@ public:
     *           - Follower will send up to one request message (R)
     *           - Connector will send up to two approval messages (A)
     * 
-    * - (27)-(30) Update Message
+    * - (27)-(30) Shared Message
     * 
     *       - Share information about the closest connector to the team
     *           - shareToLeader: Upstream (Follower to Leader)
@@ -290,7 +290,22 @@ protected:
     /* 
     * Update sensor readings.
     */
-    virtual void UpdateSensors();
+    virtual void Update();
+
+    /*
+    * Returns whether it is near any other robot.
+    */
+    virtual bool IsNearRobot();
+
+    /*
+    * Upon receiving a Request message from follower, decide to send an Accept message (max 1).
+    */
+    virtual void ReplyToRequest();
+
+    /*
+    *
+    */
+    virtual void SetConnectorToRelay();
 
     /*
     * Calculates the vector to the next waypoint.
@@ -381,7 +396,7 @@ private:
     UInt32 currentTaskDemand;
 
     /* Flag to know whether there is a neighbor */
-    bool closeToRobot;
+    bool nearRobot;
 
     /* Info of the closest non team member to broadcast */
     RobotState closeState;

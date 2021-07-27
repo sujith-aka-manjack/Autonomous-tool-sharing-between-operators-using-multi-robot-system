@@ -161,7 +161,7 @@ public:
     * 
     *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) |       (31)-(90)       | (91)  |
     *    -----------------------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Update   |      Connections      |  End  |
+    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |      Connections      |  End  |
     *    | State  |   ID   | Team ID | Signal |           |  Message   |  Message  | (2 bytes for ID x 30) | (255) |
     * 
     * 
@@ -184,7 +184,7 @@ public:
     *           - Follower will send up to one request message (R)
     *           - Connector will send up to two approval messages (A)
     * 
-    * - (27)-(30) Update Message
+    * - (27)-(30) Shared Message
     * 
     *       - Share information about the closest connector to the team
     *           - shareToLeader: Upstream (Follower to Leader)
@@ -312,12 +312,12 @@ protected:
     *
     * Messages are relayed both upstream (to leader) and downstream (to the team).
     */
-    virtual void GetCMsgsToRelay();
+    virtual void SetCMsgsToRelay();
 
     /*
     * Find the closest connector info that needs to be shared within the team.
     */
-    virtual void GetUMsgsToRelay();
+    virtual void SetConnectorToRelay();
 
     /*
     * Check whether it has received any request messages and decide which to accept.
