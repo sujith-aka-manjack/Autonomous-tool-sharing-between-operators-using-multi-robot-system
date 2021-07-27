@@ -316,6 +316,8 @@ protected:
 
     /*
     * Relay Request and Accept messages.
+    *
+    * Messages are relayed both upstream (to leader) and downstream (to the team).
     */
     virtual void GetCMsgsToRelay();
 

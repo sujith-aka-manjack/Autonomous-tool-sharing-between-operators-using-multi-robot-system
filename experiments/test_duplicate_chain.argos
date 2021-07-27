@@ -135,10 +135,12 @@
       </team> -->
       <custom_team>
         <robots>
-          <robot type="leader" position="0,0.95" />
-          <robot type="follower" position="0,0.75" />
-          <robot type="follower" position="-0.2,0.75" />
-          <robot type="follower" position="-0.3,0.85" />
+          <robot type="leader" position="0,1.5" />
+          <robot type="follower" position="0.2,1.0" />
+          <robot type="follower" position="-0.2,1.0" />
+          <robot type="follower" position="0.2,0.25" />
+          <robot type="follower" position="-0.2,0.25" />
+          <!-- <robot type="follower" position="-0.3,0.85" /> -->
         </robots>
         <waypoints>
           <waypoint coord="0.8,0.8" />
@@ -146,10 +148,9 @@
       </custom_team>
       <custom_team>
         <robots>
-          <robot type="leader" position="0,-0.2" />
-          <robot type="follower" position="0.3,-0.3" />
-          <robot type="follower" position="0.2,0" />
-          <robot type="follower" position="-0.2,0" />
+          <robot type="leader" position="0,-0.6" />
+          <robot type="follower" position="0.2,-0.5" />
+          <robot type="follower" position="-0.2,-0.5" />
         </robots>
         <waypoints>
           <waypoint coord="-0.8,-0.8" />

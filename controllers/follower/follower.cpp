@@ -766,21 +766,29 @@ void CFollower::CheckRequests() {
 
 void CFollower::GetCMsgsToRelay() {
 
-    // TODO:
+    /* Combine messages from the leader and other followers that belong in the same team */
+    std::vector<Message> combinedTeamMsgs(teamMsgs);
+    combinedTeamMsgs.push_back(leaderMsg);
 
-        // Relay Request messge received from robots with greater hop count
-        // Relat Accept message received from robots with smaller hop count
+    for(const auto& msg : combinedTeamMsgs) {
+        for(const auto& cmsg : msg.cmsg) {
+            auto hops = msg.hops;
 
-        // Only relay Request message if itself is not currently requesting
+            /* Relay Request message received from robots with greater hop count */
+            if(cmsg.type == 'R' && hops[teamID].count > hopCountToLeader) {
+                if(currentRequest.type != 'R') { // Check if it is currently not requesting
+                    cmsgToSend.push_back(cmsg);
+                    std::cout << "Relay Request, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+                }
+            }
 
-        // Loop teamMsgs + leaderMsg
-            // Loop cmsg (max 2)
-                // If request message received and hop is greater
-                    // If currently not requesting
-                        // Add that cmsg to cmsgToSend
-                // If accept message received and hop is smaller
-                    // Add that cmsg to cmsgToSend
-
+            /* Relay Accept message received from robots with smaller hop count */
+            if(cmsg.type == 'A' && hops[teamID].count < hopCountToLeader) {
+                cmsgToSend.push_back(cmsg);
+                std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+            }
+        }
+    }
 }
 
 /****************************************/
