@@ -206,7 +206,7 @@
       </entity>
     </distribute> -->
 
-    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size=100">
+    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size=91">
       <controller config="ef" />
       <body position="0.0,0.0,0" orientation="0,0,0" />
     </e-puck> -->

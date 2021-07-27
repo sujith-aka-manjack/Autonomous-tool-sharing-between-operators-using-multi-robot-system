@@ -132,9 +132,8 @@ public:
     /*
     * Structure to store request/approval messages for extending the chain.
     * 
-    *   1) R (Request) : Follower sends to leader or connector 
-    *   2) A (Accept)  : Leader or connector sends to follower
-    *   3) U (Update)  : Follower sends to leader
+    *   - R (Request) : Follower sends to leader or connector 
+    *   - A (Accept)  : Leader or connector sends to follower
     * 
     *       Structure: Type [1], sender ID [2], recipient ID [2], recipient team ID [1] (for Connector -> Follower accepts) 
     */
@@ -145,19 +144,12 @@ public:
         UInt8 toTeam;
     };
 
-    /* Structure to store update messages about the closest connnector to the team (with hop count = 1 to the team) */
-    struct UpdateMsg {
-        std::string from;
-        std::string to;
-        std::string connector;
-    };
-
     /* 
     * Structure to store incoming data received from other robots 
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(39) |       (40)-(99)       | (100) |
+    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) |       (31)-(90)       | (91)  |
     *    -----------------------------------------------------------------------------------------------------------
     *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Update   |      Connections      |  End  |
     *    | State  |   ID   | Team ID | Signal |           |  Message   |  Message  | (2 bytes for ID x 30) | (255) |
@@ -182,13 +174,11 @@ public:
     *           - Follower will send up to one request message (R)
     *           - Connector will send up to two approval messages (A)
     * 
-    * - (27)-(39) Update Message
-    *   Prefix with number of messages (max 2) [1]
-    *   - UpdateMsg [6]
+    * - (27)-(30) Update Message
     * 
     *       - Share information about the closest connector to the team
-    *           - Upstream   : Follower to Leader
-    *           - Downstream : Leader to Follower
+    *           - shareToLeader: Upstream (Follower to Leader)
+    *           - shareToTeam  : Downstream (Leader to Follower)
     */
     struct Message {
         
@@ -205,10 +195,11 @@ public:
         std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
 
         /* Connection Message*/
-        std::vector<ConnectionMsg> cmsg; // Key is team
+        std::vector<ConnectionMsg> cmsg;
 
         /* Update Message */
-        std::vector<UpdateMsg> umsg; // key is 'up' or 'down'
+        std::string shareToLeader = "";
+        std::string shareToTeam = "";
 
         /* Detected neighbors */
         std::vector<std::string> connections;
@@ -402,7 +393,7 @@ private:
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend; 
-    std::vector<UpdateMsg> umsgToSend;
+    std::string shareToTeam;
 
     /*
     * The following variables are used as parameters for the

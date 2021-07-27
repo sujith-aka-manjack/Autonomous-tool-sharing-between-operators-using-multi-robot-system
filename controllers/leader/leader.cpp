@@ -151,6 +151,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /* Set state to leader */
     currentState = RobotState::LEADER;
 
+    shareToTeam = "";
+
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
 
@@ -179,7 +181,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(100, 255);
+    msg = CByteArray(91, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -200,7 +202,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(100, 255);
+    msg = CByteArray(91, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -210,7 +212,6 @@ void CLeader::ControlStep() {
     otherTeamMsgs.clear();
 
     cmsgToSend.clear();
-    umsgToSend.clear();
 
     closeToRobot = false;
 
@@ -331,22 +332,16 @@ void CLeader::ControlStep() {
         msg[msg_index++] = conMsg.toTeam;
     }
     // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
+    msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
     /* Update Message */
-    // msg_index += 13; // TEMP skip
-    std::cout << "umsgToSend.size: " << umsgToSend.size() << std::endl;
-    msg[msg_index++] = umsgToSend.size(); // Set the number of UpdateMsg
-    for(const auto& updMsg : umsgToSend) {
-        msg[msg_index++] = updMsg.from[0];
-        msg[msg_index++] = stoi(updMsg.from.substr(1));
-        msg[msg_index++] = updMsg.to[0];
-        msg[msg_index++] = stoi(updMsg.to.substr(1));
-        msg[msg_index++] = updMsg.connector[0];
-        msg[msg_index++] = stoi(updMsg.connector.substr(1));
-    }
-    // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 6; // Assumes two messages. One for upstream and one for downstream
+    msg_index += 2; // Skip shareToLeader
+
+    if( !shareToTeam.empty() ) {
+        msg[msg_index++] = shareToTeam[0];
+        msg[msg_index++] = stoi(shareToTeam.substr(1));
+    } else
+        msg_index += 2;
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -507,40 +502,27 @@ void CLeader::GetMessages() {
             index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
             
             /* Update Message */
-            // index += 13; // TEMP skip
-            msg_num = tMsgs[i].Data[index++];
-
-            if(msg_num == 255)
-                msg_num = 0;
-
-            for(size_t j = 0; j < msg_num; j++) {
-
-                UpdateMsg updMsg;
-
-                std::string robotID;
+            std::string robotID;
+            if(tMsgs[i].Data[index] == 255) {
+                index += 2;
+            } else {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.from = robotID;
-
-                std::cout << "FROM: " << updMsg.from << std::endl;
-
-                robotID = "";
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.to = robotID;
-                
-                std::cout << "TO: " << updMsg.to << std::endl;
-
-                robotID = "";
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.connector = robotID;
-                
-                std::cout << "CONNECTOR: " << updMsg.connector << std::endl;
-
-                msg.umsg.push_back(updMsg);
+                msg.shareToLeader = robotID;
             }
-            index += (2 - msg_num) * 6; // Assumes two messages. One for upstream and one for downstream
+            
+            std::cout << "shareToLeader: " << msg.shareToLeader << std::endl;
+
+            if(tMsgs[i].Data[index] == 255) {
+                index += 2;
+            } else {
+                robotID = "";
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.shareToTeam = robotID;
+            }
+
+            std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
 
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists

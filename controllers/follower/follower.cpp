@@ -161,6 +161,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     currentState = RobotState::CONNECTOR; // Set initial state to connector
     performingTask = false; // Robot initially not working on any task
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
+    shareToLeader = "";
+    shareToTeam = "";
 
     /*
     * Init SCT Controller
@@ -213,7 +215,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(100, 255);
+    msg = CByteArray(91, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -253,7 +255,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(100, 255);
+    msg = CByteArray(91, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -264,7 +266,6 @@ void CFollower::ControlStep() {
     otherTeamMsgs.clear();
 
     cmsgToSend.clear();
-    umsgToSend.clear();
 
     leaderSignal = 255; // Default value for no signal
     hopCountToLeader = 255; // Default value for not known hop count to the leader
@@ -390,19 +391,21 @@ void CFollower::ControlStep() {
     msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
     /* Update Message */
-    // msg_index += 13; // TEMP skip
-    std::cout << "umsgToSend.size: " << umsgToSend.size() << std::endl;
-    msg[msg_index++] = umsgToSend.size(); // Set the number of UpdateMsg
-    for(const auto& updMsg : umsgToSend) {
-        msg[msg_index++] = updMsg.from[0];
-        msg[msg_index++] = stoi(updMsg.from.substr(1));
-        msg[msg_index++] = updMsg.to[0];
-        msg[msg_index++] = stoi(updMsg.to.substr(1));
-        msg[msg_index++] = updMsg.connector[0];
-        msg[msg_index++] = stoi(updMsg.connector.substr(1));
-    }
-    // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 6; // Assumes two messages. One for upstream and one for downstream
+    if( !shareToLeader.empty() ) {
+        msg[msg_index++] = shareToLeader[0];
+        msg[msg_index++] = stoi(shareToLeader.substr(1));
+    } else
+        msg_index += 2;
+
+    std::cout << "Share to leader: " << shareToLeader << std::endl;
+
+    if( !shareToTeam.empty() ) {
+        msg[msg_index++] = shareToTeam[0];
+        msg[msg_index++] = stoi(shareToTeam.substr(1));
+    } else
+        msg_index += 2;
+
+    std::cout << "Share to team: " << shareToTeam << std::endl;
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -517,40 +520,23 @@ void CFollower::GetMessages() {
             index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
             
             /* Update Message */
-            // index += 13; // TEMP skip
-            msg_num = tMsgs[i].Data[index++];
-
-            if(msg_num == 255)
-                msg_num = 0;
-
-            for(size_t j = 0; j < msg_num; j++) {
-
-                UpdateMsg updMsg;
-
-                std::string robotID;
+            std::string robotID;
+            if(tMsgs[i].Data[index] == 255) {
+                index += 2;
+            } else {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.from = robotID;
-
-                std::cout << "FROM: " << updMsg.from << std::endl;
-
-                robotID = "";
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.to = robotID;
-                
-                std::cout << "TO: " << updMsg.to << std::endl;
-
-                robotID = "";
-                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
-                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-                updMsg.connector = robotID;
-                
-                std::cout << "CONNECTOR: " << updMsg.connector << std::endl;
-
-                msg.umsg.push_back(updMsg);
+                msg.shareToLeader = robotID;
             }
-            index += (2 - msg_num) * 6; // Assumes two messages. One for upstream and one for downstream
+            
+            if(tMsgs[i].Data[index] == 255) {
+                index += 2;
+            } else {
+                robotID = "";
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.shareToTeam = robotID;
+            }
 
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
@@ -691,8 +677,14 @@ CFollower::Message CFollower::GetClosestNonTeam() {
     for(size_t i = 0; i < candidateMsgs.size(); i++) {
         Real dist = candidateMsgs[i].direction.Length();
         if(dist < minDist) {
-            minDist = dist;
-            closestRobot = candidateMsgs[i];
+
+            /* Check robot is either a follower or in the case of a connector, it has a hop count = 1 to its current team */
+            if(candidateMsgs[i].state == RobotState::FOLLOWER || 
+               (candidateMsgs[i].state == RobotState::CONNECTOR && candidateMsgs[i].hops[teamID].count == 1)) {
+
+                minDist = dist;
+                closestRobot = candidateMsgs[i];
+            }
         }
     }
 
@@ -876,43 +868,61 @@ void CFollower::GetUMsgsToRelay() {
         // Loop downstream
             // Relay first seen usmg from leader O(1)
             // If no downstream exists, send nothing
+ 
+    /* Check if a connector with a hop count = 1 to its current team is nearby */
+    bool foundFirstConnector = false;
+    for(const auto& msg : connectorMsgs) {
+        auto hopInfo = msg.hops;
+        if(hopInfo[teamID].count == 1) {
+            shareToLeader = msg.ID;
+            foundFirstConnector = true;
+            break;
+        }
+    }
 
+    /* Combine messages from the leader and other followers that belong in the same team */
+    std::vector<Message> combinedTeamMsgs(teamMsgs);
+    combinedTeamMsgs.push_back(leaderMsg);
 
+    /* If the first connector is not nearby, check which it should relay upstream */
+    if( !foundFirstConnector ) {
+        if( !combinedTeamMsgs.empty() ) {
 
+            bool previousSeen = false;
+            bool newValue = false;
 
+            for(const auto& msg : combinedTeamMsgs) {
+                auto hopInfo = msg.hops;
 
-        
-        /* Identify ConnectionMsg to send/relay */
-        // std::vector<Message> combinedTeamMsgs(teamMsgs);
-        // combinedTeamMsgs.push_back(leaderMsg);
+                if(hopInfo[teamID].count > hopCountToLeader) {
+                    if(msg.shareToLeader == shareToLeader)
+                        previousSeen = true;
+                    else if( !msg.shareToLeader.empty() ) {
+                        shareToLeader = msg.shareToLeader;
+                        newValue = true;
+                        break;
+                    }
+                }
+            }
 
-        // for(size_t i = 0; i < combinedTeamMsgs.size(); i++) {
-
-        //     Message msg = combinedTeamMsgs[i];
-        //     ConnectionMsg conMsg = msg.cmsg[0]; // Leader/Follower will only have one ConnectionMsg so read the first item
+            if( !previousSeen && !newValue )
+                shareToLeader = "";
             
-        //     if(conMsg.type == 'A' && msg.hops[0].count < hopCountToLeader) {
-        //         cmsg = conMsg;
-        //         break;
-        //     } 
-            
-        //     if(msg.hops[0].count > hopCountToLeader) {
+        } else
+            shareToLeader = "";
+    }
 
-        //         std::string leaderID = "L" + std::to_string(teamID);
-
-        //         // Relay request if the type = 'R' and it is directed to the leader
-        //         if(conMsg.type == 'R' && conMsg.to == leaderID)
-        //             cmsg = conMsg;
-        //     }
-        // }
-
-        /* If Accept or Request message was not present, relay an update message */
-        // if(cmsg.type == 255) {
-
-        //     for(size_t i = 0; i < teamMsgs.size(); i++) {
-        //         if(teamMsgs[i].hops[0].count > hopCountToLeader)
-        //     }
-        // }
+    /* Get connector info to relay downstream */
+    if( !combinedTeamMsgs.empty() ) {
+        for(const auto& msg : combinedTeamMsgs) {
+            auto hopInfo = msg.hops;
+            if(hopInfo[teamID].count < hopCountToLeader) {
+                shareToTeam = msg.shareToTeam;
+                break;
+            }
+        }
+    } else
+        shareToTeam = "";
 }
 
 /****************************************/
