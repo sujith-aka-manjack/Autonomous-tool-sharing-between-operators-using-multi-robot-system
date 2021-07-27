@@ -320,6 +320,11 @@ protected:
     virtual void SetConnectorToRelay();
 
     /*
+    * Update the hop count when forming part of the chain network.
+    */
+    virtual void UpdateHopCounts();
+
+    /*
     * Check whether it has received any request messages and decide which to accept.
     *
     * Check all requests sent to itself and choose one to respond for each team.
@@ -440,7 +445,7 @@ private:
     bool receiveR, receiveA, receiveNA;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
-    std::unordered_map<UInt8, HopMsg> hopsToUse;  // The hop count info of the connector this robot will connect with (used in the FOLLOWER state)
+    std::unordered_map<UInt8, HopMsg> hopsCopy;  // The hop count info of the connector this robot will connect with (used in the FOLLOWER state)
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
 
     std::unordered_map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)

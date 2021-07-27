@@ -5,6 +5,7 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include <utility/team_color.h>
 #include <algorithm>
+#include <unordered_set>
 
 /****************************************/
 /****************************************/
@@ -618,6 +619,7 @@ void CFollower::Update() {
 
         CheckRequests();
 
+        UpdateHopCounts();
     }
 }
 
@@ -770,7 +772,7 @@ void CFollower::CheckAccept() {
                         if(cmsg.to == this->GetId()) {    // Request approved for this follower
                             receiveA = true;
                             currentAccept = cmsg;
-                            hopsToUse = msg.hops;
+                            hopsCopy = msg.hops;
                         } else                            // Request approved for another follower
                             receiveNA = true;
 
@@ -910,6 +912,49 @@ void CFollower::SetConnectorToRelay() {
         }
     } else // If no downstream exists, send nothing
         shareToTeam = "";
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::UpdateHopCounts() {
+
+    /* Extract connector IDs to check */
+    std::unordered_set<std::string> robotIDs;
+
+    for(const auto& hop : hops) {
+        if( !hop.second.ID.empty() )
+            robotIDs.insert(hop.second.ID);
+    }
+
+    /* Extract Messages from connectors that have the IDs found previously */
+    std::unordered_map<std::string, Message> robotMessages;
+
+    for(const auto& msg : connectorMsgs) {
+
+        if(robotIDs.empty())
+            break;
+
+        for(auto& id : robotIDs) {
+            if(msg.ID == id) {
+                robotMessages[id] = msg;
+                robotIDs.erase(id);
+                break;
+            }
+        }
+    }
+
+    /* Update hop count */
+    for(auto& hop : hops) {
+        std::string previousRobotID = hop.second.ID;
+
+        if( !previousRobotID.empty() ) {
+            UInt8 teamToCheck = hop.first;
+            HopMsg previousHop = robotMessages[previousRobotID].hops[teamToCheck];
+            std::cout << "previousHop: " << previousHop.count << std::endl;
+            hop.second.count = previousHop.count + 1; // Increment by 1
+        }
+    }
 }
 
 /****************************************/
@@ -1181,13 +1226,13 @@ void CFollower::Callback_SetC(void* data) {
     } else {    // Accept received from a connector
 
         /* Use the connector to generate its hop count to other teams */
-        hopsToUse.erase(teamID);            // Delete entry of its own team
+        hopsCopy.erase(teamID);            // Delete entry of its own team
 
-        for(auto& it : hopsToUse) {         // Loop to add hop count of 1 to each item
+        for(auto& it : hopsCopy) {         // Loop to add hop count of 1 to each item
             it.second.count++;
             it.second.ID = currentAccept.from;
         }
-        hops = hopsToUse;                   // Set to its hops
+        hops = hopsCopy;                   // Set to its hops
     }
 
     /* Set hop count to the team it is leaving to 1 */
@@ -1197,7 +1242,7 @@ void CFollower::Callback_SetC(void* data) {
 
     /* Reset variables */
     currentAccept = ConnectionMsg(); 
-    hopsToUse.clear();
+    hopsCopy.clear();
     shareToLeader = "";
     shareToTeam = "";
 
