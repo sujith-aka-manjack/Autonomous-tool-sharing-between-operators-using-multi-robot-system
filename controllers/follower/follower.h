@@ -222,6 +222,8 @@ public:
 
         /* Detected neighbors */
         std::vector<std::string> connections;
+
+        bool Empty();
     };
 
 public:
@@ -441,6 +443,7 @@ private:
 
     /* Sensor reading results */
     Message connectionCandidate; // (used in the FOLLOWER state)
+    Message firstConnector; // The connector that a follower in the team should connect to next
 
     bool condC2;
     bool receiveR, receiveA, receiveNA;

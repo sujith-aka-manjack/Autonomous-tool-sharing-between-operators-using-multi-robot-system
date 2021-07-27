@@ -94,6 +94,16 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Rea
 /****************************************/
 /****************************************/
 
+/* 
+* Checks whethe the Message is empty or not by checking the direction it was received from
+*/
+bool CFollower::Message::Empty() {
+    return direction.Length() == 0.0f;
+}
+
+/****************************************/
+/****************************************/
+
 CFollower::CFollower() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
@@ -400,7 +410,7 @@ void CFollower::ControlStep() {
     allMsgs.insert(std::end(allMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
-    if(leaderMsg.direction.Length() > 0.0f) {
+    if( !leaderMsg.Empty() ) {
         allMsgs.push_back(leaderMsg);
     }
 
@@ -580,7 +590,7 @@ void CFollower::GetMessages() {
 
 void CFollower::Update() {
 
-    std::cout << "leaderMsg = " << (leaderMsg.direction.Length() > 0.0f) << std::endl;
+    std::cout << "leaderMsg = " << ( !leaderMsg.Empty() ) << std::endl;
     std::cout << "teamMsg = " << teamMsgs.size() << std::endl;
     std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
     std::cout << "otherTMsg = " << otherTeamMsgs.size() << std::endl;
@@ -592,7 +602,7 @@ void CFollower::Update() {
     
         connectionCandidate = GetClosestNonTeam();
 
-        if(connectionCandidate.direction.Length() > 0.0f)
+        if( !connectionCandidate.Empty() )
             condC2 = IsClosestToRobot(connectionCandidate);
 
         /* Check whether it has received an accept message */
@@ -631,7 +641,7 @@ void CFollower::Update() {
 void CFollower::GetLeaderInfo() {
 
     /* Find the hop count to and signal from the leader */
-    if(leaderMsg.direction.Length() > 0.0f) { // Leader is in range
+    if( !leaderMsg.Empty() ) { // Leader is in range
 
         hopCountToLeader = 1;
         leaderSignal = leaderMsg.leaderSignal;
@@ -732,7 +742,7 @@ void CFollower::CheckAccept() {
     if(currentRequest.to[0] == 'L') {
 
         std::vector<Message> combinedTeamMsgs(teamMsgs);
-        if(leaderMsg.direction.Length() > 0.0f)
+        if( !leaderMsg.Empty() )
             combinedTeamMsgs.push_back(leaderMsg);
 
         for(const auto& teamMsg : combinedTeamMsgs) {
@@ -937,7 +947,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
 
     CVector2 resVec = CVector2();
 
-    if(leaderMsg.direction.Length() > 0.0f) {
+    if( !leaderMsg.Empty() ) {
 
         resVec = leaderMsg.direction;
 
@@ -1293,7 +1303,7 @@ unsigned char CFollower::Check_NotCondC2(void* data) {
 }
 
 unsigned char CFollower::Check_CondC3(void* data) {
-    if(connectionCandidate.direction.Length() > 0.0f) {
+    if( !connectionCandidate.Empty()) {
         if(teamID < connectionCandidate.teamID) {
             std::cout << "Event: " << 1 << " - condC3" << std::endl;
             return 1;
@@ -1304,7 +1314,7 @@ unsigned char CFollower::Check_CondC3(void* data) {
 }
 
 unsigned char CFollower::Check_NotCondC3(void* data) {
-    if(connectionCandidate.direction.Length() > 0.0f) {
+    if( !connectionCandidate.Empty() ) {
         if(teamID < connectionCandidate.teamID) {
             std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
             return 0;
