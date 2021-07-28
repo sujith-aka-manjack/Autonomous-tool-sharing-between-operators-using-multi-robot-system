@@ -450,6 +450,7 @@ private:
     bool receiveR, receiveA, receiveNA;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
+    size_t requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
     std::map<UInt8, HopMsg> hopsCopy;  // The hop count info of the connector this robot will connect with (used in the FOLLOWER state)
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
 
@@ -471,6 +472,7 @@ private:
     Real separationThres;
     Real joiningThres;
 
+    size_t requestDuration;
 };
 
 #endif

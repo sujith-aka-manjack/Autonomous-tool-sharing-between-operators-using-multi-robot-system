@@ -153,6 +153,9 @@ void CFollower::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "robot",    robotWeight);
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
+
+        /* Timeout duration */
+        GetNodeAttribute(GetNode(t_node, "timeout"), "request", requestDuration);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -160,6 +163,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
 
     /* Initialization */
     currentState = RobotState::CONNECTOR; // Set initial state to connector
+    requestTimer = 0;
     performingTask = false; // Robot initially not working on any task
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
     shareToLeader = "";
@@ -513,14 +517,14 @@ void CFollower::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
 
-                std::cout << "FROM: " << conMsg.from << std::endl;
+                // std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
                 
-                std::cout << "TO: " << conMsg.to << std::endl;
+                // std::cout << "TO: " << conMsg.to << std::endl;
                 
                 conMsg.toTeam = tMsgs[i].Data[index++]; 
 
@@ -602,8 +606,19 @@ void CFollower::Update() {
             condC2 = IsClosestToRobot(connectionCandidate);
 
         /* Check whether it has received an accept message */
-        if(currentRequest.type == 'R')
+        if(currentRequest.type == 'R') {
             CheckAccept();
+
+            /* Decrement timer */
+            requestTimer--;
+            std::cout << "requestTimer: " << requestTimer << std::endl;
+
+            /* Check whether an Accept message was not received before the timeout */
+            if(requestTimer == 0 && currentAccept.type == 'N') {
+                receiveNA = true;
+                currentRequest = ConnectionMsg(); // Clear current request
+            }
+        }
             
             // Remember currently sending request? (with timesteps to continue sending?)
 
@@ -762,8 +777,6 @@ void CFollower::CheckAccept() {
                         currentAccept = cmsg;
                     } else                            // Request approved for another follower
                         receiveNA = true;
-
-                    currentRequest = ConnectionMsg(); // Clear current request
                 }
             }
         }
@@ -783,8 +796,6 @@ void CFollower::CheckAccept() {
                             hopsCopy = msg.hops;
                         } else                            // Request approved for another follower
                             receiveNA = true;
-
-                        currentRequest = ConnectionMsg(); // Clear current request
                     }
                 }
             }
@@ -1214,6 +1225,7 @@ void CFollower::PrintName() {
 void CFollower::Callback_MoveFlock(void* data) {
     std::cout << "Action: moveFlock" <<std::endl;
     currentMoveType = MoveType::FLOCK;
+    currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
@@ -1279,6 +1291,8 @@ void CFollower::Callback_SendRL(void* data) {
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
+    requestTimer = requestDuration;
+    std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
 void CFollower::Callback_SendRC(void* data) {
@@ -1293,6 +1307,8 @@ void CFollower::Callback_SendRC(void* data) {
     cmsgToSend.push_back(cmsg);
 
     currentRequest = cmsg;
+    requestTimer = requestDuration;
+    std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
 void CFollower::Callback_SendA(void* data) {

@@ -48,6 +48,7 @@
         <flocking_weights team="1"
                           robot="1"
                           obstacle="1" />
+        <timeout request="4" />
       </params>
     </follower_controller>
 
@@ -129,7 +130,7 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="15" center="0.3,0.3" density="0.1">
+      <team leader_num="1" robot_num="10" center="0.3,0.3" density="0.1">
         <waypoint coord="1.5,1.5" />
       </team>
       <team leader_num="1" robot_num="15" center="-0.3,-0.3" density="0.1">
