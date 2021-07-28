@@ -462,6 +462,9 @@ private:
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;
 
+    /* Whether the first timestep in the simulation has passed */
+    size_t initStepComplete;
+
     /*
     * The following variables are used as parameters for the
     * algorithm. You can set their value in the <parameters> section

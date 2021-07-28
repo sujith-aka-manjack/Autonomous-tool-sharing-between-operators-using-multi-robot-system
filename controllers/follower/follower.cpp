@@ -168,6 +168,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
     shareToLeader = "";
     shareToTeam = "";
+    initStepComplete = 0;
 
     /*
     * Init SCT Controller
@@ -305,7 +306,10 @@ void CFollower::ControlStep() {
     /*--------------------*/
     std::cout << "--- Supervisors ---" << std::endl;
 
-    sct->run_step();
+    if(initStepComplete > 0)
+        sct->run_step();    // Run the supervisor to get the next action
+    else
+        initStepComplete++;
 
     sct->print_current_state();
     std::cout << std::endl;
