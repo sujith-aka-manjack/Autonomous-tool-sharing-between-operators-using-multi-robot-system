@@ -129,10 +129,10 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="5" center="0.2,0.2" density="0.1">
+      <team leader_num="1" robot_num="15" center="0.3,0.3" density="0.1">
         <waypoint coord="1.5,1.5" />
       </team>
-      <team leader_num="1" robot_num="5" center="-0.2,-0.2" density="0.1">
+      <team leader_num="1" robot_num="15" center="-0.3,-0.3" density="0.1">
         <waypoint coord="-1.5,-1.5" />
       </team>
 
@@ -258,13 +258,12 @@
   <!-- ****************** -->
   <!-- * Visualization * -->
   <!-- ****************** -->
-  <visualization>
-    <!--
+  <!--
         This shows how to add customized key management
         using the qt user functions.
         Check 'argos3 -q qt-opengl' for more help.
     -->
-    
+  <visualization>
     <qt-opengl autoplay="false">
       <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
                       label="manualcontrol_qtuser_functions" />

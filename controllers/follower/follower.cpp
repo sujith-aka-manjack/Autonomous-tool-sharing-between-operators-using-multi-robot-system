@@ -350,7 +350,7 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            msg[msg_index++] = hops.size(); // Set the number of hops
+            msg[msg_index++] = hops.size(); // Set the number of hops (should always be two for now)
 
             for(const auto& it : hops) {
 
@@ -833,22 +833,32 @@ void CFollower::SetCMsgsToRelay() {
     std::vector<Message> combinedTeamMsgs(teamMsgs);
     combinedTeamMsgs.push_back(leaderMsg);
 
+    /* Booleans to only relay up to 1 request and accept messages each */
+    bool receivedRequest = false;
+    bool receivedAccept = false;
+
     for(const auto& msg : combinedTeamMsgs) {
         for(const auto& cmsg : msg.cmsg) {
             auto hops = msg.hops;
 
             /* Relay Request message received from robots with greater hop count */
-            if(cmsg.type == 'R' && hops[teamID].count > hopCountToLeader) {
-                if(currentRequest.type != 'R') { // Check if it is currently not requesting
-                    cmsgToSend.push_back(cmsg);
-                    std::cout << "Relay Request, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+            if( !receivedRequest ) {
+                if(cmsg.type == 'R' && hops[teamID].count > hopCountToLeader) {
+                    if(currentRequest.type != 'R') { // Check if it is currently not requesting
+                        cmsgToSend.push_back(cmsg);
+                        receivedRequest = true;
+                        std::cout << "Relay Request, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+                    }
                 }
             }
-
+            
             /* Relay Accept message received from robots with smaller hop count */
-            if(cmsg.type == 'A' && hops[teamID].count < hopCountToLeader) {
-                cmsgToSend.push_back(cmsg);
-                std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+            if( !receivedAccept ) {
+                if(cmsg.type == 'A' && hops[teamID].count < hopCountToLeader) {
+                    cmsgToSend.push_back(cmsg);
+                    receivedAccept = true;
+                    std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+                }
             }
         }
     }
