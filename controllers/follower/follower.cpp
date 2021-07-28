@@ -354,7 +354,7 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            msg[msg_index++] = hops.size(); // Set the number of hops (should always be two for now)
+            msg[msg_index++] = hops.size(); // Set the number of HopMsg
 
             for(const auto& it : hops) {
 
@@ -368,6 +368,8 @@ void CFollower::ControlStep() {
                     msg[msg_index++] = stoi(it.second.ID.substr(1)); // ID
                 }
             }
+            // Skip if not all bytes are used
+            msg_index += (2 - hops.size()) * 4; // TEMP: Currently assuming only two teams
 
             break;
         }
