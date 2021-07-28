@@ -2,6 +2,7 @@
 #include <QKeyEvent>
 #include <argos3/core/simulator/simulator.h>
 #include <argos3/plugins/simulator/entities/rab_equipped_entity.h>
+#include <controllers/follower/follower.h>
 
 /****************************************/
 /****************************************/
@@ -174,8 +175,28 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck
     */
+   
+   CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
+
+   std::string text = c_entity.GetId().c_str();
+
+   /* For connector, draw the hop count to each team */
+   if(cController.currentState == CFollower::RobotState::CONNECTOR) {
+      std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
+
+      for(const auto& it : hops) {
+         text += "(T" + std::to_string(it.first) + "-" + std::to_string(it.second.count);
+         if( !it.second.ID.empty() ) {
+            text += "-" + it.second.ID;
+         } else {
+            text += "-__";
+         }
+         text += ")";
+      }
+   }
+
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
-            c_entity.GetId().c_str()); // text
+            text); // text
 }
 
 /****************************************/

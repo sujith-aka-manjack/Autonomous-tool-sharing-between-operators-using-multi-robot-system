@@ -240,6 +240,13 @@ void CFollower::SetTeamID(const UInt8 id) {
 /****************************************/
 /****************************************/
 
+const std::map<UInt8, CFollower::HopMsg>& CFollower::GetHops() const {
+    return hops;
+}
+
+/****************************************/
+/****************************************/
+
 bool CFollower::IsWorking() {
     return performingTask;
 }
@@ -289,9 +296,11 @@ void CFollower::ControlStep() {
     /*------------------------*/
     Update();
 
-    // /*--------------------*/
-    // /* Run SCT controller */
-    // /*--------------------*/
+    /*--------------------*/
+    /* Run SCT controller */
+    /*--------------------*/
+    std::cout << "--- Supervisors ---" << std::endl;
+
     sct->run_step();
 
     sct->print_current_state();
@@ -322,7 +331,7 @@ void CFollower::ControlStep() {
 
             /* Hop count */
             /* Set its hop count to the leader */
-            std::cout << "HOP = " << hopCountToLeader << std::endl;
+            std::cout << "Hops to leader: " << hopCountToLeader << std::endl;
             msg[msg_index++] = 1; // Number of HopMsg
 
             msg[msg_index++] = teamID;
@@ -341,7 +350,6 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            std::cout << "hops.size: " << hops.size() << std::endl; // TEMP: Should always be 2 for now
             msg[msg_index++] = hops.size(); // Set the number of hops
 
             for(const auto& it : hops) {
@@ -610,12 +618,12 @@ void CFollower::Update() {
             // If no duplicate vector is empty, all connections with connectors remain
         
         // DEBUG
-        std::cout << "--- HOPS ---" << std::endl;
-        for(const auto& it : hops) {
-            std::cout << "Team: " << it.first << std::endl;
-            std::cout << "Count: " << it.second.count << std::endl;
-            std::cout << "ID: " << it.second.ID << std::endl;
-        }
+        // std::cout << "--- HOPS ---" << std::endl;
+        // for(const auto& it : hops) {
+        //     std::cout << "Team: " << it.first << std::endl;
+        //     std::cout << "Count: " << it.second.count << std::endl;
+        //     std::cout << "ID: " << it.second.ID << std::endl;
+        // }
 
         CheckRequests();
 
@@ -951,7 +959,6 @@ void CFollower::UpdateHopCounts() {
         if( !previousRobotID.empty() ) {
             UInt8 teamToCheck = hop.first;
             HopMsg previousHop = robotMessages[previousRobotID].hops[teamToCheck];
-            std::cout << "previousHop: " << previousHop.count << std::endl;
             hop.second.count = previousHop.count + 1; // Increment by 1
         }
     }

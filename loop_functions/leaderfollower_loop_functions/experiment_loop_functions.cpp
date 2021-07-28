@@ -369,7 +369,7 @@ void CExperimentLoopFunctions::PreStep() {
 
                 /* Current location */
                 CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
-                                        cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+                                         cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
 
                 /* Leaeder's location */
                 std::ostringstream cLeaderId;
