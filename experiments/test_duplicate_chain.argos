@@ -6,7 +6,7 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="0"
+    <experiment length="1000"
                 ticks_per_second="10"
                 random_seed="124" />
   </framework>
@@ -130,12 +130,12 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="12" center="0.3,0.3" density="0.15">
+      <team leader_num="1" robot_num="3" center="0.3,0.3" density="0.15">
         <waypoint coord="1.5,0" />
         <waypoint coord="1.5,1.5" />
         <waypoint coord="-1.5,1.5" />
       </team>
-      <team leader_num="1" robot_num="12" center="-0.3,-0.3" density="0.15">
+      <team leader_num="1" robot_num="3" center="-0.3,-0.3" density="0.15">
         <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="1.5,-1.5" />
