@@ -423,7 +423,7 @@ private:
     /* The leader can move as long as it is withthin the minimum distance threshold from the robots */
     Real minDistanceFromRobot;
 
-    size_t sendAcceptDuration;
+    size_t sendDuration;
 };
 
 #endif

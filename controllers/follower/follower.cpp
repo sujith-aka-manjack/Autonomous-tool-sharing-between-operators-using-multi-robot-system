@@ -155,7 +155,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "obstacle", obstacleWeight);
 
         /* Timeout duration */
-        GetNodeAttribute(GetNode(t_node, "timeout"), "request", requestDuration);
+        GetNodeAttribute(GetNode(t_node, "timeout"), "send_message", sendDuration);
+        GetNodeAttribute(GetNode(t_node, "timeout"), "wait_request", waitRequestDuration);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -396,6 +397,25 @@ void CFollower::ControlStep() {
     }
 
     /* Connection Message */
+    /* Set ConnectionMsg to send during this timestep */
+    std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
+        if(it->first > 0) {
+            if(receiveA || receiveNA) {
+                it = cmsgToResend.erase(it); // Stop resending when a response is received
+                // std::cout << "STOP RESENDING, ACCEPT HAS BEEN RECEIVED" << std::endl;
+            } else {
+                cmsgToSend.push_back(it->second);
+                it->first--; // Decrement timer
+                ++it;
+            }
+        } else {
+            it = cmsgToResend.erase(it);
+            // std::cout << "STOP RESENDING, TIMEOUT HAS BEEN REACHED" << std::endl;
+        }
+    }
+    // std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+
     std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
     msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
@@ -1229,6 +1249,7 @@ void CFollower::PrintName() {
 void CFollower::Callback_MoveFlock(void* data) {
     std::cout << "Action: moveFlock" <<std::endl;
     currentMoveType = MoveType::FLOCK;
+    currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
@@ -1291,10 +1312,10 @@ void CFollower::Callback_SendRL(void* data) {
     cmsg.from   = this->GetId();
     cmsg.to     = "L" + std::to_string(teamID);
     cmsg.toTeam = teamID;
-    cmsgToSend.push_back(cmsg);
+    cmsgToResend.push_back({sendDuration,cmsg});
 
     currentRequest = cmsg;
-    requestTimer = requestDuration;
+    requestTimer = waitRequestDuration;
     std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
@@ -1307,10 +1328,10 @@ void CFollower::Callback_SendRC(void* data) {
     cmsg.from   = this->GetId();
     cmsg.to     = connectionCandidate.ID;
     cmsg.toTeam = 255; // No team
-    cmsgToSend.push_back(cmsg);
+    cmsgToResend.push_back({sendDuration,cmsg});
 
     currentRequest = cmsg;
-    requestTimer = requestDuration;
+    requestTimer = waitRequestDuration;
     std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
@@ -1323,7 +1344,7 @@ void CFollower::Callback_SendA(void* data) {
         cmsg.from   = this->GetId();
         cmsg.to     = it.second;
         cmsg.toTeam = it.first;
-        cmsgToSend.push_back(cmsg);
+        cmsgToResend.push_back({sendDuration,cmsg});
 
         /* Update hop count to the team using the new connector */
         hops[it.first].count++; // 1 -> 2
@@ -1444,8 +1465,6 @@ unsigned char CFollower::Check_ReceiveA(void* data) {
 
 unsigned char CFollower::Check_ReceiveNA(void* data) {
     std::cout << "Event: " << receiveNA << " - receiveNA" << std::endl;
-    if(receiveNA)
-        currentRequest = ConnectionMsg(); // Clear any existing requests
     return receiveNA;
 }
 

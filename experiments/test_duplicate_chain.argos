@@ -6,7 +6,7 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="1000"
+    <experiment length="100"
                 ticks_per_second="10"
                 random_seed="124" />
   </framework>
@@ -48,7 +48,8 @@
         <flocking_weights team="1"
                           robot="1"
                           obstacle="1" />
-        <timeout request="4" />
+        <timeout send_message="4" 
+                 wait_request="4" />
       </params>
     </follower_controller>
 
@@ -113,7 +114,7 @@
                        gain="1000"
                        exponent="2" />
         <team_distance min_leader_robot_distance="75" />
-        <timeout send_accept="4" />
+        <timeout send_message="4" />
       </params>
     </leader_controller>
 
@@ -131,12 +132,12 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="3" center="0.3,0.3" density="0.15">
+      <team leader_num="1" robot_num="13" center="0.3,0.3" density="0.15">
         <waypoint coord="1.5,0" />
         <waypoint coord="1.5,1.5" />
         <waypoint coord="-1.5,1.5" />
       </team>
-      <team leader_num="1" robot_num="3" center="-0.3,-0.3" density="0.15">
+      <team leader_num="1" robot_num="13" center="-0.3,-0.3" density="0.15">
         <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="1.5,-1.5" />

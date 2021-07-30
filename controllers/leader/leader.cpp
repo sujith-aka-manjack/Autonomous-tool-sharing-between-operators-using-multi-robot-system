@@ -141,7 +141,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
         /* Minimum distance from robot */
         GetNodeAttribute(GetNode(t_node, "team_distance"), "min_leader_robot_distance", minDistanceFromRobot);
         /* Minimum duration the accept message will be sent for */
-        GetNodeAttribute(GetNode(t_node, "timeout"), "send_accept", sendAcceptDuration);
+        GetNodeAttribute(GetNode(t_node, "timeout"), "send_message", sendDuration);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -616,39 +616,40 @@ bool CLeader::IsNearRobot() {
 
 void CLeader::ReplyToRequest() {
 
-    /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
-    ConnectionMsg acceptTo;
-    acceptTo.type   = 'A';
-    acceptTo.from   = this->GetId();
-    acceptTo.toTeam = teamID;
-    
-    for(const auto& teamMsg : teamMsgs) {
-        for(const auto& cmsg : teamMsg.cmsg) {
+    if(cmsgToResend.empty() && shareToTeam.empty()) { // Check if it has not recently sent an accept message and whether there is already a connector or not
 
-            if(cmsg.to == this->GetId() && cmsg.type == 'R' && shareToTeam.empty()) {
+        /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
+        ConnectionMsg acceptTo;
+        acceptTo.type   = 'A';
+        acceptTo.from   = this->GetId();
+        acceptTo.toTeam = teamID;
+        
+        for(const auto& teamMsg : teamMsgs) {
+            for(const auto& cmsg : teamMsg.cmsg) {
 
-                /* Set the ID of the first follower request seen */
-                if(acceptTo.to.empty()) {
-                    acceptTo.to = cmsg.from;
-                    continue;
+                if(cmsg.to == this->GetId() && cmsg.type == 'R') {
+
+                    /* Set the ID of the first follower request seen */
+                    if(acceptTo.to.empty()) {
+                        acceptTo.to = cmsg.from;
+                        continue;
+                    }
+                    
+                    UInt8 currentFID = stoi(acceptTo.to.substr(1));
+                    UInt8 newFID = stoi(cmsg.from.substr(1));
+
+                    /* Send an accept message to the follower with the smallest ID */
+                    if(newFID < currentFID)
+                        acceptTo.to = cmsg.from;
                 }
-                
-                UInt8 currentFID = stoi(acceptTo.to.substr(1));
-                UInt8 newFID = stoi(cmsg.from.substr(1));
-
-                /* Send an accept message to the follower with the smallest ID */
-                if(newFID < currentFID)
-                    acceptTo.to = cmsg.from;
             }
         }
-    }
 
-    std::cout << "acceptTo: " << acceptTo.to << std::endl;
+        std::cout << "acceptTo: " << acceptTo.to << std::endl;
 
-    /* Add accept message to be sent */
-    if( !acceptTo.to.empty() ) {
-        // cmsgToSend.push_back(acceptTo);
-        cmsgToResend.push_back({sendAcceptDuration,acceptTo});
+        /* Add accept message to be sent */
+        if( !acceptTo.to.empty() )
+            cmsgToResend.push_back({sendDuration,acceptTo});
     }
 }
 

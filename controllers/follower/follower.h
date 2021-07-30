@@ -456,7 +456,9 @@ private:
 
     std::unordered_map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
 
+    /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend;
+    std::vector<std::pair<size_t,ConnectionMsg>> cmsgToResend; // ConnectionMsg attached with a timer. Messages gets added into cmsgToSend while timer is running
     std::string shareToLeader, shareToTeam;
 
     /* Flag to indicate whether this robot is working on a task */
@@ -475,7 +477,8 @@ private:
     Real separationThres;
     Real joiningThres;
 
-    size_t requestDuration;
+    size_t sendDuration;
+    size_t waitRequestDuration;
 };
 
 #endif
