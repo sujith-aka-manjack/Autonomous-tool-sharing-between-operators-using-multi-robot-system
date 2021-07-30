@@ -462,8 +462,8 @@ private:
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;
 
-    /* Whether the first timestep in the simulation has passed */
-    size_t initStepComplete;
+    /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
+    size_t initStepTimer;
 
     /*
     * The following variables are used as parameters for the

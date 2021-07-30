@@ -140,6 +140,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
         /* Minimum distance from robot */
         GetNodeAttribute(GetNode(t_node, "team_distance"), "min_leader_robot_distance", minDistanceFromRobot);
+        /* Minimum duration the accept message will be sent for */
+        GetNodeAttribute(GetNode(t_node, "timeout"), "send_accept", sendAcceptDuration);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -148,10 +150,10 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /* Get team ID from leader ID */
     teamID = stoi(GetId().substr(1));
 
-    /* Set state to leader */
+    /* Initialization */
     currentState = RobotState::LEADER;
-
     shareToTeam = "";
+    initStepTimer = 0;
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
@@ -240,75 +242,81 @@ void CLeader::ControlStep() {
     /* Control */
     /*---------*/
 
-    /* Is the robot selected? */
-    if(m_bSelected) {
+    if(initStepTimer > 1) {
 
-        /* Follow the control vector */
-        SetWheelSpeedsFromVector(m_cControl);
-        std::cout << "SIGNAL " << m_bSignal << std::endl; 
+        /* Is the robot selected? */
+        if(m_bSelected) {
 
-        if(m_bSignal)
-            m_pcLEDs->SetAllColors(CColor::WHITE);
-        else
-            m_pcLEDs->SetAllColors(teamColor[teamID]);
+            /* Follow the control vector */
+            SetWheelSpeedsFromVector(m_cControl);
+            std::cout << "SIGNAL " << m_bSignal << std::endl; 
 
-        msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
-    }
-    else {
-        if( !nearRobot ) {
-            std::cout << "[LOG] Robot is far" << std::endl;
+            if(m_bSignal)
+                m_pcLEDs->SetAllColors(CColor::WHITE);
+            else
+                m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-            /* Stop if other robots are too far from itself */
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            msg_index++;
-        }
-        else if( !waypoints.empty() ) {
-            /* Check if it is near the waypoint */
-            CVector3 pos3d = m_pcPosSens->GetReading().Position;
-            CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
-            Real dist = (waypoints.front() - pos2d).Length();
-            std::cout << "dist: " << dist << std::endl;
-
-            /* Check if task is completed */
-            if(dist < m_sWaypointTrackingParams.thresRange) {
-                if(currentTaskDemand == 0) {
-                    msg[msg_index++] = 0; // send stopTask signal to robots in the team
-                    m_pcLEDs->SetAllColors(teamColor[teamID]);
-                    waypoints.pop(); // Delete waypoint from queue
-                } else {
-                    msg[msg_index++] = 1; // send startTask signal to robots in the team
-                    m_pcLEDs->SetAllColors(CColor::WHITE);
-                }
-            } else
-                msg[msg_index++] = 0; // Leader is not close to a waypoint
-
-            /* If current task is completed, move to the next one */
-            if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
-                
-                std::cout << "[LOG] Moving to next task" << std::endl;
-
-                /* Calculate overall force applied to the robot */
-                CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
-                CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
-                CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
-
-                CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
-                std::cout << "waypointForce: " << waypointForce << std::endl;
-                std::cout << "robotForce: " << robotForce << std::endl;
-                std::cout << "obstacleForce: " << obstacleForce << std::endl;
-                std::cout << "sumForce: " << sumForce << std::endl;
-
-                SetWheelSpeedsFromVectorHoming(sumForce);
-            } 
-            else {
-                m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            }
+            msg[msg_index++] = int(m_bSignal); // Set the signal the leader is sending
         }
         else {
-            std::cout << "[LOG] No assigned tasks left" << std::endl;
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            msg[msg_index++] = 0; // Leader sends stopTask
+            if( !nearRobot ) {
+                std::cout << "[LOG] Robot is far" << std::endl;
+
+                /* Stop if other robots are too far from itself */
+                m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                msg_index++;
+            }
+            else if( !waypoints.empty() ) {
+                /* Check if it is near the waypoint */
+                CVector3 pos3d = m_pcPosSens->GetReading().Position;
+                CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+                Real dist = (waypoints.front() - pos2d).Length();
+                std::cout << "dist: " << dist << std::endl;
+
+                /* Check if task is completed */
+                if(dist < m_sWaypointTrackingParams.thresRange) {
+                    if(currentTaskDemand == 0) {
+                        msg[msg_index++] = 0; // send stopTask signal to robots in the team
+                        m_pcLEDs->SetAllColors(teamColor[teamID]);
+                        waypoints.pop(); // Delete waypoint from queue
+                    } else {
+                        msg[msg_index++] = 1; // send startTask signal to robots in the team
+                        m_pcLEDs->SetAllColors(CColor::WHITE);
+                    }
+                } else
+                    msg[msg_index++] = 0; // Leader is not close to a waypoint
+
+                /* If current task is completed, move to the next one */
+                if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+                    
+                    std::cout << "[LOG] Moving to next task" << std::endl;
+
+                    /* Calculate overall force applied to the robot */
+                    CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
+                    CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
+                    CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
+
+                    CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
+                    std::cout << "waypointForce: " << waypointForce << std::endl;
+                    std::cout << "robotForce: " << robotForce << std::endl;
+                    std::cout << "obstacleForce: " << obstacleForce << std::endl;
+                    std::cout << "sumForce: " << sumForce << std::endl;
+
+                    SetWheelSpeedsFromVectorHoming(sumForce);
+                } 
+                else {
+                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                }
+            }
+            else {
+                std::cout << "[LOG] No assigned tasks left" << std::endl;
+                m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                msg[msg_index++] = 0; // Leader sends stopTask
+            }
         }
+    } else {
+        initStepTimer++;
+        msg_index++;
     }
     
     /* Hop count */
@@ -563,6 +571,18 @@ void CLeader::Update() {
     SetConnectorToRelay();
 
     ReplyToRequest();
+
+    /* Set ConnectionMsg to send during this timestep */
+    std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
+        if(it->first > 0) {
+            cmsgToSend.push_back(it->second);
+            it->first--; // Decrement timer
+            ++it;
+        } else {
+            it = cmsgToResend.erase(it);
+        }
+    }
 }
 
 /****************************************/
@@ -626,8 +646,10 @@ void CLeader::ReplyToRequest() {
     std::cout << "acceptTo: " << acceptTo.to << std::endl;
 
     /* Add accept message to be sent */
-    if( !acceptTo.to.empty() )
-        cmsgToSend.push_back(acceptTo);
+    if( !acceptTo.to.empty() ) {
+        // cmsgToSend.push_back(acceptTo);
+        cmsgToResend.push_back({sendAcceptDuration,acceptTo});
+    }
 }
 
 /****************************************/

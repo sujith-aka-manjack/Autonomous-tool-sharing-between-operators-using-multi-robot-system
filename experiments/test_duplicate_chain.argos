@@ -113,6 +113,7 @@
                        gain="1000"
                        exponent="2" />
         <team_distance min_leader_robot_distance="75" />
+        <timeout send_accept="4" />
       </params>
     </leader_controller>
 
@@ -280,7 +281,6 @@
   <visualization>
     <qt-opengl autoplay="false">
 
-      <!-- For grabbing a snapshot of the simulation -->
       <frame_grabbing directory="frames"
                       base_name="frame_"
                       format="png"

@@ -454,10 +454,12 @@ void CExperimentLoopFunctions::PreStep() {
               << unConnectors << std::endl;
 
     /* Grab frame */
-    CQTOpenGLRender& render = dynamic_cast<CQTOpenGLRender&>(GetSimulator().GetVisualization());
-    CQTOpenGLWidget& widget = render. GetMainWindow().GetOpenGLWidget();
-    widget.SetCamera(CAMERA_INDEX);
-    widget.SetGrabFrame(GRAB_FRAME);
+    if(GRAB_FRAME) {
+        CQTOpenGLRender& render = dynamic_cast<CQTOpenGLRender&>(GetSimulator().GetVisualization());
+        CQTOpenGLWidget& widget = render.GetMainWindow().GetOpenGLWidget();
+        widget.SetCamera(CAMERA_INDEX);
+        widget.SetGrabFrame(GRAB_FRAME);
+    }
 }
 
 /****************************************/

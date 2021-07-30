@@ -168,7 +168,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
     shareToLeader = "";
     shareToTeam = "";
-    initStepComplete = 0;
+    initStepTimer = 0;
 
     /*
     * Init SCT Controller
@@ -261,7 +261,8 @@ bool CFollower::IsWorking() {
 
 void CFollower::ControlStep() {
 
-    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    std::string id = this->GetId();
+    std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     /*-----------------*/
     /* Reset variables */
@@ -306,10 +307,10 @@ void CFollower::ControlStep() {
     /*--------------------*/
     std::cout << "--- Supervisors ---" << std::endl;
 
-    if(initStepComplete > 0)
+    if(initStepTimer > 1)
         sct->run_step();    // Run the supervisor to get the next action
     else
-        initStepComplete++;
+        initStepTimer++;
 
     sct->print_current_state();
     std::cout << std::endl;
@@ -322,7 +323,6 @@ void CFollower::ControlStep() {
     msg[msg_index++] = static_cast<UInt8>(currentState);
 
     /* Set sender ID in msg */
-    std::string id = this->GetId();
     msg[msg_index++] = stoi(id.substr(1));
 
     /* Set current team ID in msg */
@@ -620,10 +620,8 @@ void CFollower::Update() {
             std::cout << "requestTimer: " << requestTimer << std::endl;
 
             /* Check whether an Accept message was not received before the timeout */
-            if(requestTimer == 0 && currentAccept.type == 'N') {
+            if(requestTimer == 0 && currentAccept.type == 'N')
                 receiveNA = true;
-                currentRequest = ConnectionMsg(); // Clear current request
-            }
         }
             
             // Remember currently sending request? (with timesteps to continue sending?)
@@ -1231,7 +1229,6 @@ void CFollower::PrintName() {
 void CFollower::Callback_MoveFlock(void* data) {
     std::cout << "Action: moveFlock" <<std::endl;
     currentMoveType = MoveType::FLOCK;
-    currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
@@ -1447,6 +1444,8 @@ unsigned char CFollower::Check_ReceiveA(void* data) {
 
 unsigned char CFollower::Check_ReceiveNA(void* data) {
     std::cout << "Event: " << receiveNA << " - receiveNA" << std::endl;
+    if(receiveNA)
+        currentRequest = ConnectionMsg(); // Clear any existing requests
     return receiveNA;
 }
 

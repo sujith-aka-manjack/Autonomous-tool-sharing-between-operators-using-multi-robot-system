@@ -303,7 +303,7 @@ protected:
     virtual void ReplyToRequest();
 
     /*
-    *
+    * Find the closest connector info that needs to be shared within the team.
     */
     virtual void SetConnectorToRelay();
 
@@ -408,7 +408,11 @@ private:
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend; 
+    std::vector<std::pair<size_t,ConnectionMsg>> cmsgToResend; // ConnectionMsg attached with a timer. Messages gets added into cmsgToSend while timer is running
     std::string shareToTeam;
+
+    /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
+    size_t initStepTimer;
 
     /*
     * The following variables are used as parameters for the
@@ -418,6 +422,8 @@ private:
     */
     /* The leader can move as long as it is withthin the minimum distance threshold from the robots */
     Real minDistanceFromRobot;
+
+    size_t sendAcceptDuration;
 };
 
 #endif
