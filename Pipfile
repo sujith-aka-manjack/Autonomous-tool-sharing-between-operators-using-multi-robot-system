@@ -9,6 +9,7 @@ verify_ssl = true
 numpy = "*"
 matplotlib = "*"
 pandas = "*"
+opencv-python = "*"
 
 [requires]
 python_version = "3.9"
