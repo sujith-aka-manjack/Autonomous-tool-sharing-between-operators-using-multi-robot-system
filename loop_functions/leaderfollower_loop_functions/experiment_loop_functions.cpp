@@ -6,6 +6,14 @@
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
 #include <circle_task/circle_task_entity.h>
+#include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
+#include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
+
+/****************************************/
+/****************************************/
+
+static const bool GRAB_FRAME   = false;
+static const int  CAMERA_INDEX = 3;
 
 /****************************************/
 /****************************************/
@@ -444,6 +452,12 @@ void CExperimentLoopFunctions::PreStep() {
               << leaderPos["L2"].GetY() << ","
               << unFollowers2 << ","
               << unConnectors << std::endl;
+
+    /* Grab frame */
+    CQTOpenGLRender& render = dynamic_cast<CQTOpenGLRender&>(GetSimulator().GetVisualization());
+    CQTOpenGLWidget& widget = render. GetMainWindow().GetOpenGLWidget();
+    widget.SetCamera(CAMERA_INDEX);
+    widget.SetGrabFrame(GRAB_FRAME);
 }
 
 /****************************************/

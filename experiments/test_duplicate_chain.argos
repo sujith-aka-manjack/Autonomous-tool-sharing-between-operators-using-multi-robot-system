@@ -279,8 +279,19 @@
     -->
   <visualization>
     <qt-opengl autoplay="false">
+
+      <!-- For grabbing a snapshot of the simulation -->
+      <frame_grabbing directory="frames"
+                      base_name="frame_"
+                      format="png"
+                      quality="100"
+                      headless_grabbing="false"
+                      headless_frame_size="1600x1200"
+                      headless_frame_rate="1"/>
+
       <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
                       label="manualcontrol_qtuser_functions" />
+
       <camera>
         <placements>
           <placement index="1" position="-1.13679,0.00582551,2.45548" look_at="-0.704207,0.00502653,1.55389" up="0.901591,-0.00166523,0.432586" lens_focal_length="50" />
@@ -289,6 +300,7 @@
           <placement index="3" position="0,-0.146444,10.092" look_at="0,-0.146444,9.09204" up="1,0,0" lens_focal_length="65" />
         </placements>
       </camera>
+
     </qt-opengl>
   </visualization>
 
