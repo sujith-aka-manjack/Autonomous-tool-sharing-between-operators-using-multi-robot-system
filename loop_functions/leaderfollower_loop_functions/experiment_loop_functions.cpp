@@ -12,12 +12,6 @@
 /****************************************/
 /****************************************/
 
-static const bool GRAB_FRAME   = false;
-static const int  CAMERA_INDEX = 3;
-
-/****************************************/
-/****************************************/
-
 static const Real        EP_RADIUS        = 0.035f;
 static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
 static const Real        EP_RAB_RANGE     = 0.8f;
@@ -46,13 +40,16 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         /*
         * Parse the configuration file
         */
-        TConfigurationNode& tForaging = GetNode(t_node, "experiment");
+        TConfigurationNode& tChainFormation = GetNode(t_node, "experiment");
         /* Get a pointer to the floor entity */
         m_pcFloor = &GetSpace().GetFloorEntity();
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */
-        GetNodeAttribute(tForaging, "output", m_strOutput);
+        GetNodeAttribute(tChainFormation, "output", m_strOutput);
+        /* Set the frame grabbing settings */
+        GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
+        GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
         /* Open the file, erasing its contents */
         m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
         m_cOutput << "# clock,"
@@ -454,11 +451,11 @@ void CExperimentLoopFunctions::PreStep() {
               << unConnectors << std::endl;
 
     /* Grab frame */
-    if(GRAB_FRAME) {
+    if(m_bFrameGrabbing) {
         CQTOpenGLRender& render = dynamic_cast<CQTOpenGLRender&>(GetSimulator().GetVisualization());
         CQTOpenGLWidget& widget = render.GetMainWindow().GetOpenGLWidget();
-        widget.SetCamera(CAMERA_INDEX);
-        widget.SetGrabFrame(GRAB_FRAME);
+        widget.SetCamera(m_unCameraIndex);
+        widget.SetGrabFrame(m_bFrameGrabbing);
     }
 }
 

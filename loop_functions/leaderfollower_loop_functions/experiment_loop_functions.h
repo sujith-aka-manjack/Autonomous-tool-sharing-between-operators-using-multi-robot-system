@@ -34,6 +34,10 @@ private:
    std::string m_strOutput;
    std::ofstream m_cOutput;
 
+   /* Frame Grabbing */
+   bool m_bFrameGrabbing;
+   UInt32 m_unCameraIndex;
+
    /* Distribute a leader-robot team */
    void PlaceCluster(const CVector2& c_center,
                      UInt32 un_leaders,
