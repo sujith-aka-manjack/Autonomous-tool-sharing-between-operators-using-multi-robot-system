@@ -429,6 +429,13 @@ void CLeader::SetTaskDemand(const UInt32 un_demand) {
 /****************************************/
 /****************************************/
 
+UInt8 CLeader::GetTeamID() {
+    return teamID;
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::GetMessages() {
     
     /* Get RAB messages from nearby e-pucks */

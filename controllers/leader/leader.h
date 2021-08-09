@@ -280,6 +280,11 @@ public:
     */
     void SetTaskDemand(const UInt32 un_demand);
 
+    /*
+    * Get team ID.
+    */
+    virtual UInt8 GetTeamID();
+
 protected:
 
     /* 
