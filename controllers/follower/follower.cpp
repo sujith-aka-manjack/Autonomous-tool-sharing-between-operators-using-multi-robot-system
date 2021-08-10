@@ -253,7 +253,7 @@ void CFollower::SetTeamID(const UInt8 id) {
 /****************************************/
 
 const std::map<UInt8, CFollower::HopMsg>& CFollower::GetHops() const {
-    return hops;
+    return hopsDict;
 }
 
 /****************************************/
@@ -365,9 +365,9 @@ void CFollower::ControlStep() {
             msg_index++; // Skip to next part
 
             /* Hop count */
-            msg[msg_index++] = hops.size(); // Set the number of HopMsg
+            msg[msg_index++] = hopsDict.size(); // Set the number of HopMsg
 
-            for(const auto& it : hops) {
+            for(const auto& it : hopsDict) {
 
                 msg[msg_index++] = it.first;                     // Team ID
                 msg[msg_index++] = it.second.count;              // Count
@@ -380,7 +380,7 @@ void CFollower::ControlStep() {
                 }
             }
             // Skip if not all bytes are used
-            msg_index += (2 - hops.size()) * 4; // TEMP: Currently assuming only two teams
+            msg_index += (2 - hopsDict.size()) * 4; // TEMP: Currently assuming only two teams
 
             break;
         }
@@ -845,7 +845,7 @@ void CFollower::CheckRequests() {
 
                 receiveR = true;
 
-                if(hops[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
+                if(hopsDict[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
 
                     /* Accept first request seen for a team */
                     if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
@@ -981,7 +981,7 @@ void CFollower::UpdateHopCounts() {
     /* Extract connector IDs to check */
     std::unordered_set<std::string> robotIDs;
 
-    for(const auto& hop : hops) {
+    for(const auto& hop : hopsDict) {
         if( !hop.second.ID.empty() )
             robotIDs.insert(hop.second.ID);
     }
@@ -994,17 +994,55 @@ void CFollower::UpdateHopCounts() {
         if(robotIDs.empty())
             break;
 
-        for(auto& id : robotIDs) {
-            if(msg.ID == id) {
-                robotMessages[id] = msg;
-                robotIDs.erase(id);
-                break;
+        /* Find the next connector and update hop count */
+        if(robotIDs.count(msg.ID)) { // Should always return 0 or 1 as it is a set
+            robotMessages[msg.ID] = msg;
+            robotIDs.erase(msg.ID);
+        }
+    }
+
+    /* If a connector was not found, update hop count if it has become a follower */
+    if( !robotIDs.empty() ) {
+        for(const auto& msg : otherTeamMsgs) {
+
+            /* Robot is found to be a follower so delete entries from hopsDict with the robot's id */
+            if(robotIDs.count(msg.ID)) { // Should always return 0 or 1 as it is a set
+
+                /* Check if it is not a robot that it has just sent an accept message to */
+                bool sentAccept = false;
+                for(const auto& sendMsg : cmsgToResend) {
+                    if(sendMsg.second.to == msg.ID) {
+                        sentAccept = true;
+                        robotIDs.erase(msg.ID);
+                        break;
+                    }
+                }
+
+                if( !sentAccept ) {
+                    /* Find all keys that this robot appears in */
+                    std::vector<UInt8> teamKeys;
+                    for(auto& hop : hopsDict) {
+                        if(hop.second.ID == msg.ID)
+                            teamKeys.push_back(hop.first);
+                    }
+
+                    /* Delete the robot's ID and update hop count to 1 */
+                    for(const auto& key : teamKeys) {
+                        hopsDict[key].ID = "";
+                        hopsDict[key].count = 1;
+                    }
+
+                    robotIDs.erase(msg.ID);
+                }
             }
         }
     }
 
+    if( !robotIDs.empty() )
+        std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
+
     /* Update hop count */
-    for(auto& hop : hops) {
+    for(auto& hop : hopsDict) {
         std::string previousRobotID = hop.second.ID;
 
         if( !previousRobotID.empty() ) {
@@ -1265,6 +1303,17 @@ void CFollower::Callback_MoveStop(void* data) {
 
 void CFollower::Callback_SetF(void* data) {
     std::cout << "Action: setF" << std::endl;
+
+    /* Set new teamID */
+    for(const auto& hop : hopsDict) {
+        if(hop.second.count == 1) {
+            teamID = hop.first;
+            break;
+        }
+    }
+
+    currentState = RobotState::FOLLOWER;
+    hopsDict.clear();
 }
 
 void CFollower::Callback_SetC(void* data) {
@@ -1276,10 +1325,10 @@ void CFollower::Callback_SetC(void* data) {
         for(const auto& msg : otherTeamMsgs) {
 
             /* Add hop count entry if not yet registered */
-            if(hops.find(msg.teamID) == hops.end()) {
+            if(hopsDict.find(msg.teamID) == hopsDict.end()) {
                 HopMsg hop;
                 hop.count = 1;
-                hops[msg.teamID] = hop;
+                hopsDict[msg.teamID] = hop;
             }
         }
     } else {    // Accept received from a connector
@@ -1291,13 +1340,13 @@ void CFollower::Callback_SetC(void* data) {
             it.second.count++;
             it.second.ID = currentAccept.from;
         }
-        hops = hopsCopy;                   // Set to its hops
+        hopsDict = hopsCopy;                   // Set to its hops
     }
 
     /* Set hop count to the team it is leaving to 1 */
     HopMsg hop;
     hop.count = 1;
-    hops[teamID] = hop;
+    hopsDict[teamID] = hop;
 
     /* Reset variables */
     currentAccept = ConnectionMsg(); 
@@ -1354,8 +1403,8 @@ void CFollower::Callback_SendA(void* data) {
         cmsgToResend.push_back({sendDuration,cmsg});
 
         /* Update hop count to the team using the new connector */
-        hops[it.first].count++; // 1 -> 2
-        hops[it.first].ID = it.second;
+        hopsDict[it.first].count++; // 1 -> 2
+        hopsDict[it.first].ID = it.second;
     }
 }
 
