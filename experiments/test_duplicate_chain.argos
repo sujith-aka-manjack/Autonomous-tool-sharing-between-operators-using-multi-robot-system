@@ -127,7 +127,7 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <experiment output="experiment.yaml" 
+    <experiment output="results/experiment.yaml" 
                 frame_grabbing="false" 
                 camera_index="3" />
 
