@@ -1243,32 +1243,32 @@ void CFollower::PrintName() {
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_TaskBegin(void* data) {
-    std::cout << "Action: taskBegin" <<std::endl;
+    std::cout << "Action: taskBegin" << std::endl;
     performingTask = true;
 }
 
 void CFollower::Callback_TaskStop(void* data) {
-    std::cout << "Action: taskStop" <<std::endl;
+    std::cout << "Action: taskStop" << std::endl;
     performingTask = false;
 }
 
 void CFollower::Callback_MoveFlock(void* data) {
-    std::cout << "Action: moveFlock" <<std::endl;
+    std::cout << "Action: moveFlock" << std::endl;
     currentMoveType = MoveType::FLOCK;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
-    std::cout << "Action: moveStop" <<std::endl;
+    std::cout << "Action: moveStop" << std::endl;
     currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_SetF(void* data) {
-    std::cout << "Action: setF" <<std::endl;
+    std::cout << "Action: setF" << std::endl;
 }
 
 void CFollower::Callback_SetC(void* data) {
-    std::cout << "Action: setC" <<std::endl;
+    std::cout << "Action: setC" << std::endl;
     
     if(currentAccept.from[0] == 'L') {  // Accept received from the leader
 
@@ -1311,7 +1311,7 @@ void CFollower::Callback_SetC(void* data) {
 }
 
 void CFollower::Callback_SendRL(void* data) {
-    std::cout << "Action: sendRL" <<std::endl;
+    std::cout << "Action: sendRL" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1327,7 +1327,7 @@ void CFollower::Callback_SendRL(void* data) {
 }
 
 void CFollower::Callback_SendRC(void* data) {
-    std::cout << "Action: sendRC" <<std::endl;
+    std::cout << "Action: sendRC" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1343,7 +1343,7 @@ void CFollower::Callback_SendRC(void* data) {
 }
 
 void CFollower::Callback_SendA(void* data) {
-    std::cout << "Action: sendA" <<std::endl;
+    std::cout << "Action: sendA" << std::endl;
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
