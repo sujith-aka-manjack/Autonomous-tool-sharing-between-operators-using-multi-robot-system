@@ -293,6 +293,8 @@ void CFollower::ControlStep() {
 
     /* Reset sensor reading results */
     condC2 = false;
+    condF1 = false;
+    condF2 = false;
     receiveR  = false;
     receiveA  = false;
     receiveNA = false;
@@ -673,6 +675,59 @@ void CFollower::Update() {
         CheckRequests();
 
         UpdateHopCounts();
+
+        /* Check if there is a team that is 1 hop count away from itself */
+        for(const auto& hop : hopsDict) {
+            if(hop.second.count == 1) {
+                condF1 = true;
+
+                // Check the distance between the next connector and the team it has a hop count of 1 with.
+                    // If distance is smaller than the distance between itself and the connector (and the connector sees the follower) then return true
+
+                // Get a set of connectors from hopsDict
+                // Loop connectors
+                    // If connector from hopsDict (remaining entries)
+                        // MyDist = itself - connector
+                        // Create a vector of otherTeamMsgs with the key from hopsDict
+                        // Pick msgs that also appears in the connector's connections
+                        // Loop list of team followers the other connector sees
+                            // OtherDist
+                        // if OtherDist < MyDist
+                            // condF2 = true
+
+                /* Extract connector IDs to check */
+                std::unordered_set<std::string> robotIDs;
+
+                for(const auto& hop : hopsDict) {
+                    if( !hop.second.ID.empty() )
+                        robotIDs.insert(hop.second.ID);
+                }
+
+                if( !robotIDs.empty() ) {
+
+                    // TODO: Calculate MyDist, closest distance to a follower in the team
+                    Real myDist = 10000;
+                    // Check GetClosestNonTeam
+                    
+                    for(const auto& msg : connectorMsgs) {
+                        if(robotIDs.count(msg.ID)) {
+
+                            // TODO: Calculate OtherDist, closest distance to a follower in the team
+
+                            // Filter otherTeamMsgs with 1) teamID matches and 2) exists in connector's connections
+
+                            // if OtherDist < MyDist
+                                // condF2 = true
+                                // break;
+
+                        }
+                    }
+                }
+                
+
+                // break;
+            }
+        }
     }
 }
 
@@ -716,7 +771,7 @@ void CFollower::GetLeaderInfo() {
 CFollower::Message CFollower::GetClosestNonTeam() {
     
     /* Check for the robot that this robot can connect */
-    Real minDist = 255;
+    Real minDist = 10000;
     std::vector<Message> candidateMsgs;
     Message closestRobot;
 
@@ -743,7 +798,7 @@ CFollower::Message CFollower::GetClosestNonTeam() {
         }
     }
 
-    if(minDist < 255)
+    if(minDist < 10000)
         std::cout << "Dist to candidate: " << minDist << std::endl;
     
     return closestRobot;
@@ -1494,11 +1549,13 @@ unsigned char CFollower::Check_NotNearC(void* data) {
 }
 
 unsigned char CFollower::Check_CondF1(void* data) {
-    return 0;
+    std::cout << "Event: " << condF1 << " - condF1" << std::endl;
+    return condF1;
 }
 
 unsigned char CFollower::Check_NotCondF1(void* data) {
-    return 1;
+    std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
+    return !condF1;
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {

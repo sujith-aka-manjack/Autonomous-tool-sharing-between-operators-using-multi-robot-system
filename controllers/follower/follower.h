@@ -452,7 +452,7 @@ private:
     Message connectionCandidate; // (used in the FOLLOWER state)
     Message firstConnector; // The connector that a follower in the team should connect to next
 
-    bool condC2;
+    bool condC2, condF1, condF2;
     bool receiveR, receiveA, receiveNA;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
