@@ -369,6 +369,8 @@ protected:
     /* Callback functions */
     virtual void Callback_MoveFlock(void* data);
     virtual void Callback_MoveStop(void* data);
+    virtual void Callback_TaskBegin(void* data);
+    virtual void Callback_TaskStop(void* data);
     virtual void Callback_SetF(void* data);
     virtual void Callback_SetC(void* data);
     virtual void Callback_SendRL(void* data);
@@ -390,6 +392,9 @@ protected:
     virtual unsigned char Check_ReceiveR(void* data);
     virtual unsigned char Check_ReceiveA(void* data);
     virtual unsigned char Check_ReceiveNA(void* data);
+    virtual unsigned char Check_ReceiveTB(void* data);
+    virtual unsigned char Check_ReceiveTS(void* data);
+    virtual unsigned char Check_TaskEnded(void* data);
 
 private:
 
@@ -463,6 +468,8 @@ private:
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;
+
+    bool setCTriggered; // Flag to trigger the uncontrollable event taskEnded
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;

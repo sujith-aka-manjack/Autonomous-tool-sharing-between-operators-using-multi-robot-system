@@ -169,6 +169,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
     shareToLeader = "";
     shareToTeam = "";
+    setCTriggered = false; // Initialize flag
     initStepTimer = 0;
 
     /*
@@ -179,6 +180,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /* Register controllable events */
     sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
+    sct->add_callback(this, EV_taskBegin, &CFollower::Callback_TaskBegin, NULL, NULL);
+    sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
     sct->add_callback(this, EV_setF,      &CFollower::Callback_SetF,      NULL, NULL);
     sct->add_callback(this, EV_setC,      &CFollower::Callback_SetC,      NULL, NULL);
     sct->add_callback(this, EV_sendRL,    &CFollower::Callback_SendRL,    NULL, NULL);
@@ -201,6 +204,9 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV_receiveA,  NULL, &CFollower::Check_ReceiveA,  NULL);
     sct->add_callback(this, EV_receiveNA, NULL, &CFollower::Check_ReceiveNA, NULL);
     sct->add_callback(this, EV_receiveR,  NULL, &CFollower::Check_ReceiveR,  NULL);
+    sct->add_callback(this, EV_receiveTB, NULL, &CFollower::Check_ReceiveTB, NULL);
+    sct->add_callback(this, EV_receiveTS, NULL, &CFollower::Check_ReceiveTS, NULL);
+    sct->add_callback(this, EV_taskEnded, NULL, &CFollower::Check_TaskEnded, NULL);
 
     /*
     * Init PID Controller
@@ -1236,15 +1242,15 @@ void CFollower::PrintName() {
 
 /* Callback functions (Controllable events) */
 
-// void CFollower::Callback_TaskBegin(void* data) {
-//     std::cout << "Action: taskBegin" <<std::endl;
-//     performingTask = true;
-// }
+void CFollower::Callback_TaskBegin(void* data) {
+    std::cout << "Action: taskBegin" <<std::endl;
+    performingTask = true;
+}
 
-// void CFollower::Callback_TaskStop(void* data) {
-//     std::cout << "Action: taskStop" <<std::endl;
-//     performingTask = false;
-// }
+void CFollower::Callback_TaskStop(void* data) {
+    std::cout << "Action: taskStop" <<std::endl;
+    performingTask = false;
+}
 
 void CFollower::Callback_MoveFlock(void* data) {
     std::cout << "Action: moveFlock" <<std::endl;
@@ -1301,6 +1307,7 @@ void CFollower::Callback_SetC(void* data) {
 
     currentState = RobotState::CONNECTOR;
     teamID = 255;
+    setCTriggered = true;
 }
 
 void CFollower::Callback_SendRL(void* data) {
@@ -1357,23 +1364,23 @@ void CFollower::Callback_SendA(void* data) {
 
 /* Callback functions (Uncontrollable events) */
 
-// unsigned char CFollower::Check_ReceiveTB(void* data) {
-//     if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "1") {
-//         std::cout << "Event: " << 1 << " - receiveTB" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - receiveTB" << std::endl;
-//     return 0;
-// }
+unsigned char CFollower::Check_ReceiveTB(void* data) {
+    if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
+        std::cout << "Event: " << 1 << " - receiveTB" << std::endl;
+        return 1;
+    }
+    std::cout << "Event: " << 0 << " - receiveTB" << std::endl;
+    return 0;
+}
 
-// unsigned char CFollower::Check_ReceiveTS(void* data) {
-//     if(leaderMsg.direction.Length() > 0.0f && leaderMsg.contents[0] == "0") {
-//         std::cout << "Event: " << 1 << " - receiveTS" << std::endl;
-//         return 1;
-//     }
-//     std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
-//     return 0;
-// }
+unsigned char CFollower::Check_ReceiveTS(void* data) {
+    if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
+        std::cout << "Event: " << 1 << " - receiveTS" << std::endl;
+        return 1;
+    }
+    std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
+    return 0;
+}
 
 unsigned char CFollower::Check_CondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
@@ -1466,6 +1473,16 @@ unsigned char CFollower::Check_ReceiveA(void* data) {
 unsigned char CFollower::Check_ReceiveNA(void* data) {
     std::cout << "Event: " << receiveNA << " - receiveNA" << std::endl;
     return receiveNA;
+}
+
+unsigned char CFollower::Check_TaskEnded(void* data) {
+    if(setCTriggered) {
+        std::cout << "Event: " << 1 << " - taskEnded" << std::endl;
+        setCTriggered = false;
+        return 1;
+    }
+    std::cout << "Event: " << 0 << " - taskEnded" << std::endl;
+    return 0;
 }
 
 /*
