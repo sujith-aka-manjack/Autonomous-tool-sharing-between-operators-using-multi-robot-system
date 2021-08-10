@@ -185,13 +185,13 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
       std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
 
       for(const auto& it : hops) {
-         text += "(T" + std::to_string(it.first) + "-" + std::to_string(it.second.count);
+         text += "(T" + std::to_string(it.first);
          if( !it.second.ID.empty() ) {
             text += "-" + it.second.ID;
          } else {
             text += "-__";
          }
-         text += ")";
+         text += "-" + std::to_string(it.second.count) + ")";
       }
    }
 
