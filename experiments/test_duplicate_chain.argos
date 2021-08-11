@@ -134,12 +134,12 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="13" center="0.3,0.3" density="0.15">
+      <team leader_num="1" robot_num="10" center="0.3,0.3" density="0.15">
         <waypoint coord="1.5,0" />
         <waypoint coord="1.5,1.5" />
         <waypoint coord="-1.5,1.5" />
       </team>
-      <team leader_num="1" robot_num="13" center="-0.3,-0.3" density="0.15">
+      <team leader_num="1" robot_num="10" center="-0.3,-0.3" density="0.15">
         <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="1.5,-1.5" />
@@ -227,7 +227,7 @@
       </entity>
     </distribute> -->
 
-    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size=91">
+    <!-- <e-puck id="F101" rab_range="0.8" rab_data_size=94">
       <controller config="ef" />
       <body position="0.0,0.0,0" orientation="0,0,0" />
     </e-puck> -->

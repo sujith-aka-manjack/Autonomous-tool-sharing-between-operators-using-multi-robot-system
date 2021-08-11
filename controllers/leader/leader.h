@@ -149,10 +149,10 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    *    |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) |       (31)-(90)       | (91)  |
-    *    -----------------------------------------------------------------------------------------------------------
-    *    | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |      Connections      |  End  |
-    *    | State  |   ID   | Team ID | Signal |           |  Message   |  Message  | (2 bytes for ID x 30) | (255) |
+    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) | (31)-(33) |       (34)-(93)       | (94)  |
+    * -----------------------------------------------------------------------------------------------------------------------
+    * | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |   Teams   |      Connections      |  End  |
+    * | State  |   ID   | Team ID | Signal |           |  Message   |  Message  |   Nearby  | (2 bytes for ID x 30) | (255) |
     * 
     * 
     * - (4) Leader Signal
@@ -179,6 +179,12 @@ public:
     *       - Share information about the closest connector to the team
     *           - shareToLeader: Upstream (Follower to Leader)
     *           - shareToTeam  : Downstream (Leader to Follower)
+    * 
+    * - (31)-(33) Teams Nearby
+    *   Prefix with number of teams nearby (max 2) [1]
+    *   - teamID [1]
+    * 
+    *       - Used by connectors to determine whether other connectors can switch to a follower
     */
     struct Message {
         
@@ -192,7 +198,7 @@ public:
         UInt8 leaderSignal;
 
         /* Hop Count */
-        std::unordered_map<UInt8, HopMsg> hops; // Key is teamID
+        std::map<UInt8, HopMsg> hops; // Key is teamID
 
         /* Connection Message*/
         std::vector<ConnectionMsg> cmsg;
@@ -200,6 +206,9 @@ public:
         /* Update Message */
         std::string shareToLeader = "";
         std::string shareToTeam = "";
+
+        /* Teams Nearby */
+        std::vector<UInt8> nearbyTeams;
 
         /* Detected neighbors */
         std::vector<std::string> connections;

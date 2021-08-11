@@ -183,7 +183,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(91, 255);
+    msg = CByteArray(94, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -204,7 +204,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(91, 255);
+    msg = CByteArray(94, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -350,6 +350,10 @@ void CLeader::ControlStep() {
         msg[msg_index++] = stoi(shareToTeam.substr(1));
     } else
         msg_index += 2;
+
+    /* Nearby Teams */
+    msg[msg_index++] = 0;
+    msg_index += 2; // Skip to next part
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -538,6 +542,17 @@ void CLeader::GetMessages() {
             }
 
             std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
+
+            /* Nearby Teams */
+            msg_num = tMsgs[i].Data[index++];
+
+            if(msg_num == 255)
+                msg_num = 0;
+                
+            for(size_t j = 0; j < msg_num; j++) {
+                msg.nearbyTeams.push_back(tMsgs[i].Data[index++]);
+            }
+            index += (2 - msg_num) * 1; // TEMP: Currently assuming only two teams
 
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists

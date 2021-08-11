@@ -5,7 +5,6 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include <utility/team_color.h>
 #include <algorithm>
-#include <unordered_set>
 
 /****************************************/
 /****************************************/
@@ -228,7 +227,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(91, 255);
+    msg = CByteArray(94, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -276,7 +275,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(91, 255);
+    msg = CByteArray(94, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -300,6 +299,7 @@ void CFollower::ControlStep() {
     receiveNA = false;
 
     robotsToAccept.clear();
+    nearbyTeams.clear();
 
     /*----------------------*/
     /* Receive new messages */
@@ -387,7 +387,7 @@ void CFollower::ControlStep() {
             break;
         }
         case RobotState::LEADER: {
-            std::cout << "State: LEADER. Something went wrong." << std::endl;
+            std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
             break;
         }
     }
@@ -453,6 +453,15 @@ void CFollower::ControlStep() {
         msg_index += 2;
 
     std::cout << "Share to team: " << shareToTeam << std::endl;
+
+    /* Teams Nearby */
+    std::cout << "nearbyTeams.size: " << nearbyTeams.size() << std::endl;
+    msg[msg_index++] = nearbyTeams.size(); // Set the number of nearby teams
+    for(const auto& id : nearbyTeams) {
+        msg[msg_index++] = id;
+    }
+    // Skip if not all bytes are used
+    msg_index += (2 - nearbyTeams.size()) * 1; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -585,6 +594,17 @@ void CFollower::GetMessages() {
                 msg.shareToTeam = robotID;
             }
 
+            /* Nearby Teams */
+            msg_num = tMsgs[i].Data[index++];
+
+            if(msg_num == 255)
+                msg_num = 0;
+
+            for(size_t j = 0; j < msg_num; j++) {
+                msg.nearbyTeams.push_back(tMsgs[i].Data[index++]);
+            }
+            index += (2 - msg_num) * 1; // TEMP: Currently assuming only two teams
+
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
                 std::string robotID;
@@ -676,57 +696,79 @@ void CFollower::Update() {
 
         UpdateHopCounts();
 
+        /* Find the teamIDs of followers that are within its safety range */
+        for(const auto& msg : otherTeamMsgs) {
+            Real dist = msg.direction.Length();
+            if(nearbyTeams.count(msg.teamID) == 0) {
+                if(dist < separationThres - 10) // TEMP: Added fixed buffer to distance
+                    nearbyTeams.insert(msg.teamID);
+            }
+        }
+
         /* Check if there is a team that is 1 hop count away from itself */
         for(const auto& hop : hopsDict) {
-            if(hop.second.count == 1) {
+            if(hop.second.count == 1)
                 condF1 = true;
+        }
 
-                // Check the distance between the next connector and the team it has a hop count of 1 with.
-                    // If distance is smaller than the distance between itself and the connector (and the connector sees the follower) then return true
+        /* Check if all connected connectors are close to the team that this robot helps connect with */
 
-                // Get a set of connectors from hopsDict
-                // Loop connectors
-                    // If connector from hopsDict (remaining entries)
-                        // MyDist = itself - connector
-                        // Create a vector of otherTeamMsgs with the key from hopsDict
-                        // Pick msgs that also appears in the connector's connections
-                        // Loop list of team followers the other connector sees
-                            // OtherDist
-                        // if OtherDist < MyDist
-                            // condF2 = true
+        // Find the robot ID of connectors it's connected with
+        // Check those connectors hop info in msg to see which team it is connecting for them
+        // If the same teamID also exists in their nearbyTeams. If all exist, return true
+        // If this is true for every connector, return true
 
-                /* Extract connector IDs to check */
-                std::unordered_set<std::string> robotIDs;
+        /* Extract connector IDs to check */
+        std::unordered_set<std::string> robotIDs;
 
-                for(const auto& hop : hopsDict) {
-                    if( !hop.second.ID.empty() )
-                        robotIDs.insert(hop.second.ID);
-                }
+        for(const auto& hop : hopsDict) {
+            if( !hop.second.ID.empty() )
+                robotIDs.insert(hop.second.ID);
+        }
 
-                if( !robotIDs.empty() ) {
+        if( !robotIDs.empty() && !setCTriggered) {
+            bool exitLoop = false;
+            // std::cerr << "CORRECT " << this->GetId() << std::endl;
 
-                    // TODO: Calculate MyDist, closest distance to a follower in the team
-                    Real myDist = 10000;
-                    // Check GetClosestNonTeam
-                    
-                    for(const auto& msg : connectorMsgs) {
-                        if(robotIDs.count(msg.ID)) {
+            for(const auto& id : robotIDs) {
+                for(const auto& msg : connectorMsgs) {
 
-                            // TODO: Calculate OtherDist, closest distance to a follower in the team
+                    /* Find the connector */
+                    if(msg.ID == id) {
+                        // std::cerr << "CORRECT2 " << this->GetId() << std::endl;
 
-                            // Filter otherTeamMsgs with 1) teamID matches and 2) exists in connector's connections
+                        for(const auto& hop : msg.hops) {
+                            // std::cerr << "CORRECT3 " << this->GetId() << std::endl;
+                            // std::cerr << "CORRECT3 first: " << hop.first << std::endl;
+                            // std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
 
-                            // if OtherDist < MyDist
-                                // condF2 = true
-                                // break;
+                            /* Find its own id */
+                            if(hop.second.ID == this->GetId()) {
 
+                                /* Check whether the connector is near the team */
+                                /* If it's not, break from the loop as it is a necessary part of the chain */
+                                bool isNearTeam = false;
+                                for(const auto& team : msg.nearbyTeams) {
+                                    // std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
+                                    if(hop.first == team)
+                                        isNearTeam = true;
+                                }
+                                if(!isNearTeam) {
+                                    exitLoop = true;
+                                    break;
+                                }
+                            }
                         }
                     }
+                    if(exitLoop)
+                        break;
                 }
-                
-
-                // break;
+                if(exitLoop)
+                    break;
             }
+
+            if(!exitLoop)
+                condF2 = true;
         }
     }
 }
@@ -1559,11 +1601,13 @@ unsigned char CFollower::Check_NotCondF1(void* data) {
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {
-    return 0;
+    std::cout << "Event: " << condF2 << " - condF2" << std::endl;
+    return condF2;
 }
 
 unsigned char CFollower::Check_NotCondF2(void* data) {
-    return 1;
+    std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
+    return !condF2;
 }
 
 unsigned char CFollower::Check_ReceiveR(void* data) {
