@@ -1,3 +1,4 @@
+import os.path
 import sys
 import yaml
 import pandas as pd
@@ -186,4 +187,5 @@ def plot_trajectories(data, title=None, x_label=None, y_label=None, out_filename
 
 if __name__ == "__main__":
     # plot_stats(sys.argv[1:])
-    plot_stats(["/home/genki/GIT/argos-sct/experiment.yaml"])
+    path = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/experiment.yaml')
+    plot_stats([path])
