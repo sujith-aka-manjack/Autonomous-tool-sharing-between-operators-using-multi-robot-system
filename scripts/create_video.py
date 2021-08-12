@@ -4,6 +4,7 @@ import cv2
 sys.path.append('/opt/ros/melodic/lib/python2.7/dist-packages') # append back in order to import rospy
 import numpy as np
 import os
+import os.path
 
 
 def create_video(dir_path, fps):
@@ -33,6 +34,7 @@ def create_video(dir_path, fps):
 
 
 if __name__ == "__main__":
-    dir_path = '/home/genki/GIT/argos-sct/frames/'
+    # dir_path = '/home/genki/GIT/argos-sct/frames/'
+    path = os.path.join(os.environ['HOME'], 'GIT/argos-sct/frames/')
     fps = 10
-    create_video(dir_path, fps)
+    create_video(path, fps)
