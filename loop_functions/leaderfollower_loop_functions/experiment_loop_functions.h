@@ -31,6 +31,7 @@ private:
    std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
 
    /* Output file */
+   bool m_bLogging;
    std::string m_strOutput;
    std::ofstream m_cOutput;
 

@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="100"
                 ticks_per_second="10"
-                random_seed="124" />
+                random_seed="123" />
   </framework>
 
   <!-- *************** -->
@@ -127,22 +127,35 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <experiment output="results/experiment.yaml" 
-                frame_grabbing="false" 
-                camera_index="3" />
+    <experiment logging="true"
+                output="results/experiment.yaml" 
+                frame_grabbing="true" 
+                camera_index="4" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="10" center="0.3,0.3" density="0.15">
+      <team leader_num="1" robot_num="5" center="0.0,0.3" density="0.15">
+        <!-- <waypoint coord="1.5,0" />
+        <waypoint coord="0,0" />
         <waypoint coord="1.5,0" />
         <waypoint coord="1.5,1.5" />
-        <waypoint coord="-1.5,1.5" />
+        <waypoint coord="-1.5,1.5" /> -->
+        <waypoint coord="0,1" />
+        <waypoint coord="-1,1" />
+        <waypoint coord="0,1" />
+        <waypoint coord="0,-1" />
+        <waypoint coord="1,-1" />
+
       </team>
-      <team leader_num="1" robot_num="10" center="-0.3,-0.3" density="0.15">
-        <waypoint coord="-1.5,0" />
+      <team leader_num="1" robot_num="5" center="0.0,-0.3" density="0.15">
+        <!-- <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
-        <waypoint coord="1.5,-1.5" />
+        <waypoint coord="1.5,-1.5" /> -->
+        
+        <waypoint coord="0,-1" />
+        <waypoint coord="-1,-1" />
+
       </team>
 
       <!-- <custom_team>
@@ -174,8 +187,11 @@
       <task position="-0.8,-0.8" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
       <!-- <task position="1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
       <task position="-1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
-      <task position="-1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
-      <task position="1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <!-- <task position="-1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
+      <task position="1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="-1.0,1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="-1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
     </tasks>
   </loop_functions>
 
@@ -200,12 +216,19 @@
     <box id="wall_south" size="0.1,4,0.5" movable="false">
       <body position="-2,0,0" orientation="0,0,0" />
     </box>
-
+<!-- 
     <box id="wall_inner_left" size="3,0.1,0.5" movable="false">
       <body position="-0.5,0.75,0" orientation="0,0,0" />
     </box>
     <box id="wall_inner_right" size="3,0.1,0.5" movable="false">
       <body position="0.5,-0.75,0" orientation="0,0,0" />
+    </box> -->
+
+    <box id="wall_inner_left" size="1.5,1,0.5" movable="false">
+      <body position="1.25,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_right" size="1.5,1,0.5" movable="false">
+      <body position="-1.25,0,0" orientation="0,0,0" />
     </box>
 
     <!--
@@ -301,6 +324,7 @@
           <placement index="0" position="-1.67387,-0.0881827,2.71917" look_at="-1.24128,-0.0889817,1.81758" up="0.901591,-0.00166523,0.432586" lens_focal_length="20" />
           <placement index="2" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
           <placement index="3" position="0,-0.146444,10.092" look_at="0,-0.146444,9.09204" up="1,0,0" lens_focal_length="65" />
+          <placement index="4" position="0,0,10.5" look_at="0,0,0" up="0,1,0" lens_focal_length="65" />
         </placements>
       </camera>
 

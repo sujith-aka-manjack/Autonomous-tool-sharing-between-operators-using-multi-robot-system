@@ -47,7 +47,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */
-        GetNodeAttribute(tChainFormation, "output", m_strOutput);
+        GetNodeAttributeOrDefault(tChainFormation, "logging", m_bLogging, false);
+        GetNodeAttributeOrDefault(tChainFormation, "output", m_strOutput, std::string("results/experiment.yaml"));
         /* Set the frame grabbing settings */
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
         GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
@@ -423,86 +424,88 @@ void CExperimentLoopFunctions::PreStep() {
     * Output stuff to file 
     */
 
-    /* Create new node for this timestep */
-    YAML::Node timestep;
-    std::string t_str = "time_" + std::to_string(GetSpace().GetSimulationClock());
+    if(m_bLogging) {
+        /* Create new node for this timestep */
+        YAML::Node timestep;
+        std::string t_str = "time_" + std::to_string(GetSpace().GetSimulationClock());
 
-    /* Output leader info */
-    for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-        it != m_cEPuckLeaders.end();
-        ++it) {
+        /* Output leader info */
+        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+            it != m_cEPuckLeaders.end();
+            ++it) {
 
-        CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-        CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-        YAML::Node robot;
-        robot["id"] = cEPuckLeader.GetId();
-        robot["teamid"] = (int)cController.GetTeamID();
-        robot["state"] = "LEADER";
-        robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-        robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-        robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            YAML::Node robot;
+            robot["id"] = cEPuckLeader.GetId();
+            robot["teamid"] = (int)cController.GetTeamID();
+            robot["state"] = "LEADER";
+            robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
 
-        timestep[t_str]["robots"].push_back(robot);
-    }
-
-    /* Output follower info */
-    for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
-        itEpuck != m_cEPucks.end();
-        ++itEpuck) {
-
-        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
-        CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
-
-        YAML::Node robot;
-        robot["id"] = cEPuck.GetId();
-        robot["teamid"] = (int)cController.GetTeamID();
-        switch(cController.currentState) {
-            case CFollower::RobotState::FOLLOWER:
-                robot["state"] = "FOLLOWER";
-                break;
-            case CFollower::RobotState::CONNECTOR:
-                robot["state"] = "CONNECTOR";
-                break;
+            timestep[t_str]["robots"].push_back(robot);
         }
-        robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-        robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-        robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
 
-        timestep[t_str]["robots"].push_back(robot);
-    }
+        /* Output follower info */
+        for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
+            itEpuck != m_cEPucks.end();
+            ++itEpuck) {
 
-    if(taskExists) {
+            CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
+            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
-        /* Output task info */
-        for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
-            itTask != m_cCTasks->end();
-            ++itTask) {
+            YAML::Node robot;
+            robot["id"] = cEPuck.GetId();
+            robot["teamid"] = (int)cController.GetTeamID();
+            switch(cController.currentState) {
+                case CFollower::RobotState::FOLLOWER:
+                    robot["state"] = "FOLLOWER";
+                    break;
+                case CFollower::RobotState::CONNECTOR:
+                    robot["state"] = "CONNECTOR";
+                    break;
+            }
+            robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
 
-            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-
-            YAML::Node task;
-            task["id"] = cCTask.GetId();
-            task["shape"] = "CIRCLE";
-            task["demand"] = (int)cCTask.GetDemand();
-            task["pos"]["x"] = cCTask.GetPosition().GetX();
-            task["pos"]["y"] = cCTask.GetPosition().GetY();
-            task["pos"].SetStyle(YAML::EmitterStyle::Flow);
-            task["radius"] = cCTask.GetRadius();
-            task["max_robot"] = (int)cCTask.GetMaxRobotNum();
-            task["min_robot"] = (int)cCTask.GetMinRobotNum();
-
-            timestep[t_str]["tasks"].push_back(task);
+            timestep[t_str]["robots"].push_back(robot);
         }
+
+        if(taskExists) {
+
+            /* Output task info */
+            for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+                itTask != m_cCTasks->end();
+                ++itTask) {
+
+                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+
+                YAML::Node task;
+                task["id"] = cCTask.GetId();
+                task["shape"] = "CIRCLE";
+                task["demand"] = (int)cCTask.GetDemand();
+                task["pos"]["x"] = cCTask.GetPosition().GetX();
+                task["pos"]["y"] = cCTask.GetPosition().GetY();
+                task["pos"].SetStyle(YAML::EmitterStyle::Flow);
+                task["radius"] = cCTask.GetRadius();
+                task["max_robot"] = (int)cCTask.GetMaxRobotNum();
+                task["min_robot"] = (int)cCTask.GetMinRobotNum();
+
+                timestep[t_str]["tasks"].push_back(task);
+            }
+        }
+
+        /* Write to file */
+        YAML::Emitter out;
+        out << timestep;
+
+        m_cOutput.open(m_strOutput.c_str(), std::ios_base::app);
+        m_cOutput << out.c_str() << std::endl;
+        m_cOutput.close();
     }
-
-    /* Write to file */
-    YAML::Emitter out;
-    out << timestep;
-
-    m_cOutput.open(m_strOutput.c_str(), std::ios_base::app);
-    m_cOutput << out.c_str() << std::endl;
-    m_cOutput.close();
 
     /* Grab frame */
     if(m_bFrameGrabbing) {
