@@ -174,38 +174,42 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    sct = new SCT();
+    sct = new SCTPub();
 
     /* Register controllable events */
-    sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
-    sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    sct->add_callback(this, EV_taskBegin, &CFollower::Callback_TaskBegin, NULL, NULL);
-    sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
-    sct->add_callback(this, EV_setF,      &CFollower::Callback_SetF,      NULL, NULL);
-    sct->add_callback(this, EV_setC,      &CFollower::Callback_SetC,      NULL, NULL);
-    sct->add_callback(this, EV_sendRL,    &CFollower::Callback_SendRL,    NULL, NULL);
-    sct->add_callback(this, EV_sendRC,    &CFollower::Callback_SendRC,    NULL, NULL);
-    sct->add_callback(this, EV_sendA,     &CFollower::Callback_SendA,     NULL, NULL);
+    sct->add_callback(this, EV_moveFlock,  &CFollower::Callback_MoveFlock, NULL, NULL);
+    sct->add_callback(this, EV_moveStop,   &CFollower::Callback_MoveStop,  NULL, NULL);
+    sct->add_callback(this, EV_taskBegin,  &CFollower::Callback_TaskBegin, NULL, NULL);
+    sct->add_callback(this, EV_taskStop,   &CFollower::Callback_TaskStop,  NULL, NULL);
+    sct->add_callback(this, EV_setF,       &CFollower::Callback_SetF,      NULL, NULL);
+    sct->add_callback(this, EV_setC,       &CFollower::Callback_SetC,      NULL, NULL);
+    sct->add_callback(this, EV_sendReqL,   &CFollower::Callback_SendReqL,  NULL, NULL);
+    sct->add_callback(this, EV_sendReqC,   &CFollower::Callback_SendReqC,  NULL, NULL);
+    sct->add_callback(this, EV_sendReply,  &CFollower::Callback_SendReply, NULL, NULL);
+    sct->add_callback(this, EV_relayMsg,   &CFollower::Callback_RelayMsg,  NULL, NULL);
     
     /* Register uncontrollable events */
-    sct->add_callback(this, EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
-    sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
-    sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
-    sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-    sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-    sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
-    sct->add_callback(this, EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
-    sct->add_callback(this, EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
-    sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
-    sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
-    sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
-    sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
-    sct->add_callback(this, EV_receiveA,  NULL, &CFollower::Check_ReceiveA,  NULL);
-    sct->add_callback(this, EV_receiveNA, NULL, &CFollower::Check_ReceiveNA, NULL);
-    sct->add_callback(this, EV_receiveR,  NULL, &CFollower::Check_ReceiveR,  NULL);
-    sct->add_callback(this, EV_receiveTB, NULL, &CFollower::Check_ReceiveTB, NULL);
-    sct->add_callback(this, EV_receiveTS, NULL, &CFollower::Check_ReceiveTS, NULL);
-    sct->add_callback(this, EV_taskEnded, NULL, &CFollower::Check_TaskEnded, NULL);
+    sct->add_callback(this, EV_condC1,     NULL, &CFollower::Check_CondC1,     NULL);
+    sct->add_callback(this, EV_notCondC1,  NULL, &CFollower::Check_NotCondC1,  NULL);
+    sct->add_callback(this, EV_condC2,     NULL, &CFollower::Check_CondC2,     NULL);
+    sct->add_callback(this, EV_notCondC2,  NULL, &CFollower::Check_NotCondC2,  NULL);
+    sct->add_callback(this, EV_condC3,     NULL, &CFollower::Check_CondC3,     NULL);
+    sct->add_callback(this, EV_notCondC3,  NULL, &CFollower::Check_NotCondC3,  NULL);
+    sct->add_callback(this, EV_nearC,      NULL, &CFollower::Check_NearC,      NULL);
+    sct->add_callback(this, EV_notNearC,   NULL, &CFollower::Check_NotNearC,   NULL);
+    sct->add_callback(this, EV_condF1,     NULL, &CFollower::Check_CondF1,     NULL);
+    sct->add_callback(this, EV_notCondF1,  NULL, &CFollower::Check_NotCondF1,  NULL);
+    sct->add_callback(this, EV_condF2,     NULL, &CFollower::Check_CondF2,     NULL);
+    sct->add_callback(this, EV_notCondF2,  NULL, &CFollower::Check_NotCondF2,  NULL);
+    sct->add_callback(this, EV__sendReply, NULL, &CFollower::Check__SendReply, NULL);
+    sct->add_callback(this, EV_accept,     NULL, &CFollower::Check_Accept,     NULL);
+    sct->add_callback(this, EV_reject,     NULL, &CFollower::Check_Reject,     NULL);
+    sct->add_callback(this, EV__sendReqC,  NULL, &CFollower::Check__SendReqC,  NULL);
+    sct->add_callback(this, EV__sendBegin, NULL, &CFollower::Check__SendBegin, NULL);
+    sct->add_callback(this, EV__sendStop,  NULL, &CFollower::Check__SendStop,  NULL);
+    sct->add_callback(this, EV__sendMsg,   NULL, &CFollower::Check__SendMsg,   NULL);
+    sct->add_callback(this, EV__relayMsg,  NULL, &CFollower::Check__RelayMsg,  NULL);
+    sct->add_callback(this, EV_taskEnded,  NULL, &CFollower::Check_TaskEnded,  NULL);
 
     /*
     * Init PID Controller
@@ -294,9 +298,9 @@ void CFollower::ControlStep() {
     condC2 = false;
     condF1 = false;
     condF2 = false;
-    receiveR  = false;
-    receiveA  = false;
-    receiveNA = false;
+    receivedReqC   = false;
+    receivedAccept = false;
+    receivedReject = false;
 
     robotsToAccept.clear();
     nearbyTeams.clear();
@@ -409,7 +413,7 @@ void CFollower::ControlStep() {
     std::cout << "resend size: " << cmsgToResend.size() << std::endl;
     for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
         if(it->first > 0) {
-            if(receiveA || receiveNA) {
+            if(receivedAccept || receivedReject) {
                 it = cmsgToResend.erase(it); // Stop resending when a response is received
                 // std::cout << "STOP RESENDING, ACCEPT HAS BEEN RECEIVED" << std::endl;
             } else {
@@ -669,7 +673,7 @@ void CFollower::Update() {
 
             /* Check whether an Accept message was not received before the timeout */
             if(requestTimer == 0 && currentAccept.type == 'N')
-                receiveNA = true;
+                receivedReject = true;
         }
             
             // Remember currently sending request? (with timesteps to continue sending?)
@@ -876,7 +880,7 @@ bool CFollower::IsClosestToRobot(const Message& msg) {
             CVector2 diff = msg.direction - teamMsgs[i].direction;
             Real dist = diff.Length();
 
-            if(dist < myDist)
+            if(dist + 2 < myDist) // TEMP: Fixed extra buffer value
                 return false;  // Not the closest to the candidate robot
         }
     }
@@ -900,10 +904,10 @@ void CFollower::CheckAccept() {
                 if(cmsg.type == 'A'){
 
                     if(cmsg.to == this->GetId()) {    // Request approved for this follower
-                        receiveA = true;
+                        receivedAccept = true;
                         currentAccept = cmsg;
                     } else                            // Request approved for another follower
-                        receiveNA = true;
+                        receivedReject = true;
                 }
             }
         }
@@ -918,11 +922,11 @@ void CFollower::CheckAccept() {
                     if(cmsg.from == currentRequest.to && cmsg.toTeam == teamID) {
 
                         if(cmsg.to == this->GetId()) {    // Request approved for this follower
-                            receiveA = true;
+                            receivedAccept = true;
                             currentAccept = cmsg;
                             hopsCopy = msg.hops;
                         } else                            // Request approved for another follower
-                            receiveNA = true;
+                            receivedReject = true;
                     }
                 }
             }
@@ -940,7 +944,7 @@ void CFollower::CheckRequests() {
         for(const auto& cmsg : msg.cmsg) {
             if(cmsg.to == this->GetId() && cmsg.type == 'R') {
 
-                receiveR = true;
+                receivedReqC = true;
 
                 if(hopsDict[msg.teamID].count == 1) {   // Only accept if it does not have a fixed connector (count = 1)
 
@@ -1456,8 +1460,8 @@ void CFollower::Callback_SetC(void* data) {
     setCTriggered = true;
 }
 
-void CFollower::Callback_SendRL(void* data) {
-    std::cout << "Action: sendRL" << std::endl;
+void CFollower::Callback_SendReqL(void* data) {
+    std::cout << "Action: sendReqL" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1465,15 +1469,15 @@ void CFollower::Callback_SendRL(void* data) {
     cmsg.from   = this->GetId();
     cmsg.to     = "L" + std::to_string(teamID);
     cmsg.toTeam = teamID;
-    cmsgToResend.push_back({sendDuration,cmsg});
+    cmsgToResend.push_back({sendDuration,cmsg}); // Transmit public event
 
     currentRequest = cmsg;
     requestTimer = waitRequestDuration;
     std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
-void CFollower::Callback_SendRC(void* data) {
-    std::cout << "Action: sendRC" << std::endl;
+void CFollower::Callback_SendReqC(void* data) {
+    std::cout << "Action: sendReqC" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1481,15 +1485,15 @@ void CFollower::Callback_SendRC(void* data) {
     cmsg.from   = this->GetId();
     cmsg.to     = connectionCandidate.ID;
     cmsg.toTeam = 255; // No team
-    cmsgToResend.push_back({sendDuration,cmsg});
+    cmsgToResend.push_back({sendDuration,cmsg}); // Transmit public event
 
     currentRequest = cmsg;
     requestTimer = waitRequestDuration;
     std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
-void CFollower::Callback_SendA(void* data) {
-    std::cout << "Action: sendA" << std::endl;
+void CFollower::Callback_SendReply(void* data) {
+    std::cout << "Action: sendReply" << std::endl;
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
@@ -1497,7 +1501,7 @@ void CFollower::Callback_SendA(void* data) {
         cmsg.from   = this->GetId();
         cmsg.to     = it.second;
         cmsg.toTeam = it.first;
-        cmsgToResend.push_back({sendDuration,cmsg});
+        cmsgToResend.push_back({sendDuration,cmsg}); // Transmit public event
 
         /* Update hop count to the team using the new connector */
         hopsDict[it.first].count++; // 1 -> 2
@@ -1505,26 +1509,30 @@ void CFollower::Callback_SendA(void* data) {
     }
 }
 
+void CFollower::Callback_RelayMsg(void* data) {
+    std::cout << "Action: relayMsg" << std::endl;
+}
+
 /****************************************/
 /****************************************/
 
 /* Callback functions (Uncontrollable events) */
 
-unsigned char CFollower::Check_ReceiveTB(void* data) {
+unsigned char CFollower::Check__SendBegin(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
-        std::cout << "Event: " << 1 << " - receiveTB" << std::endl;
+        std::cout << "Event: " << 1 << " - _sendBegin" << std::endl;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - receiveTB" << std::endl;
+    std::cout << "Event: " << 0 << " - _sendBegin" << std::endl;
     return 0;
 }
 
-unsigned char CFollower::Check_ReceiveTS(void* data) {
+unsigned char CFollower::Check__SendStop(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
-        std::cout << "Event: " << 1 << " - receiveTS" << std::endl;
+        std::cout << "Event: " << 1 << " - _sendStop" << std::endl;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - receiveTS" << std::endl;
+    std::cout << "Event: " << 0 << " - _sendStop" << std::endl;
     return 0;
 }
 
@@ -1610,19 +1618,34 @@ unsigned char CFollower::Check_NotCondF2(void* data) {
     return !condF2;
 }
 
-unsigned char CFollower::Check_ReceiveR(void* data) {
-    std::cout << "Event: " << receiveR << " - receiveR" << std::endl;
-    return receiveR;
+unsigned char CFollower::Check__SendReqC(void* data) {
+    std::cout << "Event: " << receivedReqC << " - _sendReqC" << std::endl;
+    return receivedReqC;
 }
 
-unsigned char CFollower::Check_ReceiveA(void* data) {
-    std::cout << "Event: " << receiveA << " - receiveA" << std::endl;
-    return receiveA;
+unsigned char CFollower::Check__SendReply(void* data) {
+    std::cout << "Event: " << (receivedAccept || receivedReject) << " - _sendReply" << std::endl;
+    return receivedAccept || receivedReject;
 }
 
-unsigned char CFollower::Check_ReceiveNA(void* data) {
-    std::cout << "Event: " << receiveNA << " - receiveNA" << std::endl;
-    return receiveNA;
+unsigned char CFollower::Check_Accept(void* data) {
+    std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
+    return receivedAccept;
+}
+
+unsigned char CFollower::Check_Reject(void* data) {
+    std::cout << "Event: " << receivedReject << " - reject" << std::endl;
+    return receivedReject;
+}
+
+unsigned char CFollower::Check__SendMsg(void* data) {
+    std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
+    return 0;
+}
+
+unsigned char CFollower::Check__RelayMsg(void* data) {
+    std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_TaskEnded(void* data) {

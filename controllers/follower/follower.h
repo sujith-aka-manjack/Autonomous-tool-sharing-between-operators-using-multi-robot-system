@@ -383,9 +383,10 @@ protected:
     virtual void Callback_TaskStop(void* data);
     virtual void Callback_SetF(void* data);
     virtual void Callback_SetC(void* data);
-    virtual void Callback_SendRL(void* data);
-    virtual void Callback_SendRC(void* data);
-    virtual void Callback_SendA(void* data);
+    virtual void Callback_SendReqL(void* data);
+    virtual void Callback_SendReqC(void* data);
+    virtual void Callback_SendReply(void* data);
+    virtual void Callback_RelayMsg(void* data);
 
     virtual unsigned char Check_CondC1(void* data);
     virtual unsigned char Check_NotCondC1(void* data);
@@ -399,11 +400,14 @@ protected:
     virtual unsigned char Check_NotCondF1(void* data);
     virtual unsigned char Check_CondF2(void* data);
     virtual unsigned char Check_NotCondF2(void* data);
-    virtual unsigned char Check_ReceiveR(void* data);
-    virtual unsigned char Check_ReceiveA(void* data);
-    virtual unsigned char Check_ReceiveNA(void* data);
-    virtual unsigned char Check_ReceiveTB(void* data);
-    virtual unsigned char Check_ReceiveTS(void* data);
+    virtual unsigned char Check__SendReqC(void* data);
+    virtual unsigned char Check__SendReply(void* data);
+    virtual unsigned char Check_Accept(void* data);
+    virtual unsigned char Check_Reject(void* data);
+    virtual unsigned char Check__SendBegin(void* data);
+    virtual unsigned char Check__SendStop(void* data);
+    virtual unsigned char Check__SendMsg(void* data);
+    virtual unsigned char Check__RelayMsg(void* data);
     virtual unsigned char Check_TaskEnded(void* data);
 
 private:
@@ -432,7 +436,7 @@ private:
     Real obstacleWeight;
 
     /* Controller */
-    SCT* sct;
+    SCTPub* sct;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
@@ -463,7 +467,7 @@ private:
     Message firstConnector; // The connector that a follower in the team should connect to next
 
     bool condC2, condF1, condF2;
-    bool receiveR, receiveA, receiveNA;
+    bool receivedReqC, receivedAccept, receivedReject;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
     size_t requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)

@@ -127,9 +127,9 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <experiment logging="true"
+    <experiment logging="false"
                 output="results/experiment.yaml" 
-                frame_grabbing="true" 
+                frame_grabbing="false" 
                 camera_index="4" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
