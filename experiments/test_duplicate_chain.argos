@@ -135,26 +135,26 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="5" center="0.0,0.3" density="0.15">
+      <team leader_num="1" robot_num="30" center="0.3,0.0" density="0.15">
         <!-- <waypoint coord="1.5,0" />
-        <waypoint coord="0,0" />
+        <waypoint coord="0,0" /> -->
         <waypoint coord="1.5,0" />
         <waypoint coord="1.5,1.5" />
-        <waypoint coord="-1.5,1.5" /> -->
-        <waypoint coord="0,1" />
+        <waypoint coord="-1.5,1.5" />
+        <!-- <waypoint coord="0,1" />
         <waypoint coord="-1,1" />
         <waypoint coord="0,1" />
         <waypoint coord="0,-1" />
-        <waypoint coord="1,-1" />
+        <waypoint coord="1,-1" /> -->
 
       </team>
-      <team leader_num="1" robot_num="5" center="0.0,-0.3" density="0.15">
-        <!-- <waypoint coord="-1.5,0" />
+      <team leader_num="1" robot_num="30" center="-0.3,0.0" density="0.15">
+        <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
-        <waypoint coord="1.5,-1.5" /> -->
+        <waypoint coord="1.5,-1.5" />
         
-        <waypoint coord="0,-1" />
-        <waypoint coord="-1,-1" />
+        <!-- <waypoint coord="0,-1" />
+        <waypoint coord="-1,-1" /> -->
 
       </team>
 
@@ -187,11 +187,11 @@
       <task position="-0.8,-0.8" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
       <!-- <task position="1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
       <task position="-1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
-      <!-- <task position="-1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
-      <task position="1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
-      <task position="1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="-1.5,1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="1.5,-1.5" radius="0.3" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <!-- <task position="1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
       <task position="-1.0,1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
-      <task position="-1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" />
+      <task position="-1.0,-1.0" radius="0.5" minimum_robot_num="1" maximum_robot_num="10" task_demand="100" /> -->
     </tasks>
   </loop_functions>
 
@@ -216,20 +216,20 @@
     <box id="wall_south" size="0.1,4,0.5" movable="false">
       <body position="-2,0,0" orientation="0,0,0" />
     </box>
-<!-- 
+
     <box id="wall_inner_left" size="3,0.1,0.5" movable="false">
       <body position="-0.5,0.75,0" orientation="0,0,0" />
     </box>
     <box id="wall_inner_right" size="3,0.1,0.5" movable="false">
       <body position="0.5,-0.75,0" orientation="0,0,0" />
-    </box> -->
+    </box>
 
-    <box id="wall_inner_left" size="1.5,1,0.5" movable="false">
+    <!-- <box id="wall_inner_left" size="1.5,1,0.5" movable="false">
       <body position="1.25,0,0" orientation="0,0,0" />
     </box>
     <box id="wall_inner_right" size="1.5,1,0.5" movable="false">
       <body position="-1.25,0,0" orientation="0,0,0" />
-    </box>
+    </box> -->
 
     <!--
         You can distribute entities randomly. Here, we distribute

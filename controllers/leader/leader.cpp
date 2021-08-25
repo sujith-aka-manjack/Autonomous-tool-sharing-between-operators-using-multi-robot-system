@@ -365,7 +365,7 @@ void CLeader::ControlStep() {
         msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
         msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
 
-        if(i >= 30)
+        if(i >= 29)
             break;
     }
 
