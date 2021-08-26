@@ -1,0 +1,243 @@
+<?xml version="1.0" ?>
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system threads="0" />
+    <experiment length="200"
+                ticks_per_second="10"
+                random_seed="1110" />
+  </framework>
+
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <!-- Controllers that use SCT -->
+
+    <follower_controller id="ef"
+                                        library="build/controllers/follower/libfollower.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="false" />
+        <range_and_bearing implementation="medium"
+                           medium="rab"
+                           show_rays="true"/> 
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="8" />
+        <leader_flocking target_distance="15"
+                         kp="1"
+                         ki="0"
+                         kd="0" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
+        <team separation_threshold="50"
+              joining_threshold="50" />
+        <flocking_weights team="1"
+                          robot="1"
+                          obstacle="1" />
+        <timeout send_message="4" 
+                 wait_request="4" />
+      </params>
+    </follower_controller>
+
+    <static_connector_controller id="esc"
+                                        library="build/controllers/static_connector/libstatic_connector.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="false" />
+        <range_and_bearing implementation="medium"
+                           medium="rab"
+                           show_rays="true"/> 
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="8" />
+        <leader_flocking target_distance="15"
+                         kp="1"
+                         ki="0"
+                         kd="0" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
+        <team separation_threshold="50"
+              joining_threshold="50" />
+        <flocking_weights team="1"
+                          robot="1"
+                          obstacle="1" />
+      </params>
+    </static_connector_controller>
+
+    <!-- Controllers that do NOT use SCT -->
+
+    <leader_controller id="el"
+                                        library="build/controllers/leader/libleader.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <positioning implementation="default" />
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="8" />
+        <waypoint_tracking target_angle="0"
+                           kp="10"
+                           ki="0"
+                           kd="0" 
+                           thres_range="0.1" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
+        <team_distance min_leader_robot_distance="75" />
+        <timeout send_message="4" />
+      </params>
+    </leader_controller>
+
+  </controllers>
+
+  <!-- ****************** -->
+  <!-- * Loop functions * -->
+  <!-- ****************** -->
+  <loop_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
+                  label="experiment_loop_functions">
+
+    <!-- Output file name -->
+    <experiment logging="true"
+                output="results/40R_6T_100D_10.yaml" 
+                frame_grabbing="false" 
+                camera_index="4" />
+
+    <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
+    <!-- Currently only 1 leader supported -->
+    <teams>
+      <team leader_num="1" robot_num="20" center="0.3,0.0" density="0.15">
+        <waypoint coord="1.3,0" />
+        <waypoint coord="1.3,1.4" />
+        <waypoint coord="-1.3,1.4" />
+      </team>
+      <team leader_num="1" robot_num="20" center="-0.3,0.0" density="0.15">
+        <waypoint coord="-1.3,0" />
+        <waypoint coord="-1.3,-1.4" />
+        <waypoint coord="1.3,-1.4" />
+      </team>
+    </teams>
+
+    <!-- Tasks that the teams must complete -->
+    <tasks>
+      <task position="1.3,0" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+      <task position="1.3,1.4" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+      <task position="-1.3,1.4" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+
+      <task position="-1.3,0" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+      <task position="-1.3,-1.4" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+      <task position="1.3,-1.4" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="100" />
+    </tasks>
+  </loop_functions>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="6, 6, 1" center="0,0,0.5">
+
+    <floor id="floor"
+           source="loop_functions"
+           pixels_per_meter="50" />
+
+    <box id="wall_west" size="4,0.1,0.5" movable="false">
+      <body position="0,2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="4,0.1,0.5" movable="false">
+      <body position="0,-2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_north" size="0.1,4,0.5" movable="false">
+      <body position="2,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="0.1,4,0.5" movable="false">
+      <body position="-2,0,0" orientation="0,0,0" />
+    </box>
+
+    <box id="wall_inner_left" size="2.7,0.1,0.5" movable="false">
+      <body position="-0.6,0.75,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_right" size="2.7,0.1,0.5" movable="false">
+      <body position="0.6,-0.75,0" orientation="0,0,0" />
+    </box>
+
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media>
+    <range_and_bearing id="rab" check_occlusions="true"/>
+    <led id="leds" />
+  </media>
+
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
+  <!--
+        This shows how to add customized key management
+        using the qt user functions.
+        Check 'argos3 -q qt-opengl' for more help.
+    -->
+  <visualization>
+    <!-- <qt-opengl autoplay="false">
+
+      <frame_grabbing directory="frames"
+                      base_name="frame_"
+                      format="png"
+                      quality="100"
+                      headless_grabbing="false"
+                      headless_frame_size="1600x1200"
+                      headless_frame_rate="1"/>
+
+      <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
+                      label="manualcontrol_qtuser_functions" />
+
+      <camera>
+        <placements>
+          <placement index="1" position="-1.13679,0.00582551,2.45548" look_at="-0.704207,0.00502653,1.55389" up="0.901591,-0.00166523,0.432586" lens_focal_length="50" />
+          <placement index="0" position="-1.67387,-0.0881827,2.71917" look_at="-1.24128,-0.0889817,1.81758" up="0.901591,-0.00166523,0.432586" lens_focal_length="20" />
+          <placement index="2" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+          <placement index="3" position="0,-0.146444,10.092" look_at="0,-0.146444,9.09204" up="1,0,0" lens_focal_length="65" />
+          <placement index="4" position="0,0,10.5" look_at="0,0,0" up="0,1,0" lens_focal_length="65" />
+        </placements>
+      </camera>
+
+    </qt-opengl> -->
+  </visualization>
+
+</argos-configuration>
