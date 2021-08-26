@@ -155,15 +155,22 @@ public:
         UInt8 toTeam;
     };
 
+    /* Message sent by a leader to other leaders */
+    struct RelayMsg {
+        char type = 'H';
+        std::string from;
+        UInt16 time;
+    };
+
     /* 
     * Structure to store incoming data received from other robots 
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) | (31)-(33) |       (34)-(93)       | (94)  |
-    * -----------------------------------------------------------------------------------------------------------------------
-    * | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |   Teams   |      Connections      |  End  |
-    * | State  |   ID   | Team ID | Signal |           |  Message   |  Message  |   Nearby  | (2 bytes for ID x 30) | (255) |
+    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) | (31)-(33) | (34)-(44) |      (45)-(104)       | (105) |
+    * -----------------------------------------------------------------------------------------------------------------------------------
+    * | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
+    * | State  |   ID   | Team ID | Signal |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
     * 
     * 
     * - (4) Leader Signal
@@ -196,6 +203,13 @@ public:
     *   - teamID [1]
     * 
     *       - Used by connectors to determine whether other connectors can switch to a follower
+    * 
+    * - (34)-(40) Relay Message
+    *   Prefix with number of messages (max 2) [1]
+    *   - RelayMsg (Leader ID [2], 'h' [1], time sent [2])
+    * 
+    *       - Message sent by a leader to other leaders
+    * 
     */
     struct Message {
         
@@ -220,6 +234,9 @@ public:
 
         /* Teams Nearby */
         std::vector<UInt8> nearbyTeams;
+
+        /* Relay Message */
+        std::vector<RelayMsg> rmsg;
 
         /* Detected neighbors */
         std::vector<std::string> connections;
@@ -479,6 +496,9 @@ private:
     std::vector<ConnectionMsg> cmsgToSend;
     std::vector<std::pair<size_t,ConnectionMsg>> cmsgToResend; // ConnectionMsg attached with a timer. Messages gets added into cmsgToSend while timer is running
     std::string shareToLeader, shareToTeam;
+
+    std::vector<RelayMsg> rmsgToSend;
+    std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;

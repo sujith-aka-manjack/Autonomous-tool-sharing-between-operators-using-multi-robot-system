@@ -135,7 +135,7 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported -->
     <teams>
-      <team leader_num="1" robot_num="30" center="0.3,0.0" density="0.15">
+      <team leader_num="1" robot_num="5" center="0.3,0.0" density="0.15">
         <!-- <waypoint coord="1.5,0" />
         <waypoint coord="0,0" /> -->
         <waypoint coord="1.5,0" />
@@ -148,7 +148,7 @@
         <waypoint coord="1,-1" /> -->
 
       </team>
-      <team leader_num="1" robot_num="30" center="-0.3,0.0" density="0.15">
+      <team leader_num="1" robot_num="5" center="-0.3,0.0" density="0.15">
         <waypoint coord="-1.5,0" />
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="1.5,-1.5" />

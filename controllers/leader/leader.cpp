@@ -183,7 +183,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(94, 255);
+    msg = CByteArray(105, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -204,7 +204,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(94, 255);
+    msg = CByteArray(105, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -214,6 +214,7 @@ void CLeader::ControlStep() {
     otherTeamMsgs.clear();
 
     cmsgToSend.clear();
+    rmsgToSend.clear();
 
     nearRobot = false;
 
@@ -354,6 +355,19 @@ void CLeader::ControlStep() {
     /* Nearby Teams */
     msg[msg_index++] = 0;
     msg_index += 2; // Skip to next part
+
+    /* Relay Message */
+    std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
+    msg[msg_index++] = rmsgToSend.size(); // Set the number of ConnectionMsg
+    for(const auto& relayMsg : rmsgToSend) {
+        msg[msg_index++] = (UInt8)relayMsg.type;
+        msg[msg_index++] = relayMsg.from[0];
+        msg[msg_index++] = stoi(relayMsg.from.substr(1));
+        msg[msg_index++] = (UInt8)relayMsg.time/256;
+        msg[msg_index++] = (UInt8)relayMsg.time%256;
+    }
+    // Skip if not all bytes are used
+    msg_index += (2 - rmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -554,6 +568,31 @@ void CLeader::GetMessages() {
             }
             index += (2 - msg_num) * 1; // TEMP: Currently assuming only two teams
 
+            /* Relay Message */
+            msg_num = tMsgs[i].Data[index++];
+
+            if(msg_num == 255)
+                msg_num = 0;
+
+            for(size_t j = 0; j < msg_num; j++) {
+
+                RelayMsg relayMsg;
+
+                relayMsg.type = (char)tMsgs[i].Data[index++];
+
+                std::string robotID;
+                robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                relayMsg.from = robotID;
+
+                // std::cout << "FROM: " << relayMsg.from << std::endl;
+                
+                relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
+
+                msg.rmsg.push_back(relayMsg);
+            }
+            index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
+
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists
                 std::string robotID;
@@ -603,6 +642,18 @@ void CLeader::Update() {
             ++it;
         } else {
             it = cmsgToResend.erase(it);
+        }
+    }
+
+    /* Set RelayMsg to send during this timestep */
+    std::cout << "resend size: " << rmsgToResend.size() << std::endl;
+    for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
+        if(it->first > 0) {
+            rmsgToSend.push_back(it->second);
+            it->first--; // Decrement timer
+            ++it;
+        } else {
+            it = rmsgToResend.erase(it);
         }
     }
 }
