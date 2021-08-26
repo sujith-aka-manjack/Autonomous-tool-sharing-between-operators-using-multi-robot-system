@@ -311,6 +311,18 @@ public:
     */
     virtual UInt8 GetTeamID();
 
+    /*
+    * Returns the timestep that this leader has sent a message to the other leader.
+    * When it has not yet sent a time, it returns -1.
+    */
+    virtual Real GetLatestTimeSent();
+
+    /*
+    * Checks whether the leader has received a message from the other leader.
+    * Returns the timestep that the message was sent, if message was received.
+    */
+    virtual Real GetLatestTimeReceived();
+
 protected:
 
     /* 
@@ -449,7 +461,8 @@ private:
 
     std::vector<RelayMsg> rmsgToSend;
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
-    size_t lastBeatTime;
+    Real lastSent;
+    Real lastBeatTime;
     size_t beatReceived;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */

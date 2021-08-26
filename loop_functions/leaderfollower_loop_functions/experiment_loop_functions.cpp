@@ -444,6 +444,8 @@ void CExperimentLoopFunctions::PreStep() {
             robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
             robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
             robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            robot["beat_sent"] = cController.GetLatestTimeSent();
+            robot["beat_received"] = cController.GetLatestTimeReceived();
 
             timestep[t_str]["robots"].push_back(robot);
         }

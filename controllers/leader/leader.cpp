@@ -154,6 +154,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
     shareToTeam = "";
     initStepTimer = 0;
+    lastSent = -1;
     lastBeatTime = 0;
     beatReceived = 0;
 
@@ -458,6 +459,20 @@ UInt8 CLeader::GetTeamID() {
 /****************************************/
 /****************************************/
 
+Real CLeader::GetLatestTimeSent() {
+    return lastSent;
+}
+
+/****************************************/
+/****************************************/
+
+Real CLeader::GetLatestTimeReceived() {
+    return lastBeatTime;
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::GetMessages() {
     
     /* Get RAB messages from nearby e-pucks */
@@ -658,6 +673,7 @@ void CLeader::Update() {
         beat.from = this->GetId();
         beat.time = initStepTimer;
         rmsgToResend.push_back({sendDuration,beat});
+        lastSent = initStepTimer;
     }
 
     /* Set RelayMsg to send during this timestep */
