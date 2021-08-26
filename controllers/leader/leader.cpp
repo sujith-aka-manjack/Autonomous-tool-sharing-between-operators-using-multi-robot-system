@@ -154,6 +154,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
     shareToTeam = "";
     initStepTimer = 0;
+    lastBeatTime = 0;
+    beatReceived = 0;
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
@@ -199,6 +201,9 @@ void CLeader::ControlStep() {
 
     std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
+    initStepTimer++;
+    std::cout << "TIME: " << initStepTimer << std::endl;
+
     /*-----------------*/
     /* Reset variables */
     /*-----------------*/
@@ -243,7 +248,7 @@ void CLeader::ControlStep() {
     /* Control */
     /*---------*/
 
-    if(initStepTimer > 1) {
+    if(initStepTimer > 2) {
 
         /* Is the robot selected? */
         if(m_bSelected) {
@@ -316,7 +321,6 @@ void CLeader::ControlStep() {
             }
         }
     } else {
-        initStepTimer++;
         msg_index++;
     }
     
@@ -363,8 +367,8 @@ void CLeader::ControlStep() {
         msg[msg_index++] = (UInt8)relayMsg.type;
         msg[msg_index++] = relayMsg.from[0];
         msg[msg_index++] = stoi(relayMsg.from.substr(1));
-        msg[msg_index++] = (UInt8)relayMsg.time/256;
-        msg[msg_index++] = (UInt8)relayMsg.time%256;
+        msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
+        msg[msg_index++] = (UInt8)(relayMsg.time % 256);
     }
     // Skip if not all bytes are used
     msg_index += (2 - rmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
@@ -562,7 +566,7 @@ void CLeader::GetMessages() {
 
             if(msg_num == 255)
                 msg_num = 0;
-                
+
             for(size_t j = 0; j < msg_num; j++) {
                 msg.nearbyTeams.push_back(tMsgs[i].Data[index++]);
             }
@@ -633,6 +637,8 @@ void CLeader::Update() {
 
     ReplyToRequest();
 
+    CheckHeartBeat();
+
     /* Set ConnectionMsg to send during this timestep */
     std::cout << "resend size: " << cmsgToResend.size() << std::endl;
     for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
@@ -643,6 +649,15 @@ void CLeader::Update() {
         } else {
             it = cmsgToResend.erase(it);
         }
+    }
+
+    /* Send a heart-beat message to the other leader every 10 timesteps */
+    if(initStepTimer > 0 && initStepTimer % 10 == 0) {
+        RelayMsg beat;
+        beat.type = 'H';
+        beat.from = this->GetId();
+        beat.time = initStepTimer;
+        rmsgToResend.push_back({sendDuration,beat});
     }
 
     /* Set RelayMsg to send during this timestep */
@@ -771,6 +786,22 @@ void CLeader::SetConnectorToRelay() {
         } else // If no upstream exists, send nothing
             shareToTeam = "";
     }
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::CheckHeartBeat() {
+    for(const auto& leader : otherLeaderMsgs) {
+        for(const auto& beat : leader.rmsg) {
+            if(beat.type =='H' && beat.time > lastBeatTime) {
+                beatReceived++;
+                lastBeatTime = beat.time;
+            }
+        }
+    }
+    std::cout << "lastBeatTime: " << lastBeatTime << std::endl;
+    std::cout << "beatReceived: " << beatReceived << std::endl;
 }
 
 /****************************************/

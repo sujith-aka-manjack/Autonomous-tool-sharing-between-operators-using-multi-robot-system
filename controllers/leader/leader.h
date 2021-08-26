@@ -339,6 +339,11 @@ protected:
     virtual void SetConnectorToRelay();
 
     /*
+    * Check whether a heart beat message is received from the other leader.
+    */
+    virtual void CheckHeartBeat();
+
+    /*
     * Calculates the vector to the next waypoint.
     */
     virtual CVector2 VectorToWaypoint();
@@ -444,6 +449,8 @@ private:
 
     std::vector<RelayMsg> rmsgToSend;
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
+    size_t lastBeatTime;
+    size_t beatReceived;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;

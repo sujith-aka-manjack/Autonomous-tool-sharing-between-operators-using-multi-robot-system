@@ -274,6 +274,8 @@ void CFollower::ControlStep() {
     std::string id = this->GetId();
     std::cout << "\n---------- " << id << " ----------" << std::endl;
 
+    initStepTimer++;
+
     /*-----------------*/
     /* Reset variables */
     /*-----------------*/
@@ -321,10 +323,8 @@ void CFollower::ControlStep() {
     /*--------------------*/
     std::cout << "--- Supervisors ---" << std::endl;
 
-    if(initStepTimer > 1)
+    if(initStepTimer > 2)
         sct->run_step();    // Run the supervisor to get the next action
-    else
-        initStepTimer++;
 
     sct->print_current_state();
     std::cout << std::endl;
