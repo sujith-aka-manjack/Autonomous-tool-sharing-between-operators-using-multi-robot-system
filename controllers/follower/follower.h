@@ -291,7 +291,7 @@ public:
     virtual void SetTeamID(const UInt8 id);
 
     /*
-    * Get hops count to teams.
+    * Get hop count to teams.
     */
     virtual const std::map<UInt8, HopMsg>& GetHops() const;
 
@@ -345,6 +345,11 @@ protected:
     * Messages are relayed both upstream (to leader) and downstream (to the team).
     */
     virtual void SetCMsgsToRelay();
+
+    /* 
+    * Relay leader message to the other team.
+    */
+    virtual void SetLeaderMsgToRelay(const RobotState state);
 
     /*
     * Find the closest connector info that needs to be shared within the team.
@@ -484,7 +489,7 @@ private:
     Message firstConnector; // The connector that a follower in the team should connect to next
 
     bool condC2, condF1, condF2;
-    bool receivedReqC, receivedAccept, receivedReject;
+    bool receivedReqC, receivedAccept, receivedReject, receivedInwardRelayMsg, receivedOutwardRelayMsg, receivedInwardSendMsg, receivedOutwardSendMsg;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
     size_t requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
@@ -499,6 +504,10 @@ private:
 
     std::vector<RelayMsg> rmsgToSend;
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
+    RelayMsg lastBeatTeam;  // (used in the FOLLOWER state)
+    RelayMsg lastBeatOther; // (used in the FOLLOWER state)
+    std::unordered_map<UInt8, std::pair<RelayMsg, char>> lastBeat; // RelayMsg indexed with teamID and attached with a boolean to determine whether a new message was received in this timestep
+    // (used in the CONNECTOR state)
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;

@@ -170,6 +170,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     shareToTeam = "";
     setCTriggered = false; // Initialize flag
     initStepTimer = 0;
+    lastBeatTeam.time = 0;
+    lastBeatOther.time = 0;
 
     /*
     * Init SCT Controller
@@ -304,6 +306,12 @@ void CFollower::ControlStep() {
     receivedReqC   = false;
     receivedAccept = false;
     receivedReject = false;
+    receivedInwardRelayMsg = false;
+    receivedOutwardRelayMsg = false;
+    receivedInwardSendMsg = false;
+    receivedOutwardSendMsg = false;
+    for(auto& info : lastBeat)
+        info.second.second = 'N'; // Reset received flag to N (None)
 
     robotsToAccept.clear();
     nearbyTeams.clear();
@@ -366,7 +374,16 @@ void CFollower::ControlStep() {
         }
         case RobotState::CONNECTOR: {
             std::cout << "State: CONNECTOR" << std::endl;
-            m_pcLEDs->SetAllColors(CColor::CYAN);
+            
+            bool sending = false;
+            for(const auto& msg : rmsgToResend) {
+                if(msg.second.from == "L2")
+                    sending = true;
+            }
+            if(sending)
+                m_pcLEDs->SetAllColors(CColor::MAGENTA);
+            else
+                m_pcLEDs->SetAllColors(CColor::CYAN);
 
             /* Leader signal */
             msg_index++; // Skip to next part
@@ -488,8 +505,8 @@ void CFollower::ControlStep() {
         msg[msg_index++] = (UInt8)relayMsg.type;
         msg[msg_index++] = relayMsg.from[0];
         msg[msg_index++] = stoi(relayMsg.from.substr(1));
-        msg[msg_index++] = (UInt8)relayMsg.time/256;
-        msg[msg_index++] = (UInt8)relayMsg.time%256;
+        msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
+        msg[msg_index++] = (UInt8)(relayMsg.time % 256);
     }
     // Skip if not all bytes are used
     msg_index += (2 - rmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
@@ -729,6 +746,7 @@ void CFollower::Update() {
         }
 
         SetCMsgsToRelay();
+        SetLeaderMsgToRelay(currentState);
         
     } else if(currentState == RobotState::CONNECTOR) {
 
@@ -758,6 +776,8 @@ void CFollower::Update() {
                     nearbyTeams.insert(msg.teamID);
             }
         }
+
+        SetLeaderMsgToRelay(currentState);
 
         /* Check if there is a team that is 1 hop count away from itself */
         for(const auto& hop : hopsDict) {
@@ -1031,11 +1051,11 @@ void CFollower::SetCMsgsToRelay() {
 
     for(const auto& msg : combinedTeamMsgs) {
         for(const auto& cmsg : msg.cmsg) {
-            auto hops = msg.hops;
+            auto teamHops = msg.hops;
 
             /* Relay Request message received from robots with greater hop count */
             if( !receivedRequest ) {
-                if(cmsg.type == 'R' && hops[teamID].count > hopCountToLeader) {
+                if(cmsg.type == 'R' && teamHops[teamID].count > hopCountToLeader) {
                     if(currentRequest.type != 'R') { // Check if it is currently not requesting
                         cmsgToSend.push_back(cmsg);
                         receivedRequest = true;
@@ -1046,12 +1066,139 @@ void CFollower::SetCMsgsToRelay() {
             
             /* Relay Accept message received from robots with smaller hop count */
             if( !receivedAccept ) {
-                if(cmsg.type == 'A' && hops[teamID].count < hopCountToLeader) {
+                if(cmsg.type == 'A' && teamHops[teamID].count < hopCountToLeader) {
                     cmsgToSend.push_back(cmsg);
                     receivedAccept = true;
                     std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
                 }
             }
+        }
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::SetLeaderMsgToRelay(const RobotState state) {
+    if(state == RobotState::FOLLOWER) {
+
+        std::vector<Message> inwardMsgs;
+        std::vector<Message> outwardMsgs;
+        
+        // Add connectors and leaders/followers from other teams to check for inward message relay
+        inwardMsgs.insert(std::end(inwardMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+        inwardMsgs.insert(std::end(inwardMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+        inwardMsgs.insert(std::end(inwardMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+
+        // Add the leader to check for outward message relay
+        if( !leaderMsg.Empty() )
+            outwardMsgs.push_back(leaderMsg);
+
+        // Split messages from team followers into two groups.
+        for(const auto& msg : teamMsgs) {
+            auto teamHops = msg.hops;
+            if( !msg.rmsg.empty() ) {
+                if(teamHops[teamID].count > hopCountToLeader)
+                    inwardMsgs.push_back(msg);
+                if(teamHops[teamID].count < hopCountToLeader)
+                    outwardMsgs.push_back(msg);
+            }
+        }
+
+        /* Find message to relay inwards */
+        for(const auto& msg : inwardMsgs) {
+            for(const auto& relayMsg : msg.rmsg) {
+                if(stoi(relayMsg.from.substr(1)) != teamID) {
+                    if(relayMsg.time > lastBeatOther.time) {
+                        lastBeatOther = relayMsg;
+
+                        auto otherHops = msg.hops;
+                        if(otherHops[teamID].count == 0)
+                            receivedInwardSendMsg = true;
+                        else
+                            receivedInwardRelayMsg = true;
+                    }
+                    if(receivedInwardSendMsg || receivedInwardRelayMsg)
+                        break;
+                }
+            }
+            if(receivedInwardSendMsg || receivedInwardRelayMsg)
+                break;
+        }
+
+        /* Find message to relay outwards */
+        for(const auto& msg : outwardMsgs) {
+            for(const auto& relayMsg : msg.rmsg) {
+                if(stoi(relayMsg.from.substr(1)) == teamID) {
+                    if(relayMsg.time > lastBeatTeam.time) {
+                        lastBeatTeam = relayMsg;
+
+                        auto teamHops = msg.hops;
+                        if(teamHops[teamID].count == 0)
+                            receivedOutwardSendMsg = true;
+                        else
+                            receivedOutwardRelayMsg = true;
+                    }
+                    if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
+                        break;
+                }
+            }
+            if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
+                    break;
+        }
+    } else if(state == RobotState::CONNECTOR) {
+
+        /* Check whether new relayMsg is received */
+        for(const auto& hop : hopsDict) {
+            /* Check the team */
+            if(hop.second.count == 1) {
+
+                std::vector<Message> combinedMsgs(otherLeaderMsgs);
+                combinedMsgs.insert(std::end(combinedMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+
+                for(const auto& msg : combinedMsgs) {
+                    if(msg.teamID == hop.first) {
+                        for(const auto& relayMsg : msg.rmsg) {
+                            if(stoi(relayMsg.from.substr(1)) == hop.first) {
+                                if(lastBeat.find(hop.first) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
+                                    if(msg.state == RobotState::LEADER)
+                                        lastBeat[hop.first] = {relayMsg,'L'};
+                                    else
+                                        lastBeat[hop.first] = {relayMsg,'F'};
+                                } else {
+                                    if(relayMsg.time > lastBeat[hop.first].first.time) { // Else update it only if the timestep is newer
+                                        if(msg.state == RobotState::LEADER)
+                                            lastBeat[hop.first] = {relayMsg,'L'};
+                                        else
+                                            lastBeat[hop.first] = {relayMsg,'F'};
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            /* Check the connectors */
+            } else {
+                for(const auto& msg : connectorMsgs) {
+                    if(hop.second.ID == msg.ID) {
+                        std::cerr << "---------" << this->GetId() << "---------" << std::endl;
+                        for(const auto& relayMsg : msg.rmsg) {
+                            if(stoi(relayMsg.from.substr(1)) == hop.first) {
+                                std::cerr << msg.ID << "(" << hop.first << ") -> " << this->GetId() << std::endl;
+                                if(lastBeat.find(hop.first) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
+                                    lastBeat[hop.first] = {relayMsg,'F'};
+                                    std::cerr << "Relaying this " << relayMsg.time << std::endl;
+                                } else {
+                                    if(relayMsg.time > lastBeat[hop.first].first.time) { // Else update it only if the timestep is newer
+                                        lastBeat[hop.first] = {relayMsg,'F'};
+                                        std::cerr << " Relaying this " << relayMsg.time << std::endl;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }       
         }
     }
 }
@@ -1561,6 +1708,20 @@ void CFollower::Callback_SendReply(void* data) {
 
 void CFollower::Callback_RelayMsg(void* data) {
     std::cout << "Action: relayMsg" << std::endl;
+
+    if(currentState == RobotState::FOLLOWER) {
+        if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
+            rmsgToResend.push_back({sendDuration,lastBeatTeam}); // Transmit public event
+
+        if(receivedInwardSendMsg || receivedInwardRelayMsg)
+            rmsgToResend.push_back({sendDuration,lastBeatOther});
+    }
+    else if(currentState == RobotState::CONNECTOR) {
+        for(const auto& info : lastBeat) {
+            if(info.second.second != 'N')
+                rmsgToResend.push_back({sendDuration,info.second.first});
+        }
+    }
 }
 
 /****************************************/
@@ -1689,13 +1850,39 @@ unsigned char CFollower::Check_Reject(void* data) {
 }
 
 unsigned char CFollower::Check__SendMsg(void* data) {
-    std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
-    return 0;
+    if(currentState == RobotState::FOLLOWER) {
+        std::cout << "Event: " << (receivedInwardSendMsg || receivedOutwardSendMsg) << " - _sendMsg" << std::endl;
+        return receivedInwardSendMsg || receivedOutwardSendMsg;
+    } 
+    else if(currentState == RobotState::CONNECTOR) {
+        for(const auto& info : lastBeat) {
+            if(info.second.second == 'L') {
+                std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
+                return 1;
+            }
+        }
+        std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
+        return 0;
+    }
+    std::cerr << "Error when running Check__SendMsg for " << this->GetId() << std::endl;
 }
 
 unsigned char CFollower::Check__RelayMsg(void* data) {
-    std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
-    return 0;
+    if(currentState == RobotState::FOLLOWER) {
+        std::cout << "Event: " << (receivedInwardRelayMsg || receivedOutwardRelayMsg) << " - _relayMsg" << std::endl;
+        return receivedInwardRelayMsg || receivedOutwardRelayMsg;
+    }
+    else if(currentState == RobotState::CONNECTOR) {
+        for(const auto& info : lastBeat) {
+            if(info.second.second == 'F') {
+                std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
+                return 1;
+            }
+        }
+        std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
+        return 0;
+    }
+    std::cerr << "Error when running Check__RelayMsg for " << this->GetId() << std::endl;
 }
 
 unsigned char CFollower::Check_TaskEnded(void* data) {

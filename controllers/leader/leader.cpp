@@ -792,14 +792,22 @@ void CLeader::SetConnectorToRelay() {
 /****************************************/
 
 void CLeader::CheckHeartBeat() {
-    for(const auto& leader : otherLeaderMsgs) {
-        for(const auto& beat : leader.rmsg) {
-            if(beat.type =='H' && beat.time > lastBeatTime) {
+
+    std::vector<Message> combinedMsgs(otherLeaderMsgs);
+    combinedMsgs.insert(std::end(combinedMsgs), std::begin(teamMsgs), std::end(teamMsgs));
+    combinedMsgs.insert(std::end(combinedMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    combinedMsgs.insert(std::end(combinedMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+
+    for(const auto& msg : combinedMsgs) {
+        for(const auto& beat : msg.rmsg) {
+            if(beat.type =='H' && beat.from != this->GetId() && beat.time > lastBeatTime) {
                 beatReceived++;
                 lastBeatTime = beat.time;
+                std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
             }
         }
     }
+
     std::cout << "lastBeatTime: " << lastBeatTime << std::endl;
     std::cout << "beatReceived: " << beatReceived << std::endl;
 }
