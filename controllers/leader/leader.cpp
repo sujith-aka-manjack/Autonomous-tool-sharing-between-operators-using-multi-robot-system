@@ -200,7 +200,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    //std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     std::cout << "TIME: " << initStepTimer << std::endl;
@@ -225,7 +225,7 @@ void CLeader::ControlStep() {
     nearRobot = false;
 
     // for(int i = 0; i < waypoints.size(); i++) {
-    //     std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
+    //     //std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
     // }
 
     /*----------------------*/
@@ -256,7 +256,7 @@ void CLeader::ControlStep() {
 
             /* Follow the control vector */
             SetWheelSpeedsFromVector(m_cControl);
-            std::cout << "SIGNAL " << m_bSignal << std::endl; 
+            //std::cout << "SIGNAL " << m_bSignal << std::endl; 
 
             if(m_bSignal)
                 m_pcLEDs->SetAllColors(CColor::WHITE);
@@ -267,7 +267,7 @@ void CLeader::ControlStep() {
         }
         else {
             if( !nearRobot ) {
-                std::cout << "[LOG] Robot is far" << std::endl;
+                //std::cout << "[LOG] Robot is far" << std::endl;
 
                 /* Stop if other robots are too far from itself */
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
@@ -278,7 +278,7 @@ void CLeader::ControlStep() {
                 CVector3 pos3d = m_pcPosSens->GetReading().Position;
                 CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
                 Real dist = (waypoints.front() - pos2d).Length();
-                std::cout << "dist: " << dist << std::endl;
+                //std::cout << "dist: " << dist << std::endl;
 
                 /* Check if task is completed */
                 if(dist < m_sWaypointTrackingParams.thresRange) {
@@ -296,7 +296,7 @@ void CLeader::ControlStep() {
                 /* If current task is completed, move to the next one */
                 if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
                     
-                    std::cout << "[LOG] Moving to next task" << std::endl;
+                    //std::cout << "[LOG] Moving to next task" << std::endl;
 
                     /* Calculate overall force applied to the robot */
                     CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
@@ -304,10 +304,10 @@ void CLeader::ControlStep() {
                     CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
 
                     CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
-                    std::cout << "waypointForce: " << waypointForce << std::endl;
-                    std::cout << "robotForce: " << robotForce << std::endl;
-                    std::cout << "obstacleForce: " << obstacleForce << std::endl;
-                    std::cout << "sumForce: " << sumForce << std::endl;
+                    //std::cout << "waypointForce: " << waypointForce << std::endl;
+                    //std::cout << "robotForce: " << robotForce << std::endl;
+                    //std::cout << "obstacleForce: " << obstacleForce << std::endl;
+                    //std::cout << "sumForce: " << sumForce << std::endl;
 
                     SetWheelSpeedsFromVectorHoming(sumForce);
                 } 
@@ -316,7 +316,7 @@ void CLeader::ControlStep() {
                 }
             }
             else {
-                std::cout << "[LOG] No assigned tasks left" << std::endl;
+                //std::cout << "[LOG] No assigned tasks left" << std::endl;
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
                 msg[msg_index++] = 0; // Leader sends stopTask
             }
@@ -335,7 +335,7 @@ void CLeader::ControlStep() {
     msg_index += 4; // Skip to next part
 
     /* Connection Message */
-    std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+    //std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
     msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
         msg[msg_index++] = (UInt8)conMsg.type;
@@ -362,7 +362,7 @@ void CLeader::ControlStep() {
     msg_index += 2; // Skip to next part
 
     /* Relay Message */
-    std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
+    //std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
     msg[msg_index++] = rmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& relayMsg : rmsgToSend) {
         msg[msg_index++] = (UInt8)relayMsg.type;
@@ -481,7 +481,7 @@ void CLeader::GetMessages() {
     if( !tMsgs.empty() ) {
         for(int i = 0; i < tMsgs.size(); i++) {
 
-            std::cout << tMsgs[i].Data << std::endl;
+            //std::cout << tMsgs[i].Data << std::endl;
 
             size_t index = 0;
 
@@ -538,14 +538,14 @@ void CLeader::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
 
-                std::cout << "FROM: " << conMsg.from << std::endl;
+                //std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
                 
-                std::cout << "TO: " << conMsg.to << std::endl;
+                //std::cout << "TO: " << conMsg.to << std::endl;
                 
                 conMsg.toTeam = tMsgs[i].Data[index++]; 
 
@@ -563,7 +563,7 @@ void CLeader::GetMessages() {
                 msg.shareToLeader = robotID;
             }
             
-            std::cout << "shareToLeader: " << msg.shareToLeader << std::endl;
+            //std::cout << "shareToLeader: " << msg.shareToLeader << std::endl;
 
             if(tMsgs[i].Data[index] == 255) {
                 index += 2;
@@ -574,7 +574,7 @@ void CLeader::GetMessages() {
                 msg.shareToTeam = robotID;
             }
 
-            std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
+            //std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
 
             /* Nearby Teams */
             msg_num = tMsgs[i].Data[index++];
@@ -604,7 +604,7 @@ void CLeader::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 relayMsg.from = robotID;
 
-                // std::cout << "FROM: " << relayMsg.from << std::endl;
+                // //std::cout << "FROM: " << relayMsg.from << std::endl;
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
@@ -655,7 +655,7 @@ void CLeader::Update() {
     CheckHeartBeat();
 
     /* Set ConnectionMsg to send during this timestep */
-    std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
     for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
         if(it->first > 0) {
             cmsgToSend.push_back(it->second);
@@ -677,7 +677,7 @@ void CLeader::Update() {
     }
 
     /* Set RelayMsg to send during this timestep */
-    std::cout << "resend size: " << rmsgToResend.size() << std::endl;
+    //std::cout << "resend size: " << rmsgToResend.size() << std::endl;
     for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
         if(it->first > 0) {
             rmsgToSend.push_back(it->second);
@@ -749,7 +749,7 @@ void CLeader::ReplyToRequest() {
             }
         }
 
-        std::cout << "acceptTo: " << acceptTo.to << std::endl;
+        //std::cout << "acceptTo: " << acceptTo.to << std::endl;
 
         /* Add accept message to be sent */
         if( !acceptTo.to.empty() )
@@ -819,13 +819,13 @@ void CLeader::CheckHeartBeat() {
             if(beat.type =='H' && beat.from != this->GetId() && beat.time > lastBeatTime) {
                 beatReceived++;
                 lastBeatTime = beat.time;
-                std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                //std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
             }
         }
     }
 
-    std::cout << "lastBeatTime: " << lastBeatTime << std::endl;
-    std::cout << "beatReceived: " << beatReceived << std::endl;
+    //std::cout << "lastBeatTime: " << lastBeatTime << std::endl;
+    //std::cout << "beatReceived: " << beatReceived << std::endl;
 }
 
 /****************************************/
@@ -837,25 +837,25 @@ CVector2 CLeader::VectorToWaypoint() {
     CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
     CRadians cZAngle, cYAngle, cXAngle;
     m_pcPosSens->GetReading().Orientation.ToEulerAngles(cZAngle, cYAngle, cXAngle);
-    std::cout << "pos2d " << pos2d << std::endl;
+    //std::cout << "pos2d " << pos2d << std::endl;
 
     /* Calculate a normalized vector that points to the next waypoint */
     CVector2 cAccum = waypoints.front() - pos2d;
 
-    std::cout << "cAccum: " << cAccum << std::endl;
-    std::cout << "angle: " << cAccum.Angle() << std::endl;
+    //std::cout << "cAccum: " << cAccum << std::endl;
+    //std::cout << "angle: " << cAccum.Angle() << std::endl;
 
     cAccum.Rotate((-cZAngle).SignedNormalize());
     
-    std::cout << "cAccum: " << cAccum << std::endl;
-    std::cout << "angle: " << cAccum.Angle() << std::endl;
+    //std::cout << "cAccum: " << cAccum << std::endl;
+    //std::cout << "angle: " << cAccum.Angle() << std::endl;
 
     if(cAccum.Length() > 0.0f) {
         /* Make the vector as long as the max speed */
         cAccum.Normalize();
         cAccum *= m_sWheelTurningParams.MaxSpeed;
     }
-    std::cout << "cAccum: " << cAccum << std::endl;
+    //std::cout << "cAccum: " << cAccum << std::endl;
     return cAccum;
 }
 
@@ -927,7 +927,7 @@ CVector2 CLeader::GetObstacleRepulsionVector() {
 
             resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
         }
-        // std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
+        // //std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
     }
 
     /* Clamp the length of the vector to the max speed */
@@ -1019,7 +1019,7 @@ void CLeader::SetWheelSpeedsFromVectorHoming(const CVector2& c_heading) {
     
     /* Calculate the amount to adjust the wheel speeds */
     Real fSpeed = PIDHeading->calculate(0,cHeadingAngle.GetValue());
-    std::cout << fSpeed << std::endl;
+    //std::cout << fSpeed << std::endl;
 
     /* Apply the calculated speeds to the appropriate wheels */
     Real fLeftWheelSpeed, fRightWheelSpeed;
@@ -1038,7 +1038,7 @@ void CLeader::SetWheelSpeedsFromVectorHoming(const CVector2& c_heading) {
 /****************************************/
 
 void CLeader::PrintName() {
-    std::cout << "[" << this->GetId() << "] ";
+    //std::cout << "[" << this->GetId() << "] ";
 }
 
 /*

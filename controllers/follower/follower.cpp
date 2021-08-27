@@ -274,7 +274,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    std::cout << "\n---------- " << id << " ----------" << std::endl;
+    //std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -329,13 +329,13 @@ void CFollower::ControlStep() {
     /*--------------------*/
     /* Run SCT controller */
     /*--------------------*/
-    std::cout << "--- Supervisors ---" << std::endl;
+    //std::cout << "--- Supervisors ---" << std::endl;
 
     if(initStepTimer > 2)
         sct->run_step();    // Run the supervisor to get the next action
 
-    sct->print_current_state();
-    std::cout << std::endl;
+    // sct->print_current_state();
+    //std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -353,7 +353,7 @@ void CFollower::ControlStep() {
     // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
         case RobotState::FOLLOWER: {
-            std::cout << "State: FOLLOWER" << std::endl;
+            //std::cout << "State: FOLLOWER" << std::endl;
             m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             /* Relay leader signal */
@@ -361,7 +361,7 @@ void CFollower::ControlStep() {
 
             /* Hop count */
             /* Set its hop count to the leader */
-            std::cout << "Hops to leader: " << hopCountToLeader << std::endl;
+            //std::cout << "Hops to leader: " << hopCountToLeader << std::endl;
             msg[msg_index++] = 1; // Number of HopMsg
 
             msg[msg_index++] = teamID;
@@ -373,8 +373,8 @@ void CFollower::ControlStep() {
             break;
         }
         case RobotState::CONNECTOR: {
-            std::cout << "State: CONNECTOR" << std::endl;
-            
+            //std::cout << "State: CONNECTOR" << std::endl;
+
             bool sending = false;
             for(const auto& msg : rmsgToResend) {
                 if(msg.second.from == "L2")
@@ -409,7 +409,7 @@ void CFollower::ControlStep() {
             break;
         }
         case RobotState::LEADER: {
-            std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
+            //std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
             break;
         }
     }
@@ -428,12 +428,12 @@ void CFollower::ControlStep() {
 
     /* Connection Message */
     /* Set ConnectionMsg to send during this timestep */
-    std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
     for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
         if(it->first > 0) {
             if(receivedAccept || receivedReject) {
                 it = cmsgToResend.erase(it); // Stop resending when a response is received
-                // std::cout << "STOP RESENDING, ACCEPT HAS BEEN RECEIVED" << std::endl;
+                // //std::cout << "STOP RESENDING, ACCEPT HAS BEEN RECEIVED" << std::endl;
             } else {
                 cmsgToSend.push_back(it->second);
                 it->first--; // Decrement timer
@@ -441,12 +441,12 @@ void CFollower::ControlStep() {
             }
         } else {
             it = cmsgToResend.erase(it);
-            // std::cout << "STOP RESENDING, TIMEOUT HAS BEEN REACHED" << std::endl;
+            // //std::cout << "STOP RESENDING, TIMEOUT HAS BEEN REACHED" << std::endl;
         }
     }
-    // std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    // //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
 
-    std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+    //std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
     msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
         msg[msg_index++] = (UInt8)conMsg.type;
@@ -466,7 +466,7 @@ void CFollower::ControlStep() {
     } else
         msg_index += 2;
 
-    std::cout << "Share to leader: " << shareToLeader << std::endl;
+    //std::cout << "Share to leader: " << shareToLeader << std::endl;
 
     if( !shareToTeam.empty() ) {
         msg[msg_index++] = shareToTeam[0];
@@ -474,10 +474,10 @@ void CFollower::ControlStep() {
     } else
         msg_index += 2;
 
-    std::cout << "Share to team: " << shareToTeam << std::endl;
+    //std::cout << "Share to team: " << shareToTeam << std::endl;
 
     /* Teams Nearby */
-    std::cout << "nearbyTeams.size: " << nearbyTeams.size() << std::endl;
+    //std::cout << "nearbyTeams.size: " << nearbyTeams.size() << std::endl;
     msg[msg_index++] = nearbyTeams.size(); // Set the number of nearby teams
     for(const auto& id : nearbyTeams) {
         msg[msg_index++] = id;
@@ -487,7 +487,7 @@ void CFollower::ControlStep() {
 
     /* Relay Message */
     /* Set RelayMsg to send during this timestep */
-    std::cout << "resend size: " << rmsgToResend.size() << std::endl;
+    //std::cout << "resend size: " << rmsgToResend.size() << std::endl;
     for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
         if(it->first > 0) {
             rmsgToSend.push_back(it->second);
@@ -495,11 +495,11 @@ void CFollower::ControlStep() {
             ++it;
         } else {
             it = rmsgToResend.erase(it);
-            // std::cout << "STOP RESENDING, TIMEOUT HAS BEEN REACHED" << std::endl;
+            // //std::cout << "STOP RESENDING, TIMEOUT HAS BEEN REACHED" << std::endl;
         }
     }
 
-    std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
+    //std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
     msg[msg_index++] = rmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& relayMsg : rmsgToSend) {
         msg[msg_index++] = (UInt8)relayMsg.type;
@@ -521,9 +521,9 @@ void CFollower::ControlStep() {
         allMsgs.push_back(leaderMsg);
     }
 
-    std::cout << "I saw: ";
+    //std::cout << "I saw: ";
     for(size_t i = 0; i < allMsgs.size(); i++) {
-        std::cout << allMsgs[i].ID << ", ";
+        //std::cout << allMsgs[i].ID << ", ";
 
         msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
         msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
@@ -531,7 +531,7 @@ void CFollower::ControlStep() {
         if(i >= 29)
             break;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
     /*--------------*/
     /* Send message */
@@ -551,7 +551,7 @@ void CFollower::GetMessages() {
     if( !tMsgs.empty() ) {
         for(int i = 0; i < tMsgs.size(); i++) {
 
-            // std::cout << tMsgs[i].Data << std::endl;
+            // //std::cout << tMsgs[i].Data << std::endl;
 
             size_t index = 0;
 
@@ -608,14 +608,14 @@ void CFollower::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.from = robotID;
 
-                // std::cout << "FROM: " << conMsg.from << std::endl;
+                // //std::cout << "FROM: " << conMsg.from << std::endl;
 
                 robotID = "";
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 conMsg.to = robotID;
                 
-                // std::cout << "TO: " << conMsg.to << std::endl;
+                // //std::cout << "TO: " << conMsg.to << std::endl;
                 
                 conMsg.toTeam = tMsgs[i].Data[index++]; 
 
@@ -670,7 +670,7 @@ void CFollower::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 relayMsg.from = robotID;
 
-                // std::cout << "FROM: " << relayMsg.from << std::endl;
+                // //std::cout << "FROM: " << relayMsg.from << std::endl;
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
@@ -716,11 +716,11 @@ void CFollower::GetMessages() {
 
 void CFollower::Update() {
 
-    std::cout << "leaderMsg = " << ( !leaderMsg.Empty() ) << std::endl;
-    std::cout << "teamMsg = " << teamMsgs.size() << std::endl;
-    std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
-    std::cout << "otherTMsg = " << otherTeamMsgs.size() << std::endl;
-    std::cout << "connectorMsg  = " << connectorMsgs.size() << std::endl;
+    //std::cout << "leaderMsg = " << ( !leaderMsg.Empty() ) << std::endl;
+    //std::cout << "teamMsg = " << teamMsgs.size() << std::endl;
+    //std::cout << "otherLMsg = " << otherLeaderMsgs.size() << std::endl;
+    //std::cout << "otherTMsg = " << otherTeamMsgs.size() << std::endl;
+    //std::cout << "connectorMsg  = " << connectorMsgs.size() << std::endl;
 
     if(currentState == RobotState::FOLLOWER) {
 
@@ -738,7 +738,7 @@ void CFollower::Update() {
 
             /* Decrement timer */
             requestTimer--;
-            std::cout << "requestTimer: " << requestTimer << std::endl;
+            //std::cout << "requestTimer: " << requestTimer << std::endl;
 
             /* Check whether an Accept message was not received before the timeout */
             if(requestTimer == 0 && currentAccept.type == 'N')
@@ -757,11 +757,11 @@ void CFollower::Update() {
             // If no duplicate vector is empty, all connections with connectors remain
         
         // DEBUG
-        // std::cout << "--- HOPS ---" << std::endl;
+        // //std::cout << "--- HOPS ---" << std::endl;
         // for(const auto& it : hops) {
-        //     std::cout << "Team: " << it.first << std::endl;
-        //     std::cout << "Count: " << it.second.count << std::endl;
-        //     std::cout << "ID: " << it.second.ID << std::endl;
+        //     //std::cout << "Team: " << it.first << std::endl;
+        //     //std::cout << "Count: " << it.second.count << std::endl;
+        //     //std::cout << "ID: " << it.second.ID << std::endl;
         // }
 
         CheckRequests();
@@ -802,19 +802,19 @@ void CFollower::Update() {
 
         if( !robotIDs.empty() && !setCTriggered) {
             bool exitLoop = false;
-            // std::cerr << "CORRECT " << this->GetId() << std::endl;
+            // //std::cerr << "CORRECT " << this->GetId() << std::endl;
 
             for(const auto& id : robotIDs) {
                 for(const auto& msg : connectorMsgs) {
 
                     /* Find the connector */
                     if(msg.ID == id) {
-                        // std::cerr << "CORRECT2 " << this->GetId() << std::endl;
+                        // //std::cerr << "CORRECT2 " << this->GetId() << std::endl;
 
                         for(const auto& hop : msg.hops) {
-                            // std::cerr << "CORRECT3 " << this->GetId() << std::endl;
-                            // std::cerr << "CORRECT3 first: " << hop.first << std::endl;
-                            // std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
+                            // //std::cerr << "CORRECT3 " << this->GetId() << std::endl;
+                            // //std::cerr << "CORRECT3 first: " << hop.first << std::endl;
+                            // //std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
 
                             /* Find its own id */
                             if(hop.second.ID == this->GetId()) {
@@ -823,7 +823,7 @@ void CFollower::Update() {
                                 /* If it's not, break from the loop as it is a necessary part of the chain */
                                 bool isNearTeam = false;
                                 for(const auto& team : msg.nearbyTeams) {
-                                    // std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
+                                    // //std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
                                     if(hop.first == team)
                                         isNearTeam = true;
                                 }
@@ -915,7 +915,7 @@ CFollower::Message CFollower::GetClosestNonTeam() {
     }
 
     if(minDist < 10000)
-        std::cout << "Dist to candidate: " << minDist << std::endl;
+        //std::cout << "Dist to candidate: " << minDist << std::endl;
     
     return closestRobot;
 }
@@ -938,10 +938,10 @@ bool CFollower::IsClosestToRobot(const Message& msg) {
 
         std::vector<std::string> connections = teamMsgs[i].connections;
 
-        // std::cout << teamMsgs[i].ID << ": ";
+        // //std::cout << teamMsgs[i].ID << ": ";
         // for(size_t j = 0; j < teamMsgs[i].connections.size(); j++)
-        //     std::cout << teamMsgs[i].connections[j] << ", ";
-        // std::cout << std::endl;
+        //     //std::cout << teamMsgs[i].connections[j] << ", ";
+        // //std::cout << std::endl;
 
         // Check if the team robot has seen the non-team robot 
         if (std::find(connections.begin(), connections.end(), msg.ID) != connections.end()) {
@@ -1059,7 +1059,7 @@ void CFollower::SetCMsgsToRelay() {
                     if(currentRequest.type != 'R') { // Check if it is currently not requesting
                         cmsgToSend.push_back(cmsg);
                         receivedRequest = true;
-                        std::cout << "Relay Request, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+                        //std::cout << "Relay Request, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
                     }
                 }
             }
@@ -1069,7 +1069,7 @@ void CFollower::SetCMsgsToRelay() {
                 if(cmsg.type == 'A' && teamHops[teamID].count < hopCountToLeader) {
                     cmsgToSend.push_back(cmsg);
                     receivedAccept = true;
-                    std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
+                    //std::cout << "Relay Accept, from: " << cmsg.from << " to: " << cmsg.to << std::endl;
                 }
             }
         }
@@ -1181,17 +1181,17 @@ void CFollower::SetLeaderMsgToRelay(const RobotState state) {
             } else {
                 for(const auto& msg : connectorMsgs) {
                     if(hop.second.ID == msg.ID) {
-                        std::cerr << "---------" << this->GetId() << "---------" << std::endl;
+                        //std::cerr << "---------" << this->GetId() << "---------" << std::endl;
                         for(const auto& relayMsg : msg.rmsg) {
                             if(stoi(relayMsg.from.substr(1)) == hop.first) {
-                                std::cerr << msg.ID << "(" << hop.first << ") -> " << this->GetId() << std::endl;
+                                //std::cerr << msg.ID << "(" << hop.first << ") -> " << this->GetId() << std::endl;
                                 if(lastBeat.find(hop.first) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
                                     lastBeat[hop.first] = {relayMsg,'F'};
-                                    std::cerr << "Relaying this " << relayMsg.time << std::endl;
+                                    //std::cerr << "Relaying this " << relayMsg.time << std::endl;
                                 } else {
                                     if(relayMsg.time > lastBeat[hop.first].first.time) { // Else update it only if the timestep is newer
                                         lastBeat[hop.first] = {relayMsg,'F'};
-                                        std::cerr << " Relaying this " << relayMsg.time << std::endl;
+                                        //std::cerr << " Relaying this " << relayMsg.time << std::endl;
                                     }
                                 }
                             }
@@ -1337,7 +1337,7 @@ void CFollower::UpdateHopCounts() {
     }
 
     if( !robotIDs.empty() )
-        std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
+        //std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
 
     /* Update hop count */
     for(auto& hop : hopsDict) {
@@ -1363,10 +1363,10 @@ void CFollower::Flock() {
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
-        std::cout << "team: " << teamForce.Length() << std::endl;
-        std::cout << "robot: " << robotForce.Length() << std::endl;
-        std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
-        std::cout << "sum: " << sumForce.Length() << std::endl;
+        //std::cout << "team: " << teamForce.Length() << std::endl;
+        //std::cout << "robot: " << robotForce.Length() << std::endl;
+        //std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
+        //std::cout << "sum: " << sumForce.Length() << std::endl;
     }
 
     /* Set Wheel Speed */
@@ -1483,7 +1483,7 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 
             resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
         }
-        // std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
+        // //std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
     }
 
     /* Limit the length of the vector to the max speed */
@@ -1570,7 +1570,7 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 /****************************************/
 
 void CFollower::PrintName() {
-    std::cout << "[" << this->GetId() << "] ";
+    //std::cout << "[" << this->GetId() << "] ";
 }
 
 /****************************************/
@@ -1579,28 +1579,28 @@ void CFollower::PrintName() {
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_TaskBegin(void* data) {
-    std::cout << "Action: taskBegin" << std::endl;
+    //std::cout << "Action: taskBegin" << std::endl;
     performingTask = true;
 }
 
 void CFollower::Callback_TaskStop(void* data) {
-    std::cout << "Action: taskStop" << std::endl;
+    //std::cout << "Action: taskStop" << std::endl;
     performingTask = false;
 }
 
 void CFollower::Callback_MoveFlock(void* data) {
-    std::cout << "Action: moveFlock" << std::endl;
+    //std::cout << "Action: moveFlock" << std::endl;
     currentMoveType = MoveType::FLOCK;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
-    std::cout << "Action: moveStop" << std::endl;
+    //std::cout << "Action: moveStop" << std::endl;
     currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_SetF(void* data) {
-    std::cout << "Action: setF" << std::endl;
+    //std::cout << "Action: setF" << std::endl;
 
     /* Set new teamID */
     for(const auto& hop : hopsDict) {
@@ -1615,7 +1615,7 @@ void CFollower::Callback_SetF(void* data) {
 }
 
 void CFollower::Callback_SetC(void* data) {
-    std::cout << "Action: setC" << std::endl;
+    //std::cout << "Action: setC" << std::endl;
     
     if(currentAccept.from[0] == 'L') {  // Accept received from the leader
 
@@ -1658,7 +1658,7 @@ void CFollower::Callback_SetC(void* data) {
 }
 
 void CFollower::Callback_SendReqL(void* data) {
-    std::cout << "Action: sendReqL" << std::endl;
+    //std::cout << "Action: sendReqL" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1670,11 +1670,11 @@ void CFollower::Callback_SendReqL(void* data) {
 
     currentRequest = cmsg;
     requestTimer = waitRequestDuration;
-    std::cout << "requestTimer SET: " << requestTimer << std::endl;
+    //std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
 void CFollower::Callback_SendReqC(void* data) {
-    std::cout << "Action: sendReqC" << std::endl;
+    //std::cout << "Action: sendReqC" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1686,11 +1686,11 @@ void CFollower::Callback_SendReqC(void* data) {
 
     currentRequest = cmsg;
     requestTimer = waitRequestDuration;
-    std::cout << "requestTimer SET: " << requestTimer << std::endl;
+    //std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
 void CFollower::Callback_SendReply(void* data) {
-    std::cout << "Action: sendReply" << std::endl;
+    //std::cout << "Action: sendReply" << std::endl;
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
@@ -1707,7 +1707,7 @@ void CFollower::Callback_SendReply(void* data) {
 }
 
 void CFollower::Callback_RelayMsg(void* data) {
-    std::cout << "Action: relayMsg" << std::endl;
+    //std::cout << "Action: relayMsg" << std::endl;
 
     if(currentState == RobotState::FOLLOWER) {
         if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
@@ -1731,167 +1731,167 @@ void CFollower::Callback_RelayMsg(void* data) {
 
 unsigned char CFollower::Check__SendBegin(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
-        std::cout << "Event: " << 1 << " - _sendBegin" << std::endl;
+        //std::cout << "Event: " << 1 << " - _sendBegin" << std::endl;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - _sendBegin" << std::endl;
+    //std::cout << "Event: " << 0 << " - _sendBegin" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check__SendStop(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
-        std::cout << "Event: " << 1 << " - _sendStop" << std::endl;
+        //std::cout << "Event: " << 1 << " - _sendStop" << std::endl;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - _sendStop" << std::endl;
+    //std::cout << "Event: " << 0 << " - _sendStop" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_CondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
-        std::cout << "Event: " << 1 << " - condC1" << std::endl;
+        //std::cout << "Event: " << 1 << " - condC1" << std::endl;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - condC1" << std::endl;
+    //std::cout << "Event: " << 0 << " - condC1" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_NotCondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
-        std::cout << "Event: " << 0 << " - notCondC1" << std::endl;
+        //std::cout << "Event: " << 0 << " - notCondC1" << std::endl;
         return 0;
     }
-    std::cout << "Event: " << 1 << " - notCondC1" << std::endl;
+    //std::cout << "Event: " << 1 << " - notCondC1" << std::endl;
     return 1;
 }
 
 unsigned char CFollower::Check_CondC2(void* data) {
-    std::cout << "Event: " << condC2 << " - condC2" << std::endl;
+    //std::cout << "Event: " << condC2 << " - condC2" << std::endl;
     return condC2;
 }
 
 unsigned char CFollower::Check_NotCondC2(void* data) {
-    std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
+    //std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
     return !condC2;
 }
 
 unsigned char CFollower::Check_CondC3(void* data) {
     if( !connectionCandidate.Empty()) {
         if(teamID < connectionCandidate.teamID) {
-            std::cout << "Event: " << 1 << " - condC3" << std::endl;
+            //std::cout << "Event: " << 1 << " - condC3" << std::endl;
             return 1;
         }
     }
-    std::cout << "Event: " << 0 << " - condC3" << std::endl;
+    //std::cout << "Event: " << 0 << " - condC3" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_NotCondC3(void* data) {
     if( !connectionCandidate.Empty() ) {
         if(teamID < connectionCandidate.teamID) {
-            std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
+            //std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
             return 0;
         }
     }
-    std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
+    //std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
     return 1;
 }
 
 unsigned char CFollower::Check_NearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
-    std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
+    //std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
     return connectorSeen;
 }
 
 unsigned char CFollower::Check_NotNearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
-    std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
+    //std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
     return !connectorSeen;
 }
 
 unsigned char CFollower::Check_CondF1(void* data) {
-    std::cout << "Event: " << condF1 << " - condF1" << std::endl;
+    //std::cout << "Event: " << condF1 << " - condF1" << std::endl;
     return condF1;
 }
 
 unsigned char CFollower::Check_NotCondF1(void* data) {
-    std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
+    //std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
     return !condF1;
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {
-    std::cout << "Event: " << condF2 << " - condF2" << std::endl;
+    //std::cout << "Event: " << condF2 << " - condF2" << std::endl;
     return condF2;
 }
 
 unsigned char CFollower::Check_NotCondF2(void* data) {
-    std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
+    //std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
     return !condF2;
 }
 
 unsigned char CFollower::Check__SendReqC(void* data) {
-    std::cout << "Event: " << receivedReqC << " - _sendReqC" << std::endl;
+    //std::cout << "Event: " << receivedReqC << " - _sendReqC" << std::endl;
     return receivedReqC;
 }
 
 unsigned char CFollower::Check__SendReply(void* data) {
-    std::cout << "Event: " << (receivedAccept || receivedReject) << " - _sendReply" << std::endl;
+    //std::cout << "Event: " << (receivedAccept || receivedReject) << " - _sendReply" << std::endl;
     return receivedAccept || receivedReject;
 }
 
 unsigned char CFollower::Check_Accept(void* data) {
-    std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
+    //std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
     return receivedAccept;
 }
 
 unsigned char CFollower::Check_Reject(void* data) {
-    std::cout << "Event: " << receivedReject << " - reject" << std::endl;
+    //std::cout << "Event: " << receivedReject << " - reject" << std::endl;
     return receivedReject;
 }
 
 unsigned char CFollower::Check__SendMsg(void* data) {
     if(currentState == RobotState::FOLLOWER) {
-        std::cout << "Event: " << (receivedInwardSendMsg || receivedOutwardSendMsg) << " - _sendMsg" << std::endl;
+        //std::cout << "Event: " << (receivedInwardSendMsg || receivedOutwardSendMsg) << " - _sendMsg" << std::endl;
         return receivedInwardSendMsg || receivedOutwardSendMsg;
     } 
     else if(currentState == RobotState::CONNECTOR) {
         for(const auto& info : lastBeat) {
             if(info.second.second == 'L') {
-                std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
+                //std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
                 return 1;
             }
         }
-        std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
+        //std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
         return 0;
     }
-    std::cerr << "Error when running Check__SendMsg for " << this->GetId() << std::endl;
+    //std::cerr << "Error when running Check__SendMsg for " << this->GetId() << std::endl;
 }
 
 unsigned char CFollower::Check__RelayMsg(void* data) {
     if(currentState == RobotState::FOLLOWER) {
-        std::cout << "Event: " << (receivedInwardRelayMsg || receivedOutwardRelayMsg) << " - _relayMsg" << std::endl;
+        //std::cout << "Event: " << (receivedInwardRelayMsg || receivedOutwardRelayMsg) << " - _relayMsg" << std::endl;
         return receivedInwardRelayMsg || receivedOutwardRelayMsg;
     }
     else if(currentState == RobotState::CONNECTOR) {
         for(const auto& info : lastBeat) {
             if(info.second.second == 'F') {
-                std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
+                //std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
                 return 1;
             }
         }
-        std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
+        //std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
         return 0;
     }
-    std::cerr << "Error when running Check__RelayMsg for " << this->GetId() << std::endl;
+    //std::cerr << "Error when running Check__RelayMsg for " << this->GetId() << std::endl;
 }
 
 unsigned char CFollower::Check_TaskEnded(void* data) {
     if(setCTriggered) {
-        std::cout << "Event: " << 1 << " - taskEnded" << std::endl;
+        //std::cout << "Event: " << 1 << " - taskEnded" << std::endl;
         setCTriggered = false;
         return 1;
     }
-    std::cout << "Event: " << 0 << " - taskEnded" << std::endl;
+    //std::cout << "Event: " << 0 << " - taskEnded" << std::endl;
     return 0;
 }
 
