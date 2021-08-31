@@ -145,8 +145,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
 
         /* Chain formation threshold */
-        GetNodeAttribute(GetNode(t_node, "team"), "separation_threshold", separationThres);
-        GetNodeAttribute(GetNode(t_node, "team"), "joining_threshold", joiningThres);
+        GetNodeAttribute(GetNode(t_node, "team_distance"), "separation_threshold", separationThres);
+        GetNodeAttribute(GetNode(t_node, "team_distance"), "joining_threshold", joiningThres);
 
         /* Weights for the flocking behavior */
         GetNodeAttribute(GetNode(t_node, "flocking_weights"), "team",     teamWeight);
@@ -168,6 +168,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
     shareToLeader = "";
     shareToTeam = "";
+    shareDist = 255;
     setCTriggered = false; // Initialize flag
     initStepTimer = 0;
     lastBeatTeam.time = 0;
@@ -233,7 +234,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(105, 255);
+    msg = CByteArray(106, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -283,7 +284,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(105, 255);
+    msg = CByteArray(106, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -459,7 +460,7 @@ void CFollower::ControlStep() {
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
-    /* Update Message */
+    /* Shared Message */
     if( !shareToLeader.empty() ) {
         msg[msg_index++] = shareToLeader[0];
         msg[msg_index++] = stoi(shareToLeader.substr(1));
@@ -475,6 +476,8 @@ void CFollower::ControlStep() {
         msg_index += 2;
 
     //std::cout << "Share to team: " << shareToTeam << std::endl;
+
+    msg[msg_index++] = shareDist;
 
     /* Teams Nearby */
     //std::cout << "nearbyTeams.size: " << nearbyTeams.size() << std::endl;
@@ -623,7 +626,7 @@ void CFollower::GetMessages() {
             }
             index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
             
-            /* Update Message */
+            /* Shared Message */
             std::string robotID;
             if(tMsgs[i].Data[index] == 255) {
                 index += 2;
@@ -641,6 +644,8 @@ void CFollower::GetMessages() {
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 msg.shareToTeam = robotID;
             }
+
+            msg.shareDist = tMsgs[i].Data[index++];
 
             /* Nearby Teams */
             msg_num = tMsgs[i].Data[index++];
@@ -728,6 +733,25 @@ void CFollower::Update() {
         SetConnectorToRelay();
 
         connectionCandidate = GetClosestNonTeam();
+
+        if(shareToTeam.empty())  { // There are no connectors between the teams
+
+            // Calc its distance to other team follower
+            // Find if distance is the closest among other teammate messages
+            // Relay shortest distance among values
+            Real minDist = 255;
+            if( !connectionCandidate.Empty() )
+                minDist = connectionCandidate.direction.Length(); // Set its own distance to a follower in the other team
+            
+            for(const auto& msg : teamMsgs) {
+                auto hopInfo = msg.hops;
+                if(hopInfo[teamID].count > hopCountToLeader) {
+                    if(msg.shareDist < minDist)
+                        minDist = msg.shareDist;
+                }
+            }
+            shareDist = (UInt8)minDist;
+        }
 
         if( !connectionCandidate.Empty() )
             condC2 = IsClosestToRobot(connectionCandidate);
@@ -1662,6 +1686,7 @@ void CFollower::Callback_SetC(void* data) {
     hopsCopy.clear();
     shareToLeader = "";
     shareToTeam = "";
+    shareDist = 255;
 
     currentState = RobotState::CONNECTOR;
     teamID = 255;

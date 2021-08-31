@@ -156,7 +156,7 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(30) | (31)-(33) | (34)-(44) |      (45)-(104)       | (105) |
+    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(31) | (32)-(34) | (35)-(45) |      (46)-(105)       | (106) |
     * -----------------------------------------------------------------------------------------------------------------------------------
     * | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
     * | State  |   ID   | Team ID | Signal |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
@@ -186,6 +186,8 @@ public:
     *       - Share information about the closest connector to the team
     *           - shareToLeader: Upstream (Follower to Leader)
     *           - shareToTeam  : Downstream (Leader to Follower)
+    *       - Share information about the shortest distance to the other team (only when no connector is detected)
+    *           - shareDist    : Upstream (Follower to Leader) 
     * 
     * - (31)-(33) Teams Nearby
     *   Prefix with number of teams nearby (max 2) [1]
@@ -217,9 +219,10 @@ public:
         /* Connection Message*/
         std::vector<ConnectionMsg> cmsg;
 
-        /* Update Message */
+        /* Shared Message */
         std::string shareToLeader = "";
         std::string shareToTeam = "";
+        UInt8 shareDist = 255;
 
         /* Teams Nearby */
         std::vector<UInt8> nearbyTeams;
@@ -476,6 +479,9 @@ private:
     */
     /* The leader can move as long as it is withthin the minimum distance threshold from the robots */
     Real minDistanceFromRobot;
+
+    /* Chain formation threshold */
+    Real separationThres;
 
     size_t sendDuration;
 };

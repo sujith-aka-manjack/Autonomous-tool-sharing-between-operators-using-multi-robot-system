@@ -140,6 +140,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
         /* Minimum distance from robot */
         GetNodeAttribute(GetNode(t_node, "team_distance"), "min_leader_robot_distance", minDistanceFromRobot);
+        GetNodeAttribute(GetNode(t_node, "team_distance"), "separation_threshold", separationThres);
         /* Minimum duration the accept message will be sent for */
         GetNodeAttribute(GetNode(t_node, "timeout"), "send_message", sendDuration);
     }
@@ -186,7 +187,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(105, 255);
+    msg = CByteArray(106, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -210,7 +211,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(105, 255);
+    msg = CByteArray(106, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -348,7 +349,7 @@ void CLeader::ControlStep() {
     // Skip if not all bytes are used
     msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
-    /* Update Message */
+    /* Shared Message */
     msg_index += 2; // Skip shareToLeader
 
     if( !shareToTeam.empty() ) {
@@ -356,6 +357,8 @@ void CLeader::ControlStep() {
         msg[msg_index++] = stoi(shareToTeam.substr(1));
     } else
         msg_index += 2;
+
+    msg_index += 1; //Skip shareDist
 
     /* Nearby Teams */
     msg[msg_index++] = 0;
@@ -553,7 +556,7 @@ void CLeader::GetMessages() {
             }
             index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
             
-            /* Update Message */
+            /* Shared Message */
             std::string robotID;
             if(tMsgs[i].Data[index] == 255) {
                 index += 2;
@@ -575,6 +578,8 @@ void CLeader::GetMessages() {
             }
 
             //std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
+
+            msg.shareDist = tMsgs[i].Data[index++];
 
             /* Nearby Teams */
             msg_num = tMsgs[i].Data[index++];
@@ -720,7 +725,18 @@ bool CLeader::IsNearRobot() {
 
 void CLeader::ReplyToRequest() {
 
-    if(cmsgToResend.empty() && shareToTeam.empty()) { // Check if it has not recently sent an accept message and whether there is already a connector or not
+    /* Find the shortest distance to the other team */
+    UInt8 minDist = 255;
+    // std::string tempID;
+    for(const auto& msg : teamMsgs) {
+        if(msg.shareDist < 255) {
+            minDist = msg.shareDist;
+            // tempID = msg.ID;
+        }
+    }
+    // std::cout << this->GetId() << ": separation received is " << minDist << " from " << tempID << std::endl;
+
+    if(cmsgToResend.empty() && shareToTeam.empty() && minDist > separationThres) { // Check if it has not recently sent an accept message, whether there is already a connector or not, and whether theree is a robot near the other team
 
         /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
         ConnectionMsg acceptTo;
