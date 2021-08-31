@@ -12,11 +12,11 @@ from collections import defaultdict
 # Debugging
 pp = pprint.PrettyPrinter(indent=4)
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
-OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/summary')
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
+OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
 
-TOTAL_TIME = 1501
-TOTAL_ROBOTS = 20
+TOTAL_TIME = 1001
+TOTAL_ROBOTS = 40
 TOTAL_DEMAND = 600
 
 def load_stats(argv):
@@ -49,7 +49,7 @@ def load_stats(argv):
     return stats
 
 
-def plot_robot_states(data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
+def plot_robot_states(scenario, data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
     print('Plotting {0}'.format(out_filename))
 
     y1 = []
@@ -199,7 +199,7 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     plt.close()
 
 
-def plot_task_demands(data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
+def plot_task_demands(scenario, data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
     print('Plotting {0}'.format(out_filename))
 
     y = []
@@ -288,7 +288,7 @@ def plot_overall_task_demands(stats, title=None, x_label=None, y_label=None, out
     plt.close()
 
 
-def plot_trajectories(data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
+def plot_trajectories(scenario, data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
     print('Plotting {0}'.format(out_filename))
 
     # x1 = []
@@ -343,6 +343,7 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
         num_robots = scenario.split('_')[0][:-1]
         if num_robots not in ratios:
             ratios[num_robots] = []
+            print(num_robots)
 
     # ratios = []
 
@@ -404,8 +405,8 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
     # for i, v in enumerate(average_ratios):
     #     plt.text(x[i] - 0.1, v - 0.05, str(v), color='white')
 
-    data_1 = [ratios['20']]
-    data_2 = [ratios['40']]
+    data_1 = ratios['20']
+    data_2 = ratios['40']
     data = [data_1, data_2]
     
     plt.boxplot(data)
@@ -425,45 +426,51 @@ def main(argv):
     stats = load_stats(argv)
 
     # Plot single stats
-    for scenario, data in stats.items():
+    # for scenario, data in stats.items():
 
-        plot_filename = '{0}/robot-states_{1}.pdf'.format(OUTPUT_DIR, scenario)
-        plot_robot_states(data,
-                          title='Number of robots in each team',
-                          x_label='Timestep',
-                          y_label='Number of robots',
-                          out_filename=plot_filename)
+    #     plot_filename = '{0}/robot-states_{1}.pdf'.format(OUTPUT_DIR, scenario)
+    #     plot_robot_states(scenario,
+    #                       data,
+    #                       title='Number of robots in each team',
+    #                       x_label='Timestep',
+    #                       y_label='Number of robots',
+    #                       out_filename=plot_filename)
         
-        plot_filename = '{0}/task-demands_{1}.pdf'.format(OUTPUT_DIR, scenario)
-        plot_task_demands(data,
-                          title='Remaining task demands',
-                          x_label='Timestep',
-                          y_label='Task demand',
-                          out_filename=plot_filename)
+    #     plot_filename = '{0}/task-demands_{1}.pdf'.format(OUTPUT_DIR, scenario)
+    #     plot_task_demands(scenario,
+    #                       data,
+    #                       title='Remaining task demands',
+    #                       x_label='Timestep',
+    #                       y_label='Task demand',
+    #                       out_filename=plot_filename)
 
-        plot_filename = '{0}/trajectories_{1}.pdf'.format(OUTPUT_DIR, scenario)
-        plot_trajectories(data,
-                          title='Robot trajectories',
-                          x_label='X(m)',
-                          y_label='Y(m)',
-                          out_filename=plot_filename)
+    #     plot_filename = '{0}/trajectories_{1}.pdf'.format(OUTPUT_DIR, scenario)
+    #     plot_trajectories(scenario,
+    #                       data,
+    #                       title='Robot trajectories',
+    #                       x_label='X(m)',
+    #                       y_label='Y(m)',
+    #                       out_filename=plot_filename)
 
-    # Plot overall stats
-    plot_filename = '{0}/overall_robot-states_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
-    plot_overall_robot_states(stats,
-                              title='Average number of robots in each team',
-                              x_label='Timestep',
-                              y_label='Number of robots',
-                              out_filename=plot_filename)
+    # # Plot overall stats
+    # plot_filename = '{0}/overall_robot-states_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+    # plot_overall_robot_states(stats,
+    #                           title='Average number of robots in each team',
+    #                           x_label='Timestep',
+    #                           y_label='Number of robots',
+    #                           out_filename=plot_filename)
 
-    plot_filename = '{0}/overall_task_demands_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
-    plot_overall_task_demands(stats,
-                              title='Average remaining task demand',
-                              x_label='Timestep',
-                              y_label='Task demand',
-                              out_filename=plot_filename)
+    # plot_filename = '{0}/overall_task_demands_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+    # plot_overall_task_demands(stats,
+    #                           title='Average remaining task demand',
+    #                           x_label='Timestep',
+    #                           y_label='Task demand',
+    #                           out_filename=plot_filename)
 
-    plot_filename = '{0}/overall_connected_ratio_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+
+    # Run connected ratio separately from the other plotting functions for now as it deals with scenarios with different robot numbers
+
+    plot_filename = '{0}/overall_connected_ratio.pdf'.format(OUTPUT_DIR)
     plot_overall_connected_ratio(stats,
                                  title='Average ratio of beat messages exchanged',
                                  x_label='Number of follower robots',
@@ -485,6 +492,14 @@ if __name__ == "__main__":
         else:
             id += str(i)
         argv.append('20R_6T_100D_{0}.yaml'.format(id))
+
+    for i in range(1,21):
+        id = ''
+        if(i < 10):
+            id += '0' + str(i)
+        else:
+            id += str(i)
+        argv.append('30R_6T_100D_{0}.yaml'.format(id))
 
     for i in range(1,21):
         id = ''
