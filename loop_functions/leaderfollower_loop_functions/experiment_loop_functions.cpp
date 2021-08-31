@@ -41,14 +41,14 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         /*
         * Parse the configuration file
         */
-        TConfigurationNode& tChainFormation = GetNode(t_node, "experiment");
+        TConfigurationNode& tChainFormation = GetNode(t_node, "output");
         /* Get a pointer to the floor entity */
         m_pcFloor = &GetSpace().GetFloorEntity();
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */
         GetNodeAttributeOrDefault(tChainFormation, "logging", m_bLogging, false);
-        GetNodeAttributeOrDefault(tChainFormation, "output", m_strOutput, std::string("results/experiment.yaml"));
+        GetNodeAttributeOrDefault(tChainFormation, "out_path", m_strOutput, std::string("results/experiment.yaml"));
         /* Set the frame grabbing settings */
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
         GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
