@@ -1276,6 +1276,17 @@ void CFollower::SetConnectorToRelay() {
 
 void CFollower::UpdateHopCounts() {
 
+    /* Add every other visible team to hop map */
+    for(const auto& msg : otherTeamMsgs) {
+
+        /* Add hop count entry if not yet registered */
+        if(hopsDict.find(msg.teamID) == hopsDict.end()) {
+            HopMsg hop;
+            hop.count = 1;
+            hopsDict[msg.teamID] = hop;
+        }
+    }
+
     /* Extract connector IDs to check */
     std::unordered_set<std::string> robotIDs;
 
