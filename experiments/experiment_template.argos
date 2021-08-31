@@ -48,7 +48,7 @@
         <flocking_weights team="1"
                           robot="1"
                           obstacle="1" />
-        <timeout send_message="6" 
+        <timeout send_message="4" 
                  wait_request="6" />
       </params>
     </follower_controller>
@@ -82,7 +82,7 @@
                        exponent="2" />
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
-        <timeout send_message="6" />
+        <timeout send_message="4" />
       </params>
     </leader_controller>
 
