@@ -332,7 +332,7 @@ void CFollower::ControlStep() {
     /*--------------------*/
     //std::cout << "--- Supervisors ---" << std::endl;
 
-    if(initStepTimer > 2)
+    if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
     // sct->print_current_state();
@@ -1327,7 +1327,7 @@ void CFollower::UpdateHopCounts() {
         if(robotIDs.empty())
             break;
 
-        /* Find the next connector and update hop count */
+        /* Find the next connector */
         if(robotIDs.count(msg.ID)) { // Should always return 0 or 1 as it is a set
             robotMessages[msg.ID] = msg;
             robotIDs.erase(msg.ID);
@@ -1371,7 +1371,7 @@ void CFollower::UpdateHopCounts() {
         }
     }
 
-    if( !robotIDs.empty() )
+    // if( !robotIDs.empty() )
         //std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
 
     /* Update hop count */
