@@ -1,5 +1,6 @@
 import os.path
 import sys
+from numpy.ma.extras import average
 import yaml
 import time
 import pandas as pd
@@ -14,6 +15,9 @@ pp = pprint.PrettyPrinter(indent=4)
 RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
 OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/summary')
 
+TOTAL_TIME = 1501
+TOTAL_ROBOTS = 20
+TOTAL_DEMAND = 600
 
 def load_stats(argv):
 
@@ -26,12 +30,16 @@ def load_stats(argv):
         scenario = os.path.splitext(file)[0]
         path = os.path.join(RESULTS_DIR, file)
 
+        start_time_single = time.time()
+
         # Load yaml
         with open(path, 'r') as file:
             try:
                 data = yaml.load(file, Loader=yaml.CLoader)
                 stats[scenario] = data
-                print('Loaded {0}'.format(scenario))
+                duration_single = round(time.time() - start_time_single, 3)
+                duration_total = round(time.time() - start_time, 3)
+                print('Loaded {0} in {1} s ({2} s)'.format(scenario, duration_single, duration_total))
             except yaml.YAMLError as exc:
                 print(exc)
 
@@ -101,7 +109,7 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     print('Plotting {0}'.format(out_filename))
 
     # total_time = len(next(iter(stats)))+1
-    total_time = 2001
+    total_time = TOTAL_TIME
 
     y1_total = []
     y2_total = []
@@ -166,7 +174,7 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     # print(y1_mean)
 
     # total_robots = y1[0]+y2[0]
-    total_robots = 40
+    total_robots = TOTAL_ROBOTS
 
     x = range(0,total_time)
 
@@ -259,9 +267,9 @@ def plot_overall_task_demands(stats, title=None, x_label=None, y_label=None, out
     y_max = np.max(y_total, axis=0)
 
     # total_time = len(data)+1
-    total_time = 2001
+    total_time = TOTAL_TIME
     # total_demand = y[0]
-    total_demand = 600
+    total_demand = TOTAL_DEMAND
 
     x = range(0,total_time)
 
@@ -326,6 +334,93 @@ def plot_trajectories(data, title=None, x_label=None, y_label=None, out_filename
     plt.close()
 
 
+def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
+    print('Plotting {0}'.format(out_filename))
+
+    ratios = {}
+
+    for scenario in stats:
+        num_robots = scenario.split('_')[0][:-1]
+        if num_robots not in ratios:
+            ratios[num_robots] = []
+
+    # ratios = []
+
+    # For each experiment
+    for scenario, data in stats.items():
+
+        print('Scenario: {0}'.format(scenario))
+        num_robots = scenario.split('_')[0][:-1]
+
+        L1_sent = []
+        L1_received = []
+        L2_sent = []
+        L2_received = []
+
+        for timestep in data:
+
+            # Get the number of unique sent and received messages of L1 and L2
+            for robot in data[timestep]['robots']:
+                if robot['state'] == 'LEADER':
+                    if robot['id'] == 'L1':
+                        L1_sent.append(robot['beat_sent'])
+                        L1_received.append(robot['beat_received'])
+                    elif robot['id'] == 'L2':
+                        L2_sent.append(robot['beat_sent'])
+                        L2_received.append(robot['beat_received'])
+                    
+        # Convert lists into sets
+        L1_sent = set(L1_sent)
+        L1_received = set(L1_received)
+        L2_sent = set(L2_sent)
+        L2_received = set(L2_received)
+       
+        # Sum the sent
+        sum_sent = len(L1_sent) + len(L2_sent)
+        print('Sent: {0}'.format(sum_sent))
+
+        # Sum the received
+        sum_received = len(L1_received) + len(L2_received)
+        print('Received: {0}'.format(sum_received))
+
+        # Calculate ratio
+        ratio = sum_received / sum_sent
+
+        ratios[num_robots].append(ratio)
+
+    # Average the ratio
+    # print('Mean: {0}'.format(np.mean(ratios)))
+
+    # average_ratios = []
+    # average_ratios.append(np.mean(ratios))
+
+    # Plot
+    # x = [20]
+    # plt.bar(x, average_ratios, tick_label=x)
+
+    # Draw dashed line
+    plt.axhline(y=1, linewidth=1, color='black', linestyle='--')
+
+    # for i, v in enumerate(average_ratios):
+    #     plt.text(x[i] - 0.1, v - 0.05, str(v), color='white')
+
+    data_1 = [ratios['20']]
+    data_2 = [ratios['40']]
+    data = [data_1, data_2]
+    
+    plt.boxplot(data)
+
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+
+    plt.xticks(range(1,len(ratios)+1), ratios.keys())
+    plt.yticks(np.arange(0, 1.1, 0.2))
+
+    plt.savefig(out_filename)
+    plt.close()
+
+
 def main(argv):
     stats = load_stats(argv)
 
@@ -356,7 +451,7 @@ def main(argv):
     # Plot overall stats
     plot_filename = '{0}/overall_robot-states_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
     plot_overall_robot_states(stats,
-                              title='Average number of robots in each time',
+                              title='Average number of robots in each team',
                               x_label='Timestep',
                               y_label='Number of robots',
                               out_filename=plot_filename)
@@ -368,7 +463,12 @@ def main(argv):
                               y_label='Task demand',
                               out_filename=plot_filename)
 
-
+    plot_filename = '{0}/overall_connected_ratio_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+    plot_overall_connected_ratio(stats,
+                                 title='Average ratio of beat messages exchanged',
+                                 x_label='Number of follower robots',
+                                 y_label='Ratio of messages received',
+                                 out_filename=plot_filename)
 
 
 if __name__ == "__main__":
@@ -378,7 +478,15 @@ if __name__ == "__main__":
     #         '20R_6T_100D_02.yaml'
     #        ]
     argv = []
-    for i in range(1,20):
+    for i in range(1,21):
+        id = ''
+        if(i < 10):
+            id += '0' + str(i)
+        else:
+            id += str(i)
+        argv.append('20R_6T_100D_{0}.yaml'.format(id))
+
+    for i in range(1,21):
         id = ''
         if(i < 10):
             id += '0' + str(i)
