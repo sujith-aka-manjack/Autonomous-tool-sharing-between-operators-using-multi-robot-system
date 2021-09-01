@@ -43,7 +43,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         */
         TConfigurationNode& tChainFormation = GetNode(t_node, "output");
         /* Get a pointer to the floor entity */
-        m_pcFloor = &GetSpace().GetFloorEntity();
+        // m_pcFloor = &GetSpace().GetFloorEntity();
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */

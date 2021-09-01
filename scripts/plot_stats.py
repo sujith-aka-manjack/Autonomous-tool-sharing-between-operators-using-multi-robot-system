@@ -12,12 +12,15 @@ from collections import defaultdict
 # Debugging
 pp = pprint.PrettyPrinter(indent=4)
 
+TOTAL_TIME = 1001
+TOTAL_ROBOTS = 30
+TOTAL_DEMAND = 600
+
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_6T_100D'.format(TOTAL_ROBOTS))
+# OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_6T_100D'.format(TOTAL_ROBOTS))
+
 RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
 OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
-
-TOTAL_TIME = 1001
-TOTAL_ROBOTS = 40
-TOTAL_DEMAND = 600
 
 def load_stats(argv):
 
@@ -406,8 +409,9 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
     #     plt.text(x[i] - 0.1, v - 0.05, str(v), color='white')
 
     data_1 = ratios['20']
-    data_2 = ratios['40']
-    data = [data_1, data_2]
+    data_2 = ratios['30']
+    data_3 = ratios['40']
+    data = [data_1, data_2, data_3]
     
     plt.boxplot(data)
 
