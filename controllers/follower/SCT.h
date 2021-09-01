@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <ctime>
-#include <random>
 #include <queue>
 #include <unordered_map>
 #include <functional>
@@ -131,7 +130,7 @@ public:
     /* Run the generator player to execute the next action */
     virtual void run_step();
 
-    virtual void print_current_state();
+    virtual std::string get_current_state_string();
 
 protected:
 

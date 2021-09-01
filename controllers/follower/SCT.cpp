@@ -5,7 +5,6 @@
 /****************************************/
 
 SCT::SCT(){
-    // std::srand(std::time(nullptr));
     /* Create a new RNG */
     m_pcRNG = argos::CRandom::CreateRNG("argos");
 }
@@ -29,14 +28,18 @@ void SCT::run_step(){
     }
 }
 
-void SCT::print_current_state() {
-    std::cout << "sup [";
+std::string SCT::get_current_state_string() {
+    std::ostringstream stream;
+    stream.str("");
+    stream << "sup:[";
     for(size_t i = 0; i < NUM_SUPERVISORS; i++) {
-        std::cout << sup_current_state[i];
+        stream << (int) sup_current_state[i];
         if(i < NUM_SUPERVISORS - 1)
-            std::cout << ",";
+            stream << ",";
     }
-    std::cout << "]";
+    stream << "]";
+    // stream << " " << m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) << std::endl;
+    return stream.str();
 }
 
 unsigned char SCT::input_read( unsigned char ev ){
