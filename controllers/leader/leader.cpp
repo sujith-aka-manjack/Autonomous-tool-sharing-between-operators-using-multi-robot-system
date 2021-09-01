@@ -835,7 +835,8 @@ void CLeader::CheckHeartBeat() {
             if(beat.type =='H' && beat.from != this->GetId() && beat.time > lastBeatTime) {
                 beatReceived++;
                 lastBeatTime = beat.time;
-                //std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
             }
         }
     }

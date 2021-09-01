@@ -35,7 +35,7 @@
 
 #include "SCT.h"
 #include <utility/pid.h>
-#include <unordered_set>
+#include <set>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -495,10 +495,10 @@ private:
     bool receivedReqC, receivedAccept, receivedReject, receivedInwardRelayMsg, receivedOutwardRelayMsg, receivedInwardSendMsg, receivedOutwardSendMsg;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
-    size_t requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
+    int requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
 
-    std::unordered_map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
+    std::map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend;
@@ -508,9 +508,7 @@ private:
 
     std::vector<RelayMsg> rmsgToSend;
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
-    RelayMsg lastBeatTeam;  // (used in the FOLLOWER state)
-    RelayMsg lastBeatOther; // (used in the FOLLOWER state)
-    std::unordered_map<UInt8, std::pair<RelayMsg, char>> lastBeat; // RelayMsg indexed with teamID and attached with a boolean to determine whether a new message was received in this timestep
+    std::map<UInt8, std::pair<RelayMsg, char>> lastBeat; // RelayMsg indexed with teamID and attached with a boolean to determine whether a new message was received in this timestep
     // (used in the CONNECTOR state)
 
     /* Flag to indicate whether this robot is working on a task */
@@ -519,7 +517,7 @@ private:
     bool setCTriggered; // Flag to trigger the uncontrollable event taskEnded
 
     /* Followers that are within the safety range */
-    std::unordered_set<UInt8> nearbyTeams;
+    std::set<UInt8> nearbyTeams;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;

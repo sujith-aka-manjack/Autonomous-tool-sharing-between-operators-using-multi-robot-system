@@ -171,8 +171,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     shareDist = 255;
     setCTriggered = false; // Initialize flag
     initStepTimer = 0;
-    lastBeatTeam.time = 0;
-    lastBeatOther.time = 0;
 
     /*
     * Init SCT Controller
@@ -335,7 +333,7 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    // sct->print_current_state();
+    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
     //std::cout << std::endl;
 
     /*-----------------------------*/
@@ -531,8 +529,10 @@ void CFollower::ControlStep() {
         msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
         msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
 
-        if(i >= 29)
+        if(i >= 29){
+            std::cerr << "[" << this->GetId() << "] max connections reached" << std::endl;
             break;
+        }
     }
     //std::cout << std::endl;
 
@@ -765,7 +765,7 @@ void CFollower::Update() {
             //std::cout << "requestTimer: " << requestTimer << std::endl;
 
             /* Check whether an Accept message was not received before the timeout */
-            if(requestTimer == 0 && currentAccept.type == 'N')
+            if(requestTimer <= 0)
                 receivedReject = true;
         }
 
@@ -805,8 +805,19 @@ void CFollower::Update() {
 
         /* Check if there is a team that is 1 hop count away from itself */
         for(const auto& hop : hopsDict) {
-            if(hop.second.count == 1)
-                condF1 = true;
+            if(hop.second.count == 1) {
+
+                // /* Ensure it is not currently sending an accept message */
+                // bool sendingAccept = false;
+                // for(const auto& cmsg : cmsgToResend) {
+                //     if(cmsg.second.type == 'A') {
+                //         sendingAccept = true;
+                //         break;
+                //     }
+                // }
+                // if( !sendingAccept )
+                    condF1 = true;
+            }
         }
 
         /* Check if all connected connectors are close to the team that this robot helps connect with */
@@ -817,7 +828,7 @@ void CFollower::Update() {
         // If this is true for every connector, return true
 
         /* Extract connector IDs to check */
-        std::unordered_set<std::string> robotIDs;
+        std::set<std::string> robotIDs;
 
         for(const auto& hop : hopsDict) {
             if( !hop.second.ID.empty() )
@@ -1129,47 +1140,49 @@ void CFollower::SetLeaderMsgToRelay(const RobotState state) {
             }
         }
 
-        /* Find message to relay inwards */
+        // For inward message, find all that's not in resend
         for(const auto& msg : inwardMsgs) {
             for(const auto& relayMsg : msg.rmsg) {
-                if(stoi(relayMsg.from.substr(1)) != teamID) {
-                    if(relayMsg.time > lastBeatOther.time) {
-                        lastBeatOther = relayMsg;
-
-                        auto otherHops = msg.hops;
-                        if(otherHops[teamID].count == 0)
-                            receivedInwardSendMsg = true;
+                UInt8 receivedTeamID = stoi(relayMsg.from.substr(1));
+                if(receivedTeamID != teamID) {
+                    if(lastBeat.find(receivedTeamID) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
+                        if(msg.state == RobotState::LEADER)
+                            lastBeat[receivedTeamID] = {relayMsg,'L'};
                         else
-                            receivedInwardRelayMsg = true;
+                            lastBeat[receivedTeamID] = {relayMsg,'F'};
+                    } else {
+                        if(relayMsg.time > lastBeat[receivedTeamID].first.time) { // Else update it only if the timestep is newer
+                            if(msg.state == RobotState::LEADER)
+                                lastBeat[receivedTeamID] = {relayMsg,'L'};
+                            else
+                                lastBeat[receivedTeamID] = {relayMsg,'F'};
+                        }
                     }
-                    if(receivedInwardSendMsg || receivedInwardRelayMsg)
-                        break;
                 }
             }
-            if(receivedInwardSendMsg || receivedInwardRelayMsg)
-                break;
         }
 
-        /* Find message to relay outwards */
+        // For outward message, only find one
         for(const auto& msg : outwardMsgs) {
             for(const auto& relayMsg : msg.rmsg) {
                 if(stoi(relayMsg.from.substr(1)) == teamID) {
-                    if(relayMsg.time > lastBeatTeam.time) {
-                        lastBeatTeam = relayMsg;
-
-                        auto teamHops = msg.hops;
-                        if(teamHops[teamID].count == 0)
-                            receivedOutwardSendMsg = true;
+                    if(lastBeat.find(teamID) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
+                        if(msg.state == RobotState::LEADER)
+                            lastBeat[teamID] = {relayMsg,'L'};
                         else
-                            receivedOutwardRelayMsg = true;
+                            lastBeat[teamID] = {relayMsg,'F'};
+                    } else {
+                        if(relayMsg.time > lastBeat[teamID].first.time) { // Else update it only if the timestep is newer
+                            if(msg.state == RobotState::LEADER)
+                                lastBeat[teamID] = {relayMsg,'L'};
+                            else
+                                lastBeat[teamID] = {relayMsg,'F'};
+                        }
                     }
-                    if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
-                        break;
                 }
             }
-            if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
-                    break;
         }
+
     } else if(state == RobotState::CONNECTOR) {
 
         /* Check whether new relayMsg is received */
@@ -1312,7 +1325,7 @@ void CFollower::UpdateHopCounts() {
     }
 
     /* Extract connector IDs to check */
-    std::unordered_set<std::string> robotIDs;
+    std::set<std::string> robotIDs;
 
     for(const auto& hop : hopsDict) {
         if( !hop.second.ID.empty() )
@@ -1320,7 +1333,7 @@ void CFollower::UpdateHopCounts() {
     }
 
     /* Extract Messages from connectors that have the IDs found previously */
-    std::unordered_map<std::string, Message> robotMessages;
+    std::map<std::string, Message> robotMessages;
 
     for(const auto& msg : connectorMsgs) {
 
@@ -1745,18 +1758,9 @@ void CFollower::Callback_SendReply(void* data) {
 void CFollower::Callback_RelayMsg(void* data) {
     //std::cout << "Action: relayMsg" << std::endl;
 
-    if(currentState == RobotState::FOLLOWER) {
-        if(receivedOutwardSendMsg || receivedOutwardRelayMsg)
-            rmsgToResend.push_back({sendDuration,lastBeatTeam}); // Transmit public event
-
-        if(receivedInwardSendMsg || receivedInwardRelayMsg)
-            rmsgToResend.push_back({sendDuration,lastBeatOther});
-    }
-    else if(currentState == RobotState::CONNECTOR) {
-        for(const auto& info : lastBeat) {
-            if(info.second.second != 'N')
-                rmsgToResend.push_back({sendDuration,info.second.first});
-        }
+    for(const auto& info : lastBeat) {
+        if(info.second.second != 'N')
+            rmsgToResend.push_back({sendDuration,info.second.first});
     }
 }
 
@@ -1886,39 +1890,25 @@ unsigned char CFollower::Check_Reject(void* data) {
 }
 
 unsigned char CFollower::Check__SendMsg(void* data) {
-    if(currentState == RobotState::FOLLOWER) {
-        //std::cout << "Event: " << (receivedInwardSendMsg || receivedOutwardSendMsg) << " - _sendMsg" << std::endl;
-        return receivedInwardSendMsg || receivedOutwardSendMsg;
-    } 
-    else if(currentState == RobotState::CONNECTOR) {
-        for(const auto& info : lastBeat) {
-            if(info.second.second == 'L') {
-                //std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
-                return 1;
-            }
+    for(const auto& info : lastBeat) {
+        if(info.second.second == 'L') {
+            //std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
+            return 1;
         }
-        //std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
-        return 0;
     }
-    //std::cerr << "Error when running Check__SendMsg for " << this->GetId() << std::endl;
+    //std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check__RelayMsg(void* data) {
-    if(currentState == RobotState::FOLLOWER) {
-        //std::cout << "Event: " << (receivedInwardRelayMsg || receivedOutwardRelayMsg) << " - _relayMsg" << std::endl;
-        return receivedInwardRelayMsg || receivedOutwardRelayMsg;
-    }
-    else if(currentState == RobotState::CONNECTOR) {
-        for(const auto& info : lastBeat) {
-            if(info.second.second == 'F') {
-                //std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
-                return 1;
-            }
+    for(const auto& info : lastBeat) {
+        if(info.second.second == 'F') {
+            //std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
+            return 1;
         }
-        //std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
-        return 0;
     }
-    //std::cerr << "Error when running Check__RelayMsg for " << this->GetId() << std::endl;
+    //std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
+    return 0;
 }
 
 unsigned char CFollower::Check_TaskEnded(void* data) {
