@@ -5,7 +5,9 @@
 /****************************************/
 
 SCT::SCT(){
-    std::srand(std::time(nullptr));
+    // std::srand(std::time(nullptr));
+    /* Create a new RNG */
+    m_pcRNG = argos::CRandom::CreateRNG("argos");
 }
 
 SCT::~SCT(){}
@@ -114,7 +116,7 @@ unsigned char SCT::get_next_controllable( unsigned char *event ){
     count_actives = get_active_controllable_events( events );
 
     if( count_actives ){                        /* If at least one event is enabled do */
-        random_pos = rand() % count_actives;    /* Pick a random index (event) */
+        random_pos = m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) % count_actives;    /* Pick a random index (event) */
         for(i=0; i<NUM_EVENTS; i++){
             if( !random_pos && events[i] ){
                 *event = i;
