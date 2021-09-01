@@ -11,71 +11,69 @@
 #include <argos3/core/utility/math/rng.h>
 
 /* Supervisor Info */
-#define NUM_EVENTS 31
+#define NUM_EVENTS 30
 #define NUM_SUPERVISORS 11
 
 /* Event Info */
 #define EV_moveStop 0
 
-#define EV_taskBegin 1
+#define EV_requestC 1
 
-#define EV_taskEnded 2
+#define EV_switchC 2
 
-#define EV_moveFlock 3
+#define EV_taskStart 3
 
-#define EV_taskStop 4
+#define EV_requestL 4
 
-#define EV_setF 5
+#define EV_relay 5
 
-#define EV_setC 6
+#define EV_respond 6
 
-#define EV_nearC 7
+#define EV_taskStop 7
 
-#define EV_sendReqL 8
+#define EV_switchF 8
 
-#define EV_sendReqC 9
+#define EV_moveFlock 9
 
-#define EV_sendReply 10
+#define EV_nearC 10
 
-#define EV_relayMsg 11
+#define EV_notNearC 11
 
-#define EV_notNearC 12
+#define EV_notCondC1 12
 
-#define EV_notCondC1 13
+#define EV_condC1 13
 
-#define EV_condC1 14
+#define EV_notCondC2 14
 
-#define EV_notCondC2 15
+#define EV_condC2 15
 
-#define EV_condC2 16
+#define EV_notCondC3 16
 
-#define EV_notCondC3 17
+#define EV_condC3 17
 
-#define EV_condC3 18
+#define EV_notCondF1 18
 
-#define EV_notCondF1 19
+#define EV_condF1 19
 
-#define EV_condF1 20
+#define EV_notCondF2 20
 
-#define EV_notCondF2 21
+#define EV_condF2 21
 
-#define EV_condF2 22
+#define EV_accept 22
 
-#define EV__relayMsg 23
+#define EV__respond 23
 
-#define EV__sendBegin 24
+#define EV_reject 24
 
-#define EV__sendReply 25
+#define EV__relay 25
 
-#define EV__sendStop 26
+#define EV__message 26
 
-#define EV_reject 27
+#define EV__requestC 27
 
-#define EV__sendMsg 28
+#define EV__start 28
 
-#define EV__sendReqC 29
-
-#define EV_accept 30
+#define EV__stop 29
 
 /* Structure to store member functions */
 struct Scallback {
@@ -165,13 +163,13 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[31] = { 1,1,0,1,1,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-    const unsigned char     sup_events[11][31] = { { 1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0 },{ 0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0 },{ 1,0,0,1,0,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1 },{ 0,0,0,0,0,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,1,1,0 },{ 0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,1,1,0 },{ 0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,1,1,0 } };
+    const unsigned char     ev_controllable[30] = { 1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    const unsigned char     sup_events[11][30] = { { 1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,1,0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,1,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,1,0,0,1,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0 },{ 0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0 },{ 0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0 },{ 1,1,1,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0 },{ 0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1 },{ 0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1 },{ 0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1 } };
     const unsigned long int sup_init_state[11]     = { 0,0,0,0,0,0,0,0,0,0,0 };
     unsigned long int       sup_current_state[11]  = { 0,0,0,0,0,0,0,0,0,0,0 };
-    const unsigned long int sup_data_pos[11] = { 0,80,106,132,158,184,209,234,585,669,722 };
-    const unsigned char     sup_data[ 798 ] = { 3,EV_taskBegin,0,1,EV_moveFlock,0,2,EV_setC,0,3,4,EV_taskEnded,0,0,EV_moveFlock,0,4,EV_taskStop,0,0,EV_setC,0,5,3,EV_moveStop,0,0,EV_taskBegin,0,4,EV_setC,0,6,1,EV_setF,0,0,4,EV_moveStop,0,1,EV_taskEnded,0,2,EV_taskStop,0,2,EV_setC,0,7,3,EV_taskEnded,0,3,EV_taskStop,0,3,EV_setF,0,1,2,EV_moveStop,0,3,EV_setF,0,2,4,EV_moveStop,0,5,EV_taskEnded,0,6,EV_taskStop,0,6,EV_setF,0,4,4,EV_nearC,0,1,EV_sendReqL,0,0,EV_sendReply,0,0,EV_relayMsg,0,0,4,EV_sendReqC,0,1,EV_sendReply,0,1,EV_relayMsg,0,1,EV_notNearC,0,0,3,EV_sendReply,0,0,EV_relayMsg,0,0,EV_condC1,0,1,5,EV_notCondC1,0,0,EV_sendReqL,0,1,EV_sendReqC,0,1,EV_sendReply,0,1,EV_relayMsg,0,1,3,EV_sendReply,0,0,EV_relayMsg,0,0,EV_condC2,0,1,5,EV_notCondC2,0,0,EV_sendReqL,0,1,EV_sendReqC,0,1,EV_sendReply,0,1,EV_relayMsg,0,1,3,EV_relayMsg,0,0,EV_sendReply,0,0,EV_condC3,0,1,5,EV_sendReqL,0,1,EV_relayMsg,0,1,EV_sendReqC,0,1,EV_sendReply,0,1,EV_notCondC3,0,0,2,EV_setC,0,1,EV_condF1,0,2,1,EV_condF1,0,3,2,EV_setC,0,3,EV_notCondF1,0,0,2,EV_notCondF1,0,1,EV_setF,0,2,2,EV_condF2,0,1,EV_setC,0,2,2,EV_notCondF2,0,0,EV_setC,0,3,1,EV_condF2,0,3,2,EV_setF,0,1,EV_notCondF2,0,2,9,EV__relayMsg,0,0,EV_moveFlock,0,1,EV__sendBegin,0,0,EV_sendReply,0,0,EV__sendReply,0,2,EV__sendStop,0,0,EV_relayMsg,0,0,EV__sendMsg,0,0,EV__sendReqC,0,0,10,EV__relayMsg,0,1,EV__sendBegin,0,1,EV_sendReply,0,1,EV__sendReply,0,3,EV__sendStop,0,1,EV_relayMsg,0,1,EV_sendReqL,0,4,EV__sendMsg,0,1,EV_sendReqC,0,4,EV__sendReqC,0,1,10,EV__relayMsg,0,2,EV_moveFlock,0,3,EV__sendBegin,0,2,EV_sendReply,0,2,EV__sendStop,0,2,EV_relayMsg,0,2,EV_reject,0,0,EV__sendMsg,0,2,EV__sendReqC,0,2,EV_accept,0,0,11,EV__relayMsg,0,3,EV__sendBegin,0,3,EV_sendReply,0,3,EV__sendStop,0,3,EV_relayMsg,0,3,EV_reject,0,1,EV_sendReqL,0,5,EV__sendMsg,0,3,EV_sendReqC,0,5,EV__sendReqC,0,3,EV_accept,0,1,9,EV_moveStop,0,6,EV__relayMsg,0,4,EV__sendBegin,0,4,EV_sendReply,0,4,EV__sendReply,0,5,EV__sendStop,0,4,EV_relayMsg,0,4,EV__sendMsg,0,4,EV__sendReqC,0,4,9,EV__relayMsg,0,5,EV__sendBegin,0,5,EV_sendReply,0,5,EV__sendStop,0,5,EV_relayMsg,0,5,EV_reject,0,4,EV__sendMsg,0,5,EV__sendReqC,0,5,EV_accept,0,4,8,EV__relayMsg,0,6,EV__sendBegin,0,6,EV_sendReply,0,6,EV__sendReply,0,7,EV__sendStop,0,6,EV_relayMsg,0,6,EV__sendMsg,0,6,EV__sendReqC,0,6,9,EV__relayMsg,0,7,EV__sendBegin,0,7,EV_sendReply,0,7,EV__sendStop,0,7,EV_relayMsg,0,7,EV_reject,0,0,EV__sendMsg,0,7,EV__sendReqC,0,7,EV_accept,0,8,9,EV__relayMsg,0,8,EV_setC,0,9,EV__sendBegin,0,8,EV_sendReply,0,8,EV__sendReply,0,10,EV__sendStop,0,8,EV_relayMsg,0,8,EV__sendMsg,0,8,EV__sendReqC,0,8,9,EV__relayMsg,0,9,EV__sendBegin,0,9,EV_sendReply,0,9,EV__sendReply,0,11,EV__sendStop,0,9,EV_relayMsg,0,9,EV__sendMsg,0,9,EV__sendReqC,0,9,EV_setF,0,0,10,EV__relayMsg,0,10,EV_setC,0,11,EV__sendBegin,0,10,EV_sendReply,0,10,EV__sendStop,0,10,EV_relayMsg,0,10,EV_reject,0,8,EV__sendMsg,0,10,EV__sendReqC,0,10,EV_accept,0,8,10,EV__relayMsg,0,11,EV__sendBegin,0,11,EV_sendReply,0,11,EV__sendStop,0,11,EV_relayMsg,0,11,EV_reject,0,9,EV__sendMsg,0,11,EV__sendReqC,0,11,EV_setF,0,2,EV_accept,0,9,9,EV__sendReqC,0,0,EV__sendBegin,0,0,EV_setC,0,1,EV_relayMsg,0,0,EV__sendMsg,0,0,EV_sendReqC,0,0,EV_sendReqL,0,0,EV__relayMsg,0,0,EV__sendStop,0,0,9,EV__sendReqC,0,2,EV_setF,0,0,EV__sendBegin,0,1,EV_relayMsg,0,1,EV__sendMsg,0,1,EV_sendReqC,0,1,EV_sendReqL,0,1,EV__relayMsg,0,1,EV__sendStop,0,1,9,EV__sendReqC,0,2,EV_sendReply,0,1,EV__sendBegin,0,2,EV_relayMsg,0,2,EV__sendMsg,0,2,EV_sendReqC,0,2,EV_sendReqL,0,2,EV__relayMsg,0,2,EV__sendStop,0,2,8,EV__sendReqC,0,0,EV_sendReply,0,0,EV_sendReqL,0,0,EV__sendMsg,0,1,EV_sendReqC,0,0,EV__sendStop,0,0,EV__relayMsg,0,1,EV__sendBegin,0,0,9,EV__sendReqC,0,1,EV_sendReply,0,1,EV_sendReqL,0,1,EV_relayMsg,0,0,EV__sendMsg,0,1,EV_sendReqC,0,1,EV__sendStop,0,1,EV__relayMsg,0,1,EV__sendBegin,0,1,5,EV__sendStop,0,0,EV__sendReqC,0,0,EV__sendMsg,0,0,EV__relayMsg,0,0,EV__sendBegin,0,1,6,EV__sendStop,0,0,EV_taskBegin,0,2,EV__sendReqC,0,1,EV__sendMsg,0,1,EV__relayMsg,0,1,EV__sendBegin,0,1,6,EV_taskEnded,0,1,EV__sendStop,0,3,EV__sendReqC,0,2,EV__sendMsg,0,2,EV__relayMsg,0,2,EV__sendBegin,0,2,7,EV_taskEnded,0,0,EV__sendStop,0,3,EV__sendReqC,0,3,EV__sendMsg,0,3,EV_taskStop,0,0,EV__relayMsg,0,3,EV__sendBegin,0,2 };
-
+    const unsigned long int sup_data_pos[11] = { 0,152,178,204,230,256,281,306,480,533,586 };
+    const unsigned char     sup_data[ 656 ] = { 6,EV_requestC,0,0,EV_switchC,0,1,EV_taskStart,0,2,EV_requestL,0,0,EV_relay,0,0,EV_moveFlock,0,3,5,EV_requestC,0,1,EV_requestL,0,1,EV_relay,0,1,EV_respond,0,1,EV_switchF,0,0,6,EV_requestC,0,2,EV_switchC,0,4,EV_requestL,0,2,EV_relay,0,2,EV_taskStop,0,0,EV_moveFlock,0,5,6,EV_moveStop,0,0,EV_requestC,0,3,EV_switchC,0,6,EV_taskStart,0,5,EV_requestL,0,3,EV_relay,0,3,6,EV_requestC,0,4,EV_requestL,0,4,EV_relay,0,4,EV_respond,0,4,EV_taskStop,0,1,EV_switchF,0,2,6,EV_moveStop,0,2,EV_requestC,0,5,EV_switchC,0,7,EV_requestL,0,5,EV_relay,0,5,EV_taskStop,0,3,6,EV_moveStop,0,1,EV_requestC,0,6,EV_requestL,0,6,EV_relay,0,6,EV_respond,0,6,EV_switchF,0,3,7,EV_moveStop,0,4,EV_requestC,0,7,EV_requestL,0,7,EV_relay,0,7,EV_respond,0,7,EV_taskStop,0,6,EV_switchF,0,5,4,EV_nearC,0,1,EV_requestL,0,0,EV_respond,0,0,EV_relay,0,0,4,EV_requestC,0,1,EV_respond,0,1,EV_notNearC,0,0,EV_relay,0,1,3,EV_respond,0,0,EV_relay,0,0,EV_condC1,0,1,5,EV_notCondC1,0,0,EV_requestL,0,1,EV_requestC,0,1,EV_respond,0,1,EV_relay,0,1,3,EV_respond,0,0,EV_relay,0,0,EV_condC2,0,1,5,EV_notCondC2,0,0,EV_requestL,0,1,EV_requestC,0,1,EV_respond,0,1,EV_relay,0,1,3,EV_relay,0,0,EV_respond,0,0,EV_condC3,0,1,5,EV_requestL,0,1,EV_requestC,0,1,EV_relay,0,1,EV_respond,0,1,EV_notCondC3,0,0,2,EV_switchC,0,1,EV_condF1,0,2,1,EV_condF1,0,3,2,EV_switchC,0,3,EV_notCondF1,0,0,2,EV_notCondF1,0,1,EV_switchF,0,2,2,EV_switchC,0,1,EV_condF2,0,2,1,EV_condF2,0,3,2,EV_switchC,0,3,EV_notCondF2,0,0,2,EV_notCondF2,0,1,EV_switchF,0,2,4,EV__respond,0,1,EV_relay,0,0,EV_moveFlock,0,2,EV_respond,0,0,5,EV_accept,0,0,EV_reject,0,0,EV_relay,0,1,EV_moveFlock,0,3,EV_respond,0,1,5,EV__respond,0,3,EV_requestL,0,4,EV_requestC,0,4,EV_relay,0,2,EV_respond,0,2,6,EV_accept,0,2,EV_reject,0,2,EV_requestL,0,5,EV_requestC,0,5,EV_relay,0,3,EV_respond,0,3,4,EV_moveStop,0,6,EV__respond,0,5,EV_relay,0,4,EV_respond,0,4,5,EV_moveStop,0,7,EV_accept,0,4,EV_reject,0,4,EV_relay,0,5,EV_respond,0,5,3,EV__respond,0,7,EV_relay,0,6,EV_respond,0,6,4,EV_accept,0,8,EV_reject,0,0,EV_relay,0,7,EV_respond,0,7,4,EV_switchC,0,9,EV__respond,0,10,EV_relay,0,8,EV_respond,0,8,4,EV__respond,0,11,EV_relay,0,9,EV_switchF,0,0,EV_respond,0,9,5,EV_accept,0,8,EV_switchC,0,11,EV_reject,0,8,EV_relay,0,10,EV_respond,0,10,5,EV_accept,0,9,EV_reject,0,9,EV_relay,0,11,EV_switchF,0,1,EV_respond,0,11,8,EV__relay,0,0,EV_requestC,0,0,EV__message,0,0,EV__requestC,0,1,EV_requestL,0,0,EV__start,0,0,EV_relay,0,0,EV__stop,0,0,9,EV__relay,0,1,EV_requestC,0,1,EV__message,0,1,EV__requestC,0,1,EV_requestL,0,1,EV__start,0,1,EV_relay,0,1,EV_respond,0,0,EV__stop,0,1,8,EV__relay,0,1,EV_requestC,0,0,EV__message,0,1,EV__requestC,0,0,EV_requestL,0,0,EV__start,0,0,EV_respond,0,0,EV__stop,0,0,9,EV__relay,0,1,EV_requestC,0,1,EV__message,0,1,EV__requestC,0,1,EV_requestL,0,1,EV__start,0,1,EV_relay,0,0,EV_respond,0,1,EV__stop,0,1,5,EV__relay,0,0,EV__stop,0,0,EV__start,0,1,EV__requestC,0,0,EV__message,0,0,6,EV__relay,0,1,EV__stop,0,0,EV__start,0,1,EV_taskStart,0,2,EV__requestC,0,1,EV__message,0,1,5,EV__relay,0,2,EV__stop,0,3,EV__start,0,2,EV__requestC,0,2,EV__message,0,2,6,EV__relay,0,3,EV__stop,0,3,EV__start,0,2,EV_taskStop,0,0,EV__requestC,0,3,EV__message,0,3 };    
+    
     /* Random number generator */
     argos::CRandom::CRNG* m_pcRNG;
 
@@ -206,7 +204,7 @@ protected:
     std::queue<unsigned char> input_buffer_pub;
 
     /* Public event info of supervisors */
-    const unsigned char     ev_shared[31] = { 0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,0 };
+    const unsigned char     ev_shared[30] = { 0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1 };
 
 };
 

@@ -137,7 +137,7 @@ public:
     /* Structure to store the connection to the leader/team */
     struct HopMsg {
         UInt8 count;
-        std::string ID; // Robot with lower hop value (only used by connectors)
+        std::string ID = ""; // Robot with lower hop value (only used by connectors)
     };
 
     /*
@@ -406,12 +406,12 @@ protected:
     virtual void Callback_MoveStop(void* data);
     virtual void Callback_TaskBegin(void* data);
     virtual void Callback_TaskStop(void* data);
-    virtual void Callback_SetF(void* data);
-    virtual void Callback_SetC(void* data);
-    virtual void Callback_SendReqL(void* data);
-    virtual void Callback_SendReqC(void* data);
-    virtual void Callback_SendReply(void* data);
-    virtual void Callback_RelayMsg(void* data);
+    virtual void Callback_SwitchF(void* data);
+    virtual void Callback_SwitchC(void* data);
+    virtual void Callback_RequestL(void* data);
+    virtual void Callback_RequestC(void* data);
+    virtual void Callback_Respond(void* data);
+    virtual void Callback_Relay(void* data);
 
     virtual unsigned char Check_CondC1(void* data);
     virtual unsigned char Check_NotCondC1(void* data);
@@ -425,15 +425,14 @@ protected:
     virtual unsigned char Check_NotCondF1(void* data);
     virtual unsigned char Check_CondF2(void* data);
     virtual unsigned char Check_NotCondF2(void* data);
-    virtual unsigned char Check__SendReqC(void* data);
-    virtual unsigned char Check__SendReply(void* data);
+    virtual unsigned char Check__RequestC(void* data);
+    virtual unsigned char Check__Respond(void* data);
     virtual unsigned char Check_Accept(void* data);
     virtual unsigned char Check_Reject(void* data);
-    virtual unsigned char Check__SendBegin(void* data);
-    virtual unsigned char Check__SendStop(void* data);
-    virtual unsigned char Check__SendMsg(void* data);
-    virtual unsigned char Check__RelayMsg(void* data);
-    virtual unsigned char Check_TaskEnded(void* data);
+    virtual unsigned char Check__Start(void* data);
+    virtual unsigned char Check__Stop(void* data);
+    virtual unsigned char Check__Message(void* data);
+    virtual unsigned char Check__Relay(void* data);
 
 private:
 
