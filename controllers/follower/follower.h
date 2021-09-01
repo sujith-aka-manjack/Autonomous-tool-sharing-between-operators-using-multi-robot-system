@@ -497,7 +497,7 @@ private:
     int requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
 
-    std::map<UInt8, std::string> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
+    std::map<UInt8, Message> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend;

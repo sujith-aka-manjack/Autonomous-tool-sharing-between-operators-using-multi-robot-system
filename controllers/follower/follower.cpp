@@ -1054,16 +1054,16 @@ void CFollower::CheckRequests() {
 
                     /* Accept first request seen for a team */
                     if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
-                        robotsToAccept[msg.teamID] = cmsg.from;
+                        robotsToAccept[msg.teamID] = msg;
                         continue;
                     }
 
-                    UInt8 currentFID = stoi(robotsToAccept[msg.teamID].substr(1));
-                    UInt8 newFID = stoi(cmsg.from.substr(1));
+                    Real currentDist = robotsToAccept[msg.teamID].direction.Length();
+                    Real newDist = msg.direction.Length();
 
-                    /* Send an accept message to the follower with the smallest ID */
-                    if(newFID < currentFID)
-                        robotsToAccept[msg.teamID] = cmsg.from;
+                    /* Send an accept message to the closest follower */
+                    if(newDist < currentDist)
+                        robotsToAccept[msg.teamID] = msg;
                 }
             }
         }
@@ -1744,13 +1744,13 @@ void CFollower::Callback_Respond(void* data) {
         ConnectionMsg cmsg;
         cmsg.type   = 'A';
         cmsg.from   = this->GetId();
-        cmsg.to     = it.second;
+        cmsg.to     = it.second.ID;
         cmsg.toTeam = it.first;
         cmsgToResend.push_back({sendDuration,cmsg}); // Transmit public event
 
         /* Update hop count to the team using the new connector */
         hopsDict[it.first].count++; // 1 -> 2
-        hopsDict[it.first].ID = it.second;
+        hopsDict[it.first].ID = it.second.ID;
     }
 }
 
