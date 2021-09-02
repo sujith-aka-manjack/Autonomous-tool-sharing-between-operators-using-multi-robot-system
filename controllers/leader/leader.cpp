@@ -729,14 +729,15 @@ void CLeader::ReplyToRequest() {
     UInt8 minDist = 255;
     // std::string tempID;
     for(const auto& msg : teamMsgs) {
-        if(msg.shareDist < 255) {
+        if(msg.shareDist < minDist) {
             minDist = msg.shareDist;
+            // std::cout << this->GetId() << ": dist is " << msg.shareDist << " from " << msg.ID << std::endl;
             // tempID = msg.ID;
         }
     }
     // std::cout << this->GetId() << ": separation received is " << minDist << " from " << tempID << std::endl;
 
-    if(cmsgToResend.empty() && shareToTeam.empty() && minDist > separationThres) { // Check if it has not recently sent an accept message, whether there is already a connector or not, and whether theree is a robot near the other team
+    if(cmsgToResend.empty() && shareToTeam.empty() && minDist > separationThres) { // Check if it has not recently sent an accept message, whether there is already a connector or not, and whether there is a robot near the other team
 
         /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
         ConnectionMsg acceptTo;
