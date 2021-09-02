@@ -12,15 +12,18 @@ from collections import defaultdict
 # Debugging
 pp = pprint.PrettyPrinter(indent=4)
 
-TOTAL_TIME = 1001
-TOTAL_ROBOTS = 30
-TOTAL_DEMAND = 600
+# Experiment Configurations
+TOTAL_TIME = 2001
+TOTAL_ROBOTS = 40
+DEMAND_PER_TASK = 500
+NUMBER_OF_TASKS = 6
+TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_6T_100D'.format(TOTAL_ROBOTS))
-# OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_6T_100D'.format(TOTAL_ROBOTS))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
-OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_100D')
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
+OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
 def load_stats(argv):
 
@@ -158,8 +161,8 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     y2_total = np.array(y2_total)
     y3_total = np.array(y3_total)
 
-    # print(y1_total.shape)
-    # print(y1_total)
+    print(y1_total.shape)
+    print(y1_total)
 
     y1_mean = np.mean(y1_total, axis=0)
     y2_mean = np.mean(y2_total, axis=0)
@@ -410,8 +413,9 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
 
     data_1 = ratios['20']
     data_2 = ratios['30']
-    data_3 = ratios['40']
+    # data_3 = ratios['40']
     data = [data_1, data_2, data_3]
+    data = [data_1, data_2]
     
     plt.boxplot(data)
 
@@ -489,13 +493,6 @@ if __name__ == "__main__":
     #         '20R_6T_100D_02.yaml'
     #        ]
     argv = []
-    for i in range(1,21):
-        id = ''
-        if(i < 10):
-            id += '0' + str(i)
-        else:
-            id += str(i)
-        argv.append('20R_6T_100D_{0}.yaml'.format(id))
 
     for i in range(1,21):
         id = ''
@@ -503,7 +500,7 @@ if __name__ == "__main__":
             id += '0' + str(i)
         else:
             id += str(i)
-        argv.append('30R_6T_100D_{0}.yaml'.format(id))
+        argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     for i in range(1,21):
         id = ''
@@ -511,6 +508,14 @@ if __name__ == "__main__":
             id += '0' + str(i)
         else:
             id += str(i)
-        argv.append('40R_6T_100D_{0}.yaml'.format(id))
+        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+
+    # for i in range(1,21):
+    #     id = ''
+    #     if(i < 10):
+    #         id += '0' + str(i)
+    #     else:
+    #         id += str(i)
+    #     argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     main(argv)

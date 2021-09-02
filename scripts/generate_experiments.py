@@ -9,11 +9,11 @@ import xml.etree.ElementTree as ET
 TEMPLATE_PATH = os.path.join(os.environ['HOME'], 'GIT/argos-sct/experiments/experiment_template.argos')
 
 
-def generate_experiments(num_experiments, num_robots, duration, argos_dir_path, log_dir_path):
+def generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path):
     
     d = datetime.datetime.now()
     # directory = d.strftime("%m-%d") + "-" + d.strftime("%H%M%S") + '_' + num_robots + 'R_6T_100D'
-    directory = num_robots + 'R_6T_100D'
+    directory = '{}R_6T_{}D'.format(num_robots, demand)
     os.mkdir(os.path.join(log_dir_path, directory))
     os.mkdir(os.path.join(argos_dir_path, directory))
 
@@ -26,7 +26,6 @@ def generate_experiments(num_experiments, num_robots, duration, argos_dir_path, 
         # Change time and seed attribute values
         for framework_elem in rootElement.findall("framework"):
             for experiment_elem in framework_elem.findall("experiment"):
-                print(experiment_elem.attrib['length'])
                 
                 experiment_elem.set('length', duration)
                 seed = str(random.randint(0,100000))
@@ -54,6 +53,12 @@ def generate_experiments(num_experiments, num_robots, duration, argos_dir_path, 
                 for team_elem in teams_elem.findall('team'):
                     team_elem.set('robot_num', str(num_robots_per_team))
 
+        # Change the task demands
+        for loop_func_elem in rootElement.findall('loop_functions'):
+            for tasks_elem in loop_func_elem.findall('tasks'):
+                for task_elem in tasks_elem.findall('task'):
+                    task_elem.set('task_demand', str(demand))
+
         file = directory + '_' + count + '.argos'
         print(os.path.join(argos_dir_path, file))
         xmlTree.write(os.path.join(argos_dir_path, directory, file))
@@ -71,6 +76,9 @@ if __name__ == "__main__":
     parser.add_argument('duration',
                         help='Experiment duration in seconds (1 second = 10 timesteps).')
 
+    parser.add_argument('demand',
+                        help='Demand of each task.')
+
     parser.add_argument('argos_dir_path',
                         help='Directory path to store the argos files')
 
@@ -82,7 +90,8 @@ if __name__ == "__main__":
     num_experiments = args.runs
     num_robots = args.robots
     duration = args.duration
+    demand = args.demand
     argos_dir_path = args.argos_dir_path
     log_dir_path = args.log_dir_path
 
-    generate_experiments(num_experiments, num_robots, duration, argos_dir_path, log_dir_path)
+    generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path)
