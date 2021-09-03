@@ -162,7 +162,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
     }
 
     /* Initialization */
-    currentState = RobotState::CONNECTOR; // Set initial state to connector
+    currentState = RobotState::FOLLOWER; // Set initial state to connector
     requestTimer = 0;
     performingTask = false; // Robot initially not working on any task
     hopCountToLeader = 255; // Default (max) value as hop count is unknown
