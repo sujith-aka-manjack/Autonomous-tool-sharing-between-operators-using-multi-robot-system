@@ -150,10 +150,10 @@
       </team> -->
       <custom_team>
         <robots>
-          <robot type="leader" position="0,1.4" />
-          <robot type="follower" position="0,1" />
-          <robot type="follower" position="-0.1,1.2" />
-          <robot type="follower" position="0.1,1.2" />
+          <robot type="leader" position="1,1.4" />
+          <robot type="follower" position="1,1" />
+          <robot type="follower" position="0.9,1.2" />
+          <robot type="follower" position="1.1,1.2" />
         </robots>
         <waypoints>
           <!-- <waypoint coord="0.8,0.8" /> -->
@@ -161,9 +161,10 @@
       </custom_team>
       <custom_team>
         <robots>
-          <robot type="leader" position="0,-1.4" />
-          <robot type="follower" position="-0.1,-1.2" />
-          <robot type="follower" position="0.1,-1.2" />
+          <robot type="leader" position="-1,-1.4" />
+          <robot type="follower" position="-1.1,-1.2" />
+          <robot type="follower" position="-0.9,-1.2" />
+          <robot type="follower" position="-1,-1" />
         </robots>
         <waypoints>
           <!-- <waypoint coord="0.8,0.8" /> -->
@@ -188,19 +189,39 @@
   <!-- *********************** -->
   <arena size="6, 6, 1" center="0,0,0.5">
 
-    <e-puck id="F101" rab_range="0.8" rab_data_size="112">
+    <e-puck id="F104" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
-      <body position="0.1,-0.5,0" orientation="0,0,0" />
+      <body position="-0.5,-0.9,0" orientation="0,0,0" />
     </e-puck>
 
-    <e-puck id="F102" rab_range="0.8" rab_data_size="112">
+    <e-puck id="F105" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
-      <body position="-0.1,0,0" orientation="0,0,0" />
+      <body position="0,-0.9,0" orientation="0,0,0" />
     </e-puck>
 
-    <e-puck id="F103" rab_range="0.8" rab_data_size="112">
+    <e-puck id="F106" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
-      <body position="0.1,0.5,0" orientation="0,0,0" />
+      <body position="0.4,-1.2,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F107" rab_range="0.8" rab_data_size="112">
+      <controller config="esc" />
+      <body position="0.9,-1,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F108" rab_range="0.8" rab_data_size="112">
+      <controller config="esc" />
+      <body position="0.9,-0.5,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F109" rab_range="0.8" rab_data_size="112">
+      <controller config="esc" />
+      <body position="1.1,0,0" orientation="0,0,0" />
+    </e-puck>
+
+    <e-puck id="F110" rab_range="0.8" rab_data_size="112">
+      <controller config="esc" />
+      <body position="0.9,0.5,0" orientation="0,0,0" />
     </e-puck>
 
     <floor id="floor"

@@ -251,7 +251,8 @@ void CFollower::SetTeamID(const UInt8 id) {
     teamID = id;
     currentState = RobotState::FOLLOWER;
 
-    if(this->GetId() == "F1") {
+    // TEMPORARY
+    if(this->GetId() == "F1" || this->GetId() == "F6") {
         currentState = RobotState::TRAVELER;
         teamID = 255;
         currentMoveType = MoveType::TRAVEL;
@@ -1463,16 +1464,23 @@ void CFollower::Travel() {
             /* Choose the connector with the smallest ID */
             int currentID = stoi(nextConnector.ID.substr(1));
             int newID = stoi(msg.ID.substr(1));
-            if(newID < currentID) {
-                nextConnector = msg;
+
+            if(this->GetId() == "F1") {
+                if(newID < currentID) {
+                    nextConnector = msg;
+                }
+            } else if(this->GetId() == "F6") {
+                if(newID > currentID) {
+                    nextConnector = msg;
+                }
             }
         }
     }
 
-    for(const auto& msg : otherLeaderMsgs) {
-        if(msg.ID == "L2")
-            nextConnector = msg;
-    }
+    // for(const auto& msg : otherLeaderMsgs) {
+    //     if(msg.ID == "L2")
+    //         nextConnector = msg;
+    // }
 
     std::cout << "Next connector: " << nextConnector.ID << std::endl;
 
