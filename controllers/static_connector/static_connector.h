@@ -46,7 +46,7 @@ using namespace argos;
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */
-class CFollower : public CCI_Controller {
+class CStaticConnector : public CCI_Controller {
 
 public:
 
@@ -250,10 +250,10 @@ public:
 public:
 
     /* Class constructor. */
-    CFollower();
+    CStaticConnector();
 
     /* Class destructor. */
-    virtual ~CFollower();
+    virtual ~CStaticConnector();
 
     /*
     * This function initializes the controller.

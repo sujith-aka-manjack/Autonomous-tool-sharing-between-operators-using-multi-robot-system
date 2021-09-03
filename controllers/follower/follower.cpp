@@ -250,6 +250,12 @@ UInt8 CFollower::GetTeamID() {
 void CFollower::SetTeamID(const UInt8 id) {
     teamID = id;
     currentState = RobotState::FOLLOWER;
+
+    if(this->GetId() == "F1") {
+        currentState = RobotState::TRAVELER;
+        teamID = 255;
+        currentMoveType = MoveType::TRAVEL;
+    }
 }
 
 /****************************************/
@@ -329,8 +335,8 @@ void CFollower::ControlStep() {
     /*--------------------*/
     //std::cout << "--- Supervisors ---" << std::endl;
 
-    if(initStepTimer > 4)
-        sct->run_step();    // Run the supervisor to get the next action
+    // if(initStepTimer > 4)
+    //     sct->run_step();    // Run the supervisor to get the next action
 
     // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
     //std::cout << std::endl;
@@ -347,6 +353,11 @@ void CFollower::ControlStep() {
 
     /* Set current team ID in msg */
     msg[msg_index++] = teamID;
+
+    if(this->GetId() == "F1") {
+        std::cout << "state: " << (int)currentState << std::endl;
+        std::cout << "move: " << (int)currentMoveType << std::endl;
+    }
 
     // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
@@ -406,6 +417,12 @@ void CFollower::ControlStep() {
 
             break;
         }
+        case RobotState::TRAVELER: {
+            std::cout << "State: TRAVELER" << std::endl;
+            m_pcLEDs->SetAllColors(CColor::YELLOW);
+
+
+        }
         case RobotState::LEADER: {
             //std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
             break;
@@ -420,6 +437,11 @@ void CFollower::ControlStep() {
         }
         case MoveType::STOP: {
             m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            break;
+        }
+        case MoveType::TRAVEL: {
+            // m_pcWheels->SetLinearVelocity(1.0f, -1.0f);
+            Travel();
             break;
         }
     }
@@ -1421,6 +1443,61 @@ void CFollower::Flock() {
         SetWheelSpeedsFromVector(sumForce);
     else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::Travel() {
+    /* Find the next connector to move towards */
+    Message nextConnector;
+    for(const auto& msg : connectorMsgs) {
+        if(nextConnector.Empty())
+            nextConnector = msg;
+        else {
+            /* Choose the connector with the smallest ID */
+            int currentID = stoi(nextConnector.ID.substr(1));
+            int newID = stoi(msg.ID.substr(1));
+            if(newID < currentID) {
+                nextConnector = msg;
+            }
+        }
+    }
+
+    for(const auto& msg : otherLeaderMsgs) {
+        if(msg.ID == "L2")
+            nextConnector = msg;
+    }
+
+    std::cout << "Next connector: " << nextConnector.ID << std::endl;
+
+    /* Calculate the position of the left side of the connector */
+
+    std::cout << "direction: " << nextConnector.direction << std::endl;
+
+    CVector2 margin = nextConnector.direction;
+    margin.Rotate(CRadians::PI_OVER_TWO);
+
+    std::cout << "rotated: " << margin << std::endl;
+
+    margin.Normalize();
+    margin *= 20;
+
+    CVector2 target = nextConnector.direction + margin;
+
+    std::cout << "margin.Length: " << margin.Length() << std::endl;
+    std::cout << "direction.Length: " << nextConnector.direction.Length() << std::endl;
+    std::cout << "margin: " << margin << std::endl;
+    std::cout << "target: " << target << std::endl;
+
+    /* Limit the length of the vector to the max speed */
+    if(target.Length() > m_sWheelTurningParams.MaxSpeed) {
+        target.Normalize();
+        target *= m_sWheelTurningParams.MaxSpeed;
+    }
+
+    /* Set Wheel Speed */
+    SetWheelSpeedsFromVector(target);
 }
 
 /****************************************/

@@ -23,7 +23,7 @@ static const std::vector<CRadians> PROX_ANGLE {
 /****************************************/
 /****************************************/
 
-void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
+void CStaticConnector::SWheelTurningParams::Init(TConfigurationNode& t_node) {
    try {
       TurningMechanism = NO_TURN;
       CDegrees cAngle;
@@ -43,7 +43,7 @@ void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
+void CStaticConnector::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
    try {
       GetNodeAttribute(t_node, "target_distance", TargetDistance);
       GetNodeAttribute(t_node, "kp", Kp);
@@ -58,7 +58,7 @@ void CFollower::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
+void CStaticConnector::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
    try {
       GetNodeAttribute(t_node, "target_distance", TargetDistance);
       GetNodeAttribute(t_node, "gain", Gain);
@@ -75,7 +75,7 @@ void CFollower::SFlockingInteractionParams::Init(TConfigurationNode& t_node) {
 /*
  * This function is a generalization of the Lennard-Jones potential
  */
-Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distance) {
+Real CStaticConnector::SFlockingInteractionParams::GeneralizedLennardJones(Real f_distance) {
    Real fNormDistExp = ::pow(TargetDistance / f_distance, Exponent);
    return -Gain / f_distance * (fNormDistExp * fNormDistExp - fNormDistExp);
 }
@@ -86,7 +86,7 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJones(Real f_dista
 /*
  * This function is a generalization of the Lennard-Jones potential for repulsion only 
  */
-Real CFollower::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Real f_distance) {
+Real CStaticConnector::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Real f_distance) {
    Real fNormDistExp = ::pow(TargetDistance / f_distance, Exponent);
    return -Gain / f_distance * (fNormDistExp * fNormDistExp);
 }
@@ -97,14 +97,14 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Rea
 /* 
 * Checks whethe the Message is empty or not by checking the direction it was received from
 */
-bool CFollower::Message::Empty() {
+bool CStaticConnector::Message::Empty() {
     return direction.Length() == 0.0f;
 }
 
 /****************************************/
 /****************************************/
 
-CFollower::CFollower() :
+CStaticConnector::CStaticConnector() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
     m_pcRABAct(NULL),
@@ -116,7 +116,7 @@ CFollower::CFollower() :
 /****************************************/
 /****************************************/
 
-CFollower::~CFollower() {
+CStaticConnector::~CStaticConnector() {
     // delete sct;
     delete pid;
 }
@@ -124,7 +124,7 @@ CFollower::~CFollower() {
 /****************************************/
 /****************************************/
 
-void CFollower::Init(TConfigurationNode& t_node) {
+void CStaticConnector::Init(TConfigurationNode& t_node) {
 
     /* Get sensor/actuator handles */
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
@@ -178,38 +178,38 @@ void CFollower::Init(TConfigurationNode& t_node) {
     // sct = new SCTPub();
 
     // /* Register controllable events */
-    // sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
-    // sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    // sct->add_callback(this, EV_taskStart, &CFollower::Callback_TaskBegin, NULL, NULL);
-    // sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
-    // sct->add_callback(this, EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
-    // sct->add_callback(this, EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
-    // sct->add_callback(this, EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
-    // sct->add_callback(this, EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
-    // sct->add_callback(this, EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
-    // sct->add_callback(this, EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
+    // sct->add_callback(this, EV_moveFlock, &CStaticConnector::Callback_MoveFlock, NULL, NULL);
+    // sct->add_callback(this, EV_moveStop,  &CStaticConnector::Callback_MoveStop,  NULL, NULL);
+    // sct->add_callback(this, EV_taskStart, &CStaticConnector::Callback_TaskBegin, NULL, NULL);
+    // sct->add_callback(this, EV_taskStop,  &CStaticConnector::Callback_TaskStop,  NULL, NULL);
+    // sct->add_callback(this, EV_switchF,   &CStaticConnector::Callback_SwitchF,   NULL, NULL);
+    // sct->add_callback(this, EV_switchC,   &CStaticConnector::Callback_SwitchC,   NULL, NULL);
+    // sct->add_callback(this, EV_requestL,  &CStaticConnector::Callback_RequestL,  NULL, NULL);
+    // sct->add_callback(this, EV_requestC,  &CStaticConnector::Callback_RequestC,  NULL, NULL);
+    // sct->add_callback(this, EV_respond,   &CStaticConnector::Callback_Respond,   NULL, NULL);
+    // sct->add_callback(this, EV_relay,     &CStaticConnector::Callback_Relay,     NULL, NULL);
     
     // /* Register uncontrollable events */
-    // sct->add_callback(this, EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
-    // sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
-    // sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
-    // sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-    // sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-    // sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
-    // sct->add_callback(this, EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
-    // sct->add_callback(this, EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
-    // sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
-    // sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
-    // sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
-    // sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
-    // sct->add_callback(this, EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
-    // sct->add_callback(this, EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
-    // sct->add_callback(this, EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
-    // sct->add_callback(this, EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
-    // sct->add_callback(this, EV__start,    NULL, &CFollower::Check__Start,    NULL);
-    // sct->add_callback(this, EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
-    // sct->add_callback(this, EV__message,  NULL, &CFollower::Check__Message,  NULL);
-    // sct->add_callback(this, EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
+    // sct->add_callback(this, EV_condC1,    NULL, &CStaticConnector::Check_CondC1,    NULL);
+    // sct->add_callback(this, EV_notCondC1, NULL, &CStaticConnector::Check_NotCondC1, NULL);
+    // sct->add_callback(this, EV_condC2,    NULL, &CStaticConnector::Check_CondC2,    NULL);
+    // sct->add_callback(this, EV_notCondC2, NULL, &CStaticConnector::Check_NotCondC2, NULL);
+    // sct->add_callback(this, EV_condC3,    NULL, &CStaticConnector::Check_CondC3,    NULL);
+    // sct->add_callback(this, EV_notCondC3, NULL, &CStaticConnector::Check_NotCondC3, NULL);
+    // sct->add_callback(this, EV_nearC,     NULL, &CStaticConnector::Check_NearC,     NULL);
+    // sct->add_callback(this, EV_notNearC,  NULL, &CStaticConnector::Check_NotNearC,  NULL);
+    // sct->add_callback(this, EV_condF1,    NULL, &CStaticConnector::Check_CondF1,    NULL);
+    // sct->add_callback(this, EV_notCondF1, NULL, &CStaticConnector::Check_NotCondF1, NULL);
+    // sct->add_callback(this, EV_condF2,    NULL, &CStaticConnector::Check_CondF2,    NULL);
+    // sct->add_callback(this, EV_notCondF2, NULL, &CStaticConnector::Check_NotCondF2, NULL);
+    // sct->add_callback(this, EV__respond,  NULL, &CStaticConnector::Check__Respond,  NULL);
+    // sct->add_callback(this, EV_accept,    NULL, &CStaticConnector::Check_Accept,    NULL);
+    // sct->add_callback(this, EV_reject,    NULL, &CStaticConnector::Check_Reject,    NULL);
+    // sct->add_callback(this, EV__requestC, NULL, &CStaticConnector::Check__RequestC, NULL);
+    // sct->add_callback(this, EV__start,    NULL, &CStaticConnector::Check__Start,    NULL);
+    // sct->add_callback(this, EV__stop,     NULL, &CStaticConnector::Check__Stop,     NULL);
+    // sct->add_callback(this, EV__message,  NULL, &CStaticConnector::Check__Message,  NULL);
+    // sct->add_callback(this, EV__relay,    NULL, &CStaticConnector::Check__Relay,    NULL);
 
     /*
     * Init PID Controller
@@ -227,7 +227,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::Reset() {
+void CStaticConnector::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
@@ -240,14 +240,14 @@ void CFollower::Reset() {
 /****************************************/
 /****************************************/
 
-UInt8 CFollower::GetTeamID() {
+UInt8 CStaticConnector::GetTeamID() {
     return teamID;
 }
 
 /****************************************/
 /****************************************/
 
-void CFollower::SetTeamID(const UInt8 id) {
+void CStaticConnector::SetTeamID(const UInt8 id) {
     teamID = id;
     currentState = RobotState::FOLLOWER;
 }
@@ -255,21 +255,21 @@ void CFollower::SetTeamID(const UInt8 id) {
 /****************************************/
 /****************************************/
 
-const std::map<UInt8, CFollower::HopMsg>& CFollower::GetHops() const {
+const std::map<UInt8, CStaticConnector::HopMsg>& CStaticConnector::GetHops() const {
     return hopsDict;
 }
 
 /****************************************/
 /****************************************/
 
-bool CFollower::IsWorking() {
+bool CStaticConnector::IsWorking() {
     return performingTask;
 }
 
 /****************************************/
 /****************************************/
 
-void CFollower::ControlStep() {
+void CStaticConnector::ControlStep() {
 
     std::string id = this->GetId();
     //std::cout << "\n---------- " << id << " ----------" << std::endl;
@@ -545,7 +545,7 @@ void CFollower::ControlStep() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetMessages() {
+void CStaticConnector::GetMessages() {
 
     /* Get RAB messages from nearby e-pucks */
     const CCI_RangeAndBearingSensor::TReadings& tMsgs = m_pcRABSens->GetReadings();
@@ -718,7 +718,7 @@ void CFollower::GetMessages() {
 /****************************************/
 /****************************************/
 
-void CFollower::Update() {
+void CStaticConnector::Update() {
 
     //std::cout << "leaderMsg = " << ( !leaderMsg.Empty() ) << std::endl;
     //std::cout << "teamMsg = " << teamMsgs.size() << std::endl;
@@ -884,7 +884,7 @@ void CFollower::Update() {
 /****************************************/
 /****************************************/
 
-void CFollower::GetLeaderInfo() {
+void CStaticConnector::GetLeaderInfo() {
 
     /* Find the hop count to and signal from the leader */
     if( !leaderMsg.Empty() ) { // Leader is in range
@@ -918,7 +918,7 @@ void CFollower::GetLeaderInfo() {
 /****************************************/
 /****************************************/
 
-CFollower::Message CFollower::GetClosestNonTeam() {
+CStaticConnector::Message CStaticConnector::GetClosestNonTeam() {
     
     /* Check for the robot that this robot can connect */
     Real minDist = 10000;
@@ -957,7 +957,7 @@ CFollower::Message CFollower::GetClosestNonTeam() {
 /****************************************/
 /****************************************/
 
-bool CFollower::IsClosestToRobot(const Message& msg) {
+bool CStaticConnector::IsClosestToRobot(const Message& msg) {
     
     Real myDist = msg.direction.Length();
 
@@ -994,7 +994,7 @@ bool CFollower::IsClosestToRobot(const Message& msg) {
 /****************************************/
 /****************************************/
 
-void CFollower::CheckAccept() {
+void CStaticConnector::CheckAccept() {
 
     /* Request sent to leader */
     if(currentRequest.to[0] == 'L') {
@@ -1041,7 +1041,7 @@ void CFollower::CheckAccept() {
 /****************************************/
 /****************************************/
 
-void CFollower::CheckRequests() {
+void CStaticConnector::CheckRequests() {
 
     /* Check all requests sent to itself and choose one to respond to each team */
     for(const auto& msg : otherTeamMsgs) {
@@ -1073,7 +1073,7 @@ void CFollower::CheckRequests() {
 /****************************************/
 /****************************************/
 
-void CFollower::SetCMsgsToRelay() {
+void CStaticConnector::SetCMsgsToRelay() {
 
     /* Combine messages from the leader and other followers that belong in the same team */
     std::vector<Message> combinedTeamMsgs(teamMsgs);
@@ -1113,7 +1113,7 @@ void CFollower::SetCMsgsToRelay() {
 /****************************************/
 /****************************************/
 
-void CFollower::SetLeaderMsgToRelay(const RobotState state) {
+void CStaticConnector::SetLeaderMsgToRelay(const RobotState state) {
     if(state == RobotState::FOLLOWER) {
 
         std::vector<Message> inwardMsgs;
@@ -1242,7 +1242,7 @@ void CFollower::SetLeaderMsgToRelay(const RobotState state) {
 /****************************************/
 /****************************************/
 
-void CFollower::SetConnectorToRelay() {
+void CStaticConnector::SetConnectorToRelay() {
  
     /* Check if a connector with a hop count = 1 to its current team is nearby */
     bool foundFirstConnector = false;
@@ -1310,7 +1310,7 @@ void CFollower::SetConnectorToRelay() {
 /****************************************/
 /****************************************/
 
-void CFollower::UpdateHopCounts() {
+void CStaticConnector::UpdateHopCounts() {
 
     /* Add every other visible team to hop map */
     for(const auto& msg : otherTeamMsgs) {
@@ -1401,7 +1401,7 @@ void CFollower::UpdateHopCounts() {
 /****************************************/
 /****************************************/
 
-void CFollower::Flock() {
+void CStaticConnector::Flock() {
     /* Calculate overall force applied to the robot */
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
@@ -1426,7 +1426,7 @@ void CFollower::Flock() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetTeamFlockingVector() {
+CVector2 CStaticConnector::GetTeamFlockingVector() {
 
     CVector2 resVec = CVector2();
 
@@ -1470,7 +1470,7 @@ CVector2 CFollower::GetTeamFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetRobotRepulsionVector() {
+CVector2 CStaticConnector::GetRobotRepulsionVector() {
     CVector2 resVec = CVector2();
 
     std::vector<Message> repulseMsgs;
@@ -1516,7 +1516,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetObstacleRepulsionVector() {
+CVector2 CStaticConnector::GetObstacleRepulsionVector() {
     /* Get proximity sensor readings */
     std::vector<Real> fProxReads = m_pcProximity->GetReadings();
 
@@ -1545,7 +1545,7 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 /****************************************/
 /****************************************/
 
-void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
+void CStaticConnector::SetWheelSpeedsFromVector(const CVector2& c_heading) {
     /* Get the heading angle */
     CRadians cHeadingAngle = c_heading.Angle().SignedNormalize();
     /* Get the length of the heading vector */
@@ -1616,7 +1616,7 @@ void CFollower::SetWheelSpeedsFromVector(const CVector2& c_heading) {
 /****************************************/
 /****************************************/
 
-void CFollower::PrintName() {
+void CStaticConnector::PrintName() {
     //std::cout << "[" << this->GetId() << "] ";
 }
 
@@ -1625,28 +1625,28 @@ void CFollower::PrintName() {
 
 /* Callback functions (Controllable events) */
 
-void CFollower::Callback_TaskBegin(void* data) {
+void CStaticConnector::Callback_TaskBegin(void* data) {
     //std::cout << "Action: taskBegin" << std::endl;
     performingTask = true;
 }
 
-void CFollower::Callback_TaskStop(void* data) {
+void CStaticConnector::Callback_TaskStop(void* data) {
     //std::cout << "Action: taskStop" << std::endl;
     performingTask = false;
 }
 
-void CFollower::Callback_MoveFlock(void* data) {
+void CStaticConnector::Callback_MoveFlock(void* data) {
     //std::cout << "Action: moveFlock" << std::endl;
     currentMoveType = MoveType::FLOCK;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
-void CFollower::Callback_MoveStop(void* data) {
+void CStaticConnector::Callback_MoveStop(void* data) {
     //std::cout << "Action: moveStop" << std::endl;
     currentMoveType = MoveType::STOP;
 }
 
-void CFollower::Callback_SwitchF(void* data) {
+void CStaticConnector::Callback_SwitchF(void* data) {
     //std::cout << "Action: setF" << std::endl;
 
     /* Set new teamID */
@@ -1661,7 +1661,7 @@ void CFollower::Callback_SwitchF(void* data) {
     hopsDict.clear();
 }
 
-void CFollower::Callback_SwitchC(void* data) {
+void CStaticConnector::Callback_SwitchC(void* data) {
     //std::cout << "Action: setC" << std::endl;
     
     if(currentAccept.from[0] == 'L') {  // Accept received from the leader
@@ -1705,7 +1705,7 @@ void CFollower::Callback_SwitchC(void* data) {
     setCTriggered = true;
 }
 
-void CFollower::Callback_RequestL(void* data) {
+void CStaticConnector::Callback_RequestL(void* data) {
     //std::cout << "Action: sendReqL" << std::endl;
 
     /* Set request to send */
@@ -1721,7 +1721,7 @@ void CFollower::Callback_RequestL(void* data) {
     //std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
-void CFollower::Callback_RequestC(void* data) {
+void CStaticConnector::Callback_RequestC(void* data) {
     //std::cout << "Action: sendReqC" << std::endl;
 
     /* Set request to send */
@@ -1737,7 +1737,7 @@ void CFollower::Callback_RequestC(void* data) {
     //std::cout << "requestTimer SET: " << requestTimer << std::endl;
 }
 
-void CFollower::Callback_Respond(void* data) {
+void CStaticConnector::Callback_Respond(void* data) {
     //std::cout << "Action: sendReply" << std::endl;
 
     for(const auto& it : robotsToAccept) {
@@ -1754,7 +1754,7 @@ void CFollower::Callback_Respond(void* data) {
     }
 }
 
-void CFollower::Callback_Relay(void* data) {
+void CStaticConnector::Callback_Relay(void* data) {
     //std::cout << "Action: relayMsg" << std::endl;
 
     for(const auto& info : lastBeat) {
@@ -1768,7 +1768,7 @@ void CFollower::Callback_Relay(void* data) {
 
 /* Callback functions (Uncontrollable events) */
 
-unsigned char CFollower::Check__Start(void* data) {
+unsigned char CStaticConnector::Check__Start(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
         //std::cout << "Event: " << 1 << " - _sendBegin" << std::endl;
         return 1;
@@ -1777,7 +1777,7 @@ unsigned char CFollower::Check__Start(void* data) {
     return 0;
 }
 
-unsigned char CFollower::Check__Stop(void* data) {
+unsigned char CStaticConnector::Check__Stop(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
         //std::cout << "Event: " << 1 << " - _sendStop" << std::endl;
         return 1;
@@ -1786,7 +1786,7 @@ unsigned char CFollower::Check__Stop(void* data) {
     return 0;
 }
 
-unsigned char CFollower::Check_CondC1(void* data) {
+unsigned char CStaticConnector::Check_CondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
         //std::cout << "Event: " << 1 << " - condC1" << std::endl;
         return 1;
@@ -1795,7 +1795,7 @@ unsigned char CFollower::Check_CondC1(void* data) {
     return 0;
 }
 
-unsigned char CFollower::Check_NotCondC1(void* data) {
+unsigned char CStaticConnector::Check_NotCondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
         //std::cout << "Event: " << 0 << " - notCondC1" << std::endl;
         return 0;
@@ -1804,17 +1804,17 @@ unsigned char CFollower::Check_NotCondC1(void* data) {
     return 1;
 }
 
-unsigned char CFollower::Check_CondC2(void* data) {
+unsigned char CStaticConnector::Check_CondC2(void* data) {
     //std::cout << "Event: " << condC2 << " - condC2" << std::endl;
     return condC2;
 }
 
-unsigned char CFollower::Check_NotCondC2(void* data) {
+unsigned char CStaticConnector::Check_NotCondC2(void* data) {
     //std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
     return !condC2;
 }
 
-unsigned char CFollower::Check_CondC3(void* data) {
+unsigned char CStaticConnector::Check_CondC3(void* data) {
     if( !connectionCandidate.Empty()) {
         if(teamID < connectionCandidate.teamID) {
             //std::cout << "Event: " << 1 << " - condC3" << std::endl;
@@ -1825,7 +1825,7 @@ unsigned char CFollower::Check_CondC3(void* data) {
     return 0;
 }
 
-unsigned char CFollower::Check_NotCondC3(void* data) {
+unsigned char CStaticConnector::Check_NotCondC3(void* data) {
     if( !connectionCandidate.Empty() ) {
         if(teamID < connectionCandidate.teamID) {
             //std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
@@ -1836,59 +1836,59 @@ unsigned char CFollower::Check_NotCondC3(void* data) {
     return 1;
 }
 
-unsigned char CFollower::Check_NearC(void* data) {
+unsigned char CStaticConnector::Check_NearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
     //std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
     return connectorSeen;
 }
 
-unsigned char CFollower::Check_NotNearC(void* data) {
+unsigned char CStaticConnector::Check_NotNearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
     //std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
     return !connectorSeen;
 }
 
-unsigned char CFollower::Check_CondF1(void* data) {
+unsigned char CStaticConnector::Check_CondF1(void* data) {
     //std::cout << "Event: " << condF1 << " - condF1" << std::endl;
     return condF1;
 }
 
-unsigned char CFollower::Check_NotCondF1(void* data) {
+unsigned char CStaticConnector::Check_NotCondF1(void* data) {
     //std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
     return !condF1;
 }
 
-unsigned char CFollower::Check_CondF2(void* data) {
+unsigned char CStaticConnector::Check_CondF2(void* data) {
     //std::cout << "Event: " << condF2 << " - condF2" << std::endl;
     return condF2;
 }
 
-unsigned char CFollower::Check_NotCondF2(void* data) {
+unsigned char CStaticConnector::Check_NotCondF2(void* data) {
     //std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
     return !condF2;
 }
 
-unsigned char CFollower::Check__RequestC(void* data) {
+unsigned char CStaticConnector::Check__RequestC(void* data) {
     //std::cout << "Event: " << receivedReqC << " - _sendReqC" << std::endl;
     return receivedReqC;
 }
 
-unsigned char CFollower::Check__Respond(void* data) {
+unsigned char CStaticConnector::Check__Respond(void* data) {
     //std::cout << "Event: " << (receivedAccept || receivedReject) << " - _sendReply" << std::endl;
     return receivedAccept || receivedReject;
 }
 
-unsigned char CFollower::Check_Accept(void* data) {
+unsigned char CStaticConnector::Check_Accept(void* data) {
     //std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
     return receivedAccept;
 }
 
-unsigned char CFollower::Check_Reject(void* data) {
+unsigned char CStaticConnector::Check_Reject(void* data) {
     //std::cout << "Event: " << receivedReject << " - reject" << std::endl;
     return receivedReject;
 }
 
-unsigned char CFollower::Check__Message(void* data) {
+unsigned char CStaticConnector::Check__Message(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'L') {
             //std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
@@ -1899,7 +1899,7 @@ unsigned char CFollower::Check__Message(void* data) {
     return 0;
 }
 
-unsigned char CFollower::Check__Relay(void* data) {
+unsigned char CStaticConnector::Check__Relay(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'F') {
             //std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
@@ -1920,4 +1920,4 @@ unsigned char CFollower::Check__Relay(void* data) {
  * controller class to instantiate.
  * See also the configuration files for an example of how this is used.
  */
-REGISTER_CONTROLLER(CFollower, "follower_controller")
+REGISTER_CONTROLLER(CStaticConnector, "static_connector_controller")

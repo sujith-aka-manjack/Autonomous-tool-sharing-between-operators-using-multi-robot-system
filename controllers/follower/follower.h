@@ -125,13 +125,15 @@ public:
     enum class RobotState {
         LEADER = 0,
         FOLLOWER,
-        CONNECTOR
+        CONNECTOR,
+        TRAVELER
     } currentState;
 
     /* List of move types available to the robot */
     enum class MoveType {
         STOP = 0,
-        FLOCK
+        FLOCK,
+        TRAVEL
     } currentMoveType;
 
     /* Structure to store the connection to the leader/team */
@@ -375,6 +377,11 @@ protected:
     * Move wheels according to flocking vector
     */
     virtual void Flock();
+
+    /*
+    * Move wheels according to chain traversal behavior
+    */
+    virtual void Travel();
 
     /* 
     * Get a flocking vector between itself and team members with the smallest hop count.
