@@ -187,7 +187,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -211,7 +211,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -219,6 +219,7 @@ void CLeader::ControlStep() {
     connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
+    travelerMsgs.clear();
 
     cmsgToSend.clear();
     rmsgToSend.clear();
@@ -326,6 +327,9 @@ void CLeader::ControlStep() {
         msg_index++;
     }
     
+    /* Leader team switch signal */
+    msg_index += 3; // TEMP: 
+
     /* Hop count */
     msg[msg_index++] = 1; // Number of HopMsg
 
@@ -374,7 +378,7 @@ void CLeader::ControlStep() {
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
         msg_index += 2; // Skip firstFollower;
-        msg_index += 1; // TEMP: skip robot_num;
+        msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
     msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
@@ -498,8 +502,15 @@ void CLeader::GetMessages() {
             msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamID = tMsgs[i].Data[index++];
 
-            /* Leader Signal */
+            /* Leader Task Signal */
             msg.leaderSignal = tMsgs[i].Data[index++];
+
+            /* Leader Team Switch Signal */
+            std::string switchID;
+            switchID += (char)tMsgs[i].Data[index++];            // First char of ID
+            switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+            msg.robotToSwitch = switchID;
+            msg.teamToJoin = tMsgs[i].Data[index++];
 
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
@@ -616,7 +627,7 @@ void CLeader::GetMessages() {
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
                 index += 2; // TEMP: skip firstFollower
-                index += 1; // TEMP: skip robot_num
+                relayMsg.robot_num = tMsgs[i].Data[index++];
 
                 msg.rmsg.push_back(relayMsg);
             }
@@ -646,6 +657,9 @@ void CLeader::GetMessages() {
             } else if(msg.state == RobotState::CONNECTOR) {
                 msg.ID = 'F' + msg.ID;
                 connectorMsgs.push_back(msg);
+            } else if(msg.state == RobotState::TRAVELER) {
+                msg.ID = 'F' + msg.ID;
+                travelerMsgs.push_back(msg);
             }
         }
     }
@@ -682,6 +696,13 @@ void CLeader::Update() {
         beat.type = 'H';
         beat.from = this->GetId();
         beat.time = initStepTimer;
+
+        if(initStepTimer == 800 && this->GetId() == "L2") {
+            beat.type = 'R';
+            beat.robot_num = 2;
+            std::cerr << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+        }
+
         rmsgToResend.push_back({sendDuration,beat});
         lastSent = initStepTimer;
     }
@@ -838,11 +859,14 @@ void CLeader::CheckHeartBeat() {
 
     for(const auto& msg : combinedMsgs) {
         for(const auto& beat : msg.rmsg) {
-            if(beat.type =='H' && beat.from != this->GetId() && beat.time > lastBeatTime) {
+            if(beat.from != this->GetId() && beat.time > lastBeatTime) {
                 beatReceived++;
                 lastBeatTime = beat.time;
                 // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                 // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+            }
+            if(beat.type == 'R' && beat.from != this->GetId()) {
+                std::cerr << this->GetId() << ": request from " << beat.from << " to send " << beat.robot_num << std::endl;
             }
         }
     }

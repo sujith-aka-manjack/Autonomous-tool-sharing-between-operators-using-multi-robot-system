@@ -231,7 +231,7 @@ void CStaticConnector::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -281,7 +281,7 @@ void CStaticConnector::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -290,6 +290,7 @@ void CStaticConnector::ControlStep() {
     connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
+    travelerMsgs.clear();
 
     cmsgToSend.clear();
     rmsgToSend.clear();
@@ -508,7 +509,7 @@ void CStaticConnector::ControlStep() {
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
         msg_index += 2; // TEMP: skip firstFollower;
-        msg_index += 1; // TEMP: skip robot_num;
+        msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
     msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
@@ -567,8 +568,15 @@ void CStaticConnector::GetMessages() {
             msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamID = tMsgs[i].Data[index++];
 
-            /* Leader Signal */
+            /* Leader Task Signal */
             msg.leaderSignal = tMsgs[i].Data[index++];
+
+            /* Leader Team Switch Signal */
+            std::string switchID;
+            switchID += (char)tMsgs[i].Data[index++];            // First char of ID
+            switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+            msg.robotToSwitch = switchID;
+            msg.teamToJoin = tMsgs[i].Data[index++];
 
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
@@ -715,6 +723,9 @@ void CStaticConnector::GetMessages() {
             } else if(msg.state == RobotState::CONNECTOR) {
                 msg.ID = 'F' + msg.ID;
                 connectorMsgs.push_back(msg);
+            } else if(msg.state == RobotState::TRAVELER) {
+                msg.ID = 'F' + msg.ID;
+                travelerMsgs.push_back(msg);
             }
         }
     }

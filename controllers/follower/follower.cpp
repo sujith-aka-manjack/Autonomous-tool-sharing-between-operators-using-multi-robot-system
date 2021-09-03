@@ -231,7 +231,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -252,11 +252,11 @@ void CFollower::SetTeamID(const UInt8 id) {
     currentState = RobotState::FOLLOWER;
 
     // TEMPORARY
-    if(this->GetId() == "F1" || this->GetId() == "F6") {
-        currentState = RobotState::TRAVELER;
-        teamID = 255;
-        currentMoveType = MoveType::TRAVEL;
-    }
+    // if(this->GetId() == "F1" || this->GetId() == "F6") {
+    //     currentState = RobotState::TRAVELER;
+    //     teamID = 255;
+    //     currentMoveType = MoveType::TRAVEL;
+    // }
 }
 
 /****************************************/
@@ -288,7 +288,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(112, 255);
+    msg = CByteArray(115, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -297,6 +297,7 @@ void CFollower::ControlStep() {
     connectorMsgs.clear();
     otherLeaderMsgs.clear();
     otherTeamMsgs.clear();
+    travelerMsgs.clear();
 
     cmsgToSend.clear();
     rmsgToSend.clear();
@@ -336,8 +337,8 @@ void CFollower::ControlStep() {
     /*--------------------*/
     //std::cout << "--- Supervisors ---" << std::endl;
 
-    // if(initStepTimer > 4)
-    //     sct->run_step();    // Run the supervisor to get the next action
+    if(initStepTimer > 4)
+        sct->run_step();    // Run the supervisor to get the next action
 
     // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
     //std::cout << std::endl;
@@ -355,10 +356,10 @@ void CFollower::ControlStep() {
     /* Set current team ID in msg */
     msg[msg_index++] = teamID;
 
-    if(this->GetId() == "F1") {
-        std::cout << "state: " << (int)currentState << std::endl;
-        std::cout << "move: " << (int)currentMoveType << std::endl;
-    }
+    // if(this->GetId() == "F1") {
+    //     std::cout << "state: " << (int)currentState << std::endl;
+    //     std::cout << "move: " << (int)currentMoveType << std::endl;
+    // }
 
     // Decide what to communicate depending on current state (switch between follower and connector)
     switch(currentState) {
@@ -366,8 +367,11 @@ void CFollower::ControlStep() {
             //std::cout << "State: FOLLOWER" << std::endl;
             m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-            /* Relay leader signal */
+            /* Relay task signal from leader */
             msg[msg_index++] = leaderSignal;
+
+            /* Relay team switch signal from leader */
+            msg_index += 3; // Skip to next part
 
             /* Hop count */
             /* Set its hop count to the leader */
@@ -386,17 +390,25 @@ void CFollower::ControlStep() {
             //std::cout << "State: CONNECTOR" << std::endl;
 
             bool sending = false;
+            bool requesting = false;
             for(const auto& msg : rmsgToResend) {
                 if(msg.second.from == "L2")
                     sending = true;
+                if(msg.second.type == 'R' && msg.second.robot_num != 255)
+                    requesting = true;
             }
-            if(sending)
+            if(requesting)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else if(sending)
                 m_pcLEDs->SetAllColors(CColor::MAGENTA);
             else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            /* Leader signal */
+            /* Leader task signal */
             msg_index++; // Skip to next part
+
+            /* Leader team switch signal */
+            msg_index += 3; // Skip to next part
 
             /* Hop count */
             msg[msg_index++] = hopsDict.size(); // Set the number of HopMsg
@@ -422,10 +434,19 @@ void CFollower::ControlStep() {
             std::cout << "State: TRAVELER" << std::endl;
             m_pcLEDs->SetAllColors(CColor::YELLOW);
 
+            /* Leader signal */
+            msg_index++; // Skip to next part
 
+            /* Leader team switch signal */
+            msg_index += 3; // Skip to next part
+
+            /* Hop count */
+            msg_index += 9; // Skip to next part
+            
+            break;
         }
         case RobotState::LEADER: {
-            //std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
+            std::cerr << "State: LEADER for " << this->GetId() << ". Something went wrong." << std::endl;
             break;
         }
     }
@@ -441,7 +462,6 @@ void CFollower::ControlStep() {
             break;
         }
         case MoveType::TRAVEL: {
-            // m_pcWheels->SetLinearVelocity(1.0f, -1.0f);
             Travel();
             break;
         }
@@ -531,7 +551,7 @@ void CFollower::ControlStep() {
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
         msg_index += 2; // TEMP: skip firstFollower;
-        msg_index += 1; // TEMP: skip robot_num;
+        msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
     msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
@@ -590,8 +610,15 @@ void CFollower::GetMessages() {
             msg.ID = std::to_string(tMsgs[i].Data[index++]); // Only stores number part of the id here
             msg.teamID = tMsgs[i].Data[index++];
 
-            /* Leader Signal */
+            /* Leader Task Signal */
             msg.leaderSignal = tMsgs[i].Data[index++];
+
+            /* Leader Team Switch Signal */
+            std::string switchID;
+            switchID += (char)tMsgs[i].Data[index++];            // First char of ID
+            switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+            msg.robotToSwitch = switchID;
+            msg.teamToJoin = tMsgs[i].Data[index++];
 
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
@@ -704,7 +731,7 @@ void CFollower::GetMessages() {
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
                 index += 2; // TEMP: skip firstFollower
-                index += 1; // TEMP: skip robot_num
+                relayMsg.robot_num = tMsgs[i].Data[index++];
 
                 msg.rmsg.push_back(relayMsg);
             }
@@ -738,6 +765,9 @@ void CFollower::GetMessages() {
             } else if(msg.state == RobotState::CONNECTOR) {
                 msg.ID = 'F' + msg.ID;
                 connectorMsgs.push_back(msg);
+            } else if(msg.state == RobotState::TRAVELER) {
+                msg.ID = 'F' + msg.ID;
+                travelerMsgs.push_back(msg);
             }
         }
     }
@@ -906,6 +936,11 @@ void CFollower::Update() {
             if(!exitLoop)
                 condF2 = true;
         }
+    } else if(currentState == RobotState::TRAVELER) {
+
+        // Near target team?
+            // At least one robot with teamID with target team.
+
     }
 }
 
