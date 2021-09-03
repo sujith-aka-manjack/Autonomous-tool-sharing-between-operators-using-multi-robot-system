@@ -897,7 +897,7 @@ void CLeader::CheckHeartBeat() {
                     // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                     // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
 
-                    if(beat.type == 'R') {
+                    if(beat.type == 'R' && waypoints.empty()) {
                         numRobotsToSend = beat.robot_num;
                         std::cerr << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
                     }
