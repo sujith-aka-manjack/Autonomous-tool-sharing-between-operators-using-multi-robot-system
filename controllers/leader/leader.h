@@ -146,9 +146,11 @@ public:
 
     /* Message sent by a leader to other leaders */
     struct RelayMsg {
-        char type = 'H';
+        char type = 'H'; // H (heart-beat) or R (request-robot) or A (acknowledge)
         std::string from;
         UInt16 time;
+        std::string firstFollower; // First follower that received this message from a non-team robot
+        UInt8 robot_num;
     };
 
     /* 
@@ -156,7 +158,7 @@ public:
     * 
     * The raw messages are assumed to arrive in the following data structure:
     * 
-    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(31) | (32)-(34) | (35)-(45) |      (46)-(105)       | (106) |
+    * |  (1)   |  (2)   |   (3)   |  (4)   | (5)-(13)  |  (14)-(26) | (27)-(31) | (32)-(34) | (35)-(51) |      (52)-(111)       | (112) |
     * -----------------------------------------------------------------------------------------------------------------------------------
     * | Sender | Sender | Sender  | Leader | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
     * | State  |   ID   | Team ID | Signal |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
@@ -181,7 +183,7 @@ public:
     *           - Follower will send up to one request message (R)
     *           - Connector will send up to two approval messages (A)
     * 
-    * - (27)-(30) Shared Message
+    * - (27)-(31) Shared Message
     * 
     *       - Share information about the closest connector to the team
     *           - shareToLeader: Upstream (Follower to Leader)
@@ -189,15 +191,15 @@ public:
     *       - Share information about the shortest distance to the other team (only when no connector is detected)
     *           - shareDist    : Upstream (Follower to Leader) 
     * 
-    * - (31)-(33) Teams Nearby
+    * - (32)-(34) Teams Nearby
     *   Prefix with number of teams nearby (max 2) [1]
     *   - teamID [1]
     * 
     *       - Used by connectors to determine whether other connectors can switch to a follower
     * 
-    * - (34)-(40) Relay Message
+    * - (35)-(51) Relay Message
     *   Prefix with number of messages (max 2) [1]
-    *   - RelayMsg (Leader ID [2], 'h' [1], time sent [2])
+    *   - RelayMsg (Leader ID [2], Type [1], time sent [2], first follower [2], robot_num [1])
     * 
     *       - Message sent by a leader to other leaders
     * 
@@ -235,7 +237,7 @@ public:
 
         bool Empty();
     };
-
+    
 public:
 
     /* Class constructor. */

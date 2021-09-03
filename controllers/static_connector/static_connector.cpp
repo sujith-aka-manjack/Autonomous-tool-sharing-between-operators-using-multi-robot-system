@@ -231,7 +231,7 @@ void CStaticConnector::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(106, 255);
+    msg = CByteArray(112, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -281,7 +281,7 @@ void CStaticConnector::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(106, 255);
+    msg = CByteArray(112, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -507,9 +507,11 @@ void CStaticConnector::ControlStep() {
         msg[msg_index++] = stoi(relayMsg.from.substr(1));
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
+        msg_index += 2; // TEMP: skip firstFollower;
+        msg_index += 1; // TEMP: skip robot_num;
     }
     // Skip if not all bytes are used
-    msg_index += (2 - rmsgToSend.size()) * 5; // TEMP: Currently assuming only two teams
+    msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -678,9 +680,12 @@ void CStaticConnector::GetMessages() {
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
+                index += 2; // TEMP: skip firstFollower
+                index += 1; // TEMP: skip robot_num
+
                 msg.rmsg.push_back(relayMsg);
             }
-            index += (2 - msg_num) * 5; // TEMP: Currently assuming only two teams
+            index += (2 - msg_num) * 8; // TEMP: Currently assuming only two teams
 
             /* Connections */
             while(tMsgs[i].Data[index] != 255) {    // Check if data exists

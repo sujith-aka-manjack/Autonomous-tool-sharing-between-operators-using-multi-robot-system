@@ -188,17 +188,17 @@
   <!-- *********************** -->
   <arena size="6, 6, 1" center="0,0,0.5">
 
-    <e-puck id="F101" rab_range="0.8" rab_data_size="106">
+    <e-puck id="F101" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
       <body position="0.1,-0.5,0" orientation="0,0,0" />
     </e-puck>
 
-    <e-puck id="F102" rab_range="0.8" rab_data_size="106">
+    <e-puck id="F102" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
       <body position="-0.1,0,0" orientation="0,0,0" />
     </e-puck>
 
-    <e-puck id="F103" rab_range="0.8" rab_data_size="106">
+    <e-puck id="F103" rab_range="0.8" rab_data_size="112">
       <controller config="esc" />
       <body position="0.1,0.5,0" orientation="0,0,0" />
     </e-puck>
