@@ -550,7 +550,13 @@ void CFollower::ControlStep() {
         msg[msg_index++] = stoi(relayMsg.from.substr(1));
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
-        msg_index += 2; // TEMP: skip firstFollower;
+
+        if( !relayMsg.firstFollower.empty() ) {
+            msg[msg_index++] = relayMsg.firstFollower[0];
+            msg[msg_index++] = stoi(relayMsg.firstFollower.substr(1));
+        } else
+            msg_index += 2;
+
         msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
@@ -730,7 +736,14 @@ void CFollower::GetMessages() {
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
-                index += 2; // TEMP: skip firstFollower
+                if(tMsgs[i].Data[index] != 255) {
+                    robotID = "";
+                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    relayMsg.firstFollower = robotID;
+                } else
+                    index += 2;
+
                 relayMsg.robot_num = tMsgs[i].Data[index++];
 
                 msg.rmsg.push_back(relayMsg);
@@ -828,6 +841,10 @@ void CFollower::Update() {
 
         SetCMsgsToRelay();
         SetLeaderMsgToRelay(currentState);
+
+        /* Check if it has been chosen by the leader to switch to the other team */
+        if(robotToSwitch == this->GetId())
+            std::cerr << this->GetId() << ": Chosen to switch teams" << std::endl;
         
     } else if(currentState == RobotState::CONNECTOR) {
 
@@ -954,6 +971,8 @@ void CFollower::GetLeaderInfo() {
 
         hopCountToLeader = 1;
         leaderSignal = leaderMsg.leaderSignal;
+        robotToSwitch = leaderMsg.robotToSwitch;
+        teamToJoin = leaderMsg.teamToJoin;
 
     } else { // Leader is not in range. Relay leader signal
 
@@ -972,6 +991,8 @@ void CFollower::GetLeaderInfo() {
         for(size_t i = 0; i < teamMsgs.size(); i++) {
             if(teamMsgs[i].hops[0].count < hopCountToLeader) { // Follower will only have one HopMsg so read the first item
                 leaderSignal = teamMsgs[i].leaderSignal;
+                robotToSwitch = teamMsgs[i].robotToSwitch;
+                teamToJoin = teamMsgs[i].teamToJoin;
                 break;
             }
         }
@@ -1203,20 +1224,28 @@ void CFollower::SetLeaderMsgToRelay(const RobotState state) {
         }
 
         // For inward message, find all that's not in resend
-        for(const auto& msg : inwardMsgs) {
-            for(const auto& relayMsg : msg.rmsg) {
+        for(auto& msg : inwardMsgs) {
+            for(auto& relayMsg : msg.rmsg) {
                 UInt8 receivedTeamID = stoi(relayMsg.from.substr(1));
                 if(receivedTeamID != teamID) {
                     if(lastBeat.find(receivedTeamID) == lastBeat.end()) { // If its the first time receiving, add it to lastBeat received
-                        if(msg.state == RobotState::LEADER)
+                        if(msg.state == RobotState::LEADER) {
+                            relayMsg.firstFollower = this->GetId();
                             lastBeat[receivedTeamID] = {relayMsg,'L'};
-                        else
+                        } else if(msg.teamID != teamID) {
+                            relayMsg.firstFollower = this->GetId();
+                            lastBeat[receivedTeamID] = {relayMsg,'F'};
+                        } else
                             lastBeat[receivedTeamID] = {relayMsg,'F'};
                     } else {
                         if(relayMsg.time > lastBeat[receivedTeamID].first.time) { // Else update it only if the timestep is newer
-                            if(msg.state == RobotState::LEADER)
+                            if(msg.state == RobotState::LEADER) {
+                                relayMsg.firstFollower = this->GetId();
                                 lastBeat[receivedTeamID] = {relayMsg,'L'};
-                            else
+                            } else if(msg.teamID != teamID) {
+                                relayMsg.firstFollower = this->GetId();
+                                lastBeat[receivedTeamID] = {relayMsg,'F'};
+                            } else
                                 lastBeat[receivedTeamID] = {relayMsg,'F'};
                         }
                     }

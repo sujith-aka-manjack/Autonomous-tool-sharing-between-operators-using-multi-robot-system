@@ -158,6 +158,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     lastSent = -1;
     lastBeatTime = 0;
     beatReceived = 0;
+    numRobotsToSend = 0;
+    switchCandidate = "";
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
@@ -328,7 +330,12 @@ void CLeader::ControlStep() {
     }
     
     /* Leader team switch signal */
-    msg_index += 3; // TEMP: 
+    if( !robotToSwitch.empty() ) {
+        msg[msg_index++] = robotToSwitch[0];
+        msg[msg_index++] = stoi(robotToSwitch.substr(1));
+        msg[msg_index++] = teamToJoin;
+    } else
+        msg_index += 3;
 
     /* Hop count */
     msg[msg_index++] = 1; // Number of HopMsg
@@ -626,7 +633,14 @@ void CLeader::GetMessages() {
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
 
-                index += 2; // TEMP: skip firstFollower
+                if(tMsgs[i].Data[index] != 255) {
+                    robotID = "";
+                    robotID += (char)tMsgs[i].Data[index++];            // First char of ID
+                    robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                    relayMsg.firstFollower = robotID;
+                } else
+                    index += 2;
+
                 relayMsg.robot_num = tMsgs[i].Data[index++];
 
                 msg.rmsg.push_back(relayMsg);
@@ -677,6 +691,23 @@ void CLeader::Update() {
     ReplyToRequest();
 
     CheckHeartBeat();
+
+    /* Signal a follower to switch to the other team */
+    if(numRobotsToSend > 0) {
+        if( !switchCandidate.empty() ) {
+            robotToSwitch = switchCandidate;
+
+            // TEMP: hard coded team to join (Assuming two teams)
+            if(teamID == 1)
+                teamToJoin = 2;
+            else if(teamID == 2)
+                teamToJoin = 1;
+
+            numRobotsToSend--;
+
+            std::cerr << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
+        }
+    }
 
     /* Set ConnectionMsg to send during this timestep */
     //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
@@ -859,14 +890,26 @@ void CLeader::CheckHeartBeat() {
 
     for(const auto& msg : combinedMsgs) {
         for(const auto& beat : msg.rmsg) {
-            if(beat.from != this->GetId() && beat.time > lastBeatTime) {
-                beatReceived++;
-                lastBeatTime = beat.time;
-                // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
-                // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
-            }
-            if(beat.type == 'R' && beat.from != this->GetId()) {
-                std::cerr << this->GetId() << ": request from " << beat.from << " to send " << beat.robot_num << std::endl;
+            if(beat.from != this->GetId()) { 
+                if(beat.time > lastBeatTime) {
+                    beatReceived++;
+                    lastBeatTime = beat.time;
+                    // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                    // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+
+                    if(beat.type == 'R') {
+                        numRobotsToSend = beat.robot_num;
+                        std::cerr << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+                    }
+
+                    switchCandidate = ""; // Reset candidate follower to switch
+                } 
+                
+                /* Set a follower that received the leader message from a non-team robot as a candidate to switch teams */
+                if( switchCandidate.empty() && !beat.firstFollower.empty()) {
+                    switchCandidate = beat.firstFollower;
+                    std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
+                }
             }
         }
     }

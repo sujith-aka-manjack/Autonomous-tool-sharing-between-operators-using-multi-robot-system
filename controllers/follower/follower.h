@@ -162,7 +162,7 @@ public:
         char type = 'H'; // H (heart-beat) or R (request-robot) or A (acknowledge)
         std::string from;
         UInt16 time;
-        std::string firstFollower; // First follower that received this message from a non-team robot
+        std::string firstFollower = ""; // First follower that received this message from a non-team robot
         UInt8 robot_num;
     };
 
@@ -514,7 +514,11 @@ private:
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)
     int requestTimer; // Remaining timesteps to wait since a request was made (used in the FOLLOWER state)
+
+    /* Task and team switch signals from leader */
     UInt8 leaderSignal; // 0 = stop working on task, 1 = start working on task (used in the FOLLOWER state)
+    std::string robotToSwitch; // (used in the FOLLOWER state)
+    UInt8 teamToJoin; // (used in the FOLLOWER state)
 
     std::map<UInt8, Message> robotsToAccept; // List of robots to accept as connectors (used in the CONNECTOR state)
 

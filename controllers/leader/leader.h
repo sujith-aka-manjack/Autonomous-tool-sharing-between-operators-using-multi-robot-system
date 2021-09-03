@@ -480,9 +480,15 @@ private:
     Real lastSent;
     Real lastBeatTime;
     size_t beatReceived;
+    std::string switchCandidate; // Robot that the leader could choose to switch to the other team
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;
+
+    /* Team switch variables */
+    size_t numRobotsToSend;
+    std::string robotToSwitch;
+    UInt8 teamToJoin;
 
     /*
     * The following variables are used as parameters for the
