@@ -389,11 +389,6 @@ protected:
     */
     virtual void Flock();
 
-    /*
-    * Move wheels according to chain traversal behavior
-    */
-    virtual void Travel();
-
     /* 
     * Get a flocking vector between itself and team members with the smallest hop count.
     */
@@ -408,6 +403,16 @@ protected:
     * Get a repulsion vector from obstacles.
     */
     virtual CVector2 GetObstacleRepulsionVector();
+
+    /*
+    * Move wheels according to chain traversal behavior
+    */
+    virtual void Travel();
+
+    /*
+    * Get a vector to travel along the chain.
+    */
+    virtual CVector2 GetChainTravelVector();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
@@ -516,7 +521,7 @@ private:
     Message connectionCandidate; // (used in the FOLLOWER state)
     Message firstConnector; // The connector that a follower in the team should connect to next
 
-    bool condC2, condF1, condF2;
+    bool condC2, condF1, condF2, nearLF;
     bool receivedReqC, receivedAccept, receivedReject, receivedInwardRelayMsg, receivedOutwardRelayMsg, receivedInwardSendMsg, receivedOutwardSendMsg;
 
     ConnectionMsg currentRequest, currentAccept; // (used in the FOLLOWER state)

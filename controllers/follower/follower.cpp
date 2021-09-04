@@ -362,6 +362,7 @@ void CFollower::ControlStep() {
     condC2 = false;
     condF1 = false;
     condF2 = false;
+    nearLF = false;
     receivedReqC   = false;
     receivedAccept = false;
     receivedReject = false;
@@ -1005,8 +1006,19 @@ void CFollower::Update() {
         }
     } else if(currentState == RobotState::TRAVELER) {
 
-        // Near target team?
-            // At least one robot with teamID with target team.
+        std::vector<Message> combinedMsgs(otherTeamMsgs);
+        combinedMsgs.insert(combinedMsgs.end(), otherLeaderMsgs.begin(), otherLeaderMsgs.end());
+
+        std::cout << "Checking if team to join has been found" << std::endl;
+
+        /* Check whether it has reached the other team */
+        for(const auto& msg : combinedMsgs) {
+            if(msg.teamID == teamToJoin) {
+                nearLF = true;
+                std::cout << "TEAM FOUND!" << std::endl;
+                break;
+            }
+        }
 
     }
 }
@@ -1568,113 +1580,6 @@ void CFollower::Flock() {
 /****************************************/
 /****************************************/
 
-void CFollower::Travel() {
-
-    /* Sort connectors according to the hop count towards the target team (large -> small) */
-    auto property = teamToJoin;
-    auto sortRuleLambda = [property] (Message& m1, Message& m2) -> bool
-    {
-        return m1.hops[property].count > m2.hops[property].count;
-    };
-
-    std::vector<Message> sortedConnectorMsgs(connectorMsgs);
-    std::sort(sortedConnectorMsgs.begin(), sortedConnectorMsgs.end(), sortRuleLambda);
-
-    for(auto& msg : sortedConnectorMsgs) {
-        std::cout << msg.hops[teamToJoin].count << std::endl;
-    }
-
-    /* Find the next connector to move towards */
-    Message nextConnector;
-    for(auto& msg : sortedConnectorMsgs) {
-        if(nextConnector.Empty())
-            nextConnector = msg;
-        else {
-            // Calculate move
-            CVector2 margin = msg.direction;
-            margin.Rotate(CRadians::PI_OVER_TWO);
-            margin.Normalize();
-            margin *= 20;
-            CVector2 target = msg.direction + margin;
-
-            // For each hops
-                // Calculate line between other connector
-                // Check isIntersect
-                // If not intersect, update nextConnector
-
-            bool noIntersection = true;
-            for(const auto& hop : msg.hops) {
-                // CVector2 line = msg.direction - hop.second.
-                
-                // Get ID
-                // Search for the ID in connectorMsgs and get direction
-                // Calculate line
-
-                std::string id = hop.second.ID;
-                CVector2 otherConnectorVec = CVector2();
-                for(const auto& hopMsg : connectorMsgs) {
-                    if(hopMsg.ID == id)
-                        otherConnectorVec = hopMsg.direction;
-                }
-
-                if(otherConnectorVec.Length() == 0.0f) {
-                    // No intersection
-                    std::cout << "No intersection (Not found)" << std::endl;
-                } else {
-                    std::cout << "Target: " << target << std::endl;
-                    std::cout << "Start: " << msg.direction << std::endl;
-                    std::cout << "End: " << otherConnectorVec << std::endl;
-
-                    if(isIntersect(target, msg.direction, otherConnectorVec)) {
-                        // Intersects
-                        std::cout << "Intersect" << std::endl;
-                        noIntersection = false;
-                    } else {
-                        // NO intersection
-                        std::cout << "No intersection" << std::endl;
-                    }
-                }
-            }
-
-            if(noIntersection)
-                nextConnector = msg;
-        }
-    }
-
-    std::cout << "Next connector: " << nextConnector.ID << std::endl;
-
-    /* Calculate the position of the left side of the connector */
-
-    std::cout << "direction: " << nextConnector.direction << std::endl;
-
-    CVector2 margin = nextConnector.direction;
-    margin.Rotate(CRadians::PI_OVER_TWO);
-
-    std::cout << "rotated: " << margin << std::endl;
-
-    margin.Normalize();
-    margin *= 20;
-
-    CVector2 target = nextConnector.direction + margin;
-
-    std::cout << "margin.Length: " << margin.Length() << std::endl;
-    std::cout << "direction.Length: " << nextConnector.direction.Length() << std::endl;
-    std::cout << "margin: " << margin << std::endl;
-    std::cout << "target: " << target << std::endl;
-
-    /* Limit the length of the vector to the max speed */
-    if(target.Length() > m_sWheelTurningParams.MaxSpeed) {
-        target.Normalize();
-        target *= m_sWheelTurningParams.MaxSpeed;
-    }
-
-    /* Set Wheel Speed */
-    SetWheelSpeedsFromVector(target);
-}
-
-/****************************************/
-/****************************************/
-
 CVector2 CFollower::GetTeamFlockingVector() {
 
     CVector2 resVec = CVector2();
@@ -1781,6 +1686,125 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
         }
         // //std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
     }
+
+    /* Limit the length of the vector to the max speed */
+    if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+        resVec.Normalize();
+        resVec *= m_sWheelTurningParams.MaxSpeed;
+    }
+
+    return resVec;
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::Travel() {
+    /* Calculate overall force applied to the robot */
+    CVector2 travelForce   = GetChainTravelVector();
+    CVector2 obstacleForce = GetObstacleRepulsionVector();
+    CVector2 sumForce      = travelForce + obstacleForce;
+
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 1.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+    
+    /* Set Wheel Speed */
+    SetWheelSpeedsFromVector(sumForce);
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetChainTravelVector() {
+
+    CVector2 resVec = CVector2();
+
+    /* Sort connectors according to the hop count towards the target team (large -> small) */
+    auto property = teamToJoin;
+    auto sortRuleLambda = [property] (Message& m1, Message& m2) -> bool
+    {
+        return m1.hops[property].count > m2.hops[property].count;
+    };
+
+    std::vector<Message> sortedConnectorMsgs(connectorMsgs);
+    std::sort(sortedConnectorMsgs.begin(), sortedConnectorMsgs.end(), sortRuleLambda);
+
+    for(auto& msg : sortedConnectorMsgs) {
+        std::cout << msg.hops[teamToJoin].count << std::endl;
+    }
+
+    /* Find the next connector to move towards */
+    Message nextConnector;
+    for(auto& msg : sortedConnectorMsgs) {
+        if(nextConnector.Empty())
+            nextConnector = msg;
+        else {
+            
+            /* Check distance to the chain */
+            if(msg.direction.Length() < 70) {
+
+                /* Calculate target vector */
+                CVector2 margin = msg.direction;
+                margin.Rotate(CRadians::PI_OVER_TWO);
+                margin.Normalize();
+                margin *= 20;
+                CVector2 target = msg.direction + margin;
+
+                /* Check whether its movement will cross a connection between connectors */
+                bool noIntersection = true;
+                for(const auto& hop : msg.hops) {
+                    std::string id = hop.second.ID;
+                    CVector2 otherConnectorVec = CVector2();
+                    for(const auto& hopMsg : connectorMsgs) {
+                        if(hopMsg.ID == id)
+                            otherConnectorVec = hopMsg.direction;
+                    }
+
+                    if(otherConnectorVec.Length() == 0.0f) {
+                        std::cout << "No intersection (Not found)" << std::endl;
+                    } else {
+                        // std::cout << "Target: " << target << std::endl;
+                        // std::cout << "Start: " << msg.direction << std::endl;
+                        // std::cout << "End: " << otherConnectorVec << std::endl;
+
+                        if(isIntersect(target, msg.direction, otherConnectorVec)) {
+                            // std::cout << "Intersect" << std::endl;
+                            noIntersection = false;
+                        } else {
+                            // std::cout << "No intersection" << std::endl;
+                        }
+                    }
+                }
+
+                if(noIntersection)
+                    nextConnector = msg;
+            }
+        }
+    }
+
+    std::cout << "Next connector: " << nextConnector.ID << std::endl;
+
+    /* Calculate the position of the left side of the connector */
+
+    // std::cout << "direction: " << nextConnector.direction << std::endl;
+
+    CVector2 margin = nextConnector.direction;
+    margin.Rotate(CRadians::PI_OVER_TWO);
+
+    // std::cout << "rotated: " << margin << std::endl;
+
+    margin.Normalize();
+    margin *= 20;
+
+    resVec = nextConnector.direction + margin;
+
+    // std::cout << "margin.Length: " << margin.Length() << std::endl;
+    // std::cout << "direction.Length: " << nextConnector.direction.Length() << std::endl;
+    // std::cout << "margin: " << margin << std::endl;
+    // std::cout << "target: " << resVec << std::endl;
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -1905,15 +1929,22 @@ void CFollower::Callback_SwitchF(void* data) {
     //std::cout << "Action: switchF" << std::endl;
 
     /* Set new teamID */
-    for(const auto& hop : hopsDict) {
-        if(hop.second.count == 1) {
-            teamID = hop.first;
-            break;
+    if(currentState == RobotState::CONNECTOR) {
+        for(const auto& hop : hopsDict) {
+            if(hop.second.count == 1) {
+                teamID = hop.first;
+                break;
+            }
         }
+        hopsDict.clear();
+
+    } else if(currentState == RobotState::TRAVELER) {
+        teamID = teamToJoin;
     }
 
+    std::cerr << "JOINING TEAM" << std::endl;
+
     currentState = RobotState::FOLLOWER;
-    hopsDict.clear();
 }
 
 void CFollower::Callback_SwitchC(void* data) {
@@ -2037,106 +2068,106 @@ void CFollower::Callback_Relay(void* data) {
 
 unsigned char CFollower::Check__Start(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
-        //std::cout << "Event: " << 1 << " - _start" << std::endl;
+        // std::cout << "Event: " << 1 << " - _start" << std::endl;
         return 1;
     }
-    //std::cout << "Event: " << 0 << " - _start" << std::endl;
+    // std::cout << "Event: " << 0 << " - _start" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check__Stop(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
-        //std::cout << "Event: " << 1 << " - _stop" << std::endl;
+        // std::cout << "Event: " << 1 << " - _stop" << std::endl;
         return 1;
     }
-    //std::cout << "Event: " << 0 << " - _stop" << std::endl;
+    // std::cout << "Event: " << 0 << " - _stop" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_CondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
-        //std::cout << "Event: " << 1 << " - condC1" << std::endl;
+        // std::cout << "Event: " << 1 << " - condC1" << std::endl;
         return 1;
     }
-    //std::cout << "Event: " << 0 << " - condC1" << std::endl;
+    // std::cout << "Event: " << 0 << " - condC1" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_NotCondC1(void* data) {
     if(connectionCandidate.direction.Length() >= separationThres) {
-        //std::cout << "Event: " << 0 << " - notCondC1" << std::endl;
+        // std::cout << "Event: " << 0 << " - notCondC1" << std::endl;
         return 0;
     }
-    //std::cout << "Event: " << 1 << " - notCondC1" << std::endl;
+    // std::cout << "Event: " << 1 << " - notCondC1" << std::endl;
     return 1;
 }
 
 unsigned char CFollower::Check_CondC2(void* data) {
-    //std::cout << "Event: " << condC2 << " - condC2" << std::endl;
+    // std::cout << "Event: " << condC2 << " - condC2" << std::endl;
     return condC2;
 }
 
 unsigned char CFollower::Check_NotCondC2(void* data) {
-    //std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
+    // std::cout << "Event: " << !condC2 << " - notCondC2" << std::endl;
     return !condC2;
 }
 
 unsigned char CFollower::Check_CondC3(void* data) {
     if( !connectionCandidate.Empty()) {
         if(teamID < connectionCandidate.teamID) {
-            //std::cout << "Event: " << 1 << " - condC3" << std::endl;
+            // std::cout << "Event: " << 1 << " - condC3" << std::endl;
             return 1;
         }
     }
-    //std::cout << "Event: " << 0 << " - condC3" << std::endl;
+    // std::cout << "Event: " << 0 << " - condC3" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check_NotCondC3(void* data) {
     if( !connectionCandidate.Empty() ) {
         if(teamID < connectionCandidate.teamID) {
-            //std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
+            // std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
             return 0;
         }
     }
-    //std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
+    // std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
     return 1;
 }
 
 unsigned char CFollower::Check_NearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
-    //std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
+    // std::cout << "Event: " << connectorSeen << " - nearC" << std::endl;
     return connectorSeen;
 }
 
 unsigned char CFollower::Check_NotNearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();
-    //std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
+    // std::cout << "Event: " << !connectorSeen << " - notNearC" << std::endl;
     return !connectorSeen;
 }
 
 unsigned char CFollower::Check_CondF1(void* data) {
-    //std::cout << "Event: " << condF1 << " - condF1" << std::endl;
+    // std::cout << "Event: " << condF1 << " - condF1" << std::endl;
     return condF1;
 }
 
 unsigned char CFollower::Check_NotCondF1(void* data) {
-    //std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
+    // std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
     return !condF1;
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {
-    //std::cout << "Event: " << condF2 << " - condF2" << std::endl;
+    // std::cout << "Event: " << condF2 << " - condF2" << std::endl;
     return condF2;
 }
 
 unsigned char CFollower::Check_NotCondF2(void* data) {
-    //std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
+    // std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
     return !condF2;
 }
 
 unsigned char CFollower::Check__RequestC(void* data) {
-    //std::cout << "Event: " << receivedReqC << " - _requestC" << std::endl;
+    // std::cout << "Event: " << receivedReqC << " - _requestC" << std::endl;
     return receivedReqC;
 }
 
@@ -2158,22 +2189,22 @@ unsigned char CFollower::Check_Reject(void* data) {
 unsigned char CFollower::Check__Message(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'L') {
-            //std::cout << "Event: " << 1 << " - _message" << std::endl;
+            // std::cout << "Event: " << 1 << " - _message" << std::endl;
             return 1;
         }
     }
-    //std::cout << "Event: " << 0 << " - _message" << std::endl;
+    // std::cout << "Event: " << 0 << " - _message" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check__Relay(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'F') {
-            //std::cout << "Event: " << 1 << " - _relay" << std::endl;
+            // std::cout << "Event: " << 1 << " - _relay" << std::endl;
             return 1;
         }
     }
-    //std::cout << "Event: " << 0 << " - _relay" << std::endl;
+    // std::cout << "Event: " << 0 << " - _relay" << std::endl;
     return 0;
 }
 
@@ -2196,15 +2227,13 @@ unsigned char CFollower::Check_NotChosen(void* data) {
 }
 
 unsigned char CFollower::Check_NearLF(void* data) {
-    // bool connectorSeen = !connectorMsgs.empty();
-    //std::cout << "Event: " << 0 << " - nearLF" << std::endl;
-    return 0;
+    // std::cout << "Event: " << nearLF << " - nearLF" << std::endl;
+    return nearLF;
 }
 
 unsigned char CFollower::Check_NotNearLF(void* data) {
-    // bool connectorSeen = !connectorMsgs.empty();
-    //std::cout << "Event: " << 0 << " - notNearLF" << std::endl;
-    return 0;
+    // std::cout << "Event: " << !nearLF << " - notNearLF" << std::endl;
+    return !nearLF;
 }
 
 /*
