@@ -160,6 +160,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatReceived = 0;
     numRobotsToSend = 0;
     switchCandidate = "";
+    notDecremented = true;
 
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
@@ -692,6 +693,12 @@ void CLeader::Update() {
     /* Signal a follower to switch to the other team */
     if(numRobotsToSend > 0) {
         if( !switchCandidate.empty() ) {
+
+            if(notDecremented) {
+                numRobotsToSend--;
+                notDecremented = false;
+            }
+
             robotToSwitch = switchCandidate;
 
             // TEMP: hard coded team to join (Assuming two teams)
@@ -699,8 +706,6 @@ void CLeader::Update() {
                 teamToJoin = 2;
             else if(teamID == 2)
                 teamToJoin = 1;
-
-            numRobotsToSend--;
 
             std::cerr << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
         }
@@ -893,6 +898,8 @@ void CLeader::CheckHeartBeat() {
                     lastBeatTime = beat.time;
                     // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                     // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+
+                    notDecremented = true;
 
                     if(beat.type == 'R' && waypoints.empty()) {
                         numRobotsToSend = beat.robot_num;
