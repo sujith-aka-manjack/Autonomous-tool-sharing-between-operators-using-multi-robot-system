@@ -222,7 +222,7 @@ public:
         UInt8 leaderSignal;
 
         /* Team Switch */
-        std::string robotToSwitch;
+        std::string robotToSwitch = "";
         UInt8 teamToJoin;
 
         /* Hop Count */

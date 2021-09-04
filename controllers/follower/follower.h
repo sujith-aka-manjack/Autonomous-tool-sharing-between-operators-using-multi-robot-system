@@ -234,7 +234,7 @@ public:
         UInt8 leaderSignal;
 
         /* Team Switch */
-        std::string robotToSwitch;
+        std::string robotToSwitch = "";
         UInt8 teamToJoin;
 
         /* Hop Count */
@@ -421,11 +421,13 @@ protected:
 
     /* Callback functions */
     virtual void Callback_MoveFlock(void* data);
+    virtual void Callback_MoveTeam(void* data);
     virtual void Callback_MoveStop(void* data);
-    virtual void Callback_TaskBegin(void* data);
+    virtual void Callback_TaskStart(void* data);
     virtual void Callback_TaskStop(void* data);
     virtual void Callback_SwitchF(void* data);
     virtual void Callback_SwitchC(void* data);
+    virtual void Callback_SwitchT(void* data);
     virtual void Callback_RequestL(void* data);
     virtual void Callback_RequestC(void* data);
     virtual void Callback_Respond(void* data);
@@ -451,6 +453,11 @@ protected:
     virtual unsigned char Check__Stop(void* data);
     virtual unsigned char Check__Message(void* data);
     virtual unsigned char Check__Relay(void* data);
+    virtual unsigned char Check__Exchange(void* data);
+    virtual unsigned char Check_Chosen(void* data);
+    virtual unsigned char Check_NotChosen(void* data);
+    virtual unsigned char Check_NearLF(void* data);
+    virtual unsigned char Check_NotNearLF(void* data);
 
 private:
 

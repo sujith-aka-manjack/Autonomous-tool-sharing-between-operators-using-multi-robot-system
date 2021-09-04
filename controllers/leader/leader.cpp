@@ -513,11 +513,14 @@ void CLeader::GetMessages() {
             msg.leaderSignal = tMsgs[i].Data[index++];
 
             /* Leader Team Switch Signal */
-            std::string switchID;
-            switchID += (char)tMsgs[i].Data[index++];            // First char of ID
-            switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-            msg.robotToSwitch = switchID;
-            msg.teamToJoin = tMsgs[i].Data[index++];
+            if(tMsgs[i].Data[index] != 255) {
+                std::string switchID;
+                switchID += (char)tMsgs[i].Data[index++];            // First char of ID
+                switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.robotToSwitch = switchID;
+                msg.teamToJoin = tMsgs[i].Data[index++];
+            } else
+                index += 3;
 
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
@@ -578,26 +581,20 @@ void CLeader::GetMessages() {
             
             /* Shared Message */
             std::string robotID;
-            if(tMsgs[i].Data[index] == 255) {
-                index += 2;
-            } else {
+            if(tMsgs[i].Data[index] != 255) {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 msg.shareToLeader = robotID;
-            }
-            
-            //std::cout << "shareToLeader: " << msg.shareToLeader << std::endl;
-
-            if(tMsgs[i].Data[index] == 255) {
+            } else
                 index += 2;
-            } else {
+            
+            if(tMsgs[i].Data[index] != 255) {
                 robotID = "";
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 msg.shareToTeam = robotID;
-            }
-
-            //std::cout << "shareToTeam: " << msg.shareToTeam << std::endl;
+            } else
+                index += 2;
 
             msg.shareDist = tMsgs[i].Data[index++];
 

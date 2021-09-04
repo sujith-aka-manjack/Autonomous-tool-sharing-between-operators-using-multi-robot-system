@@ -23,6 +23,52 @@ static const std::vector<CRadians> PROX_ANGLE {
 /****************************************/
 /****************************************/
 
+// Code modified from https://www.tutorialspoint.com/Check-if-two-line-segments-intersect
+bool onLine(CVector2 start, CVector2 end, CVector2 point/* line l1, Point p */) {   //check whether p is on the line or not
+   if(point.GetX() <= std::max(start.GetX(), end.GetX()) && point.GetX() <= std::min(start.GetX(), end.GetX()) &&
+      (point.GetY() <= std::max(start.GetY(), end.GetY()) && point.GetY() <= std::min(start.GetY(), end.GetY())))
+      return true;
+   
+   return false;
+}
+
+int direction(CVector2 a, CVector2 b, CVector2 c) {
+   int val = (b.GetY()-a.GetY())*(c.GetX()-b.GetX())-(b.GetX()-a.GetX())*(c.GetY()-b.GetY());
+   if (val == 0)
+      return 0;     //colinear
+   else if(val < 0)
+      return 2;    //anti-clockwise direction
+      return 1;    //clockwise direction
+}
+
+bool isIntersect(CVector2 move, CVector2 start, CVector2 end) {
+   //four direction for two lines and points of other line
+   int dir1 = direction(CVector2(), move, start);
+   int dir2 = direction(CVector2(), move, end);
+   int dir3 = direction(start, end, CVector2());
+   int dir4 = direction(start, end, move);
+   
+   if(dir1 != dir2 && dir3 != dir4)
+      return true; //they are intersecting
+
+   if(dir1==0 && onLine(CVector2(), move, start)) //when p2 of line2 are on the line1
+      return true;
+
+   if(dir2==0 && onLine(CVector2(), move, end)) //when p1 of line2 are on the line1
+      return true;
+
+   if(dir3==0 && onLine(start, end, CVector2())) //when p2 of line1 are on the line2
+      return true;
+
+   if(dir4==0 && onLine(start, end, move)) //when p1 of line1 are on the line2
+      return true;
+         
+   return false;
+}
+
+/****************************************/
+/****************************************/
+
 void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
    try {
       TurningMechanism = NO_TURN;
@@ -179,11 +225,13 @@ void CFollower::Init(TConfigurationNode& t_node) {
 
     /* Register controllable events */
     sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
+    sct->add_callback(this, EV_moveTeam,  &CFollower::Callback_MoveTeam,  NULL, NULL);
     sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    sct->add_callback(this, EV_taskStart, &CFollower::Callback_TaskBegin, NULL, NULL);
+    sct->add_callback(this, EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
     sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
     sct->add_callback(this, EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
     sct->add_callback(this, EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
+    sct->add_callback(this, EV_switchT,   &CFollower::Callback_SwitchT,   NULL, NULL);
     sct->add_callback(this, EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
     sct->add_callback(this, EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
     sct->add_callback(this, EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
@@ -210,6 +258,11 @@ void CFollower::Init(TConfigurationNode& t_node) {
     sct->add_callback(this, EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
     sct->add_callback(this, EV__message,  NULL, &CFollower::Check__Message,  NULL);
     sct->add_callback(this, EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
+    sct->add_callback(this, EV__exchange, NULL, &CFollower::Check__Exchange, NULL);
+    sct->add_callback(this, EV_chosen,    NULL, &CFollower::Check_Chosen,    NULL);
+    sct->add_callback(this, EV_notChosen, NULL, &CFollower::Check_NotChosen, NULL);
+    sct->add_callback(this, EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
+    sct->add_callback(this, EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
 
     /*
     * Init PID Controller
@@ -620,11 +673,14 @@ void CFollower::GetMessages() {
             msg.leaderSignal = tMsgs[i].Data[index++];
 
             /* Leader Team Switch Signal */
-            std::string switchID;
-            switchID += (char)tMsgs[i].Data[index++];            // First char of ID
-            switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
-            msg.robotToSwitch = switchID;
-            msg.teamToJoin = tMsgs[i].Data[index++];
+            if(tMsgs[i].Data[index] != 255) {
+                std::string switchID;
+                switchID += (char)tMsgs[i].Data[index++];            // First char of ID
+                switchID += std::to_string(tMsgs[i].Data[index++]);  // ID number
+                msg.robotToSwitch = switchID;
+                msg.teamToJoin = tMsgs[i].Data[index++];
+            } else
+                index += 3;
 
             /* Hops */
             UInt8 msg_num = tMsgs[i].Data[index++];
@@ -685,22 +741,20 @@ void CFollower::GetMessages() {
             
             /* Shared Message */
             std::string robotID;
-            if(tMsgs[i].Data[index] == 255) {
-                index += 2;
-            } else {
+            if(tMsgs[i].Data[index] != 255) {
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 msg.shareToLeader = robotID;
-            }
-            
-            if(tMsgs[i].Data[index] == 255) {
+            } else
                 index += 2;
-            } else {
+            
+            if(tMsgs[i].Data[index] != 255) {
                 robotID = "";
                 robotID += (char)tMsgs[i].Data[index++];            // First char of ID
                 robotID += std::to_string(tMsgs[i].Data[index++]);  // ID number
                 msg.shareToTeam = robotID;
-            }
+            } else
+                index += 2;
 
             msg.shareDist = tMsgs[i].Data[index++];
 
@@ -842,10 +896,6 @@ void CFollower::Update() {
         SetCMsgsToRelay();
         SetLeaderMsgToRelay(currentState);
 
-        /* Check if it has been chosen by the leader to switch to the other team */
-        if(robotToSwitch == this->GetId())
-            std::cerr << this->GetId() << ": Chosen to switch teams" << std::endl;
-        
     } else if(currentState == RobotState::CONNECTOR) {
 
         // TODO: Check if connections with connectors are all present
@@ -1519,32 +1569,77 @@ void CFollower::Flock() {
 /****************************************/
 
 void CFollower::Travel() {
+
+    /* Sort connectors according to the hop count towards the target team (large -> small) */
+    auto property = teamToJoin;
+    auto sortRuleLambda = [property] (Message& m1, Message& m2) -> bool
+    {
+        return m1.hops[property].count > m2.hops[property].count;
+    };
+
+    std::vector<Message> sortedConnectorMsgs(connectorMsgs);
+    std::sort(sortedConnectorMsgs.begin(), sortedConnectorMsgs.end(), sortRuleLambda);
+
+    for(auto& msg : sortedConnectorMsgs) {
+        std::cout << msg.hops[teamToJoin].count << std::endl;
+    }
+
     /* Find the next connector to move towards */
     Message nextConnector;
-    for(const auto& msg : connectorMsgs) {
+    for(auto& msg : sortedConnectorMsgs) {
         if(nextConnector.Empty())
             nextConnector = msg;
         else {
-            /* Choose the connector with the smallest ID */
-            int currentID = stoi(nextConnector.ID.substr(1));
-            int newID = stoi(msg.ID.substr(1));
+            // Calculate move
+            CVector2 margin = msg.direction;
+            margin.Rotate(CRadians::PI_OVER_TWO);
+            margin.Normalize();
+            margin *= 20;
+            CVector2 target = msg.direction + margin;
 
-            if(this->GetId() == "F1") {
-                if(newID < currentID) {
-                    nextConnector = msg;
+            // For each hops
+                // Calculate line between other connector
+                // Check isIntersect
+                // If not intersect, update nextConnector
+
+            bool noIntersection = true;
+            for(const auto& hop : msg.hops) {
+                // CVector2 line = msg.direction - hop.second.
+                
+                // Get ID
+                // Search for the ID in connectorMsgs and get direction
+                // Calculate line
+
+                std::string id = hop.second.ID;
+                CVector2 otherConnectorVec = CVector2();
+                for(const auto& hopMsg : connectorMsgs) {
+                    if(hopMsg.ID == id)
+                        otherConnectorVec = hopMsg.direction;
                 }
-            } else if(this->GetId() == "F6") {
-                if(newID > currentID) {
-                    nextConnector = msg;
+
+                if(otherConnectorVec.Length() == 0.0f) {
+                    // No intersection
+                    std::cout << "No intersection (Not found)" << std::endl;
+                } else {
+                    std::cout << "Target: " << target << std::endl;
+                    std::cout << "Start: " << msg.direction << std::endl;
+                    std::cout << "End: " << otherConnectorVec << std::endl;
+
+                    if(isIntersect(target, msg.direction, otherConnectorVec)) {
+                        // Intersects
+                        std::cout << "Intersect" << std::endl;
+                        noIntersection = false;
+                    } else {
+                        // NO intersection
+                        std::cout << "No intersection" << std::endl;
+                    }
                 }
             }
+
+            if(noIntersection)
+                nextConnector = msg;
         }
     }
-
-    // for(const auto& msg : otherLeaderMsgs) {
-    //     if(msg.ID == "L2")
-    //         nextConnector = msg;
-    // }
 
     std::cout << "Next connector: " << nextConnector.ID << std::endl;
 
@@ -1779,8 +1874,8 @@ void CFollower::PrintName() {
 
 /* Callback functions (Controllable events) */
 
-void CFollower::Callback_TaskBegin(void* data) {
-    //std::cout << "Action: taskBegin" << std::endl;
+void CFollower::Callback_TaskStart(void* data) {
+    //std::cout << "Action: taskStart" << std::endl;
     performingTask = true;
 }
 
@@ -1795,13 +1890,19 @@ void CFollower::Callback_MoveFlock(void* data) {
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
+void CFollower::Callback_MoveTeam(void* data) {
+    //std::cout << "Action: moveTeam" << std::endl;
+    currentMoveType = MoveType::TRAVEL;
+    currentRequest = ConnectionMsg(); // Clear any existing requests
+}
+
 void CFollower::Callback_MoveStop(void* data) {
     //std::cout << "Action: moveStop" << std::endl;
     currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_SwitchF(void* data) {
-    //std::cout << "Action: setF" << std::endl;
+    //std::cout << "Action: switchF" << std::endl;
 
     /* Set new teamID */
     for(const auto& hop : hopsDict) {
@@ -1816,7 +1917,7 @@ void CFollower::Callback_SwitchF(void* data) {
 }
 
 void CFollower::Callback_SwitchC(void* data) {
-    //std::cout << "Action: setC" << std::endl;
+    //std::cout << "Action: switchC" << std::endl;
     
     if(currentAccept.from[0] == 'L') {  // Accept received from the leader
 
@@ -1859,8 +1960,20 @@ void CFollower::Callback_SwitchC(void* data) {
     setCTriggered = true;
 }
 
+void CFollower::Callback_SwitchT(void* data) {
+    //std::cout << "Action: switchT" << std::endl;
+
+    /* Reset variables */
+    shareToLeader = "";
+    shareToTeam = "";
+    shareDist = 255;
+
+    currentState = RobotState::TRAVELER;
+    teamID = 255;
+}
+
 void CFollower::Callback_RequestL(void* data) {
-    //std::cout << "Action: sendReqL" << std::endl;
+    //std::cout << "Action: RequestL" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1876,7 +1989,7 @@ void CFollower::Callback_RequestL(void* data) {
 }
 
 void CFollower::Callback_RequestC(void* data) {
-    //std::cout << "Action: sendReqC" << std::endl;
+    //std::cout << "Action: RequestC" << std::endl;
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -1892,7 +2005,7 @@ void CFollower::Callback_RequestC(void* data) {
 }
 
 void CFollower::Callback_Respond(void* data) {
-    //std::cout << "Action: sendReply" << std::endl;
+    //std::cout << "Action: Respond" << std::endl;
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
@@ -1909,7 +2022,7 @@ void CFollower::Callback_Respond(void* data) {
 }
 
 void CFollower::Callback_Relay(void* data) {
-    //std::cout << "Action: relayMsg" << std::endl;
+    //std::cout << "Action: relay" << std::endl;
 
     for(const auto& info : lastBeat) {
         if(info.second.second != 'N')
@@ -1924,19 +2037,19 @@ void CFollower::Callback_Relay(void* data) {
 
 unsigned char CFollower::Check__Start(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 1) {
-        //std::cout << "Event: " << 1 << " - _sendBegin" << std::endl;
+        //std::cout << "Event: " << 1 << " - _start" << std::endl;
         return 1;
     }
-    //std::cout << "Event: " << 0 << " - _sendBegin" << std::endl;
+    //std::cout << "Event: " << 0 << " - _start" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check__Stop(void* data) {
     if( !leaderMsg.Empty() && leaderMsg.leaderSignal == 0) {
-        //std::cout << "Event: " << 1 << " - _sendStop" << std::endl;
+        //std::cout << "Event: " << 1 << " - _stop" << std::endl;
         return 1;
     }
-    //std::cout << "Event: " << 0 << " - _sendStop" << std::endl;
+    //std::cout << "Event: " << 0 << " - _stop" << std::endl;
     return 0;
 }
 
@@ -2023,44 +2136,74 @@ unsigned char CFollower::Check_NotCondF2(void* data) {
 }
 
 unsigned char CFollower::Check__RequestC(void* data) {
-    //std::cout << "Event: " << receivedReqC << " - _sendReqC" << std::endl;
+    //std::cout << "Event: " << receivedReqC << " - _requestC" << std::endl;
     return receivedReqC;
 }
 
 unsigned char CFollower::Check__Respond(void* data) {
-    //std::cout << "Event: " << (receivedAccept || receivedReject) << " - _sendReply" << std::endl;
+    // std::cout << "Event: " << (receivedAccept || receivedReject) << " - _respond" << std::endl;
     return receivedAccept || receivedReject;
 }
 
 unsigned char CFollower::Check_Accept(void* data) {
-    //std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
+    // std::cout << "Event: " << receivedAccept << " - accept" << std::endl;
     return receivedAccept;
 }
 
 unsigned char CFollower::Check_Reject(void* data) {
-    //std::cout << "Event: " << receivedReject << " - reject" << std::endl;
+    // std::cout << "Event: " << receivedReject << " - reject" << std::endl;
     return receivedReject;
 }
 
 unsigned char CFollower::Check__Message(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'L') {
-            //std::cout << "Event: " << 1 << " - _sendMsg" << std::endl;
+            //std::cout << "Event: " << 1 << " - _message" << std::endl;
             return 1;
         }
     }
-    //std::cout << "Event: " << 0 << " - _sendMsg" << std::endl;
+    //std::cout << "Event: " << 0 << " - _message" << std::endl;
     return 0;
 }
 
 unsigned char CFollower::Check__Relay(void* data) {
     for(const auto& info : lastBeat) {
         if(info.second.second == 'F') {
-            //std::cout << "Event: " << 1 << " - _relayMsg" << std::endl;
+            //std::cout << "Event: " << 1 << " - _relay" << std::endl;
             return 1;
         }
     }
-    //std::cout << "Event: " << 0 << " - _relayMsg" << std::endl;
+    //std::cout << "Event: " << 0 << " - _relay" << std::endl;
+    return 0;
+}
+
+unsigned char CFollower::Check__Exchange(void* data) {
+    bool receivedExchange = !robotToSwitch.empty();
+    // std::cout << "Event: " << receivedExchange << " - _exchange" << std::endl;
+    return receivedExchange;
+}
+
+unsigned char CFollower::Check_Chosen(void* data) {
+    bool chosen = robotToSwitch == this->GetId();
+    // std::cout << "Event: " << chosen << " - chosen" << std::endl;
+    return chosen;
+}
+
+unsigned char CFollower::Check_NotChosen(void* data) {
+    bool chosen = robotToSwitch == this->GetId();
+    // std::cout << "Event: " << !chosen << " - notChosen" << std::endl;
+    return !chosen;
+}
+
+unsigned char CFollower::Check_NearLF(void* data) {
+    // bool connectorSeen = !connectorMsgs.empty();
+    //std::cout << "Event: " << 0 << " - nearLF" << std::endl;
+    return 0;
+}
+
+unsigned char CFollower::Check_NotNearLF(void* data) {
+    // bool connectorSeen = !connectorMsgs.empty();
+    //std::cout << "Event: " << 0 << " - notNearLF" << std::endl;
     return 0;
 }
 
