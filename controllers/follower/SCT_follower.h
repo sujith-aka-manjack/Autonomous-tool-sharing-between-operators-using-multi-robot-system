@@ -1,93 +1,16 @@
-#ifndef SCT_H
-#define SCT_H
+#ifndef SCT_FOLLOWER_H
+#define SCT_FOLLOWER_H
 
 #include <stdlib.h>
 #include <ctime>
 #include <queue>
-#include <unordered_map>
+#include <map>
 #include <functional>
 #include <iostream>
 
 #include <argos3/core/utility/math/rng.h>
 
-/* Supervisor Info */
-#define NUM_EVENTS 37
-#define NUM_SUPERVISORS 12
-
-/* Event Info */
-#define EV_moveStop 0
-
-#define EV_requestC 1
-
-#define EV_switchC 2
-
-#define EV_taskStart 3
-
-#define EV_relay 4
-
-#define EV_moveTeam 5
-
-#define EV_requestL 6
-
-#define EV_switchT 7
-
-#define EV_respond 8
-
-#define EV_taskStop 9
-
-#define EV_switchF 10
-
-#define EV_moveFlock 11
-
-#define EV_nearC 12
-
-#define EV_notNearC 13
-
-#define EV_notCondC1 14
-
-#define EV_condC1 15
-
-#define EV_notCondC2 16
-
-#define EV_condC2 17
-
-#define EV_notCondC3 18
-
-#define EV_condC3 19
-
-#define EV_notCondF1 20
-
-#define EV_condF1 21
-
-#define EV_condF2 22
-
-#define EV_notCondF2 23
-
-#define EV_accept 24
-
-#define EV__respond 25
-
-#define EV_reject 26
-
-#define EV__relay 27
-
-#define EV__message 28
-
-#define EV__requestC 29
-
-#define EV__start 30
-
-#define EV__stop 31
-
-#define EV_notChosen 32
-
-#define EV_nearLF 33
-
-#define EV__exchange 34
-
-#define EV_chosen 35
-
-#define EV_notNearLF 36
+namespace follower{
 
 /* Structure to store member functions */
 struct Scallback {
@@ -144,6 +67,49 @@ public:
 
     virtual std::string get_current_state_string();
 
+        /* Supervisor Info */
+    const static unsigned char NUM_EVENTS = 37;
+    const static unsigned char NUM_SUPERVISORS = 12;
+
+    /* Event Info */
+    const static unsigned char EV_moveStop = 0;
+    const static unsigned char EV_requestC = 1;
+    const static unsigned char EV_switchC = 2;
+    const static unsigned char EV_taskStart = 3;
+    const static unsigned char EV_relay = 4;
+    const static unsigned char EV_moveTeam = 5;
+    const static unsigned char EV_requestL = 6;
+    const static unsigned char EV_switchT = 7;
+    const static unsigned char EV_respond = 8;
+    const static unsigned char EV_taskStop = 9;
+    const static unsigned char EV_switchF = 10;
+    const static unsigned char EV_moveFlock = 11;
+    const static unsigned char EV_nearC = 12;
+    const static unsigned char EV_notNearC = 13;
+    const static unsigned char EV_notCondC1 = 14;
+    const static unsigned char EV_condC1 = 15;
+    const static unsigned char EV_notCondC2 = 16;
+    const static unsigned char EV_condC2 = 17;
+    const static unsigned char EV_notCondC3 = 18;
+    const static unsigned char EV_condC3 = 19;
+    const static unsigned char EV_notCondF1 = 20;
+    const static unsigned char EV_condF1 = 21;
+    const static unsigned char EV_condF2 = 22;
+    const static unsigned char EV_notCondF2 = 23;
+    const static unsigned char EV_accept = 24;
+    const static unsigned char EV__respond = 25;
+    const static unsigned char EV_reject = 26;
+    const static unsigned char EV__relay = 27;
+    const static unsigned char EV__message = 28;
+    const static unsigned char EV__requestC = 29;
+    const static unsigned char EV__start = 30;
+    const static unsigned char EV__stop = 31;
+    const static unsigned char EV_notChosen = 32;
+    const static unsigned char EV_nearLF = 33;
+    const static unsigned char EV__exchange = 34;
+    const static unsigned char EV_chosen = 35;
+    const static unsigned char EV_notNearLF = 36;
+
 protected:
 
     /* Return whether an uncontrollable event has occured */
@@ -171,7 +137,7 @@ protected:
     virtual unsigned char get_active_controllable_events( unsigned char *events );
 
     /* Map of callback functions */
-    std::unordered_map<unsigned char, Scallback> callback;
+    std::map<unsigned char, Scallback> callback;
 
     /* Buffer to record the occurances of uncontrollable events */
     std::queue<unsigned char> input_buffer;
@@ -221,5 +187,7 @@ protected:
     const unsigned char     ev_shared[37] = { 0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,0,0,1,0,0 };
 
 };
+
+}
 
 #endif

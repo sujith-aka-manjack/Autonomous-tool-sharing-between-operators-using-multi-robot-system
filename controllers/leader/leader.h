@@ -35,7 +35,7 @@
 /* Definition of the positioning sensor */
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
-#include "SCT.h"
+#include "SCT_leader.h"
 #include <utility/pid.h>
 
 /*
@@ -402,6 +402,20 @@ protected:
     */
     void PrintName();
 
+    /* Callback functions */
+    virtual void Callback_Start(void* data);
+    virtual void Callback_Stop(void* data);
+    virtual void Callback_Message(void* data);
+    virtual void Callback_Respond(void* data);
+    virtual void Callback_Exchange(void* data);
+
+    virtual unsigned char Check__Message(void* data);
+    virtual unsigned char Check__Relay(void* data);
+    virtual unsigned char Check__RequestL(void* data);
+    virtual unsigned char Check_PressStart(void* data);
+    virtual unsigned char Check_PressStop(void* data);
+    virtual unsigned char Check_SendMessage(void* data);
+
 private:
 
     /* Pointer to the differential steering actuator */
@@ -423,6 +437,9 @@ private:
     SWaypointTrackingParams m_sWaypointTrackingParams;
     /* The flocking interaction parameters between teammates. */
     SFlockingInteractionParams m_sTeamFlockingParams;
+
+    /* Controller */
+    leader::SCTPub* sct;
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;
@@ -490,6 +507,11 @@ private:
     size_t numRobotsToSend;
     std::string robotToSwitch;
     UInt8 teamToJoin;
+
+    /* Flag to indicate trigerring of uncontrollable events */
+    bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;
+
+    std::string acceptID;
 
     /*
     * The following variables are used as parameters for the

@@ -23,6 +23,7 @@ static const std::vector<CRadians> PROX_ANGLE {
 /****************************************/
 /****************************************/
 
+// Find whether two lines intersect
 // Code modified from https://www.tutorialspoint.com/Check-if-two-line-segments-intersect
 bool onLine(CVector2 start, CVector2 end, CVector2 point/* line l1, Point p */) {   //check whether p is on the line or not
    if(point.GetX() <= std::max(start.GetX(), end.GetX()) && point.GetX() <= std::min(start.GetX(), end.GetX()) &&
@@ -221,48 +222,48 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    sct = new SCTPub();
+    sct = new follower::SCTPub();
 
     /* Register controllable events */
-    sct->add_callback(this, EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
-    sct->add_callback(this, EV_moveTeam,  &CFollower::Callback_MoveTeam,  NULL, NULL);
-    sct->add_callback(this, EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    sct->add_callback(this, EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
-    sct->add_callback(this, EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
-    sct->add_callback(this, EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
-    sct->add_callback(this, EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
-    sct->add_callback(this, EV_switchT,   &CFollower::Callback_SwitchT,   NULL, NULL);
-    sct->add_callback(this, EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
-    sct->add_callback(this, EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
-    sct->add_callback(this, EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
-    sct->add_callback(this, EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_moveTeam,  &CFollower::Callback_MoveTeam,  NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_switchT,   &CFollower::Callback_SwitchT,   NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
+    sct->add_callback(this, follower::SCT::EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
     
     /* Register uncontrollable events */
-    sct->add_callback(this, EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
-    sct->add_callback(this, EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
-    sct->add_callback(this, EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
-    sct->add_callback(this, EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-    sct->add_callback(this, EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-    sct->add_callback(this, EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
-    sct->add_callback(this, EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
-    sct->add_callback(this, EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
-    sct->add_callback(this, EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
-    sct->add_callback(this, EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
-    sct->add_callback(this, EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
-    sct->add_callback(this, EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
-    sct->add_callback(this, EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
-    sct->add_callback(this, EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
-    sct->add_callback(this, EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
-    sct->add_callback(this, EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
-    sct->add_callback(this, EV__start,    NULL, &CFollower::Check__Start,    NULL);
-    sct->add_callback(this, EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
-    sct->add_callback(this, EV__message,  NULL, &CFollower::Check__Message,  NULL);
-    sct->add_callback(this, EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
-    sct->add_callback(this, EV__exchange, NULL, &CFollower::Check__Exchange, NULL);
-    sct->add_callback(this, EV_chosen,    NULL, &CFollower::Check_Chosen,    NULL);
-    sct->add_callback(this, EV_notChosen, NULL, &CFollower::Check_NotChosen, NULL);
-    sct->add_callback(this, EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
-    sct->add_callback(this, EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
+    sct->add_callback(this, follower::SCT::EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
+    sct->add_callback(this, follower::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
+    sct->add_callback(this, follower::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+    sct->add_callback(this, follower::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
+    sct->add_callback(this, follower::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
+    sct->add_callback(this, follower::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
+    sct->add_callback(this, follower::SCT::EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
+    sct->add_callback(this, follower::SCT::EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
+    sct->add_callback(this, follower::SCT::EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
+    sct->add_callback(this, follower::SCT::EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
+    sct->add_callback(this, follower::SCT::EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
+    sct->add_callback(this, follower::SCT::EV__start,    NULL, &CFollower::Check__Start,    NULL);
+    sct->add_callback(this, follower::SCT::EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
+    sct->add_callback(this, follower::SCT::EV__message,  NULL, &CFollower::Check__Message,  NULL);
+    sct->add_callback(this, follower::SCT::EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
+    sct->add_callback(this, follower::SCT::EV__exchange, NULL, &CFollower::Check__Exchange, NULL);
+    sct->add_callback(this, follower::SCT::EV_chosen,    NULL, &CFollower::Check_Chosen,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notChosen, NULL, &CFollower::Check_NotChosen, NULL);
+    sct->add_callback(this, follower::SCT::EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
+    sct->add_callback(this, follower::SCT::EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
 
     /*
     * Init PID Controller
@@ -332,7 +333,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    //std::cout << "\n---------- " << id << " ----------" << std::endl;
+    // std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -395,7 +396,6 @@ void CFollower::ControlStep() {
         sct->run_step();    // Run the supervisor to get the next action
 
     // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
-    //std::cout << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -1014,9 +1014,11 @@ void CFollower::Update() {
         /* Check whether it has reached the other team */
         for(const auto& msg : combinedMsgs) {
             if(msg.teamID == teamToJoin) {
-                nearLF = true;
-                std::cout << "TEAM FOUND!" << std::endl;
-                break;
+                if(msg.direction.Length() < 50) {
+                    nearLF = true;
+                    std::cout << "TEAM FOUND!" << std::endl;
+                    break;
+                }
             }
         }
 

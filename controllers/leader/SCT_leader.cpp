@@ -1,4 +1,6 @@
-#include "SCT.h"
+#include "SCT_leader.h"
+
+using namespace leader;
 
 /****************************************/
 /*                 SCT                  */

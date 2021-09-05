@@ -1,18 +1,14 @@
-#include "SCT.h"
+#include "SCT_follower.h"
+
+using namespace follower;
 
 /****************************************/
 /*                 SCT                  */
 /****************************************/
 
 SCT::SCT(){
-    unsigned char i;
-    for(i=0; i<NUM_EVENTS; i++){
-        callback[i].callback    = NULL;
-        callback[i].check_input = NULL;
-        callback[i].data        = NULL;
-    }
-
-    std::srand(std::time(nullptr));
+    /* Create a new RNG */
+    m_pcRNG = argos::CRandom::CreateRNG("argos");
 }
 
 SCT::~SCT(){}
@@ -32,6 +28,20 @@ void SCT::run_step(){
         make_transition( event );
         exec_callback( event );
     }
+}
+
+std::string SCT::get_current_state_string() {
+    std::ostringstream stream;
+    stream.str("");
+    stream << "sup:[";
+    for(size_t i = 0; i < NUM_SUPERVISORS; i++) {
+        stream << (int) sup_current_state[i];
+        if(i < NUM_SUPERVISORS - 1)
+            stream << ",";
+    }
+    stream << "]";
+    // stream << " " << m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) << std::endl;
+    return stream.str();
 }
 
 unsigned char SCT::input_read( unsigned char ev ){
@@ -111,7 +121,7 @@ unsigned char SCT::get_next_controllable( unsigned char *event ){
     count_actives = get_active_controllable_events( events );
 
     if( count_actives ){                        /* If at least one event is enabled do */
-        random_pos = rand() % count_actives;    /* Pick a random index (event) */
+        random_pos = m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) % count_actives;    /* Pick a random index (event) */
         for(i=0; i<NUM_EVENTS; i++){
             if( !random_pos && events[i] ){
                 *event = i;
@@ -180,110 +190,6 @@ unsigned char SCT::get_active_controllable_events( unsigned char *events ){
 }
 
 /****************************************/
-/*               SCTProb                */
-/****************************************/
-
-SCTProb::SCTProb(){}
-
-SCTProb::~SCTProb(){}
-
-void SCTProb::set_event_prob( unsigned char supervisor, unsigned long int state, unsigned char event, float prob ) {
-
-}
-
-unsigned long int SCTProb::get_state_position_prob( unsigned char supervisor, unsigned long int state ) {
-    unsigned long int s, en;
-    unsigned long int prob_position = sup_data_prob_pos[ supervisor ];  /* Jump to the start position of the supervisor */
-    for(s=0; s<state; s++){                                             /* Keep iterating until the state is reached */
-        en            =  sup_data_prob[prob_position];                  /* The number of probabilities in the state */
-        prob_position += en + 1;                                        /* Next event's probability position */
-    }
-    return prob_position;
-}
-
-unsigned char SCTProb::get_next_controllable( unsigned char *event ) {
-    float events[NUM_EVENTS], random_value, random_sum = 0;
-    unsigned long i;
-    float prob_sum = get_active_controllable_events_prob( events );
-    if( prob_sum > 0.0001 ){                /* If at least one event is enabled do */
-        random_value = (float) rand() / RAND_MAX * prob_sum;   /* Pick a random index (event) */
-        for(i=0; i<NUM_EVENTS; i++){
-            random_sum += events[i];        /* Add probability of each event until the random value is reached */
-            if( (random_value < random_sum) && ev_controllable[ i ] ){
-                *event = i;
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-
-float SCTProb::get_active_controllable_events_prob( float *events ) {
-    unsigned char i,j;
-    float prob_sum = 0;
-
-    /* Disable all non controllable events */
-    for( i=0; i<NUM_EVENTS; i++ ){
-        if( ev_controllable[i] ){
-            events[i] = 1.0;
-        } else {
-            events[i] = 0;
-        }
-    }
-
-    /* Check if a controllable event is disabled in any of the supervisors */
-    for( i=0; i<NUM_SUPERVISORS; i++ ){
-        unsigned long int position;
-        unsigned char num_transitions;
-        unsigned char ev_disable[NUM_EVENTS];
-        unsigned long int position_prob;
-
-        for( j=0; j<NUM_EVENTS; j++ ){
-            if( sup_events[i][j] ){
-                ev_disable[j] = 1;  /* Unless this event has a transition in the current state, this event will be disabled*/
-
-            } else {
-                ev_disable[j] = 0;  /* If supervisor don't have this event, it can't disable the event*/
-            }
-        }
-
-        /* Get current state and transition probabilities */
-        position        = get_state_position(i, sup_current_state[i]);
-        position_prob   = get_state_position_prob(i, sup_current_state[i]);
-        num_transitions = sup_data[position];
-        position++;
-        position_prob++;
-
-        /* Enable all events that have a transition from the current state */
-        while(num_transitions--){
-            unsigned char event = sup_data[position];
-
-            /* Check if the event is controllable and exists in this supervisor */
-            if( ev_controllable[ event ] && sup_events[i][ event ] ){
-                ev_disable[ event ] = 0;
-                events[ event ] *= sup_data_prob[position_prob];    /* Cumulatively multiply the event's probability from all supervisors */
-                position_prob++;
-            }
-            position += 3;
-        }
-
-        /* Remove the controllable events to disable, leaving a list of enabled controllable events */
-        for( j=0; j<NUM_EVENTS; j++ ){
-            if( ev_disable[j] == 1 ){
-                events[ j ] = 0;
-            }
-        }
-    }
-
-    /* Sum the probabilities */
-    for( j=0; j<NUM_EVENTS; j++ ){
-        prob_sum += events[ j ];
-    }
-
-    return prob_sum;
-}
-
-/****************************************/
 /*                SCTPub                */
 /****************************************/
 
@@ -337,11 +243,3 @@ unsigned char SCTPub::get_next_uncontrollable_pub( unsigned char *event ){
     }
     return 0;
 }
-
-/****************************************/
-/*              SCTProbPub              */
-/****************************************/
-
-SCTProbPub::SCTProbPub(){}
-
-SCTProbPub::~SCTProbPub(){}

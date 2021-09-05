@@ -1,8 +1,8 @@
 add_library(follower SHARED 
   follower.h 
   follower.cpp 
-  SCT.h 
-  SCT.cpp)
+  SCT_follower.h 
+  SCT_follower.cpp)
 target_link_libraries(follower
   utility
   argos3core_simulator

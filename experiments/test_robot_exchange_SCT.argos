@@ -18,6 +18,37 @@
 
     <!-- Controllers that use SCT -->
 
+    <leader_controller id="el"
+                                        library="build/controllers/leader/libleader.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <positioning implementation="default" />
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="8" />
+        <waypoint_tracking target_angle="0"
+                           kp="10"
+                           ki="0"
+                           kd="0" 
+                           thres_range="0.1" />
+        <team_flocking target_distance="15"
+                       gain="1000"
+                       exponent="2" />
+        <team_distance min_leader_robot_distance="75"
+                       separation_threshold="50" />
+        <timeout send_message="4" />
+      </params>
+    </leader_controller>
+
     <follower_controller id="ef"
                                         library="build/controllers/follower/libfollower.so">
       <actuators>
@@ -54,37 +85,6 @@
     </follower_controller>
 
     <!-- Controllers that do NOT use SCT -->
-
-    <leader_controller id="el"
-                                        library="build/controllers/leader/libleader.so">
-      <actuators>
-        <differential_steering implementation="default" />
-        <range_and_bearing implementation="default" />
-        <leds implementation="default" medium="leds" />
-      </actuators>
-      <sensors>
-        <proximity implementation="default" show_rays="true" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
-        <positioning implementation="default" />
-      </sensors>
-      <params>
-        <wheel_turning hard_turn_angle_threshold="90"
-                       soft_turn_angle_threshold="70"
-                       no_turn_angle_threshold="10"
-                       max_speed="8" />
-        <waypoint_tracking target_angle="0"
-                           kp="10"
-                           ki="0"
-                           kd="0" 
-                           thres_range="0.1" />
-        <team_flocking target_distance="15"
-                       gain="1000"
-                       exponent="2" />
-        <team_distance min_leader_robot_distance="75"
-                       separation_threshold="50" />
-        <timeout send_message="4" />
-      </params>
-    </leader_controller>
 
   </controllers>
 

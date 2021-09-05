@@ -113,7 +113,8 @@ CLeader::CLeader() :
     m_bSelected(false),
     m_bSignal(false),
     PIDHeading(NULL),
-    nearRobot(false) {}
+    nearRobot(false),
+    sct(NULL) {}
 
 /****************************************/
 /****************************************/
@@ -162,6 +163,26 @@ void CLeader::Init(TConfigurationNode& t_node) {
     switchCandidate = "";
     notDecremented = true;
 
+    /*
+    * Init SCT Controller
+    */
+    sct = new leader::SCTPub();
+
+    // /* Register controllable events */
+    sct->add_callback(this, leader::SCT::EV_start,    &CLeader::Callback_Start,    NULL, NULL);
+    sct->add_callback(this, leader::SCT::EV_stop,     &CLeader::Callback_Stop,     NULL, NULL);
+    sct->add_callback(this, leader::SCT::EV_message,  &CLeader::Callback_Message,  NULL, NULL);
+    sct->add_callback(this, leader::SCT::EV_respond,  &CLeader::Callback_Respond,  NULL, NULL);
+    sct->add_callback(this, leader::SCT::EV_exchange, &CLeader::Callback_Exchange, NULL, NULL);
+
+    /* Register uncontrollable events */
+    sct->add_callback(this, leader::SCT::EV__message,    NULL, &CLeader::Check__Message,    NULL);
+    sct->add_callback(this, leader::SCT::EV__relay,      NULL, &CLeader::Check__Relay,      NULL);
+    sct->add_callback(this, leader::SCT::EV__requestL,   NULL, &CLeader::Check__RequestL,   NULL);
+    sct->add_callback(this, leader::SCT::EV_pressStart,  NULL, &CLeader::Check_PressStart,  NULL);
+    sct->add_callback(this, leader::SCT::EV_pressStop,   NULL, &CLeader::Check_PressStop,   NULL);
+    sct->add_callback(this, leader::SCT::EV_sendMessage, NULL, &CLeader::Check_SendMessage, NULL);
+
     /* Set LED color */
     m_pcLEDs->SetAllColors(teamColor[teamID]);
 
@@ -181,6 +202,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
 CLeader::~CLeader() {
     delete PIDHeading;
+    delete sct;
 }
 
 /****************************************/
@@ -204,7 +226,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    //std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     std::cout << "TIME: " << initStepTimer << std::endl;
@@ -229,6 +251,13 @@ void CLeader::ControlStep() {
 
     nearRobot = false;
 
+    receivedMessage = false;
+    receivedRelay = false;
+    receivedRequest = false;
+    inputMessage = false;
+
+    acceptID = "";
+
     // for(int i = 0; i < waypoints.size(); i++) {
     //     //std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
     // }
@@ -242,7 +271,21 @@ void CLeader::ControlStep() {
     /* Update sensor readings */
     /*------------------------*/
     Update();
+
+    /*--------------------*/
+    /* Run SCT controller */
+    /*--------------------*/
+    //std::cout << "--- Supervisors ---" << std::endl;
+
+    if(initStepTimer > 4)
+        sct->run_step();    // Run the supervisor to get the next action
     
+    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+
+    /*-----------------------------*/
+    /* Implement action to perform */
+    /*-----------------------------*/
+
     /* Set its state in msg */
     msg[msg_index++] = static_cast<UInt8>(currentState);
     /* Set sender ID in msg */
@@ -254,7 +297,31 @@ void CLeader::ControlStep() {
     /* Control */
     /*---------*/
 
-    if(initStepTimer > 2) {
+    /* Set ConnectionMsg to send during this timestep */
+    //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
+    for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
+        if(it->first > 0) {
+            cmsgToSend.push_back(it->second);
+            it->first--; // Decrement timer
+            ++it;
+        } else {
+            it = cmsgToResend.erase(it);
+        }
+    }
+
+    /* Set RelayMsg to send during this timestep */
+    //std::cout << "resend size: " << rmsgToResend.size() << std::endl;
+    for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
+        if(it->first > 0) {
+            rmsgToSend.push_back(it->second);
+            it->first--; // Decrement timer
+            ++it;
+        } else {
+            it = rmsgToResend.erase(it);
+        }
+    }
+
+    if(initStepTimer > 4) {
 
         /* Is the robot selected? */
         if(m_bSelected) {
@@ -348,7 +415,7 @@ void CLeader::ControlStep() {
     msg_index += 4; // Skip to next part
 
     /* Connection Message */
-    //std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
+    // std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
     msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
         msg[msg_index++] = (UInt8)conMsg.type;
@@ -413,6 +480,8 @@ void CLeader::ControlStep() {
     /* Reset task demand */
     currentTaskDemand = 0;
 
+    inputStart = false;
+    inputStop = false;
 }
 
 /****************************************/
@@ -442,7 +511,10 @@ void CLeader::SetControlVector(const CVector2& c_control) {
 /****************************************/
 
 void CLeader::SetSignal(const bool b_signal) {
-    m_bSignal = b_signal;
+    if(b_signal && !m_bSignal)
+        inputStart = true;
+    else if(!b_signal && m_bSignal)
+        inputStop = true;
 }
 
 /****************************************/
@@ -689,68 +761,6 @@ void CLeader::Update() {
     ReplyToRequest();
 
     CheckHeartBeat();
-
-    /* Signal a follower to switch to the other team */
-    if(numRobotsToSend > 0) {
-        if( !switchCandidate.empty() ) {
-
-            if(notDecremented) {
-                numRobotsToSend--;
-                notDecremented = false;
-            }
-
-            robotToSwitch = switchCandidate;
-
-            // TEMP: hard coded team to join (Assuming two teams)
-            if(teamID == 1)
-                teamToJoin = 2;
-            else if(teamID == 2)
-                teamToJoin = 1;
-
-            std::cerr << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
-        }
-    }
-
-    /* Set ConnectionMsg to send during this timestep */
-    //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
-    for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
-        if(it->first > 0) {
-            cmsgToSend.push_back(it->second);
-            it->first--; // Decrement timer
-            ++it;
-        } else {
-            it = cmsgToResend.erase(it);
-        }
-    }
-
-    /* Send a heart-beat message to the other leader every 10 timesteps */
-    if(initStepTimer > 0 && initStepTimer % 10 == 0) {
-        RelayMsg beat;
-        beat.type = 'H';
-        beat.from = this->GetId();
-        beat.time = initStepTimer;
-
-        if(initStepTimer == 800 && this->GetId() == "L2") {
-            beat.type = 'R';
-            beat.robot_num = 2;
-            std::cerr << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
-        }
-
-        rmsgToResend.push_back({sendDuration,beat});
-        lastSent = initStepTimer;
-    }
-
-    /* Set RelayMsg to send during this timestep */
-    //std::cout << "resend size: " << rmsgToResend.size() << std::endl;
-    for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
-        if(it->first > 0) {
-            rmsgToSend.push_back(it->second);
-            it->first--; // Decrement timer
-            ++it;
-        } else {
-            it = rmsgToResend.erase(it);
-        }
-    }
 }
 
 /****************************************/
@@ -799,37 +809,30 @@ void CLeader::ReplyToRequest() {
     if(cmsgToResend.empty() && shareToTeam.empty() && minDist > separationThres) { // Check if it has not recently sent an accept message, whether there is already a connector or not, and whether there is a robot near the other team
 
         /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
-        ConnectionMsg acceptTo;
-        acceptTo.type   = 'A';
-        acceptTo.from   = this->GetId();
-        acceptTo.toTeam = teamID;
-        
         for(const auto& teamMsg : teamMsgs) {
             for(const auto& cmsg : teamMsg.cmsg) {
 
                 if(cmsg.to == this->GetId() && cmsg.type == 'R') {
 
+                    receivedRequest = true;
+
+                    std::cout << "acceptID " << acceptID << std::endl;
+
                     /* Set the ID of the first follower request seen */
-                    if(acceptTo.to.empty()) {
-                        acceptTo.to = cmsg.from;
+                    if(acceptID.empty()) {
+                        acceptID = cmsg.from;
                         continue;
                     }
                     
-                    UInt8 currentFID = stoi(acceptTo.to.substr(1));
+                    UInt8 currentFID = stoi(acceptID.substr(1));
                     UInt8 newFID = stoi(cmsg.from.substr(1));
 
                     /* Send an accept message to the follower with the smallest ID */
                     if(newFID < currentFID)
-                        acceptTo.to = cmsg.from;
+                        acceptID = cmsg.from;
                 }
             }
         }
-
-        //std::cout << "acceptTo: " << acceptTo.to << std::endl;
-
-        /* Add accept message to be sent */
-        if( !acceptTo.to.empty() )
-            cmsgToResend.push_back({sendDuration,acceptTo});
     }
 }
 
@@ -898,6 +901,11 @@ void CLeader::CheckHeartBeat() {
                     lastBeatTime = beat.time;
                     // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                     // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+
+                    if(msg.state == RobotState::LEADER)
+                        receivedMessage = true;
+                    else
+                        receivedRelay = true;
 
                     notDecremented = true;
 
@@ -1133,6 +1141,115 @@ void CLeader::SetWheelSpeedsFromVectorHoming(const CVector2& c_heading) {
 
 void CLeader::PrintName() {
     //std::cout << "[" << this->GetId() << "] ";
+}
+
+/****************************************/
+/****************************************/
+
+/* Callback functions (Controllable events) */
+
+void CLeader::Callback_Start(void* data) {
+    //std::cout << "Action: start" << std::endl;
+    m_bSignal = true;
+}
+
+void CLeader::Callback_Stop(void* data) {
+    //std::cout << "Action: stop" << std::endl;
+    m_bSignal = false;
+}
+
+void CLeader::Callback_Message(void* data) {
+    std::cout << "Action: message" << std::endl;
+
+    /* Send a heart-beat message to the other leader every 10 timesteps */
+    RelayMsg beat;
+    beat.type = 'H';
+    beat.from = this->GetId();
+    beat.time = initStepTimer;
+
+    if(initStepTimer == 800 && this->GetId() == "L2") {
+        beat.type = 'R';
+        beat.robot_num = 2;
+        std::cerr << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+    }
+
+    rmsgToResend.push_back({sendDuration,beat});
+    lastSent = initStepTimer;
+}
+
+void CLeader::Callback_Respond(void* data) {
+    std::cout << "Action: respond" << std::endl;
+    std::cout << "to: " << acceptID << std::endl;
+
+
+    /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
+    ConnectionMsg acceptTo;
+    acceptTo.type   = 'A';
+    acceptTo.from   = this->GetId();
+    acceptTo.to     = acceptID;
+    acceptTo.toTeam = teamID;
+    cmsgToResend.push_back({sendDuration,acceptTo});
+}
+
+void CLeader::Callback_Exchange(void* data) {
+    //std::cout << "Action: exchange" << std::endl;
+
+    /* Signal a follower to switch to the other team */
+    if(numRobotsToSend > 0) {
+        if( !switchCandidate.empty() ) {
+
+            if(notDecremented) {
+                numRobotsToSend--;
+                notDecremented = false;
+            }
+
+            robotToSwitch = switchCandidate;
+
+            // TEMP: hard coded team to join (Assuming two teams)
+            if(teamID == 1)
+                teamToJoin = 2;
+            else if(teamID == 2)
+                teamToJoin = 1;
+
+            std::cerr << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
+        }
+    }
+}
+
+/****************************************/
+/****************************************/
+
+/* Callback functions (Uncontrollable events) */
+
+unsigned char CLeader::Check__Message(void* data) {
+    // std::cout << "Event: " << 0 << " - _message" << std::endl;
+    return receivedMessage;
+}
+
+unsigned char CLeader::Check__Relay(void* data) {
+    // std::cout << "Event: " << 0 << " - _relay" << std::endl;
+    return receivedRelay;
+}
+
+unsigned char CLeader::Check__RequestL(void* data) {
+    // std::cout << "Event: " << 0 << " - _requestL" << std::endl;
+    return receivedRequest;
+}
+
+unsigned char CLeader::Check_PressStart(void* data) {
+    // std::cout << "Event: " << 0 << " - pressStart" << std::endl;
+    return inputStart;
+}
+
+unsigned char CLeader::Check_PressStop(void* data) {
+    // std::cout << "Event: " << 0 << " - pressStop" << std::endl;
+    return inputStop;
+}
+
+unsigned char CLeader::Check_SendMessage(void* data) {
+    bool timeToSend = (initStepTimer > 0 && initStepTimer % 10 == 0);
+    std::cout << "Event: " << timeToSend << " - sendMessage" << std::endl;
+    return timeToSend;
 }
 
 /*

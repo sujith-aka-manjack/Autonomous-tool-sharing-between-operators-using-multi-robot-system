@@ -33,7 +33,7 @@
 /* Definition of the LEDs actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
-#include "SCT.h"
+#include "SCT_follower.h"
 #include <utility/pid.h>
 #include <set>
 
@@ -490,7 +490,7 @@ private:
     Real obstacleWeight;
 
     /* Controller */
-    SCTPub* sct;
+    follower::SCTPub* sct;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;

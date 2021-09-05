@@ -1,26 +1,16 @@
-#ifndef SCT_H
-#define SCT_H
+#ifndef SCT_LEADER_H
+#define SCT_LEADER_H
 
 #include <stdlib.h>
 #include <ctime>
-#include <random>
 #include <queue>
 #include <map>
 #include <functional>
 #include <iostream>
 
-/* Supervisor Info */
-#define NUM_EVENTS 4
-#define NUM_SUPERVISORS 1
+#include <argos3/core/utility/math/rng.h>
 
-/* Event Info */
-#define EV_a 0
-
-#define EV__b 1
-
-#define EV_c 2
-
-#define EV_b 3
+namespace leader {
 
 /* Structure to store member functions */
 struct Scallback {
@@ -70,12 +60,29 @@ public:
         callback[event].callback    = std::bind(clbk, p, _1);
         callback[event].check_input = std::bind(ci, p, _1);
         callback[event].data        = data;
-            std::cout << "Hi" << std::endl;
-
     }
 
     /* Run the generator player to execute the next action */
     virtual void run_step();
+
+    virtual std::string get_current_state_string();
+
+    /* Supervisor Info */
+    const static unsigned char NUM_EVENTS = 11;
+    const static unsigned char NUM_SUPERVISORS = 4;
+
+    /* Event Info */
+    const static unsigned char EV_message = 0;
+    const static unsigned char EV_pressStop = 1;
+    const static unsigned char EV_stop = 2;
+    const static unsigned char EV_start = 3;
+    const static unsigned char EV_respond = 4;
+    const static unsigned char EV_exchange = 5;
+    const static unsigned char EV_sendMessage = 6;
+    const static unsigned char EV_pressStart = 7;
+    const static unsigned char EV__relay = 8;
+    const static unsigned char EV__requestL = 9;
+    const static unsigned char EV__message = 10;
 
 protected:
 
@@ -110,45 +117,15 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[4] = { 1,0,1,1 };
-    const unsigned char     sup_events[1][4] = { { 1,1,1,1 } };
-    const unsigned long int sup_init_state[1]     = { 0 };
-    unsigned long int       sup_current_state[1]  = { 0 };
-    const unsigned long int sup_data_pos[1] = { 0 };
-    const unsigned char     sup_data[ 17 ] = { 3,EV_a,0,0,EV__b,0,0,EV_b,0,1,2,EV__b,0,0,EV_c,0,1 };
-};
+    const unsigned char     ev_controllable[11] = { 1,0,1,1,1,1,0,0,0,0,0 };
+    const unsigned char     sup_events[4][11] = { { 1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,0,0,0 },{ 1,0,1,1,1,1,0,0,1,1,1 } };
+    const unsigned long int sup_init_state[4]     = { 0,0,0,0 };
+    unsigned long int       sup_current_state[4]  = { 0,0,0,0 };
+    const unsigned long int sup_data_pos[4] = { 0,47,94,141 };
+    const unsigned char     sup_data[ 188 ] = { 7,EV_message,0,0,EV_pressStop,0,0,EV_stop,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,0,EV_pressStart,0,1,8,EV_message,0,1,EV_pressStop,0,1,EV_stop,0,1,EV_start,0,0,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_message,0,0,EV_pressStop,0,1,EV_start,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,0,EV_pressStart,0,0,8,EV_message,0,1,EV_pressStop,0,1,EV_stop,0,0,EV_start,0,1,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_pressStop,0,0,EV_stop,0,0,EV_start,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,1,EV_pressStart,0,0,8,EV_message,0,0,EV_pressStop,0,1,EV_stop,0,1,EV_start,0,1,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_message,0,0,EV__relay,0,0,EV_stop,0,0,EV__requestL,0,1,EV_start,0,0,EV_exchange,0,0,EV__message,0,0,8,EV_message,0,1,EV__relay,0,1,EV_stop,0,1,EV__requestL,0,1,EV_start,0,1,EV_exchange,0,1,EV_respond,0,0,EV__message,0,1 };
 
-/****************************************/
-/*               SCTProb                */
-/****************************************/
-
-class SCTProb : virtual public SCT {
-
-public:
-
-    /* Class constructor */
-    SCTProb();
-
-    /* Class destructor */
-    ~SCTProb();
-
-    /* Set the probability of a transition */
-    virtual void set_event_prob( unsigned char supervisor, unsigned long int state, unsigned char event, float prob );
-
-protected:
-
-    /* Given the supervisor and its state, return the position of the current state's probabilities in the data structure */
-    virtual unsigned long int get_state_position_prob( unsigned char supervisor, unsigned long int state );
-
-    /* Choose a controllale event from the list of enabled controllable events using probabilities */
-    virtual unsigned char get_next_controllable( unsigned char *event );
-
-    /* Return all the enabled controllable event probabilities */
-    virtual float get_active_controllable_events_prob( float *events );
-    
-    /* Probability info of supervisors */
-    const unsigned long int sup_data_prob_pos[1] = { 0 };
-    float sup_data_prob[ 5 ] = { 2,0.90000000,0.10000000,1,1 };
+    /* Random number generator */
+    argos::CRandom::CRNG* m_pcRNG;
 
 };
 
@@ -181,26 +158,10 @@ protected:
     std::queue<unsigned char> input_buffer_pub;
 
     /* Public event info of supervisors */
-    const unsigned char ev_shared[4] = { 0,1,0,1 };
+    const unsigned char     ev_shared[11] = { 1,0,1,1,1,1,0,0,1,1,1 };
 
 };
 
-/****************************************/
-/*              SCTProbPub              */
-/****************************************/
-
-class SCTProbPub : public SCTProb, public SCTPub {
-
-public:
-
-    /* Class constructor */
-    SCTProbPub();
-
-    /* Class destructor */
-    ~SCTProbPub();
-
-protected:
-
-};
+}
 
 #endif
