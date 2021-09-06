@@ -36,6 +36,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
 #include "SCT_leader.h"
+#include "SCT_leader_exchange.h"
+
 #include <utility/pid.h>
 
 /*
@@ -445,7 +447,12 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
 
     /* Controller */
-    leader::SCTPub* sct;
+    // leader::SCTPub* sct;
+    // bool exchangeUsed = false;
+    leader_exchange::SCTPub* sct;
+    bool exchangeUsed = true;
+
+    /* Type of SCT being used */
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;

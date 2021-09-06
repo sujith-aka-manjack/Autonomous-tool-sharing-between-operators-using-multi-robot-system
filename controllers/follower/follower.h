@@ -34,6 +34,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
 #include "SCT_follower.h"
+#include "SCT_follower_exchange.h"
 #include <utility/pid.h>
 #include <set>
 
@@ -491,6 +492,9 @@ private:
 
     /* Controller */
     follower::SCTPub* sct;
+    bool exchangeUsed = false;
+    // follower_exchange::SCTPub* sct;
+    // bool exchangeUsed = true;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;

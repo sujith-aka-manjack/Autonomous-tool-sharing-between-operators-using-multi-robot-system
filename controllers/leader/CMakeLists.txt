@@ -2,7 +2,9 @@ add_library(leader SHARED
   leader.h 
   leader.cpp 
   SCT_leader.h 
-  SCT_leader.cpp)
+  SCT_leader.cpp
+  SCT_leader_exchange.h 
+  SCT_leader_exchange.cpp)
 target_link_libraries(leader
   utility
   argos3core_simulator

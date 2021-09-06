@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="300"
                 ticks_per_second="10"
-                random_seed="123" />
+                random_seed="27788" />
   </framework>
 
   <!-- *************** -->
@@ -117,11 +117,11 @@
     <tasks>
       <task position="0,1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
       <task position="-1.4,1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
-      <task position="-1.4,-1.2" radius="0.5" minimum_robot_num="10" maximum_robot_num="100" task_demand="1000" />
+      <task position="-1.4,-1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
 
       <!-- <task position="0,-1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" /> -->
       <task position="1.4,-1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
-      <task position="1.4,1.2" radius="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
+      <task position="1.4,1.2" radius="0.5" minimum_robot_num="10" maximum_robot_num="100" task_demand="1000" />
     </tasks>
   </loop_functions>
 

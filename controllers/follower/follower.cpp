@@ -223,47 +223,91 @@ void CFollower::Init(TConfigurationNode& t_node) {
     * Init SCT Controller
     */
     sct = new follower::SCTPub();
+    // sct = new follower_exchange::SCTPub();
 
-    /* Register controllable events */
-    sct->add_callback(this, follower::SCT::EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_moveTeam,  &CFollower::Callback_MoveTeam,  NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_switchT,   &CFollower::Callback_SwitchT,   NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
-    sct->add_callback(this, follower::SCT::EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
-    
-    /* Register uncontrollable events */
-    sct->add_callback(this, follower::SCT::EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
-    sct->add_callback(this, follower::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-    sct->add_callback(this, follower::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
-    sct->add_callback(this, follower::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
-    sct->add_callback(this, follower::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
-    sct->add_callback(this, follower::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
-    sct->add_callback(this, follower::SCT::EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
-    sct->add_callback(this, follower::SCT::EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
-    sct->add_callback(this, follower::SCT::EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
-    sct->add_callback(this, follower::SCT::EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
-    sct->add_callback(this, follower::SCT::EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
-    sct->add_callback(this, follower::SCT::EV__start,    NULL, &CFollower::Check__Start,    NULL);
-    sct->add_callback(this, follower::SCT::EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
-    sct->add_callback(this, follower::SCT::EV__message,  NULL, &CFollower::Check__Message,  NULL);
-    sct->add_callback(this, follower::SCT::EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
-    sct->add_callback(this, follower::SCT::EV__exchange, NULL, &CFollower::Check__Exchange, NULL);
-    sct->add_callback(this, follower::SCT::EV_chosen,    NULL, &CFollower::Check_Chosen,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notChosen, NULL, &CFollower::Check_NotChosen, NULL);
-    sct->add_callback(this, follower::SCT::EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
-    sct->add_callback(this, follower::SCT::EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
+    if( !exchangeUsed ) {
+
+        /* Without exchange */
+
+        /* Register controllable events */
+        sct->add_callback(this, follower::SCT::EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
+        sct->add_callback(this, follower::SCT::EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
+        
+        /* Register uncontrollable events */
+        sct->add_callback(this, follower::SCT::EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
+        sct->add_callback(this, follower::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
+        sct->add_callback(this, follower::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
+        sct->add_callback(this, follower::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
+        sct->add_callback(this, follower::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+        sct->add_callback(this, follower::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+        sct->add_callback(this, follower::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
+        sct->add_callback(this, follower::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
+        sct->add_callback(this, follower::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
+        sct->add_callback(this, follower::SCT::EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
+        sct->add_callback(this, follower::SCT::EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
+        sct->add_callback(this, follower::SCT::EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
+        sct->add_callback(this, follower::SCT::EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
+        sct->add_callback(this, follower::SCT::EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
+        sct->add_callback(this, follower::SCT::EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
+        sct->add_callback(this, follower::SCT::EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
+        sct->add_callback(this, follower::SCT::EV__start,    NULL, &CFollower::Check__Start,    NULL);
+        sct->add_callback(this, follower::SCT::EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
+        sct->add_callback(this, follower::SCT::EV__message,  NULL, &CFollower::Check__Message,  NULL);
+        sct->add_callback(this, follower::SCT::EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
+
+    } else {
+
+        /* With exchange */
+
+        /* Register controllable events */
+        sct->add_callback(this, follower_exchange::SCT::EV_moveFlock, &CFollower::Callback_MoveFlock, NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_moveTeam,  &CFollower::Callback_MoveTeam,  NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_moveStop,  &CFollower::Callback_MoveStop,  NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_taskStart, &CFollower::Callback_TaskStart, NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_taskStop,  &CFollower::Callback_TaskStop,  NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_switchF,   &CFollower::Callback_SwitchF,   NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_switchC,   &CFollower::Callback_SwitchC,   NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_switchT,   &CFollower::Callback_SwitchT,   NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_requestL,  &CFollower::Callback_RequestL,  NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_requestC,  &CFollower::Callback_RequestC,  NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_respond,   &CFollower::Callback_Respond,   NULL, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_relay,     &CFollower::Callback_Relay,     NULL, NULL);
+        
+        /* Register uncontrollable events */
+        sct->add_callback(this, follower_exchange::SCT::EV_condC1,    NULL, &CFollower::Check_CondC1,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notCondF1, NULL, &CFollower::Check_NotCondF1, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_condF2,    NULL, &CFollower::Check_CondF2,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notCondF2, NULL, &CFollower::Check_NotCondF2, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__respond,  NULL, &CFollower::Check__Respond,  NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_accept,    NULL, &CFollower::Check_Accept,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_reject,    NULL, &CFollower::Check_Reject,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__requestC, NULL, &CFollower::Check__RequestC, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__start,    NULL, &CFollower::Check__Start,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__stop,     NULL, &CFollower::Check__Stop,     NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__message,  NULL, &CFollower::Check__Message,  NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__relay,    NULL, &CFollower::Check__Relay,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV__exchange, NULL, &CFollower::Check__Exchange, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_chosen,    NULL, &CFollower::Check_Chosen,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notChosen, NULL, &CFollower::Check_NotChosen, NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
+        sct->add_callback(this, follower_exchange::SCT::EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
+    }
 
     /*
     * Init PID Controller
