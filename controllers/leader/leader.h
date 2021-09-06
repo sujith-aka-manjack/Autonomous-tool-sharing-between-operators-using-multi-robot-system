@@ -412,9 +412,10 @@ protected:
     virtual unsigned char Check__Message(void* data);
     virtual unsigned char Check__Relay(void* data);
     virtual unsigned char Check__RequestL(void* data);
-    virtual unsigned char Check_PressStart(void* data);
-    virtual unsigned char Check_PressStop(void* data);
-    virtual unsigned char Check_SendMessage(void* data);
+    virtual unsigned char Check_InputStart(void* data);
+    virtual unsigned char Check_InputStop(void* data);
+    virtual unsigned char Check_InputMessage(void* data);
+    virtual unsigned char Check_InputExchange(void* data);
 
 private:
 
@@ -498,6 +499,7 @@ private:
     Real lastBeatTime;
     size_t beatReceived;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
+    std::string previousCandidate;
     bool notDecremented;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */

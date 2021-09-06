@@ -68,20 +68,21 @@ public:
     virtual std::string get_current_state_string();
 
     /* Supervisor Info */
-    const static unsigned char NUM_EVENTS = 11;
-    const static unsigned char NUM_SUPERVISORS = 4;
+    const static unsigned char NUM_EVENTS = 12;
+    const static unsigned char NUM_SUPERVISORS = 5;
 
     /* Event Info */
-    const static unsigned char EV_message = 0;
-    const static unsigned char EV_pressStop = 1;
-    const static unsigned char EV_stop = 2;
-    const static unsigned char EV_start = 3;
-    const static unsigned char EV_respond = 4;
-    const static unsigned char EV_exchange = 5;
-    const static unsigned char EV_sendMessage = 6;
-    const static unsigned char EV_pressStart = 7;
-    const static unsigned char EV__relay = 8;
-    const static unsigned char EV__requestL = 9;
+    const static unsigned char EV_inputExchange = 0;
+    const static unsigned char EV_exchange = 1;
+    const static unsigned char EV_message = 2;
+    const static unsigned char EV_inputMessage = 3;
+    const static unsigned char EV_stop = 4;
+    const static unsigned char EV_start = 5;
+    const static unsigned char EV_respond = 6;
+    const static unsigned char EV_inputStart = 7;
+    const static unsigned char EV_inputStop = 8;
+    const static unsigned char EV__relay = 9;
+    const static unsigned char EV__requestL = 10;
     const static unsigned char EV__message = 10;
 
 protected:
@@ -117,13 +118,13 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[11] = { 1,0,1,1,1,1,0,0,0,0,0 };
-    const unsigned char     sup_events[4][11] = { { 1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,0,0,0 },{ 1,0,1,1,1,1,0,0,1,1,1 } };
-    const unsigned long int sup_init_state[4]     = { 0,0,0,0 };
-    unsigned long int       sup_current_state[4]  = { 0,0,0,0 };
-    const unsigned long int sup_data_pos[4] = { 0,47,94,141 };
-    const unsigned char     sup_data[ 188 ] = { 7,EV_message,0,0,EV_pressStop,0,0,EV_stop,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,0,EV_pressStart,0,1,8,EV_message,0,1,EV_pressStop,0,1,EV_stop,0,1,EV_start,0,0,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_message,0,0,EV_pressStop,0,1,EV_start,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,0,EV_pressStart,0,0,8,EV_message,0,1,EV_pressStop,0,1,EV_stop,0,0,EV_start,0,1,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_pressStop,0,0,EV_stop,0,0,EV_start,0,0,EV_respond,0,0,EV_exchange,0,0,EV_sendMessage,0,1,EV_pressStart,0,0,8,EV_message,0,0,EV_pressStop,0,1,EV_stop,0,1,EV_start,0,1,EV_respond,0,1,EV_exchange,0,1,EV_sendMessage,0,1,EV_pressStart,0,1,7,EV_message,0,0,EV__relay,0,0,EV_stop,0,0,EV__requestL,0,1,EV_start,0,0,EV_exchange,0,0,EV__message,0,0,8,EV_message,0,1,EV__relay,0,1,EV_stop,0,1,EV__requestL,0,1,EV_start,0,1,EV_exchange,0,1,EV_respond,0,0,EV__message,0,1 };
-
+    const unsigned char     ev_controllable[12] = { 0,1,1,0,1,1,1,0,0,0,0,0 };
+    const unsigned char     sup_events[5][12] = { { 1,1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,1,0,0,0 },{ 1,1,1,1,1,1,1,1,1,0,0,0 },{ 0,1,1,0,1,1,1,0,0,1,1,1 },{ 1,1,1,1,1,1,1,1,1,0,0,0 } };
+    const unsigned long int sup_init_state[5]     = { 0,0,0,0,0 };
+    unsigned long int       sup_current_state[5]  = { 0,0,0,0,0 };
+    const unsigned long int sup_data_pos[5] = { 0,53,106,159,206 };
+    const unsigned char     sup_data[ 259 ] = { 8,EV_inputExchange,0,0,EV_exchange,0,0,EV_message,0,0,EV_inputMessage,0,0,EV_stop,0,0,EV_respond,0,0,EV_inputStart,0,1,EV_inputStop,0,0,9,EV_inputExchange,0,1,EV_exchange,0,1,EV_message,0,1,EV_inputMessage,0,1,EV_stop,0,1,EV_start,0,0,EV_respond,0,1,EV_inputStart,0,1,EV_inputStop,0,1,8,EV_inputExchange,0,0,EV_exchange,0,0,EV_message,0,0,EV_inputMessage,0,0,EV_start,0,0,EV_respond,0,0,EV_inputStart,0,0,EV_inputStop,0,1,9,EV_inputExchange,0,1,EV_exchange,0,1,EV_message,0,1,EV_inputMessage,0,1,EV_stop,0,0,EV_start,0,1,EV_respond,0,1,EV_inputStart,0,1,EV_inputStop,0,1,8,EV_inputExchange,0,0,EV_exchange,0,0,EV_inputMessage,0,1,EV_stop,0,0,EV_start,0,0,EV_respond,0,0,EV_inputStart,0,0,EV_inputStop,0,0,9,EV_inputExchange,0,1,EV_exchange,0,1,EV_message,0,0,EV_inputMessage,0,1,EV_stop,0,1,EV_start,0,1,EV_respond,0,1,EV_inputStart,0,1,EV_inputStop,0,1,7,EV_message,0,0,EV__relay,0,0,EV_stop,0,0,EV__requestL,0,1,EV_start,0,0,EV_exchange,0,0,EV__message,0,0,8,EV_message,0,1,EV__relay,0,1,EV_stop,0,1,EV__requestL,0,1,EV_start,0,1,EV_exchange,0,1,EV_respond,0,0,EV__message,0,1,8,EV_inputExchange,0,1,EV_message,0,0,EV_inputMessage,0,0,EV_stop,0,0,EV_start,0,0,EV_respond,0,0,EV_inputStart,0,0,EV_inputStop,0,0,9,EV_inputExchange,0,1,EV_exchange,0,0,EV_message,0,1,EV_inputMessage,0,1,EV_stop,0,1,EV_start,0,1,EV_respond,0,1,EV_inputStart,0,1,EV_inputStop,0,1 };
+    
     /* Random number generator */
     argos::CRandom::CRNG* m_pcRNG;
 
@@ -158,7 +159,7 @@ protected:
     std::queue<unsigned char> input_buffer_pub;
 
     /* Public event info of supervisors */
-    const unsigned char     ev_shared[11] = { 1,0,1,1,1,1,0,0,1,1,1 };
+    const unsigned char     ev_shared[12] = { 0,1,1,0,1,1,1,0,0,1,1,1 };
 
 };
 

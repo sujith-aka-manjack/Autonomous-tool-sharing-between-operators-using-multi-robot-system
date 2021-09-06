@@ -1009,14 +1009,14 @@ void CFollower::Update() {
         std::vector<Message> combinedMsgs(otherTeamMsgs);
         combinedMsgs.insert(combinedMsgs.end(), otherLeaderMsgs.begin(), otherLeaderMsgs.end());
 
-        std::cout << "Checking if team to join has been found" << std::endl;
+        // std::cout << "Checking if team to join has been found" << std::endl;
 
         /* Check whether it has reached the other team */
         for(const auto& msg : combinedMsgs) {
             if(msg.teamID == teamToJoin) {
                 if(msg.direction.Length() < 50) {
                     nearLF = true;
-                    std::cout << "TEAM FOUND!" << std::endl;
+                    // std::cout << "TEAM FOUND!" << std::endl;
                     break;
                 }
             }
@@ -1734,9 +1734,9 @@ CVector2 CFollower::GetChainTravelVector() {
     std::vector<Message> sortedConnectorMsgs(connectorMsgs);
     std::sort(sortedConnectorMsgs.begin(), sortedConnectorMsgs.end(), sortRuleLambda);
 
-    for(auto& msg : sortedConnectorMsgs) {
-        std::cout << msg.hops[teamToJoin].count << std::endl;
-    }
+    // for(auto& msg : sortedConnectorMsgs) {
+    //     std::cout << msg.hops[teamToJoin].count << std::endl;
+    // }
 
     /* Find the next connector to move towards */
     Message nextConnector;
@@ -1766,7 +1766,7 @@ CVector2 CFollower::GetChainTravelVector() {
                     }
 
                     if(otherConnectorVec.Length() == 0.0f) {
-                        std::cout << "No intersection (Not found)" << std::endl;
+                        // std::cout << "No intersection (Not found)" << std::endl;
                     } else {
                         // std::cout << "Target: " << target << std::endl;
                         // std::cout << "Start: " << msg.direction << std::endl;
@@ -1787,7 +1787,7 @@ CVector2 CFollower::GetChainTravelVector() {
         }
     }
 
-    std::cout << "Next connector: " << nextConnector.ID << std::endl;
+    // std::cout << "Next connector: " << nextConnector.ID << std::endl;
 
     /* Calculate the position of the left side of the connector */
 
@@ -1944,7 +1944,7 @@ void CFollower::Callback_SwitchF(void* data) {
         teamID = teamToJoin;
     }
 
-    std::cerr << "JOINING TEAM" << std::endl;
+    // std::cout << "JOINING TEAM" << std::endl;
 
     currentState = RobotState::FOLLOWER;
 }
