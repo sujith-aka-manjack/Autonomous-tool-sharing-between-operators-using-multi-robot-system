@@ -84,8 +84,6 @@
       </params>
     </follower_controller>
 
-    <!-- Controllers that do NOT use SCT -->
-
   </controllers>
 
   <!-- ****************** -->

@@ -476,6 +476,7 @@ private:
 
     /* Task demand of the current working task */
     UInt32 currentTaskDemand;
+    UInt32 previousTaskDemand; // Task demand from 10 timesteps ago
 
     /* Flag to know whether there is a neighbor */
     bool nearRobot;

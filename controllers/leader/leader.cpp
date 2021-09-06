@@ -298,6 +298,9 @@ void CLeader::ControlStep() {
     /* Control */
     /*---------*/
 
+    /* Store previous task demand */
+    previousTaskDemand = currentTaskDemand;
+
     /* Set ConnectionMsg to send during this timestep */
     //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
     for(auto it = cmsgToResend.begin(); it != cmsgToResend.end();) {
@@ -322,7 +325,13 @@ void CLeader::ControlStep() {
         }
     }
 
-    /* Motion and LED */
+    /* Set LED */
+    if(m_bSignal)
+        m_pcLEDs->SetAllColors(CColor::WHITE);
+    else
+        m_pcLEDs->SetAllColors(teamColor[teamID]);
+
+    /* Set Motion */
     if(initStepTimer > 4) {
 
         /* Is the robot selected? */
@@ -330,11 +339,6 @@ void CLeader::ControlStep() {
 
             /* Follow the control vector */
             SetWheelSpeedsFromVector(m_cControl);
-
-            if(m_bSignal)
-                m_pcLEDs->SetAllColors(CColor::WHITE);
-            else
-                m_pcLEDs->SetAllColors(teamColor[teamID]);
         }
         else {
             if( !nearRobot ) {
@@ -347,14 +351,6 @@ void CLeader::ControlStep() {
                 CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
                 Real dist = (waypoints.front() - pos2d).Length();
                 //std::cout << "dist: " << dist << std::endl;
-
-                /* Set LED */
-                if(dist < m_sWaypointTrackingParams.thresRange) {
-                    if(currentTaskDemand == 0)
-                        m_pcLEDs->SetAllColors(teamColor[teamID]);
-                    else
-                        m_pcLEDs->SetAllColors(CColor::WHITE);
-                }
 
                 /* If current task is completed, move to the next one */
                 if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
@@ -928,9 +924,9 @@ void CLeader::CheckHeartBeat() {
 
                     notDecremented = true;
 
-                    if(beat.type == 'R' && waypoints.empty()) {
+                    if(beat.type == 'R') {
                         numRobotsToSend = beat.robot_num;
-                        std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+                        // std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
                     }
 
                     switchCandidate = ""; // Reset candidate follower to switch
@@ -939,7 +935,7 @@ void CLeader::CheckHeartBeat() {
                 /* Set a follower that received the leader message from a non-team robot as a candidate to switch teams */
                 if( switchCandidate.empty() && !beat.firstFollower.empty()) {
                     switchCandidate = beat.firstFollower;
-                    std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
+                    // std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
                 }
             }
         }
@@ -1186,10 +1182,15 @@ void CLeader::Callback_Message(void* data) {
     beat.from = this->GetId();
     beat.time = initStepTimer;
 
-    if(initStepTimer == 800 && this->GetId() == "L2") {
-        beat.type = 'R';
-        beat.robot_num = 2;
-        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+    /* For every 10 timesteps, check if the demand is not decreasing to request robots from the other team */
+    if(initStepTimer > 0 && initStepTimer % 10 == 0) {
+        if(m_bSignal) { // Sending start signal to robots
+            if(currentTaskDemand > 0 && currentTaskDemand == previousTaskDemand) {
+                beat.type = 'R';
+                beat.robot_num = 100; // TEMP: Large number to send all robots
+                std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+            }
+        }     
     }
 
     rmsgToResend.push_back({sendDuration,beat});
@@ -1234,27 +1235,27 @@ void CLeader::Callback_Exchange(void* data) {
 /* Callback functions (Uncontrollable events) */
 
 unsigned char CLeader::Check__Message(void* data) {
-    // std::cout << "Event: " << 0 << " - _message" << std::endl;
+    // std::cout << "Event: " << receivedMessage << " - _message" << std::endl;
     return receivedMessage;
 }
 
 unsigned char CLeader::Check__Relay(void* data) {
-    // std::cout << "Event: " << 0 << " - _relay" << std::endl;
+    // std::cout << "Event: " << receivedRelay << " - _relay" << std::endl;
     return receivedRelay;
 }
 
 unsigned char CLeader::Check__RequestL(void* data) {
-    // std::cout << "Event: " << 0 << " - _requestL" << std::endl;
+    // std::cout << "Event: " << receivedRequest << " - _requestL" << std::endl;
     return receivedRequest;
 }
 
 unsigned char CLeader::Check_InputStart(void* data) {
-    // std::cout << "Event: " << 0 << " - inputStart" << std::endl;
+    // std::cout << "Event: " << inputStart << " - inputStart" << std::endl;
     return inputStart;
 }
 
 unsigned char CLeader::Check_InputStop(void* data) {
-    // std::cout << "Event: " << 0 << " - inputStop" << std::endl;
+    // std::cout << "Event: " << inputStop << " - inputStop" << std::endl;
     return inputStop;
 }
 
@@ -1265,7 +1266,7 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 }
 
 unsigned char CLeader::Check_InputExchange(void* data) {
-    bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty());
+    bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty() && waypoints.empty());
 
     if(exchangeRobot && (switchCandidate != previousCandidate)) {
         // std::cout << "Event: " << 1 << " - inputExchange" << std::endl;

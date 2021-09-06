@@ -485,7 +485,7 @@ void CFollower::ControlStep() {
             break;
         }
         case RobotState::TRAVELER: {
-            std::cout << "State: TRAVELER" << std::endl;
+            // std::cout << "State: TRAVELER" << std::endl;
             m_pcLEDs->SetAllColors(CColor::YELLOW);
 
             /* Leader signal */
@@ -1191,6 +1191,23 @@ void CFollower::CheckAccept() {
 
 void CFollower::CheckRequests() {
 
+    /* Check the shortest distance to each team */
+    std::map<UInt8,Real> teamDistances;
+
+    for(const auto& hop : hopsDict) {
+        for(const auto& msg : otherTeamMsgs) {
+            if(msg.teamID == hop.first && hop.second.ID.empty()) { // If hop count == 1 for a given team
+                if(teamDistances.find(hop.first) == teamDistances.end()) {
+                    teamDistances[hop.first] = msg.direction.Length();
+                } else {
+                    if(msg.direction.Length() < teamDistances[hop.first]) {
+                        teamDistances[hop.first] = msg.direction.Length();
+                    }
+                }
+            }
+        }
+    }
+
     /* Check all requests sent to itself and choose one to respond to each team */
     for(const auto& msg : otherTeamMsgs) {
         for(const auto& cmsg : msg.cmsg) {
@@ -1198,20 +1215,25 @@ void CFollower::CheckRequests() {
 
                 receivedReqC = true;
 
-                if(hopsDict[msg.teamID].ID.empty()) {   // Only accept if it does not have a fixed connector (ID field is empty)
+                /* Accept if it does not have a fixed connector (ID field is empty) */
+                if(hopsDict[msg.teamID].ID.empty()) {
 
-                    /* Accept first request seen for a team */
-                    if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
-                        robotsToAccept[msg.teamID] = msg;
-                        continue;
+                    /* Accept if the distance to all robots from that team is far */
+                    if(teamDistances[msg.teamID] > separationThres) {
+
+                        /* Accept first request seen for a team */
+                        if(robotsToAccept.find(msg.teamID) == robotsToAccept.end()) {
+                            robotsToAccept[msg.teamID] = msg;
+                            continue;
+                        }
+
+                        Real currentDist = robotsToAccept[msg.teamID].direction.Length();
+                        Real newDist = msg.direction.Length();
+
+                        /* Send an accept message to the closest follower */
+                        if(newDist < currentDist)
+                            robotsToAccept[msg.teamID] = msg;
                     }
-
-                    Real currentDist = robotsToAccept[msg.teamID].direction.Length();
-                    Real newDist = msg.direction.Length();
-
-                    /* Send an accept message to the closest follower */
-                    if(newDist < currentDist)
-                        robotsToAccept[msg.teamID] = msg;
                 }
             }
         }
