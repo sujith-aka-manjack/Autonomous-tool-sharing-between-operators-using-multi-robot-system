@@ -160,6 +160,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     lastBeatTime = 0;
     beatReceived = 0;
     numRobotsToSend = 0;
+    numPreviousRequest = 0;
     switchCandidate = "";
     notDecremented = true;
 
@@ -258,6 +259,8 @@ void CLeader::ControlStep() {
     inputMessage = false;
 
     acceptID = "";
+
+    lastAction = "";
 
     // for(int i = 0; i < waypoints.size(); i++) {
     //     //std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
@@ -544,6 +547,13 @@ Real CLeader::GetLatestTimeSent() {
 
 Real CLeader::GetLatestTimeReceived() {
     return lastBeatTime;
+}
+
+/****************************************/
+/****************************************/
+
+std::string CLeader::GetLastAction() {
+    return lastAction;
 }
 
 /****************************************/
@@ -924,9 +934,19 @@ void CLeader::CheckHeartBeat() {
 
                     notDecremented = true;
 
+                    // std::cout << "beat.robot_num " << beat.robot_num << std::endl;
+                    // std::cout << "numPreviousRequest " << numPreviousRequest << std::endl;
+                    // std::cout << "numRobotsToSend " << numRobotsToSend << std::endl;
+
                     if(beat.type == 'R') {
-                        numRobotsToSend = beat.robot_num;
-                        // std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+                        if(beat.robot_num != numPreviousRequest) {
+                            numRobotsToSend = beat.robot_num;
+                            numPreviousRequest = beat.robot_num;
+                            std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+                        }
+                    } else {
+                        numRobotsToSend = 0;
+                        numPreviousRequest = 0;
                     }
 
                     switchCandidate = ""; // Reset candidate follower to switch
@@ -1166,11 +1186,13 @@ void CLeader::PrintName() {
 void CLeader::Callback_Start(void* data) {
     // std::cout << "Action: start" << std::endl;
     m_bSignal = true;
+    lastAction = "start";
 }
 
 void CLeader::Callback_Stop(void* data) {
     // std::cout << "Action: stop" << std::endl;
     m_bSignal = false;
+    lastAction = "stop";
 }
 
 void CLeader::Callback_Message(void* data) {
@@ -1195,6 +1217,8 @@ void CLeader::Callback_Message(void* data) {
 
     rmsgToResend.push_back({sendDuration,beat});
     lastSent = initStepTimer;
+
+    lastAction = "message";
 }
 
 void CLeader::Callback_Respond(void* data) {
@@ -1207,6 +1231,8 @@ void CLeader::Callback_Respond(void* data) {
     acceptTo.to     = acceptID;
     acceptTo.toTeam = teamID;
     cmsgToResend.push_back({sendDuration,acceptTo});
+
+    lastAction = "respond";
 }
 
 void CLeader::Callback_Exchange(void* data) {
@@ -1227,6 +1253,8 @@ void CLeader::Callback_Exchange(void* data) {
         teamToJoin = 1;
 
     std::cout << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
+
+    lastAction = "exchange";
 }
 
 /****************************************/

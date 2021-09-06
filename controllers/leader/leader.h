@@ -151,7 +151,7 @@ public:
         std::string from;
         UInt16 time;
         std::string firstFollower; // First follower that received this message from a non-team robot
-        UInt8 robot_num;
+        UInt8 robot_num = 0;
     };
 
 /* 
@@ -338,6 +338,11 @@ public:
     */
     virtual Real GetLatestTimeReceived();
 
+    /*
+    * Returns the last action made by the leader.
+    */
+    virtual std::string GetLastAction();
+
 protected:
 
     /* 
@@ -508,6 +513,7 @@ private:
 
     /* Team switch variables */
     size_t numRobotsToSend;
+    size_t numPreviousRequest;
     std::string robotToSwitch;
     UInt8 teamToJoin;
 
@@ -515,6 +521,8 @@ private:
     bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;
 
     std::string acceptID;
+
+    std::string lastAction;
 
     /*
     * The following variables are used as parameters for the

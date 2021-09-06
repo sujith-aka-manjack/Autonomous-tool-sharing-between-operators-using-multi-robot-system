@@ -446,9 +446,8 @@ void CFollower::ControlStep() {
             bool sending = false;
             bool requesting = false;
             for(const auto& msg : rmsgToResend) {
-                if(msg.second.from == "L2")
-                    sending = true;
-                if(msg.second.type == 'R' && msg.second.robot_num != 255)
+                sending = true;
+                if(msg.second.type == 'R')
                     requesting = true;
             }
             if(requesting)
@@ -1561,17 +1560,23 @@ void CFollower::UpdateHopCounts() {
         }
     }
 
-    // if( !robotIDs.empty() )
-        //std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
+    if( !robotIDs.empty() ) {
+        std::cerr << "robotIDs not empty for robot: " << this->GetId() << std::endl;
+    }
 
     /* Update hop count */
     for(auto& hop : hopsDict) {
         std::string previousRobotID = hop.second.ID;
 
         if( !previousRobotID.empty() ) {
-            UInt8 teamToCheck = hop.first;
-            HopMsg previousHop = robotMessages[previousRobotID].hops[teamToCheck];
-            hop.second.count = previousHop.count + 1; // Increment by 1
+
+            if(robotIDs.count(previousRobotID)) {
+                hop.second.count = 255; // Could not be found, so set it to max value
+            } else {
+                UInt8 teamToCheck = hop.first;
+                HopMsg previousHop = robotMessages[previousRobotID].hops[teamToCheck];
+                hop.second.count = previousHop.count + 1; // Increment by 1
+            }
         }
     }
 }
@@ -1726,11 +1731,12 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 void CFollower::Travel() {
     /* Calculate overall force applied to the robot */
     CVector2 travelForce   = GetChainTravelVector();
+    CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = travelForce + obstacleForce;
+    CVector2 sumForce      = travelForce + robotForce + obstacleForce;
 
     /* Set Wheel Speed */
-    if(sumForce.Length() > 1.0f)
+    if(travelForce.Length() > 0.0f)
         SetWheelSpeedsFromVector(sumForce);
     else
         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
