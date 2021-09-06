@@ -24,6 +24,7 @@ def create_video(dir_path, fps):
 
     for i in range(0,img_num+1):
         # for j in range(0,operator_num+robot_num+1):
+        print('Frame: {}'.format(i))
         num_zero = 10 - len(str(i))
         prefix = '0' * num_zero
         filename = '{0}frame_{1}{2}.png'.format(dir_path,prefix,i)

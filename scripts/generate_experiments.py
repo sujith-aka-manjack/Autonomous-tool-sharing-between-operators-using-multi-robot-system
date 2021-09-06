@@ -8,12 +8,13 @@ import xml.etree.ElementTree as ET
 
 TEMPLATE_PATH = os.path.join(os.environ['HOME'], 'GIT/argos-sct/experiments/experiment_template.argos')
 
+NUM_TASKS = 5
 
 def generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path):
     
     d = datetime.datetime.now()
     # directory = d.strftime("%m-%d") + "-" + d.strftime("%H%M%S") + '_' + num_robots + 'R_6T_100D'
-    directory = '{}R_6T_{}D'.format(num_robots, demand)
+    directory = '{}R_{}T_{}D'.format(num_robots, NUM_TASKS, demand)
     os.mkdir(os.path.join(log_dir_path, directory))
     os.mkdir(os.path.join(argos_dir_path, directory))
 
@@ -43,6 +44,7 @@ def generate_experiments(num_experiments, num_robots, duration, demand, argos_di
 
         for loop_func_elem in rootElement.findall('loop_functions'):
             for output_elem in loop_func_elem.findall('output'):
+                output_elem.set('logging', 'true')
                 output_elem.set('out_path', os.path.join(log_dir_path, directory, file))
                 break
 
