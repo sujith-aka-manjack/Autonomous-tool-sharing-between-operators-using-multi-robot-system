@@ -212,11 +212,11 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck_leader
     */
-   QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
-   DrawText(CVector3(0.0, 0.0, 0.2),   // position
-            c_entity.GetId().c_str(),
-            CColor::BLACK,
-            leaderFont); // text
+   // QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
+   // DrawText(CVector3(0.0, 0.0, 0.2),   // position
+   //          c_entity.GetId().c_str(),
+   //          CColor::BLACK,
+   //          leaderFont); // text
 }
 
 /****************************************/
@@ -291,8 +291,8 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          /* Draw task info */
          std::ostringstream cText;
          cText.str("");
-         // cText << ceil(cTask.GetDemand() / 10);
-         cText << cTask.GetDemand();
+         cText << ceil(cTask.GetDemand() / 10);
+         // cText << cTask.GetDemand();
          QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
          // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
          //          cText.str(),

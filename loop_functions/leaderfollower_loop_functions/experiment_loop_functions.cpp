@@ -362,6 +362,7 @@ void CExperimentLoopFunctions::PreStep() {
                 /* If there is a task with the given task position AND leader is within the task range, return task demand */
                 if(nextTaskPos == cTaskPos && cCTask.InArea(cPos)) {
                     cController.SetTaskDemand(cCTask.GetDemand());
+                    cController.SetMinimumCount(cCTask.GetMinRobotNum());
                     break;
                 }
             }
@@ -442,6 +443,21 @@ void CExperimentLoopFunctions::PreStep() {
         }
     }
 
+    /* Inform each leader the number of followers in its team */
+    for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+        it != m_cEPuckLeaders.end();
+        ++it) {
+
+        /* Get handle to e-puck_leader entity and controller */
+        CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+        CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+        if(cController.GetId() == "L1")
+            cController.SetFollowerCount(unFollowers1);
+        else if(cController.GetId() == "L2")
+            cController.SetFollowerCount(unFollowers2);
+    }
+
     /* Update task demands */
     if(taskExists) {
 
@@ -491,6 +507,7 @@ void CExperimentLoopFunctions::PreStep() {
             robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
             robot["beat_sent"] = cController.GetLatestTimeSent();
             robot["beat_received"] = cController.GetLatestTimeReceived();
+            robot["total_received"] = cController.GetTotalReceived();
             robot["action"] = cController.GetLastAction();
 
             timestep[t_str]["robots"].push_back(robot);
