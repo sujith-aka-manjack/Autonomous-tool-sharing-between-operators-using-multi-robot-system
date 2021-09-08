@@ -90,17 +90,17 @@ void CFollower::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
-void CFollower::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
-   try {
-      GetNodeAttribute(t_node, "target_distance", TargetDistance);
-      GetNodeAttribute(t_node, "kp", Kp);
-      GetNodeAttribute(t_node, "ki", Ki);
-      GetNodeAttribute(t_node, "kd", Kd);
-   }
-   catch(CARGoSException& ex) {
-      THROW_ARGOSEXCEPTION_NESTED("Error initializing controller flocking parameters.", ex);
-   }
-}
+// void CFollower::SLeaderInteractionParams::Init(TConfigurationNode& t_node) {
+//    try {
+//       GetNodeAttribute(t_node, "target_distance", TargetDistance);
+//       GetNodeAttribute(t_node, "kp", Kp);
+//       GetNodeAttribute(t_node, "ki", Ki);
+//       GetNodeAttribute(t_node, "kd", Kd);
+//    }
+//    catch(CARGoSException& ex) {
+//       THROW_ARGOSEXCEPTION_NESTED("Error initializing controller flocking parameters.", ex);
+//    }
+// }
 
 /****************************************/
 /****************************************/
@@ -188,7 +188,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
         m_sWheelTurningParams.Init(GetNode(t_node, "wheel_turning"));
 
         /* Flocking-related */
-        m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
+        // m_sLeaderFlockingParams.Init(GetNode(t_node, "leader_flocking"));
         m_sTeamFlockingParams.Init(GetNode(t_node, "team_flocking"));
 
         /* Chain formation threshold */
@@ -312,12 +312,12 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init PID Controller
     */
-    pid = new PID(0.1,  // dt  (loop interval time)
-                  80,   // max (output vector length)
-                  -80,  // min (output vector length)
-                  m_sLeaderFlockingParams.Kp,    // Kp
-                  m_sLeaderFlockingParams.Ki,    // Ki
-                  m_sLeaderFlockingParams.Kd);   // Kd
+    // pid = new PID(0.1,  // dt  (loop interval time)
+    //               80,   // max (output vector length)
+    //               -80,  // min (output vector length)
+    //               m_sLeaderFlockingParams.Kp,    // Kp
+    //               m_sLeaderFlockingParams.Ki,    // Ki
+    //               m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
 }
@@ -377,7 +377,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    // std::cout << "\n---------- " << id << " ----------" << std::endl;
+    std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -439,7 +439,7 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -1003,50 +1003,95 @@ void CFollower::Update() {
                 robotIDs.insert(hop.second.ID);
         }
 
-        if( !robotIDs.empty() && !setCTriggered) {
-            bool exitLoop = false;
-            // //std::cerr << "CORRECT " << this->GetId() << std::endl;
+        // If it is connected to at least one connector
+        if( !robotIDs.empty() ) {
 
-            for(const auto& id : robotIDs) {
+            // Find the other connector
+            for(const auto& id: robotIDs) {
                 for(const auto& msg : connectorMsgs) {
-
-                    /* Find the connector */
                     if(msg.ID == id) {
-                        // //std::cerr << "CORRECT2 " << this->GetId() << std::endl;
 
+                        // If it appears in other connector's hopsDict, check if the team is also close.
+                        // Find situation where its ID appears in hopsDict AND not nearby.
+
+                        bool neededAsConnector = true;
+
+                        // Find where it appears in hopsDict
                         for(const auto& hop : msg.hops) {
-                            // //std::cerr << "CORRECT3 " << this->GetId() << std::endl;
-                            // //std::cerr << "CORRECT3 first: " << hop.first << std::endl;
-                            // //std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
-
-                            /* Find its own id */
+                            // std::cerr << this->GetId() << " hop of " << msg.ID << " for team " << hop.first << " is " << hop.second.ID << ", count is " << hop.second.count << std::endl;
                             if(hop.second.ID == this->GetId()) {
+                                // std::cerr << this->GetId() << " appears " << msg.ID << std::endl;
 
-                                /* Check whether the connector is near the team */
-                                /* If it's not, break from the loop as it is a necessary part of the chain */
-                                bool isNearTeam = false;
+                                // Check whether it is close to the team
+                                // If at least one team is doen't appear, break to return false
+                                // If all team is close, return true
+
                                 for(const auto& team : msg.nearbyTeams) {
-                                    // //std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
-                                    if(hop.first == team)
-                                        isNearTeam = true;
-                                }
-                                if(!isNearTeam) {
-                                    exitLoop = true;
-                                    break;
+                                    if(hop.first == team) {
+                                        // There is a team that's close
+                                        // std::cerr << this->GetId() << " is needed by " << msg.ID << " to connect team " << team << std::endl;
+                                        neededAsConnector = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        if(neededAsConnector) {
+                            // std::cerr << this->GetId() << " NEEDED! " << std::endl;
+                            condF2 = false;
+                        } else {
+                            // std::cerr << this->GetId() << " is not needed " << std::endl;
+                            condF2 = true;
+                        }
                     }
-                    if(exitLoop)
-                        break;
                 }
-                if(exitLoop)
-                    break;
             }
-
-            if(!exitLoop)
-                condF2 = true;
         }
+
+        // if( !robotIDs.empty() /* && !setCTriggered */) {
+        //     bool exitLoop = false;
+        //     std::cerr << "CORRECT " << this->GetId() << std::endl;
+
+        //     for(const auto& id : robotIDs) {
+        //         for(const auto& msg : connectorMsgs) {
+
+        //             /* Find the connector */
+        //             if(msg.ID == id) {
+        //                 std::cerr << "CORRECT2 " << this->GetId() << std::endl;
+
+        //                 for(const auto& hop : msg.hops) {
+        //                     std::cerr << "CORRECT3 " << this->GetId() << std::endl;
+        //                     std::cerr << "CORRECT3 first: " << hop.first << std::endl;
+        //                     std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
+
+        //                     /* Find its own id */
+        //                     if(hop.second.ID == this->GetId()) {
+
+        //                         /* Check whether the connector is near the team */
+        //                         /* If it's not, break from the loop as it is a necessary part of the chain */
+        //                         bool isNearTeam = false;
+        //                         for(const auto& team : msg.nearbyTeams) {
+        //                             // //std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
+        //                             if(hop.first == team)
+        //                                 isNearTeam = true;
+        //                         }
+        //                         if(!isNearTeam) {
+        //                             exitLoop = true;
+        //                             break;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //             if(exitLoop)
+        //                 break;
+        //         }
+        //         if(exitLoop)
+        //             break;
+        //     }
+
+        //     if(!exitLoop)
+        //         condF2 = true;
+        // }
     } else if(currentState == RobotState::TRAVELER) {
 
         std::vector<Message> combinedMsgs(otherTeamMsgs);
@@ -1617,8 +1662,17 @@ void CFollower::UpdateHopCounts() {
             if(robotIDs.count(previousRobotID)) {
                 hop.second.count = 255; // Could not be found, so set it to max value
             } else {
+                // If it has just send an accept, don't update count
                 UInt8 teamToCheck = hop.first;
                 HopMsg previousHop = robotMessages[previousRobotID].hops[teamToCheck];
+
+                bool sendingAccept = false;
+                for(const auto& pair : cmsgToResend) {
+                    if(pair.second.type == 'A' && pair.second.to == previousRobotID) {
+                        sendingAccept = true;
+                    }
+                }
+                if( !sendingAccept )
                 hop.second.count = previousHop.count + 1; // Increment by 1
             }
         }
@@ -1679,11 +1733,11 @@ CVector2 CFollower::GetTeamFlockingVector() {
     }
 
     /* Run the PID controller to calculate the force to team members with the smallest hop count */
-    Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
-                               resVec.Length());
+    // Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
+    //                            resVec.Length());
 
-    resVec = CVector2(-fPID,
-                      resVec.Angle());
+    // resVec = CVector2(-fPID,
+    //                   resVec.Angle());
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -1703,17 +1757,21 @@ CVector2 CFollower::GetRobotRepulsionVector() {
     std::vector<Message> repulseMsgs;
 
     /* Add team messages with equal or greater hop count */
-    if(hopCountToLeader < 255) {
-        UInt8 minCount = hopCountToLeader - 1;
+    // if(hopCountToLeader < 255) {
+    //     UInt8 minCount = hopCountToLeader - 1;
 
-        for(size_t i = 0; i < teamMsgs.size(); i++) {
-            if(teamMsgs[i].hops[teamID].count > minCount)
-                repulseMsgs.push_back(teamMsgs[i]);
-        }
-    } else {
-        repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
-    }
+    //     for(size_t i = 0; i < teamMsgs.size(); i++) {
+    //         if(teamMsgs[i].hops[teamID].count > minCount)
+    //             repulseMsgs.push_back(teamMsgs[i]);
+    //     }
+    // } else {
+    //     repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
+    // }
     
+    if( !leaderMsg.Empty() )
+        repulseMsgs.push_back(leaderMsg);
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
+
     /* Add other messages */
     repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
@@ -2221,22 +2279,22 @@ unsigned char CFollower::Check_NotNearC(void* data) {
 }
 
 unsigned char CFollower::Check_CondF1(void* data) {
-    // std::cout << "Event: " << condF1 << " - condF1" << std::endl;
+    std::cout << "Event: " << condF1 << " - condF1" << std::endl;
     return condF1;
 }
 
 unsigned char CFollower::Check_NotCondF1(void* data) {
-    // std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
+    std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
     return !condF1;
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {
-    // std::cout << "Event: " << condF2 << " - condF2" << std::endl;
+    std::cout << "Event: " << condF2 << " - condF2" << std::endl;
     return condF2;
 }
 
 unsigned char CFollower::Check_NotCondF2(void* data) {
-    // std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
+    std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
     return !condF2;
 }
 

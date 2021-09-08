@@ -90,16 +90,16 @@ public:
     * <controllers><follower_controller><parameters><leader_flocking>
     * section.
     */
-    struct SLeaderInteractionParams {
-        /* Target leader-robot distance in cm */
-        Real TargetDistance;
-        /* Parameters to be used for PID */
-        Real Kp;
-        Real Ki;
-        Real Kd;
+    // struct SLeaderInteractionParams {
+    //     /* Target leader-robot distance in cm */
+    //     Real TargetDistance;
+    //     /* Parameters to be used for PID */
+    //     Real Kp;
+    //     Real Ki;
+    //     Real Kd;
 
-        void Init(TConfigurationNode& t_node);
-    };
+    //     void Init(TConfigurationNode& t_node);
+    // };
 
     /*
     * The following variables are used as parameters for
@@ -481,7 +481,7 @@ private:
     /* The turning parameters. */
     SWheelTurningParams m_sWheelTurningParams;
     /* The flocking interaction parameters between leader. */
-    SLeaderInteractionParams m_sLeaderFlockingParams;
+    // SLeaderInteractionParams m_sLeaderFlockingParams;
     /* The flocking interaction parameters between teammates. */
     SFlockingInteractionParams m_sTeamFlockingParams;
     
