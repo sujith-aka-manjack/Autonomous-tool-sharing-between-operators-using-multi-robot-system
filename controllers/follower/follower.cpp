@@ -157,15 +157,13 @@ CFollower::CFollower() :
     m_pcRABAct(NULL),
     m_pcRABSens(NULL),
     m_pcLEDs(NULL),
-    sct(NULL),
-    pid(NULL) {}
+    sct(NULL) {}
 
 /****************************************/
 /****************************************/
 
 CFollower::~CFollower() {
     delete sct;
-    delete pid;
 }
 
 /****************************************/
@@ -308,16 +306,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
         sct->add_callback(this, follower_exchange::SCT::EV_nearLF,    NULL, &CFollower::Check_NearLF,    NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_notNearLF, NULL, &CFollower::Check_NotNearLF, NULL);
     }
-
-    /*
-    * Init PID Controller
-    */
-    // pid = new PID(0.1,  // dt  (loop interval time)
-    //               80,   // max (output vector length)
-    //               -80,  // min (output vector length)
-    //               m_sLeaderFlockingParams.Kp,    // Kp
-    //               m_sLeaderFlockingParams.Ki,    // Ki
-    //               m_sLeaderFlockingParams.Kd);   // Kd
 
     Reset();
 }
@@ -1686,13 +1674,6 @@ CVector2 CFollower::GetTeamFlockingVector() {
         }
         resVec /= numAttract;
     }
-
-    /* Run the PID controller to calculate the force to team members with the smallest hop count */
-    // Real fPID = pid->calculate(m_sLeaderFlockingParams.TargetDistance,
-    //                            resVec.Length());
-
-    // resVec = CVector2(-fPID,
-    //                   resVec.Angle());
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {

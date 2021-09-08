@@ -35,7 +35,6 @@
 
 #include "SCT_follower.h"
 #include "SCT_follower_exchange.h"
-#include <utility/pid.h>
 #include <set>
 
 /*
@@ -81,25 +80,6 @@ public:
 
         void Init(TConfigurationNode& t_tree);
     };
-
-    /*
-    * The following variables are used as parameters for
-    * leader following. You can set their value
-    * in the <parameters> section of the XML configuration
-    * file, under the
-    * <controllers><follower_controller><parameters><leader_flocking>
-    * section.
-    */
-    // struct SLeaderInteractionParams {
-    //     /* Target leader-robot distance in cm */
-    //     Real TargetDistance;
-    //     /* Parameters to be used for PID */
-    //     Real Kp;
-    //     Real Ki;
-    //     Real Kd;
-
-    //     void Init(TConfigurationNode& t_node);
-    // };
 
     /*
     * The following variables are used as parameters for
@@ -498,9 +478,6 @@ private:
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
-
-    /* PID controller to calculate the force towards the leader */
-    PID* pid;
 
     /* Outgoing message */
     CByteArray msg;
