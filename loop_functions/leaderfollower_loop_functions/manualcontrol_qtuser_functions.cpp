@@ -175,33 +175,33 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck
     */
-   try {
-      CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
+   // try {
+   //    CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
 
-      std::string text = c_entity.GetId().c_str();
+   //    std::string text = c_entity.GetId().c_str();
 
-      /* For connector, draw the hop count to each team */
-      if(cController.currentState == CFollower::RobotState::CONNECTOR) {
-         std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
+   //    /* For connector, draw the hop count to each team */
+   //    if(cController.currentState == CFollower::RobotState::CONNECTOR) {
+   //       std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
 
-         for(const auto& it : hops) {
-            text += "(T" + std::to_string(it.first);
-            if( !it.second.ID.empty() ) {
-               text += "-" + it.second.ID;
-            } else {
-               text += "-__";
-            }
-            text += "-" + std::to_string(it.second.count) + ")";
-         }
-      }
+   //       for(const auto& it : hops) {
+   //          text += "(T" + std::to_string(it.first);
+   //          if( !it.second.ID.empty() ) {
+   //             text += "-" + it.second.ID;
+   //          } else {
+   //             text += "-__";
+   //          }
+   //          text += "-" + std::to_string(it.second.count) + ")";
+   //       }
+   //    }
 
-      DrawText(CVector3(0.0, 0.0, 0.2),   // position
-               text); // text
-   } catch(CARGoSException& ex) {
-      THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
-   } catch(const std::bad_cast& e) {
-      std::cout << e.what() << " in Draw" << '\n';
-   }
+   //    DrawText(CVector3(0.0, 0.0, 0.2),   // position
+   //             text); // text
+   // } catch(CARGoSException& ex) {
+   //    THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
+   // } catch(const std::bad_cast& e) {
+   //    std::cout << e.what() << " in Draw" << '\n';
+   // }
 }
 
 /****************************************/
@@ -212,15 +212,11 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck_leader
     */
+   QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
-            c_entity.GetId().c_str()); // text
-
-   // DrawCircle(CVector3(0.0, 0.0, 0.01),
-   //            CQuaternion(),
-   //            c_entity.GetRABEquippedEntity().GetRange(),
-   //            CColor::RED,
-   //            false,
-   //            40U);
+            c_entity.GetId().c_str(),
+            CColor::BLACK,
+            leaderFont); // text
 }
 
 /****************************************/
@@ -233,49 +229,76 @@ void CManualControlQTUserFunctions::DrawInWorld() {
    */
 
    /* Get all the circle tasks */
-   // CSpace::TMapPerType& m_cCircleTasks = CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+   // CSpace::TMapPerType& m_cTasks = CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
    
-   CSpace::TMapPerType* m_cCircleTasks;
+   CSpace::TMapPerType* m_cTasks;
    try {
-      m_cCircleTasks = &CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+      // m_cTasks = &CSimulator::GetInstance().GetSpace().GetEntitiesByType("circle_task");
+      m_cTasks = &CSimulator::GetInstance().GetSpace().GetEntitiesByType("rectangle_task");
    } catch(CARGoSException& ex) {
       std::cout << "No circle task found in argos file (DrawInWorld)" << std::endl;
    }
 
-   if( !m_cCircleTasks->empty() ) {
-      for(CSpace::TMapPerType::iterator it = m_cCircleTasks->begin();
-       it != m_cCircleTasks->end();
+   if( !m_cTasks->empty() ) {
+      for(CSpace::TMapPerType::iterator it = m_cTasks->begin();
+       it != m_cTasks->end();
        ++it) {
 
          /* Get handle to the circle task entity */
-         CCircleTaskEntity& cCircleTask = *any_cast<CCircleTaskEntity*>(it->second);
+         // CCircleTaskEntity& cTask = *any_cast<CCircleTaskEntity*>(it->second);
+         CRectangleTaskEntity& cTask = *any_cast<CRectangleTaskEntity*>(it->second);
 
          /* Draw circle task */
-         CVector2 pos = cCircleTask.GetPosition();
-         UInt32 demand = cCircleTask.GetDemand();
+         CVector2 pos = cTask.GetPosition();
+         UInt32 demand = cTask.GetDemand();
+
+         // std::cout << cTask.GetWidth() << " " << cTask.GetHeight() << std::endl;
+
+         std::vector<CVector2> points = { CVector2(-0.5*cTask.GetWidth(),0.5*cTask.GetHeight()),
+                                             CVector2(0.5*cTask.GetWidth(),0.5*cTask.GetHeight()),
+                                             CVector2(0.5*cTask.GetWidth(),-0.5*cTask.GetHeight()),
+                                             CVector2(-0.5*cTask.GetWidth(),-0.5*cTask.GetHeight())};
+
+         // for(const auto& pt : points) {
+         //    std::cout << pt << std::endl;
+         // }
+
          if(demand > 0) {
-            DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
-                     CQuaternion(),
-                     cCircleTask.GetRadius(),
-                     CColor(255U, 128U, 128U, 255U),
-                     true,
-                     40U);
+            // DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+            //          CQuaternion(),
+            //          cTask.GetRadius(),
+            //          CColor(255U, 128U, 128U, 255U),
+            //          true,
+            //          40U);
+            DrawPolygon(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                        CQuaternion(),
+                        points,
+                        CColor(255U, 128U, 128U, 255U));
          } else {
-            DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
-                     CQuaternion(),
-                     cCircleTask.GetRadius(),
-                     CColor(128U, 255U, 128U, 255U),
-                     true,
-                     40U);
+            // DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
+            //          CQuaternion(),
+            //          cTask.GetRadius(),
+            //          CColor(128U, 255U, 128U, 255U),
+            //          true,
+            //          40U);
+            std::vector<CVector2> points = {CVector2(-0.5,0.5),CVector2(0.5,0.5),CVector2(0.5,-0.5),CVector2(-0.5,-0.5)};
+            DrawPolygon(CVector3(pos.GetX(), pos.GetY(), 0.001),
+                        CQuaternion(),
+                        points,
+                        CColor(128U, 255U, 128U, 255U));
          }
          
          /* Draw task info */
          std::ostringstream cText;
          cText.str("");
-         // cText << ceil(cCircleTask.GetDemand() / 10);
-         cText << cCircleTask.GetDemand();
+         // cText << ceil(cTask.GetDemand() / 10);
+         cText << cTask.GetDemand();
          QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
-         DrawText(CVector3(pos.GetX(), pos.GetY()+cCircleTask.GetRadius()/2, 0.01),
+         // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
+         //          cText.str(),
+         //          CColor::BLACK,
+         //          taskFont);
+         DrawText(CVector3(pos.GetX(), pos.GetY(), 0.01),
                   cText.str(),
                   CColor::BLACK,
                   taskFont);

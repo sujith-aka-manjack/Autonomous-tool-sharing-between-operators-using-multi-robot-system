@@ -18,6 +18,7 @@
 #include <e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
 #include <circle_task/circle_task_entity.h>
+#include <rectangle_task/rectangle_task_entity.h>
 
 using namespace argos;
 

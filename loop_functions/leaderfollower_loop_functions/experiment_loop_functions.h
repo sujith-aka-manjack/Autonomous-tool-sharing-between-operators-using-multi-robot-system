@@ -59,6 +59,15 @@ private:
                   UInt32 un_min_robot_num,
                   UInt32 un_max_robot_num,
                   UInt32 un_task_id_start);
+
+   /* Place a task */
+   void PlaceRectangleTask(const CVector2& c_center,
+                  Real f_width,
+                  Real f_height,
+                  UInt32 un_demand,
+                  UInt32 un_min_robot_num,
+                  UInt32 un_max_robot_num,
+                  UInt32 un_task_id_start);
 };
 
 #endif

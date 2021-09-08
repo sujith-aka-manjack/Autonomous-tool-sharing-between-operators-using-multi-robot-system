@@ -6,6 +6,7 @@
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
 #include <circle_task/circle_task_entity.h>
+#include <rectangle_task/rectangle_task_entity.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 #include "yaml-cpp/yaml.h"
@@ -197,14 +198,41 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             itDistr != itDistr.end();
             ++itDistr) {
 
+            // /* Get current node (task) */
+            // TConfigurationNode& tDistr = *itDistr;
+            // /* Task center */
+            // CVector2 cCenter;
+            // GetNodeAttribute(tDistr, "position", cCenter);
+            // /* Task radius */
+            // Real fRadius;
+            // GetNodeAttribute(tDistr, "radius", fRadius);
+            // /* Task demand */
+            // UInt32 unDemand;
+            // GetNodeAttribute(tDistr, "task_demand", unDemand);
+            // /* Minimum robot constraint */
+            // UInt32 unMinRobotNum;
+            // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+            // /* Maximum robot constraint */
+            // UInt32 unMaxRobotNum;
+            // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+            
+            // /* Place Tasks */
+            // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+
+            // /* Update task count */
+            // unNextTaskId++;
+
             /* Get current node (task) */
             TConfigurationNode& tDistr = *itDistr;
             /* Task center */
             CVector2 cCenter;
             GetNodeAttribute(tDistr, "position", cCenter);
-            /* Task radius */
-            Real fRadius;
-            GetNodeAttribute(tDistr, "radius", fRadius);
+            /* Task width */
+            Real fWidth;
+            GetNodeAttribute(tDistr, "width", fWidth);
+            /* Task height */
+            Real fHeight;
+            GetNodeAttribute(tDistr, "height", fHeight);
             /* Task demand */
             UInt32 unDemand;
             GetNodeAttribute(tDistr, "task_demand", unDemand);
@@ -216,7 +244,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
             GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
             
             /* Place Tasks */
-            PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+            PlaceRectangleTask(cCenter, fWidth, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
 
             /* Update task count */
             unNextTaskId++;
@@ -275,7 +303,8 @@ void CExperimentLoopFunctions::PreStep() {
     CSpace::TMapPerType* m_cCTasks;
     bool taskExists;
     try {
-        m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
+        // m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
+        m_cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
         taskExists = true;
     } catch(CARGoSException& ex) {
         std::cout << "No circle task found in argos file (PreStep)" << std::endl;
@@ -288,7 +317,8 @@ void CExperimentLoopFunctions::PreStep() {
             ++itTask) {
             
             /* Initialize each task with zero e-pucks working on it */
-            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
             taskWithRobot[cCTask.GetId()] = 0;
         }
     }
@@ -318,11 +348,19 @@ void CExperimentLoopFunctions::PreStep() {
                 ++itTask) {
 
                 /* Task location */
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
+
                 CVector2 cTaskPos = cCTask.GetPosition();
 
+                // /* If there is a task with the given task position AND leader is within the task range, return task demand */
+                // if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                //     cController.SetTaskDemand(cCTask.GetDemand());
+                //     break;
+                // }
+
                 /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                if(nextTaskPos == cTaskPos && cCTask.InArea(cPos)) {
                     cController.SetTaskDemand(cCTask.GetDemand());
                     break;
                 }
@@ -369,14 +407,21 @@ void CExperimentLoopFunctions::PreStep() {
                         ++itTask) {
 
                         /* Task location */
-                        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                        // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                        CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
+
                         CVector2 cTaskPos = cCTask.GetPosition();
 
                         /* Check if robot is working on a task */
                         if(cController.IsWorking()) {
                             /* Check e-puck and its leader is within the range of a task */
-                            if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                            (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                            // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                            // (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                                
+                            //     taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                            //     break;
+                            // }
+                            if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
                                 
                                 taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
                                 break;
@@ -404,7 +449,9 @@ void CExperimentLoopFunctions::PreStep() {
             itTask != m_cCTasks->end();
             ++itTask) {
 
-            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
+
             UInt32 currentDemand = cCTask.GetDemand();
 
             /* Check if there is enough robots working on the task */
@@ -415,8 +462,6 @@ void CExperimentLoopFunctions::PreStep() {
                     cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
                 }
             }
-
-            // TODO: Record task demand
         }
     }
 
@@ -490,16 +535,30 @@ void CExperimentLoopFunctions::PreStep() {
                 itTask != m_cCTasks->end();
                 ++itTask) {
 
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+
+                // YAML::Node task;
+                // task["id"] = cCTask.GetId();
+                // task["shape"] = "CIRCLE";
+                // task["demand"] = (int)cCTask.GetDemand();
+                // task["pos"]["x"] = cCTask.GetPosition().GetX();
+                // task["pos"]["y"] = cCTask.GetPosition().GetY();
+                // task["pos"].SetStyle(YAML::EmitterStyle::Flow);
+                // task["radius"] = cCTask.GetRadius();
+                // task["max_robot"] = (int)cCTask.GetMaxRobotNum();
+                // task["min_robot"] = (int)cCTask.GetMinRobotNum();
+
+                CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
                 YAML::Node task;
                 task["id"] = cCTask.GetId();
-                task["shape"] = "CIRCLE";
+                task["shape"] = "RECTANGLE";
                 task["demand"] = (int)cCTask.GetDemand();
                 task["pos"]["x"] = cCTask.GetPosition().GetX();
                 task["pos"]["y"] = cCTask.GetPosition().GetY();
                 task["pos"].SetStyle(YAML::EmitterStyle::Flow);
-                task["radius"] = cCTask.GetRadius();
+                task["width"] = cCTask.GetWidth();
+                task["height"] = cCTask.GetHeight();
                 task["max_robot"] = (int)cCTask.GetMaxRobotNum();
                 task["min_robot"] = (int)cCTask.GetMinRobotNum();
 
@@ -719,6 +778,39 @@ void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
                                       un_min_robot_num,
                                       un_max_robot_num);
         AddEntity(*pcCTS);
+
+    } catch(CARGoSException& ex) {
+        THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::PlaceRectangleTask(const CVector2& c_center,
+                                         Real f_width,
+                                         Real f_height,
+                                         UInt32 un_demand,
+                                         UInt32 un_min_robot_num,
+                                         UInt32 un_max_robot_num,
+                                         UInt32 un_task_id_start) {
+
+    try {
+        CRectangleTaskEntity* pcRTS;
+        std::ostringstream cTSId;
+
+        /* Make the id */
+        cTSId.str("");
+        cTSId << "task_" << un_task_id_start;
+        /* Create the task and add it to ARGoS space */
+        pcRTS = new CRectangleTaskEntity(cTSId.str(),
+                                      c_center,
+                                      f_width,
+                                      f_height,
+                                      un_demand,
+                                      un_min_robot_num,
+                                      un_max_robot_num);
+        AddEntity(*pcRTS);
 
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
