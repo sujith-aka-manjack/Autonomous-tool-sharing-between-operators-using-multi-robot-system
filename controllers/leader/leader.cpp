@@ -164,12 +164,13 @@ void CLeader::Init(TConfigurationNode& t_node) {
     numPreviousRequest = 0;
     switchCandidate = "";
     notDecremented = true;
+    robotsNeeded = 0;
 
     /*
     * Init SCT Controller
     */
-    // sct = new leader::SCTPub();
-    sct = new leader_exchange::SCTPub();
+    sct = new leader::SCTPub();
+    // sct = new leader_exchange::SCTPub();
 
     if( !exchangeUsed ) {
 
@@ -555,6 +556,20 @@ void CLeader::SetTaskDemand(const UInt32 un_demand) {
 /****************************************/
 /****************************************/
 
+void CLeader::SetMinimumCount(const UInt32 un_min) {
+    robotsNeeded = un_min;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetFollowerCount(const UInt32 un_count) {
+    currentFollowerCount = un_count;
+}
+
+/****************************************/
+/****************************************/
+
 UInt8 CLeader::GetTeamID() {
     return teamID;
 }
@@ -571,6 +586,13 @@ Real CLeader::GetLatestTimeSent() {
 
 Real CLeader::GetLatestTimeReceived() {
     return lastBeatTime;
+}
+
+/****************************************/
+/****************************************/
+
+Real CLeader::GetTotalReceived() {
+    return beatReceived;
 }
 
 /****************************************/
@@ -1232,12 +1254,13 @@ void CLeader::Callback_Message(void* data) {
     if(exchangeUsed) {
         if(initStepTimer > 0 && initStepTimer % 10 == 0) {
             if(m_bSignal) { // Sending start signal to robots
-                if(currentTaskDemand > 0 && currentTaskDemand == previousTaskDemand) {
+                if(robotsNeeded - currentFollowerCount > 0) {
                     beat.type = 'R';
-                    beat.robot_num = 100; // TEMP: Large number to send all robots
+                    // beat.robot_num = 100; // TEMP: Large number to send all robots
+                    beat.robot_num = robotsNeeded - currentFollowerCount;
                     std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
                 }
-            }     
+            }
         }
     }
 

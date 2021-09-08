@@ -323,6 +323,16 @@ public:
     */
     void SetTaskDemand(const UInt32 un_demand);
 
+    /* 
+    * Sets the current task info.
+    */
+    void SetMinimumCount(const UInt32 un_min);
+
+    /*
+    * Sets the current number of followers in the team.
+    */
+    void SetFollowerCount(const UInt32 un_count);
+
     /*
     * Get team ID.
     */
@@ -339,6 +349,11 @@ public:
     * Returns the timestep that the message was sent, if message was received.
     */
     virtual Real GetLatestTimeReceived();
+
+    /*
+    * Get the total number of messages received from the other leader.
+    */
+    virtual Real GetTotalReceived();
 
     /*
     * Returns the last action made by the leader.
@@ -447,10 +462,10 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
 
     /* Controller */
-    // leader::SCTPub* sct;
-    // bool exchangeUsed = false;
-    leader_exchange::SCTPub* sct;
-    bool exchangeUsed = true;
+    leader::SCTPub* sct;
+    bool exchangeUsed = false;
+    // leader_exchange::SCTPub* sct;
+    // bool exchangeUsed = true;
 
     /* Type of SCT being used */
 
@@ -490,6 +505,11 @@ private:
     UInt32 currentTaskDemand;
     UInt32 previousTaskDemand; // Task demand from 10 timesteps ago
 
+    int robotsNeeded; // Minimum number of robots needed to perform the current task
+
+    /* Current number of followers in the team */
+    int currentFollowerCount;
+
     /* Flag to know whether there is a neighbor */
     bool nearRobot;
 
@@ -519,8 +539,8 @@ private:
     size_t initStepTimer;
 
     /* Team switch variables */
-    size_t numRobotsToSend;
-    size_t numPreviousRequest;
+    int numRobotsToSend;
+    int numPreviousRequest;
     std::string robotToSwitch;
     UInt8 teamToJoin;
 
