@@ -13,17 +13,17 @@ from collections import defaultdict
 pp = pprint.PrettyPrinter(indent=4)
 
 # Experiment Configurations
-TOTAL_TIME = 3001
+TOTAL_TIME = 5001
 TOTAL_ROBOTS = 30
-DEMAND_PER_TASK = 1000
+DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
-TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS - 1000
+TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-# OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
-OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
@@ -109,7 +109,7 @@ def plot_robot_states(scenario, data, title=None, x_label=None, y_label=None, ou
     if np.amax(y4) > 0:
         plt.plot(x, y4, label = "Traveler")
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -216,13 +216,15 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     if np.amax(y4_max) > 0:
         plt.plot(x, y4_mean, label = "Traveler")
 
+    plt.savefig('{}{}.pdf'.format(os.path.splitext(out_filename)[0]), '_mean')
+
     plt.fill_between(x, y1_min, y1_max, alpha=0.2)
     plt.fill_between(x, y2_min, y2_max, alpha=0.2)
     plt.fill_between(x, y3_min, y3_max, alpha=0.2)
     if np.amax(y4_max) > 0:
         plt.fill_between(x, y4_min, y4_max, alpha=0.2)
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -263,7 +265,7 @@ def plot_task_demands(scenario, data, title=None, x_label=None, y_label=None, ou
     # plotting the lines
     plt.plot(x, y, label = "Demand")
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -317,7 +319,7 @@ def plot_overall_task_demands(stats, title=None, x_label=None, y_label=None, out
     plt.plot(x, y_mean, label = "Demand")
     plt.fill_between(x, y_min, y_max, alpha=0.2)
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -359,7 +361,7 @@ def plot_trajectories(scenario, data, title=None, x_label=None, y_label=None, ou
     for id in ids:
         plt.plot(x[id], y[id], label = id)
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -455,7 +457,7 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
     
     plt.boxplot(data)
 
-    plt.title(title)
+    # plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
@@ -514,12 +516,12 @@ def main(argv):
 
     # Run connected ratio separately from the other plotting functions for now as it deals with scenarios with different robot numbers
 
-    # plot_filename = '{0}/overall_connected_ratio.pdf'.format(OUTPUT_DIR)
-    # plot_overall_connected_ratio(stats,
-    #                              title='Average ratio of beat messages exchanged',
-    #                              x_label='Number of follower robots',
-    #                              y_label='Ratio of messages received',
-    #                              out_filename=plot_filename)
+    plot_filename = '{0}/overall_connected_ratio.pdf'.format(OUTPUT_DIR)
+    plot_overall_connected_ratio(stats,
+                                 title='Average ratio of beat messages exchanged',
+                                 x_label='Number of follower robots',
+                                 y_label='Ratio of messages received',
+                                 out_filename=plot_filename)
 
 
 if __name__ == "__main__":
@@ -530,7 +532,7 @@ if __name__ == "__main__":
     #        ]
     argv = []
 
-    # for i in range(1,21):
+    # for i in range(1,18):
     #     id = ''
     #     if(i < 10):
     #         id += '0' + str(i)
@@ -538,20 +540,20 @@ if __name__ == "__main__":
     #         id += str(i)
     #     argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
-    # for i in range(1,21):
-    #     id = ''
-    #     if(i < 10):
-    #         id += '0' + str(i)
-    #     else:
-    #         id += str(i)
-    #     argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-
-    for i in range(1,2):
+    for i in range(1,20):
         id = ''
         if(i < 10):
             id += '0' + str(i)
         else:
             id += str(i)
-        argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+
+    # for i in range(1,2):
+    #     id = ''
+    #     if(i < 10):
+    #         id += '0' + str(i)
+    #     else:
+    #         id += str(i)
+    #     argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     main(argv)
