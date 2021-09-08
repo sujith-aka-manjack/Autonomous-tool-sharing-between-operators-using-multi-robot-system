@@ -377,7 +377,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    std::cout << "\n---------- " << id << " ----------" << std::endl;
+    // std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -439,7 +439,7 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -489,11 +489,11 @@ void CFollower::ControlStep() {
 
             bool sending = false;
             bool requesting = false;
-            for(const auto& msg : rmsgToResend) {
-                sending = true;
-                if(msg.second.type == 'R')
-                    requesting = true;
-            }
+            // for(const auto& msg : rmsgToResend) {
+            //     sending = true;
+            //     if(msg.second.type == 'R')
+            //         requesting = true;
+            // }
             if(requesting)
                 m_pcLEDs->SetAllColors(CColor::YELLOW);
             else if(sending)
@@ -1047,51 +1047,6 @@ void CFollower::Update() {
                 }
             }
         }
-
-        // if( !robotIDs.empty() /* && !setCTriggered */) {
-        //     bool exitLoop = false;
-        //     std::cerr << "CORRECT " << this->GetId() << std::endl;
-
-        //     for(const auto& id : robotIDs) {
-        //         for(const auto& msg : connectorMsgs) {
-
-        //             /* Find the connector */
-        //             if(msg.ID == id) {
-        //                 std::cerr << "CORRECT2 " << this->GetId() << std::endl;
-
-        //                 for(const auto& hop : msg.hops) {
-        //                     std::cerr << "CORRECT3 " << this->GetId() << std::endl;
-        //                     std::cerr << "CORRECT3 first: " << hop.first << std::endl;
-        //                     std::cerr << "CORRECT3 second.ID: " << hop.second.ID << std::endl;
-
-        //                     /* Find its own id */
-        //                     if(hop.second.ID == this->GetId()) {
-
-        //                         /* Check whether the connector is near the team */
-        //                         /* If it's not, break from the loop as it is a necessary part of the chain */
-        //                         bool isNearTeam = false;
-        //                         for(const auto& team : msg.nearbyTeams) {
-        //                             // //std::cerr << "is hop.first: " << hop.first << " equal to teamID: " << team << " ?" << std::endl;
-        //                             if(hop.first == team)
-        //                                 isNearTeam = true;
-        //                         }
-        //                         if(!isNearTeam) {
-        //                             exitLoop = true;
-        //                             break;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //             if(exitLoop)
-        //                 break;
-        //         }
-        //         if(exitLoop)
-        //             break;
-        //     }
-
-        //     if(!exitLoop)
-        //         condF2 = true;
-        // }
     } else if(currentState == RobotState::TRAVELER) {
 
         std::vector<Message> combinedMsgs(otherTeamMsgs);
@@ -2279,22 +2234,22 @@ unsigned char CFollower::Check_NotNearC(void* data) {
 }
 
 unsigned char CFollower::Check_CondF1(void* data) {
-    std::cout << "Event: " << condF1 << " - condF1" << std::endl;
+    // std::cout << "Event: " << condF1 << " - condF1" << std::endl;
     return condF1;
 }
 
 unsigned char CFollower::Check_NotCondF1(void* data) {
-    std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
+    // std::cout << "Event: " << !condF1 << " - notCondF1" << std::endl;
     return !condF1;
 }
 
 unsigned char CFollower::Check_CondF2(void* data) {
-    std::cout << "Event: " << condF2 << " - condF2" << std::endl;
+    // std::cout << "Event: " << condF2 << " - condF2" << std::endl;
     return condF2;
 }
 
 unsigned char CFollower::Check_NotCondF2(void* data) {
-    std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
+    // std::cout << "Event: " << !condF2 << " - notCondF2" << std::endl;
     return !condF2;
 }
 

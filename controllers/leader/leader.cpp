@@ -156,6 +156,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
     shareToTeam = "";
     initStepTimer = 0;
+    acceptID = "";
     lastSent = -1;
     lastBeatTime = 0;
     beatReceived = 0;
@@ -282,8 +283,6 @@ void CLeader::ControlStep() {
     receivedRequest = false;
     inputMessage = false;
 
-    acceptID = "";
-
     lastAction = "";
 
     // for(int i = 0; i < waypoints.size(); i++) {
@@ -337,6 +336,7 @@ void CLeader::ControlStep() {
             ++it;
         } else {
             it = cmsgToResend.erase(it);
+            acceptID = "";
         }
     }
 
