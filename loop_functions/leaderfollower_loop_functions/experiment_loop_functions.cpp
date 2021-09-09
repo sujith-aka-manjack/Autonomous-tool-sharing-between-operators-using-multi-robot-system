@@ -502,9 +502,9 @@ void CExperimentLoopFunctions::PreStep() {
             robot["id"] = cEPuckLeader.GetId();
             robot["teamid"] = (int)cController.GetTeamID();
             robot["state"] = "LEADER";
-            robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            // robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            // robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            // robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
             robot["beat_sent"] = cController.GetLatestTimeSent();
             robot["beat_received"] = cController.GetLatestTimeReceived();
             robot["total_received"] = cController.GetTotalReceived();
@@ -538,9 +538,9 @@ void CExperimentLoopFunctions::PreStep() {
                     std::cerr << "Tried to log unknown state " << int(cController.currentState) << std::endl;
                     break;
             }
-            robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            // robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            // robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            // robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
 
             timestep[t_str]["robots"].push_back(robot);
         }
@@ -569,15 +569,15 @@ void CExperimentLoopFunctions::PreStep() {
 
                 YAML::Node task;
                 task["id"] = cCTask.GetId();
-                task["shape"] = "RECTANGLE";
+                // task["shape"] = "RECTANGLE";
                 task["demand"] = (int)cCTask.GetDemand();
-                task["pos"]["x"] = cCTask.GetPosition().GetX();
-                task["pos"]["y"] = cCTask.GetPosition().GetY();
-                task["pos"].SetStyle(YAML::EmitterStyle::Flow);
-                task["width"] = cCTask.GetWidth();
-                task["height"] = cCTask.GetHeight();
-                task["max_robot"] = (int)cCTask.GetMaxRobotNum();
-                task["min_robot"] = (int)cCTask.GetMinRobotNum();
+                // task["pos"]["x"] = cCTask.GetPosition().GetX();
+                // task["pos"]["y"] = cCTask.GetPosition().GetY();
+                // task["pos"].SetStyle(YAML::EmitterStyle::Flow);
+                // task["width"] = cCTask.GetWidth();
+                // task["height"] = cCTask.GetHeight();
+                // task["max_robot"] = (int)cCTask.GetMaxRobotNum();
+                // task["min_robot"] = (int)cCTask.GetMinRobotNum();
 
                 timestep[t_str]["tasks"].push_back(task);
             }

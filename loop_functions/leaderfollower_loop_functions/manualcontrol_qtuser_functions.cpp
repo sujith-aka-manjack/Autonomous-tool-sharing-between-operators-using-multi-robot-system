@@ -293,7 +293,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          cText.str("");
          cText << ceil(cTask.GetDemand() / 10);
          // cText << cTask.GetDemand();
-         QFont taskFont("Helvetica [Cronyx]", 20, QFont::Bold);
+         QFont taskFont("Helvetica [Cronyx]", 30, QFont::Bold);
          // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
          //          cText.str(),
          //          CColor::BLACK,
