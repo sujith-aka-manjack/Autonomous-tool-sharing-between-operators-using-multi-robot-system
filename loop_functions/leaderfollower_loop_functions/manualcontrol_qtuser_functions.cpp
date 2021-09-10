@@ -298,7 +298,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          //          cText.str(),
          //          CColor::BLACK,
          //          taskFont);
-         DrawText(CVector3(pos.GetX(), pos.GetY(), 0.01),
+         DrawText(CVector3(pos.GetX()-0.2, pos.GetY()-0.1, 0.01),
                   cText.str(),
                   CColor::BLACK,
                   taskFont);

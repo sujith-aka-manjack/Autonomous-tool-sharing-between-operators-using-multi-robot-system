@@ -353,6 +353,11 @@ public:
     /*
     * Get the total number of messages received from the other leader.
     */
+    virtual Real GetTotalSent();
+
+    /*
+    * Get the total number of messages received from the other leader.
+    */
     virtual Real GetTotalReceived();
 
     /*
@@ -530,7 +535,7 @@ private:
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
     Real lastSent;
     Real lastBeatTime;
-    size_t beatReceived;
+    size_t beatReceived, beatSent;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
     std::string previousCandidate;
     bool notDecremented;

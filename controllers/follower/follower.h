@@ -423,8 +423,8 @@ protected:
     virtual unsigned char Check_NotCondC1(void* data);
     virtual unsigned char Check_CondC2(void* data);
     virtual unsigned char Check_NotCondC2(void* data);
-    virtual unsigned char Check_CondC3(void* data);
-    virtual unsigned char Check_NotCondC3(void* data);   
+    // virtual unsigned char Check_CondC3(void* data);
+    // virtual unsigned char Check_NotCondC3(void* data);   
     virtual unsigned char Check_NearC(void* data);
     virtual unsigned char Check_NotNearC(void* data);
     virtual unsigned char Check_CondF1(void* data);

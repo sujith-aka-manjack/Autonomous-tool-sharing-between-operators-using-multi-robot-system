@@ -244,8 +244,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         sct->add_callback(this, follower::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
         sct->add_callback(this, follower::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
         sct->add_callback(this, follower::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-        sct->add_callback(this, follower::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-        sct->add_callback(this, follower::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+        // sct->add_callback(this, follower::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+        // sct->add_callback(this, follower::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
         sct->add_callback(this, follower::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
         sct->add_callback(this, follower::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
         sct->add_callback(this, follower::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
@@ -284,8 +284,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
         sct->add_callback(this, follower_exchange::SCT::EV_notCondC1, NULL, &CFollower::Check_NotCondC1, NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_condC2,    NULL, &CFollower::Check_CondC2,    NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_notCondC2, NULL, &CFollower::Check_NotCondC2, NULL);
-        sct->add_callback(this, follower_exchange::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
-        sct->add_callback(this, follower_exchange::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
+        // sct->add_callback(this, follower_exchange::SCT::EV_condC3,    NULL, &CFollower::Check_CondC3,    NULL);
+        // sct->add_callback(this, follower_exchange::SCT::EV_notCondC3, NULL, &CFollower::Check_NotCondC3, NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_nearC,     NULL, &CFollower::Check_NearC,     NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_notNearC,  NULL, &CFollower::Check_NotNearC,  NULL);
         sct->add_callback(this, follower_exchange::SCT::EV_condF1,    NULL, &CFollower::Check_CondF1,    NULL);
@@ -451,7 +451,15 @@ void CFollower::ControlStep() {
     switch(currentState) {
         case RobotState::FOLLOWER: {
             //std::cout << "State: FOLLOWER" << std::endl;
-            m_pcLEDs->SetAllColors(teamColor[teamID]);
+            bool relaying = false;
+            // for(const auto& msg : rmsgToResend) {
+            //     if(msg.second.from == "L1")
+            //         relaying = true;
+            // }
+            if(relaying)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else
+                m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             /* Relay task signal from leader */
             msg[msg_index++] = leaderSignal;
@@ -478,14 +486,15 @@ void CFollower::ControlStep() {
             bool sending = false;
             bool requesting = false;
             // for(const auto& msg : rmsgToResend) {
-            //     sending = true;
-            //     if(msg.second.type == 'R')
-            //         requesting = true;
+            //     if(msg.second.from == "L1")
+            //         sending = true;
+            //     // if(msg.second.type == 'R')
+            //     //     requesting = true;
             // }
             if(requesting)
                 m_pcLEDs->SetAllColors(CColor::YELLOW);
             else if(sending)
-                m_pcLEDs->SetAllColors(CColor::MAGENTA);
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
             else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
@@ -628,7 +637,7 @@ void CFollower::ControlStep() {
     }
 
     //std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
-    msg[msg_index++] = rmsgToSend.size(); // Set the number of ConnectionMsg
+    msg[msg_index++] = rmsgToSend.size(); // Set the number of RelayMsg
     for(const auto& relayMsg : rmsgToSend) {
         msg[msg_index++] = (UInt8)relayMsg.type;
         msg[msg_index++] = relayMsg.from[0];
@@ -1191,6 +1200,9 @@ void CFollower::CheckAccept() {
                         currentAccept = cmsg;
                     } else                            // Request approved for another follower
                         receivedReject = true;
+
+                } else if(cmsg.type == 'N') {         // No request has been approved
+                    receivedReject = true;
                 }
             }
         }
@@ -2124,6 +2136,16 @@ void CFollower::Callback_Relay(void* data) {
     //std::cout << "Action: relay" << std::endl;
 
     for(const auto& info : lastBeat) {
+
+        /* Remove any existing old messages from the same team that is current being sent */
+        for(auto it = rmsgToResend.begin(); it != rmsgToResend.end();) {
+            if(it->first == info.first) {
+                it = rmsgToResend.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
         if(info.second.second != 'N')
             rmsgToResend.push_back({sendDuration,info.second.first});
     }
@@ -2180,27 +2202,27 @@ unsigned char CFollower::Check_NotCondC2(void* data) {
     return !condC2;
 }
 
-unsigned char CFollower::Check_CondC3(void* data) {
-    if( !connectionCandidate.Empty()) {
-        if(teamID < connectionCandidate.teamID) {
-            // std::cout << "Event: " << 1 << " - condC3" << std::endl;
-            return 1;
-        }
-    }
-    // std::cout << "Event: " << 0 << " - condC3" << std::endl;
-    return 0;
-}
+// unsigned char CFollower::Check_CondC3(void* data) {
+//     if( !connectionCandidate.Empty()) {
+//         if(teamID < connectionCandidate.teamID) {
+//             // std::cout << "Event: " << 1 << " - condC3" << std::endl;
+//             return 1;
+//         }
+//     }
+//     // std::cout << "Event: " << 0 << " - condC3" << std::endl;
+//     return 0;
+// }
 
-unsigned char CFollower::Check_NotCondC3(void* data) {
-    if( !connectionCandidate.Empty() ) {
-        if(teamID < connectionCandidate.teamID) {
-            // std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
-            return 0;
-        }
-    }
-    // std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
-    return 1;
-}
+// unsigned char CFollower::Check_NotCondC3(void* data) {
+//     if( !connectionCandidate.Empty() ) {
+//         if(teamID < connectionCandidate.teamID) {
+//             // std::cout << "Event: " << 0 << " - notCondC3" << std::endl;
+//             return 0;
+//         }
+//     }
+//     // std::cout << "Event: " << 1 << " - notCondC3" << std::endl;
+//     return 1;
+// }
 
 unsigned char CFollower::Check_NearC(void* data) {
     bool connectorSeen = !connectorMsgs.empty();

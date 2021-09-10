@@ -505,8 +505,9 @@ void CExperimentLoopFunctions::PreStep() {
             // robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
             // robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
             // robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
-            robot["beat_sent"] = cController.GetLatestTimeSent();
-            robot["beat_received"] = cController.GetLatestTimeReceived();
+            // robot["beat_sent"] = cController.GetLatestTimeSent();
+            // robot["beat_received"] = cController.GetLatestTimeReceived();
+            robot["total_sent"] = cController.GetTotalSent();
             robot["total_received"] = cController.GetTotalReceived();
             robot["action"] = cController.GetLastAction();
 
@@ -598,6 +599,42 @@ void CExperimentLoopFunctions::PreStep() {
         CQTOpenGLWidget& widget = render.GetMainWindow().GetOpenGLWidget();
         widget.SetCamera(m_unCameraIndex);
         widget.SetGrabFrame(m_bFrameGrabbing);
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::PostStep() {
+    Real total_demand = 0;
+
+    /* Add existing task id to the map */
+    CSpace::TMapPerType* m_cCTasks;
+    bool taskExists;
+    try {
+        // m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
+        m_cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
+        taskExists = true;
+    } catch(CARGoSException& ex) {
+        std::cout << "No circle task found in argos file (PreStep)" << std::endl;
+        taskExists = false;
+    }
+
+    if(taskExists) {
+        for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+            itTask != m_cCTasks->end();
+            ++itTask) {
+            
+            /* Initialize each task with zero e-pucks working on it */
+            // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
+            total_demand += (int)cCTask.GetDemand();
+        }
+    }
+
+    if(total_demand == 0) {
+        CSimulator::GetInstance().Terminate();
+        std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
     }
 }
 

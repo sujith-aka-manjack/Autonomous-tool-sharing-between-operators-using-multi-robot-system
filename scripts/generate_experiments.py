@@ -10,11 +10,13 @@ TEMPLATE_PATH = os.path.join(os.environ['HOME'], 'GIT/argos-sct/experiments/expe
 
 NUM_TASKS = 5
 
-def generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path):
+def generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path, comment):
     
     d = datetime.datetime.now()
     # directory = d.strftime("%m-%d") + "-" + d.strftime("%H%M%S") + '_' + num_robots + 'R_6T_100D'
     directory = '{}R_{}T_{}D'.format(num_robots, NUM_TASKS, demand)
+    if(comment):
+        directory = '{}_{}'.format(directory, comment)
     os.mkdir(os.path.join(log_dir_path, directory))
     os.mkdir(os.path.join(argos_dir_path, directory))
 
@@ -87,6 +89,10 @@ if __name__ == "__main__":
     parser.add_argument('log_dir_path',
                         help='Directory path to store the log files')
 
+    parser.add_argument('-c', '--comment',
+                        help='Add an identifier to the scenario file names',
+                        default='')
+
     args = parser.parse_args()
 
     num_experiments = args.runs
@@ -95,5 +101,6 @@ if __name__ == "__main__":
     demand = args.demand
     argos_dir_path = args.argos_dir_path
     log_dir_path = args.log_dir_path
+    comment = args.comment
 
-    generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path)
+    generate_experiments(num_experiments, num_robots, duration, demand, argos_dir_path, log_dir_path, comment)

@@ -160,6 +160,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     lastSent = -1;
     lastBeatTime = 0;
     beatReceived = 0;
+    beatSent = 0;
     numRobotsToSend = 0;
     numPreviousRequest = 0;
     switchCandidate = "";
@@ -591,6 +592,13 @@ Real CLeader::GetLatestTimeReceived() {
 /****************************************/
 /****************************************/
 
+Real CLeader::GetTotalSent() {
+    return beatSent;
+}
+
+/****************************************/
+/****************************************/
+
 Real CLeader::GetTotalReceived() {
     return beatReceived;
 }
@@ -745,6 +753,10 @@ void CLeader::GetMessages() {
                 // //std::cout << "FROM: " << relayMsg.from << std::endl;
                 
                 relayMsg.time = tMsgs[i].Data[index++]*256 + tMsgs[i].Data[index++]; 
+                if(relayMsg.time > 5000) {
+                    std::cerr << "INVALID TIME RECEIVED from " << msg.ID << std::endl;
+                    std::cerr << tMsgs[i].Data << std::endl;
+                }
 
                 if(tMsgs[i].Data[index] != 255) {
                     robotID = "";
@@ -967,11 +979,15 @@ void CLeader::CheckHeartBeat() {
     for(const auto& msg : combinedMsgs) {
         for(const auto& beat : msg.rmsg) {
             if(beat.from != this->GetId()) { 
+                // if(this->GetId() == "L1")
+                //     std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+
                 if(beat.time > lastBeatTime) {
                     beatReceived++;
                     lastBeatTime = beat.time;
                     // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
-                    // std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                    // if(this->GetId() == "L2")
+                    //     std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
 
                     if(msg.state == RobotState::LEADER)
                         receivedMessage = true;
@@ -989,6 +1005,15 @@ void CLeader::CheckHeartBeat() {
                             numRobotsToSend = beat.robot_num;
                             numPreviousRequest = beat.robot_num;
                             std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+
+                            // TEMP
+                            // Add waypoints
+
+                            // std::queue<CVector2> waypoints; // Queue to provide to the robot
+                            waypoints.push(CVector2(1.5, -0.5));
+                            waypoints.push(CVector2(-0.5, -0.5));
+                            waypoints.push(CVector2(-0.5, 0.5));
+                            waypoints.push(CVector2(0.5, 1.5));
                         }
                     } else {
                         numRobotsToSend = 0;
@@ -1268,18 +1293,35 @@ void CLeader::Callback_Message(void* data) {
     lastSent = initStepTimer;
 
     lastAction = "message";
+    if(beat.type == 'R')
+        lastAction += "_" + std::to_string(beat.robot_num);
+
+    beatSent++;
 }
 
 void CLeader::Callback_Respond(void* data) {
     // std::cout << "Action: respond" << std::endl;
 
-    /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
-    ConnectionMsg acceptTo;
-    acceptTo.type   = 'A';
-    acceptTo.from   = this->GetId();
-    acceptTo.to     = acceptID;
-    acceptTo.toTeam = teamID;
-    cmsgToResend.push_back({sendDuration,acceptTo});
+    ConnectionMsg response;
+
+    if(this->GetId() == "L1") { // We assume leaders agree that only L1 accept requests from followers
+
+        /* Upon receiving a request message, send an accept message to the follower with the smallest ID */
+        response.type   = 'A';
+        response.from   = this->GetId();
+        response.to     = acceptID;
+        response.toTeam = teamID;
+
+    } else {
+        
+        response.type   = 'N';
+        response.from   = this->GetId();
+        response.to     = "F0"; // DUMMY ID
+        response.toTeam = teamID;
+
+    }
+
+    cmsgToResend.push_back({sendDuration,response});
 
     lastAction = "respond";
 }

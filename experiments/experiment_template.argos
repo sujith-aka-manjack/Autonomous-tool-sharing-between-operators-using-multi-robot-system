@@ -6,9 +6,9 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="400"
+    <experiment length="1000"
                 ticks_per_second="10"
-                random_seed="27780" />
+                random_seed="52297" />
   </framework>
 
   <!-- *************** -->
@@ -89,15 +89,15 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <output logging="false"
+    <output logging="true"
             out_path="results/template.yaml" 
-            frame_grabbing="true" 
+            frame_grabbing="false" 
             camera_index="0" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="15" center="-0.7,-0.3.0" density="0.3">
+      <team leader_num="1" robot_num="20" center="-0.7,-0.3.0" density="0.3">
         <waypoint coord="-1.5,-0.5" /> 
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="-1.5,1.5" />
@@ -106,7 +106,7 @@
         <waypoint coord="-0.5,0.5" /> 
         <waypoint coord="0.5,1.5" /> 
       </team>
-      <team leader_num="1" robot_num="15" center="-0.3,-0.7.0" density="0.3">
+      <team leader_num="1" robot_num="20" center="-0.3,-0.7.0" density="0.3">
         <waypoint coord="-0.5,-1.5" />
         <waypoint coord="1.5,-1.5" />
         <waypoint coord="-0.5,-1.5" />

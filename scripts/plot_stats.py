@@ -3,6 +3,7 @@ import sys
 from numpy.ma.extras import average
 import yaml
 import time
+import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,20 +14,26 @@ from collections import defaultdict
 pp = pprint.PrettyPrinter(indent=4)
 
 # Experiment Configurations
-TOTAL_TIME = 4001
-TOTAL_ROBOTS = 30
+TOTAL_ROBOTS = 40
 DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
 TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
 RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
+
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# OUTPUT_DIR = RESULTS_DIR
+
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
+# OUTPUT_DIR = RESULTS_DIR
+
 
 def load_stats(argv):
 
@@ -128,7 +135,8 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     print('Plotting {0}'.format(out_filename))
 
     # total_time = len(next(iter(stats)))+1
-    total_time = TOTAL_TIME
+    # total_time = TOTAL_TIME
+    longest_sim_time = 0
 
     y1_total = []
     y2_total = []
@@ -136,6 +144,9 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     y4_total = []
 
     for scenario, data in stats.items():
+
+        if len(data)+1 > longest_sim_time:
+            longest_sim_time = len(data)+1
 
         y1 = []
         y2 = []
@@ -178,6 +189,28 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
         y3_total.append(y3)
         y4_total.append(y4)
 
+    total_time = longest_sim_time
+
+    # Fill empty timesteps with last value
+    for states in [y1_total, y2_total, y3_total, y4_total]:
+        for y in states:
+            if(len(y) < total_time):
+                # print('SHORT')
+                last_val = y[-1]
+                for i in range(0,total_time-len(y)):
+                    y.append(last_val)
+            # else:
+            #     print('LONGEST')    
+
+    # print(len(y1_total[0]))
+    # print(len(y1_total[1]))
+    # print(len(y2_total[0]))
+    # print(len(y2_total[1]))
+    # print(len(y3_total[0]))
+    # print(len(y3_total[1]))
+    # print(len(y4_total[0]))
+    # print(len(y4_total[1]))
+
     y1_total = np.array(y1_total)
     y2_total = np.array(y2_total)
     y3_total = np.array(y3_total)
@@ -201,15 +234,15 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     y3_max = np.max(y3_total, axis=0)
     y4_max = np.max(y4_total, axis=0)
 
-    y1_5 = np.percentile(y1_total, 5, axis=0)
-    y2_5 = np.percentile(y2_total, 5, axis=0)
-    y3_5 = np.percentile(y3_total, 5, axis=0)
-    y4_5 = np.percentile(y4_total, 5, axis=0)
+    # y1_5 = np.percentile(y1_total, 5, axis=0)
+    # y2_5 = np.percentile(y2_total, 5, axis=0)
+    # y3_5 = np.percentile(y3_total, 5, axis=0)
+    # y4_5 = np.percentile(y4_total, 5, axis=0)
 
-    y1_95 = np.percentile(y1_total, 95, axis=0)
-    y2_95 = np.percentile(y2_total, 95, axis=0)
-    y3_95 = np.percentile(y3_total, 95, axis=0)
-    y4_95 = np.percentile(y4_total, 95, axis=0)
+    # y1_95 = np.percentile(y1_total, 95, axis=0)
+    # y2_95 = np.percentile(y2_total, 95, axis=0)
+    # y3_95 = np.percentile(y3_total, 95, axis=0)
+    # y4_95 = np.percentile(y4_total, 95, axis=0)
 
     # print(y1_mean.shape)
     # print(y1_mean)
@@ -239,7 +272,7 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
 
     plt.legend(loc='upper left')
 
-    plt.savefig('{}{}.pdf'.format(os.path.splitext(out_filename)[0], '_mean'))
+    plt.savefig('{}{}.pdf'.format(out_filename.split('.yaml')[0], '_mean'))
 
     plt.fill_between(x, y1_min, y1_max, alpha=0.2)
     plt.fill_between(x, y2_min, y2_max, alpha=0.2)
@@ -350,20 +383,20 @@ def plot_overall_task_demands(stats, title=None, x_label=None, y_label=None, out
     plt.close()
 
 
-def average_completion_time(stats):
+# def average_completion_time(stats):
 
-    for scenario, data in stats.items():
+#     for scenario, data in stats.items():
 
-        for timestep in data:
+#         for timestep in data:
 
-            demand = 0
+#             demand = 0
 
-            for task in data[timestep]['tasks']:
-                demand += task['demand']
+#             for task in data[timestep]['tasks']:
+#                 demand += task['demand']
 
-            if demand == 0:
-                print('Completed at {}'.format(timestep))
-                return
+#             if demand == 0:
+#                 print('Completed at {}'.format(timestep))
+#                 return
 
 
 def plot_trajectories(scenario, data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
@@ -506,27 +539,77 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
     plt.close()
 
 
+def init_request(data):
+    for timestep in data:
+        for robot in data[timestep]['robots']:
+            if robot['state'] == 'LEADER':
+                if robot['id'] == 'L1':
+                    if robot['action'].split('_')[0] == 'message' and len(robot['action'].split('_')) > 1:
+                        return int(timestep.split('_')[1]), int(robot['action'].split('_')[1])
+
+
+def distance_since_request(data):
+    distance = 0
+    request_made = False
+    team_2_loc = {}
+    for timestep in data:
+        demand = 0
+        for task in data[timestep]['tasks']:
+            demand += task['demand']
+
+        if demand == 0:
+            return distance
+
+        if request_made:
+            for robot in data[timestep]['robots']:
+                if int(robot['teamid']) != 1 and robot['state'] != 'CONNECTOR':
+                    if robot['id'] in team_2_loc:
+                        pos = robot['pos']
+                        prev_pos = team_2_loc[robot['id']]
+                        traveled = math.sqrt( ((float(pos['x'])-float(prev_pos['x']))**2)+((float(pos['y'])-float(prev_pos['y']))**2) )
+
+                        # print('{}, {}'.format(robot['id'], traveled))
+                        distance += traveled
+                        team_2_loc[robot['id']] = pos
+                    else:
+                        team_2_loc[robot['id']] = robot['pos']
+            # print('{}, Distance: {}'.format(timestep, distance))
+        else:
+            for robot in data[timestep]['robots']:
+                if robot['state'] == 'LEADER':
+                    if robot['id'] == 'L1':
+                        # print(len(robot['action'].split('_')))
+                        if robot['action'].split('_')[0] == 'message' and len(robot['action'].split('_')) > 1:
+                            request_made = True
+
+
 def main(argv):
     stats = load_stats(argv)
+
+    all_experiment_time = 0
+    all_message_sent = 0
+    all_message_received = 0
 
     # Plot single stats
     for scenario, data in stats.items():
 
-        plot_filename = '{0}/robot-states_{1}.pdf'.format(OUTPUT_DIR, scenario)
-        plot_robot_states(scenario,
-                          data,
-                          title='Number of robots in each team',
-                          x_label='Time (seconds)',
-                          y_label='Number of robots',
-                          out_filename=plot_filename)
+        print('\n-------- {} --------'.format(scenario))
+
+        # plot_filename = '{0}/robot-states_{1}.pdf'.format(OUTPUT_DIR, scenario)
+        # plot_robot_states(scenario,
+        #                   data,
+        #                   title='Number of robots in each team',
+        #                   x_label='Time (seconds)',
+        #                   y_label='Number of robots',
+        #                   out_filename=plot_filename)
         
-        plot_filename = '{0}/task-demands_{1}.pdf'.format(OUTPUT_DIR, scenario)
-        plot_task_demands(scenario,
-                          data,
-                          title='Remaining task demands',
-                          x_label='Time (seconds)',
-                          y_label='Task demand',
-                          out_filename=plot_filename)
+        # plot_filename = '{0}/task-demands_{1}.pdf'.format(OUTPUT_DIR, scenario)
+        # plot_task_demands(scenario,
+        #                   data,
+        #                   title='Remaining task demands',
+        #                   x_label='Time (seconds)',
+        #                   y_label='Task demand',
+        #                   out_filename=plot_filename)
 
         # plot_filename = '{0}/trajectories_{1}.pdf'.format(OUTPUT_DIR, scenario)
         # plot_trajectories(scenario,
@@ -536,49 +619,85 @@ def main(argv):
         #                   y_label='Y(m)',
         #                   out_filename=plot_filename)
 
-    average_completion_time(stats)
+        # Completion time (return int, not complete = None)
+        finish_time = len(data)
+        print('Finish Time: {}'.format(finish_time))
+
+        all_experiment_time += finish_time
+
+        # Message ratio
+        last_timestep = 'time_{}'.format(len(data))
+
+        for robot in data[last_timestep]['robots']:
+            if robot['id'] == 'L1':
+                L1_sent = int(robot['total_sent'])
+                L1_received = int(robot['total_received'])
+            elif robot['id'] == 'L2':
+                L2_sent = int(robot['total_sent'])
+                L2_received = int(robot['total_received'])
+
+        total_sent = L1_sent + L2_sent
+        total_received = L1_received + L2_received
+        ratio = total_received / total_sent
+        print('Total Sent: {}'.format(total_sent))
+        print('Total Received: {}'.format(total_received))
+        print('Ratio: {}'.format(ratio))
+
+        all_message_sent += total_sent
+        all_message_received += total_received
+
+        # Initial request num and time (return two values)
+        # timestep, request_num = init_request(data)
+        # print('Init request time: {}'.format(timestep))
+        # print('Request Num: {}'.format(request_num))
+
+        # Distance traveled since request first made (distance traveled by teamid != 1)
+        # distance = distance_since_request(data)
+        # print('Distance: {}'.format(distance))
+
+    print('\n-------- RESULT SUMMARY --------')
+
+    average_completion_time = all_experiment_time / len(stats)    
+    print('Average Time: {} -> {}s'.format(average_completion_time, average_completion_time/10))
+
+    average_message_ratio = all_message_received / all_message_sent
+    print('Average Ratio: {}'.format(average_message_ratio))
 
     # Plot overall stats
-    plot_filename = '{0}/overall_robot-states_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+    plot_filename = '{0}/overall_robot-states.pdf'.format(OUTPUT_DIR)
     plot_overall_robot_states(stats,
                               title='Average number of robots in each team',
                               x_label='Time (seconds)',
                               y_label='Number of robots',
                               out_filename=plot_filename)
 
-    plot_filename = '{0}/overall_task_demands_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
-    plot_overall_task_demands(stats,
-                              title='Average remaining task demand',
-                              x_label='Timestep (seconds)',
-                              y_label='Task demand',
-                              out_filename=plot_filename)
+    # plot_filename = '{0}/overall_task_demands_{1}.pdf'.format(OUTPUT_DIR, next(iter(stats))[:-3])
+    # plot_overall_task_demands(stats,
+    #                           title='Average remaining task demand',
+    #                           x_label='Timestep (seconds)',
+    #                           y_label='Task demand',
+    #                           out_filename=plot_filename)
 
 
     # Run connected ratio separately from the other plotting functions for now as it deals with scenarios with different robot numbers
 
-    plot_filename = '{0}/overall_connected_ratio.pdf'.format(OUTPUT_DIR)
-    plot_overall_connected_ratio(stats,
-                                 title='Average ratio of beat messages exchanged',
-                                 x_label='Number of follower robots',
-                                 y_label='Ratio of messages received',
-                                 out_filename=plot_filename)
+    # plot_filename = '{0}/overall_connected_ratio.pdf'.format(OUTPUT_DIR)
+    # plot_overall_connected_ratio(stats,
+    #                              title='Average ratio of beat messages exchanged',
+    #                              x_label='Number of follower robots',
+    #                              y_label='Ratio of messages received',
+    #                              out_filename=plot_filename)
 
 
 if __name__ == "__main__":
     # plot_stats(sys.argv[1:])
     # argv = [
-    #         '20R_6T_100D_01.yaml', 
-    #         '20R_6T_100D_02.yaml'
+    #         # '20R_6T_100D_01.yaml', 
+    #         # '20R_6T_100D_02.yaml',
+    #         'template_1.yaml',
+    #         'template_2.yaml',
     #        ]
     argv = []
-
-    # for i in range(1,21):
-    #     id = ''
-    #     if(i < 10):
-    #         id += '0' + str(i)
-    #     else:
-    #         id += str(i)
-    #     argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     for i in range(1,21):
         id = ''
@@ -586,7 +705,18 @@ if __name__ == "__main__":
             id += '0' + str(i)
         else:
             id += str(i)
-        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+    #     argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+
+
+    # for i in range(1,21):
+    #     id = ''
+    #     if(i < 10):
+    #         id += '0' + str(i)
+    #     else:
+    #         id += str(i)
+    #     argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
     #     id = ''
