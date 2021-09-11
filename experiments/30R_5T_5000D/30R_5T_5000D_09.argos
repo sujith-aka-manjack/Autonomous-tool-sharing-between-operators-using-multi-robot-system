@@ -5,7 +5,7 @@
   
   <framework>
     <system threads="0" />
-    <experiment length="500" ticks_per_second="10" random_seed="28595" />
+    <experiment length="500" ticks_per_second="10" random_seed="11114" />
   </framework>
 
   
@@ -62,7 +62,7 @@
   <loop_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions" label="experiment_loop_functions">
 
     
-    <output logging="true" out_path="/home/genki/GIT/argos-sct/results/30R_5T_5000D/30R_5T_5000D_09.yaml" frame_grabbing="false" camera_index="4" />
+    <output logging="true" out_path="/home/genki/GIT/argos-sct/results/30R_5T_5000D/30R_5T_5000D_09.yaml" frame_grabbing="false" camera_index="0" />
 
     
     
