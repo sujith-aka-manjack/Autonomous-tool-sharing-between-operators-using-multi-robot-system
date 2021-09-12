@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="1000"
                 ticks_per_second="10"
-                random_seed="52297" />
+                random_seed="52295" />
   </framework>
 
   <!-- *************** -->
@@ -73,8 +73,8 @@
         <team_distance separation_threshold="50"
                        joining_threshold="50" />
         <flocking_weights team="1"
-                          robot="1"
-                          obstacle="1" />
+                          robot="0"
+                          obstacle="10" />
         <timeout send_message="4" 
                  wait_request="6" />
       </params>
@@ -130,7 +130,7 @@
       <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
 
       <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="10000" />
     </tasks>
   </loop_functions>
 

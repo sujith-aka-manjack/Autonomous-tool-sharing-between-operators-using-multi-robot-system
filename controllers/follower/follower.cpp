@@ -1642,6 +1642,7 @@ void CFollower::Flock() {
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
+
     CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
@@ -1758,13 +1759,23 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
     for(size_t i = 0; i < fProxReads.size(); i++) {
         CVector2 vec = CVector2();
         if(fProxReads[i] > 0.0f) {
-            Real length = (fProxReads[i] - 0.9) * m_sWheelTurningParams.MaxSpeed * 10; // Map length to 0 ~ max_speed
-            vec = CVector2(length, PROX_ANGLE[i]);
+            // Real length = (fProxReads[i] - 0.9) * m_sWheelTurningParams.MaxSpeed * 10; // Map length to 0 ~ max_speed
+            // Real length = fProxReads[i] * m_sWheelTurningParams.MaxSpeed;
 
+            Real distance = -( log(fProxReads[i]) / log(exp(1)) );
+            Real length = (0.1 - distance) / 0.1 * m_sWheelTurningParams.MaxSpeed;
+            vec = CVector2(length, PROX_ANGLE[i]);
+            
             resVec -= vec; // Subtract because we want the vector to repulse from the obstacle
         }
-        // //std::cout << "sensor " << i << ": " << vec.Length() << std::endl;
+        // if(this->GetId() == "F1") {
+        //     std::cout << "raw " << i << ": " << fProxReads[i] << std::endl;
+        //     // std::cout << "sensor " << i << ": " << (fProxReads[i] - 0.9) * m_sWheelTurningParams.MaxSpeed * 10 << std::endl;
+        //     // std::cout << "sensor " << i << ": " << -( log(fProxReads[i]) / log(exp(1)) / 0.1)/*  * m_sWheelTurningParams.MaxSpeed */ << std::endl;
+        // }
     }
+
+    resVec /= 8;
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -1772,7 +1783,14 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
         resVec *= m_sWheelTurningParams.MaxSpeed;
     }
 
+    // if(this->GetId() == "F1") {
+    //     std::cout << "vector: " << resVec << std::endl;
+    //     std::cout << "length: " << resVec.Length() << std::endl;
+
+    // }
+
     return resVec;
+    // return CVector2();
 }
 
 /****************************************/
@@ -1783,7 +1801,8 @@ void CFollower::Travel() {
     CVector2 travelForce   = GetChainTravelVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = travelForce + robotForce + obstacleForce;
+
+    CVector2 sumForce      = 1.2*travelForce + robotForce + 0.8*obstacleForce;
 
     /* Set Wheel Speed */
     if(travelForce.Length() > 0.0f)
