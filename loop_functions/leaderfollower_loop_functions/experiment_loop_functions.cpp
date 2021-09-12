@@ -502,9 +502,9 @@ void CExperimentLoopFunctions::PreStep() {
             robot["id"] = cEPuckLeader.GetId();
             robot["teamid"] = (int)cController.GetTeamID();
             robot["state"] = "LEADER";
-            // robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            // robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            // robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
             // robot["beat_sent"] = cController.GetLatestTimeSent();
             // robot["beat_received"] = cController.GetLatestTimeReceived();
             robot["total_sent"] = cController.GetTotalSent();
@@ -539,9 +539,9 @@ void CExperimentLoopFunctions::PreStep() {
                     std::cerr << "Tried to log unknown state " << int(cController.currentState) << std::endl;
                     break;
             }
-            // robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            // robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            // robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
+            robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
+            robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
+            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
 
             timestep[t_str]["robots"].push_back(robot);
         }

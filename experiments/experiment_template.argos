@@ -89,7 +89,7 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <output logging="true"
+    <output logging="false"
             out_path="results/template.yaml" 
             frame_grabbing="false" 
             camera_index="0" />
@@ -97,7 +97,7 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="20" center="-0.7,-0.3.0" density="0.3">
+      <team leader_num="1" robot_num="15" center="-0.7,-0.3.0" density="0.3">
         <waypoint coord="-1.5,-0.5" /> 
         <waypoint coord="-1.5,-1.5" />
         <waypoint coord="-1.5,1.5" />
@@ -106,7 +106,7 @@
         <waypoint coord="-0.5,0.5" /> 
         <waypoint coord="0.5,1.5" /> 
       </team>
-      <team leader_num="1" robot_num="20" center="-0.3,-0.7.0" density="0.3">
+      <team leader_num="1" robot_num="15" center="-0.3,-0.7.0" density="0.3">
         <waypoint coord="-0.5,-1.5" />
         <waypoint coord="1.5,-1.5" />
         <waypoint coord="-0.5,-1.5" />
@@ -127,7 +127,7 @@
 
       <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
 
       <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />

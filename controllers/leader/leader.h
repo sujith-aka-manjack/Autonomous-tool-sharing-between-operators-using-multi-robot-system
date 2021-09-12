@@ -467,10 +467,10 @@ private:
     SFlockingInteractionParams m_sTeamFlockingParams;
 
     /* Controller */
-    leader::SCTPub* sct;
-    bool exchangeUsed = false;
-    // leader_exchange::SCTPub* sct;
-    // bool exchangeUsed = true;
+    // leader::SCTPub* sct;
+    // bool exchangeUsed = false;
+    leader_exchange::SCTPub* sct;
+    bool exchangeUsed = true;
 
     /* Type of SCT being used */
 

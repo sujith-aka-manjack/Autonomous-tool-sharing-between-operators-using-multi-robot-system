@@ -170,8 +170,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    sct = new leader::SCTPub();
-    // sct = new leader_exchange::SCTPub();
+    // sct = new leader::SCTPub();
+    sct = new leader_exchange::SCTPub();
 
     if( !exchangeUsed ) {
 
@@ -1002,7 +1002,9 @@ void CLeader::CheckHeartBeat() {
 
                     if(beat.type == 'R') {
                         if(beat.robot_num != numPreviousRequest) {
-                            numRobotsToSend = beat.robot_num;
+                            numRobotsToSend += beat.robot_num - numPreviousRequest;
+                            if(numRobotsToSend < 0)
+                                numRobotsToSend = 0;
                             numPreviousRequest = beat.robot_num;
                             std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
 
@@ -1010,10 +1012,10 @@ void CLeader::CheckHeartBeat() {
                             // Add waypoints
 
                             // std::queue<CVector2> waypoints; // Queue to provide to the robot
-                            waypoints.push(CVector2(1.5, -0.5));
-                            waypoints.push(CVector2(-0.5, -0.5));
-                            waypoints.push(CVector2(-0.5, 0.5));
-                            waypoints.push(CVector2(0.5, 1.5));
+                            // waypoints.push(CVector2(1.5, -0.5));
+                            // waypoints.push(CVector2(-0.5, -0.5));
+                            // waypoints.push(CVector2(-0.5, 0.5));
+                            // waypoints.push(CVector2(0.5, 1.5));
                         }
                     } else {
                         numRobotsToSend = 0;
@@ -1385,7 +1387,7 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 }
 
 unsigned char CLeader::Check_InputExchange(void* data) {
-    bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty() && waypoints.empty());
+    bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty());
 
     if(exchangeRobot && (switchCandidate != previousCandidate)) {
         // std::cout << "Event: " << 1 << " - inputExchange" << std::endl;

@@ -471,10 +471,10 @@ private:
     Real obstacleWeight;
 
     /* Controller */
-    follower::SCTPub* sct;
-    bool exchangeUsed = false;
-    // follower_exchange::SCTPub* sct;
-    // bool exchangeUsed = true;
+    // follower::SCTPub* sct;
+    // bool exchangeUsed = false;
+    follower_exchange::SCTPub* sct;
+    bool exchangeUsed = true;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;

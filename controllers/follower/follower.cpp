@@ -220,8 +220,8 @@ void CFollower::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    sct = new follower::SCTPub();
-    // sct = new follower_exchange::SCTPub();
+    // sct = new follower::SCTPub();
+    sct = new follower_exchange::SCTPub();
 
     if( !exchangeUsed ) {
 
