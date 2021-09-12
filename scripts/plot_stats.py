@@ -14,13 +14,13 @@ from collections import defaultdict
 pp = pprint.PrettyPrinter(indent=4)
 
 # Experiment Configurations
-TOTAL_ROBOTS = 40
+TOTAL_ROBOTS = 30
 DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
 TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-OUTPUT_DIR = RESULTS_DIR
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
@@ -28,8 +28,9 @@ OUTPUT_DIR = RESULTS_DIR
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-# OUTPUT_DIR = RESULTS_DIR
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
 # OUTPUT_DIR = RESULTS_DIR
@@ -270,7 +271,11 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
 
     plt.ylim([0,y_limit])
 
-    plt.legend(loc='upper left')
+    if np.amax(y4_mean) > 0:
+        num_col = 4
+    else:
+        num_col = 3
+    plt.legend(loc='upper left', ncol=num_col)
 
     plt.savefig('{}{}.pdf'.format(out_filename.split('.yaml')[0], '_mean'))
 
@@ -539,7 +544,7 @@ def plot_overall_connected_ratio(stats, title=None, x_label=None, y_label=None, 
     plt.close()
 
 
-def init_request(data):
+def init_request_time(data):
     for timestep in data:
         for robot in data[timestep]['robots']:
             if robot['state'] == 'LEADER':
@@ -548,27 +553,37 @@ def init_request(data):
                         return int(timestep.split('_')[1]), int(robot['action'].split('_')[1])
 
 
-def distance_since_request(data):
-    distance = 0
-    request_made = False
-    team_2_loc = {}
+def last_task_time(data):
     for timestep in data:
         demand = 0
         for task in data[timestep]['tasks']:
             demand += task['demand']
 
-        if demand == 0:
-            return distance
+        if demand < DEMAND_PER_TASK:
+            return int(timestep.split('_')[1])
+
+
+def distance_since_request(data):
+    distance = 0
+    request_made = False
+    team_2_loc = {}
+    for timestep in data:
+        # demand = 0
+        # for task in data[timestep]['tasks']:
+        #     demand += task['demand']
+
+        # if demand == 0:
+        #     return distance
 
         if request_made:
             for robot in data[timestep]['robots']:
-                if int(robot['teamid']) != 1 and robot['state'] != 'CONNECTOR':
+                if int(robot['teamid']) == 2 or robot['state'] != 'TRAVELER':
                     if robot['id'] in team_2_loc:
                         pos = robot['pos']
                         prev_pos = team_2_loc[robot['id']]
                         traveled = math.sqrt( ((float(pos['x'])-float(prev_pos['x']))**2)+((float(pos['y'])-float(prev_pos['y']))**2) )
-
-                        # print('{}, {}'.format(robot['id'], traveled))
+                        # if traveled > 0:
+                        #     print('{}, {}'.format(robot['id'], traveled))
                         distance += traveled
                         team_2_loc[robot['id']] = pos
                     else:
@@ -582,6 +597,8 @@ def distance_since_request(data):
                         if robot['action'].split('_')[0] == 'message' and len(robot['action'].split('_')) > 1:
                             request_made = True
 
+    return distance
+
 
 def main(argv):
     stats = load_stats(argv)
@@ -589,6 +606,10 @@ def main(argv):
     all_experiment_time = 0
     all_message_sent = 0
     all_message_received = 0
+
+    all_request_time = 0
+    all_robots_requested = 0
+    all_distance = 0
 
     # Plot single stats
     for scenario, data in stats.items():
@@ -625,6 +646,17 @@ def main(argv):
 
         all_experiment_time += finish_time
 
+        # Initial request num and time (return two values)
+        first_request_time, request_num = init_request_time(data)
+        print('First Request Time: {}'.format(first_request_time))
+        print('Robots Requested: {}'.format(request_num))
+
+        start_last_task_time = last_task_time(data)
+
+
+        all_request_time += first_request_time
+        all_robots_requested += request_num
+
         # Message ratio
         last_timestep = 'time_{}'.format(len(data))
 
@@ -646,14 +678,15 @@ def main(argv):
         all_message_sent += total_sent
         all_message_received += total_received
 
-        # Initial request num and time (return two values)
         # timestep, request_num = init_request(data)
         # print('Init request time: {}'.format(timestep))
         # print('Request Num: {}'.format(request_num))
 
         # Distance traveled since request first made (distance traveled by teamid != 1)
-        # distance = distance_since_request(data)
-        # print('Distance: {}'.format(distance))
+        distance = distance_since_request(data)
+        print('Distance: {}'.format(distance))
+
+        all_distance += distance
 
     print('\n-------- RESULT SUMMARY --------')
 
@@ -662,6 +695,18 @@ def main(argv):
 
     average_message_ratio = all_message_received / all_message_sent
     print('Average Ratio: {}'.format(average_message_ratio))
+
+    average_request_time = all_request_time / len(stats)
+    print('Average Request Time: {} -> {}s'.format(average_request_time, average_request_time/10))
+
+    average_service_time = average_completion_time - average_request_time
+    print('Average Service Time: {} -> {}s'.format(average_service_time, average_service_time/10))
+
+    average_robots_requested = all_robots_requested /  len(stats)
+    print('Average Ratio: {}'.format(average_robots_requested))
+
+    average_distance = all_distance / len(stats)
+    print('Average Distance: {}'.format(average_distance))
 
     # Plot overall stats
     plot_filename = '{0}/overall_robot-states.pdf'.format(OUTPUT_DIR)
@@ -694,8 +739,11 @@ if __name__ == "__main__":
     # argv = [
     #         # '20R_6T_100D_01.yaml', 
     #         # '20R_6T_100D_02.yaml',
-    #         'template_1.yaml',
-    #         'template_2.yaml',
+    #         # 'template_1.yaml',
+    #         # 'template_2.yaml',
+    #         # 'template_11.yaml',
+    #         # 'template_12.yaml',
+    #         'template_13.yaml',
     #        ]
     argv = []
 
@@ -705,10 +753,12 @@ if __name__ == "__main__":
             id += '0' + str(i)
         else:
             id += str(i)
-    #     argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
+        # argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
     #     id = ''
