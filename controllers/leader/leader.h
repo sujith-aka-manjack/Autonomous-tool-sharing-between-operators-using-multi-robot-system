@@ -556,6 +556,8 @@ private:
 
     std::string lastAction;
 
+    bool requestSent;
+
     /*
     * The following variables are used as parameters for the
     * algorithm. You can set their value in the <parameters> section

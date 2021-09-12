@@ -166,6 +166,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     switchCandidate = "";
     notDecremented = true;
     robotsNeeded = 0;
+    requestSent = false;
 
     /*
     * Init SCT Controller
@@ -1017,10 +1018,10 @@ void CLeader::CheckHeartBeat() {
                             // waypoints.push(CVector2(-0.5, 0.5));
                             // waypoints.push(CVector2(0.5, 1.5));
                         }
-                    } else {
+                    }/*  else {
                         numRobotsToSend = 0;
                         numPreviousRequest = 0;
-                    }
+                    } */
 
                     switchCandidate = ""; // Reset candidate follower to switch
                 } 
@@ -1279,14 +1280,17 @@ void CLeader::Callback_Message(void* data) {
 
     /* For every 10 timesteps, check if the demand is not decreasing to request robots from the other team */
     if(exchangeUsed) {
-        if(initStepTimer > 0 && initStepTimer % 10 == 0) {
+        if(initStepTimer > 0 /* && initStepTimer % 10 == 0 */) {
             if(m_bSignal) { // Sending start signal to robots
-                if(robotsNeeded - currentFollowerCount > 0) {
-                    beat.type = 'R';
-                    // beat.robot_num = 100; // TEMP: Large number to send all robots
-                    beat.robot_num = robotsNeeded - currentFollowerCount;
-                    std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
-                }
+                if( !requestSent ) {
+                    if(robotsNeeded - currentFollowerCount > 0) {
+                        beat.type = 'R';
+                        // beat.robot_num = 100; // TEMP: Large number to send all robots
+                        beat.robot_num = robotsNeeded - currentFollowerCount + 2;
+                        requestSent = true;
+                        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+                    }
+                } 
             }
         }
     }
