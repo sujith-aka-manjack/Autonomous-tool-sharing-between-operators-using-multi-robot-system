@@ -1,0 +1,168 @@
+<argos-configuration>
+
+  
+  
+  
+  <framework>
+    <system threads="0" />
+    <experiment length="700" ticks_per_second="10" random_seed="72500" />
+  </framework>
+
+  
+  
+  
+  <controllers>
+
+    
+
+    <leader_controller id="el" library="build/controllers/leader/libleader.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <positioning implementation="default" />
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90" soft_turn_angle_threshold="70" no_turn_angle_threshold="10" max_speed="6" />
+        <waypoint_tracking target_angle="0" kp="10" ki="0" kd="0" thres_range="0.1" />
+        <team_flocking target_distance="15" gain="1000" exponent="2" />
+        <team_distance min_leader_robot_distance="75" separation_threshold="50" />
+        <timeout send_message="4" />
+      </params>
+    </leader_controller>
+
+    <follower_controller id="ef" library="build/controllers/follower/libfollower.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+      <sensors>
+        <proximity implementation="default" show_rays="false" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" /> 
+      </sensors>
+      <params>
+        <wheel_turning hard_turn_angle_threshold="90" soft_turn_angle_threshold="70" no_turn_angle_threshold="10" max_speed="8" />
+        <team_flocking target_distance="15" gain="1000" exponent="2" />
+        <team_distance separation_threshold="50" joining_threshold="50" />
+        <flocking_weights team="1" robot="2" obstacle="15" />
+        <timeout send_message="4" wait_request="6" />
+      </params>
+    </follower_controller>
+
+  </controllers>
+
+  
+  
+  
+  <loop_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions" label="experiment_loop_functions">
+
+    
+    <output logging="true" out_path="/home/genki/GIT/argos-sct/results/40R_5T_5000D/40R_5T_5000D_36.yaml" frame_grabbing="false" camera_index="0" />
+
+    
+    
+    <teams>
+      <team leader_num="1" robot_num="20" center="-0.7,-0.3.0" density="0.3">
+        <waypoint coord="-1.5,-0.4" /> 
+        <waypoint coord="-1.5,-1.7" />
+        <waypoint coord="-1.4,-0.5" />
+        <waypoint coord="-1.5,1.7" />
+        <waypoint coord="-1.5,-0.6" /> 
+        <waypoint coord="-0.5,-0.5" /> 
+        <waypoint coord="-0.5,0.5" /> 
+        <waypoint coord="0.6,1.6" /> 
+      </team>
+      <team leader_num="1" robot_num="20" center="-0.3,-0.7.0" density="0.3">
+        <waypoint coord="-0.5,-1.5" />
+        <waypoint coord="1.7,-1.5" />
+        <waypoint coord="-0.5,-1.5" />
+        <waypoint coord="-0.5,-0.5" />
+        <waypoint coord="1.5,-0.5" />
+        <waypoint coord="1.5,1.7" />
+      </team>
+    </teams>
+
+    
+    <tasks>
+      
+
+      <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+
+      <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+    </tasks>
+  </loop_functions>
+
+  
+  
+  
+  <arena size="6, 6, 1" center="0,0,0.5">
+
+    <floor id="floor" source="loop_functions" pixels_per_meter="50" />
+
+    <box id="wall_west" size="4.1,0.1,0.5" movable="false">
+      <body position="0,2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="4.1,0.1,0.5" movable="false">
+      <body position="0,-2,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_north" size="0.1,4.1,0.5" movable="false">
+      <body position="2,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="0.1,4.1,0.5" movable="false">
+      <body position="-2,0,0" orientation="0,0,0" />
+    </box>
+
+    
+
+    
+
+    <box id="wall_inner_v1" size="0.1,2.0,0.5" movable="false">
+      <body position="-1.0,1.0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_v2" size="0.1,1.0,0.5" movable="false">
+      <body position="-1.0,-1.5,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_v3" size="0.1,2.1,0.5" movable="false">
+      <body position="1.0,1.0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_h1" size="1.0,0.1,0.5" movable="false">
+      <body position="0.5,0.0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_inner_h2" size="2.0,0.1,0.5" movable="false">
+      <body position="1.0,-1.0,0" orientation="0,0,0" />
+    </box>
+
+  </arena>
+
+  
+  
+  
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  
+  
+  
+  <media>
+    <range_and_bearing id="rab" check_occlusions="true" />
+    <led id="leds" />
+  </media>
+
+  
+  
+  
+  
+  <visualization>
+    
+  </visualization>
+
+</argos-configuration>

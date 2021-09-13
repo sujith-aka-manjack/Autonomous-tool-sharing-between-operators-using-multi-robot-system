@@ -5,7 +5,7 @@
   
   <framework>
     <system threads="0" />
-    <experiment length="500" ticks_per_second="10" random_seed="62205" />
+    <experiment length="700" ticks_per_second="10" random_seed="56954" />
   </framework>
 
   
@@ -27,7 +27,7 @@
         <positioning implementation="default" />
       </sensors>
       <params>
-        <wheel_turning hard_turn_angle_threshold="90" soft_turn_angle_threshold="70" no_turn_angle_threshold="10" max_speed="8" />
+        <wheel_turning hard_turn_angle_threshold="90" soft_turn_angle_threshold="70" no_turn_angle_threshold="10" max_speed="6" />
         <waypoint_tracking target_angle="0" kp="10" ki="0" kd="0" thres_range="0.1" />
         <team_flocking target_distance="15" gain="1000" exponent="2" />
         <team_distance min_leader_robot_distance="75" separation_threshold="50" />
@@ -49,7 +49,7 @@
         <wheel_turning hard_turn_angle_threshold="90" soft_turn_angle_threshold="70" no_turn_angle_threshold="10" max_speed="8" />
         <team_flocking target_distance="15" gain="1000" exponent="2" />
         <team_distance separation_threshold="50" joining_threshold="50" />
-        <flocking_weights team="1" robot="1" obstacle="1" />
+        <flocking_weights team="1" robot="2" obstacle="15" />
         <timeout send_message="4" wait_request="6" />
       </params>
     </follower_controller>
@@ -68,21 +68,22 @@
     
     <teams>
       <team leader_num="1" robot_num="10" center="-0.7,-0.3.0" density="0.3">
-        <waypoint coord="-1.5,-0.5" /> 
-        <waypoint coord="-1.5,-1.5" />
-        <waypoint coord="-1.5,1.5" />
-        <waypoint coord="-1.5,-0.5" /> 
+        <waypoint coord="-1.5,-0.4" /> 
+        <waypoint coord="-1.5,-1.7" />
+        <waypoint coord="-1.4,-0.5" />
+        <waypoint coord="-1.5,1.7" />
+        <waypoint coord="-1.5,-0.6" /> 
         <waypoint coord="-0.5,-0.5" /> 
         <waypoint coord="-0.5,0.5" /> 
-        <waypoint coord="0.5,1.5" /> 
+        <waypoint coord="0.6,1.6" /> 
       </team>
       <team leader_num="1" robot_num="10" center="-0.3,-0.7.0" density="0.3">
         <waypoint coord="-0.5,-1.5" />
-        <waypoint coord="1.5,-1.5" />
+        <waypoint coord="1.7,-1.5" />
         <waypoint coord="-0.5,-1.5" />
         <waypoint coord="-0.5,-0.5" />
         <waypoint coord="1.5,-0.5" />
-        <waypoint coord="1.5,1.5" />
+        <waypoint coord="1.5,1.7" />
       </team>
     </teams>
 
