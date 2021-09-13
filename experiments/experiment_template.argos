@@ -6,9 +6,9 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="1000"
+    <experiment length="10000"
                 ticks_per_second="10"
-                random_seed="52295" />
+                random_seed="52290" />
   </framework>
 
   <!-- *************** -->
@@ -34,7 +34,7 @@
         <wheel_turning hard_turn_angle_threshold="90"
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
-                       max_speed="8" />
+                       max_speed="6" />
         <waypoint_tracking target_angle="0"
                            kp="10"
                            ki="0"
@@ -73,8 +73,8 @@
         <team_distance separation_threshold="50"
                        joining_threshold="50" />
         <flocking_weights team="1"
-                          robot="0"
-                          obstacle="10" />
+                          robot="2"
+                          obstacle="15" />
         <timeout send_message="4" 
                  wait_request="6" />
       </params>
@@ -91,28 +91,29 @@
     <!-- Output file name -->
     <output logging="false"
             out_path="results/template.yaml" 
-            frame_grabbing="false" 
+            frame_grabbing="true" 
             camera_index="0" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
       <team leader_num="1" robot_num="15" center="-0.7,-0.3.0" density="0.3">
-        <waypoint coord="-1.5,-0.5" /> 
-        <waypoint coord="-1.5,-1.5" />
-        <waypoint coord="-1.5,1.5" />
-        <waypoint coord="-1.5,-0.5" /> 
+        <waypoint coord="-1.5,-0.4" /> 
+        <waypoint coord="-1.5,-1.7" />
+        <waypoint coord="-1.4,-0.5" />
+        <waypoint coord="-1.5,1.7" />
+        <waypoint coord="-1.5,-0.6" /> 
         <waypoint coord="-0.5,-0.5" /> 
         <waypoint coord="-0.5,0.5" /> 
-        <waypoint coord="0.5,1.5" /> 
+        <waypoint coord="0.6,1.6" /> 
       </team>
       <team leader_num="1" robot_num="15" center="-0.3,-0.7.0" density="0.3">
         <waypoint coord="-0.5,-1.5" />
-        <waypoint coord="1.5,-1.5" />
+        <waypoint coord="1.7,-1.5" />
         <waypoint coord="-0.5,-1.5" />
         <waypoint coord="-0.5,-0.5" />
         <waypoint coord="1.5,-0.5" />
-        <waypoint coord="1.5,1.5" />
+        <waypoint coord="1.5,1.7" />
       </team>
     </teams>
 
@@ -127,10 +128,10 @@
 
       <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
 
       <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="10000" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
     </tasks>
   </loop_functions>
 

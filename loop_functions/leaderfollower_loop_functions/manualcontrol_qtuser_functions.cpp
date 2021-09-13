@@ -293,12 +293,12 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          cText.str("");
          // cText << ceil(cTask.GetDemand() / 10);
          cText << cTask.GetDemand();
-         QFont taskFont("Helvetica [Cronyx]", 30, QFont::Bold);
+         QFont taskFont("Helvetica [Cronyx]", 40, QFont::Bold);
          // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
          //          cText.str(),
          //          CColor::BLACK,
          //          taskFont);
-         DrawText(CVector3(pos.GetX()-0.2, pos.GetY()-0.1, 0.01),
+         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-0.1, 0.01),
                   cText.str(),
                   CColor::BLACK,
                   taskFont);

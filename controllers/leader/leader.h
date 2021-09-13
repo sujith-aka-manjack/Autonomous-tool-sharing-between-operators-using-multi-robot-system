@@ -556,7 +556,7 @@ private:
 
     std::string lastAction;
 
-    bool requestSent;
+    bool requestReceived; // request to send robots
 
     /*
     * The following variables are used as parameters for the

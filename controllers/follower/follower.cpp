@@ -1642,7 +1642,7 @@ void CFollower::Flock() {
     CVector2 teamForce     = GetTeamFlockingVector();
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = teamWeight*teamForce + teamWeight*robotForce + obstacleWeight*obstacleForce;
+    CVector2 sumForce      = teamWeight*teamForce + robotWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
     if(this->GetId() == "F1") {
@@ -1801,7 +1801,7 @@ void CFollower::Travel() {
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
 
-    CVector2 sumForce      = 1.2*travelForce + robotForce + 0.8*obstacleForce;
+    CVector2 sumForce      = teamWeight*travelForce + 0*robotForce + 0.5*obstacleWeight*obstacleForce;
 
     /* Set Wheel Speed */
     if(travelForce.Length() > 0.0f)

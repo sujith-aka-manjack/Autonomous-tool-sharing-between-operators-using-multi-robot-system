@@ -58,10 +58,10 @@ def generate_experiments(num_experiments, num_robots, duration, demand, argos_di
                     team_elem.set('robot_num', str(num_robots_per_team))
 
         # Change the task demands
-        for loop_func_elem in rootElement.findall('loop_functions'):
-            for tasks_elem in loop_func_elem.findall('tasks'):
-                for task_elem in tasks_elem.findall('task'):
-                    task_elem.set('task_demand', str(demand))
+        # for loop_func_elem in rootElement.findall('loop_functions'):
+        #     for tasks_elem in loop_func_elem.findall('tasks'):
+        #         for task_elem in tasks_elem.findall('task'):
+        #             task_elem.set('task_demand', str(demand))
 
         file = directory + '_' + count + '.argos'
         print(os.path.join(argos_dir_path, file))

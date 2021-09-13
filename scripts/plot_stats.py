@@ -28,8 +28,8 @@ TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
@@ -111,8 +111,8 @@ def plot_robot_states(scenario, data, title=None, x_label=None, y_label=None, ou
     x = range(0,total_time)
 
     # plotting the lines
-    plt.plot(x, y1, label = "Follower, team1")
-    plt.plot(x, y2, label = "Follower, team2")
+    plt.plot(x, y1, label = "Team 1 Follower")
+    plt.plot(x, y2, label = "Team 2 Follower")
     plt.plot(x, y3, label = "Connector")
     if np.amax(y4) > 0:
         plt.plot(x, y4, label = "Traveler")
@@ -603,6 +603,8 @@ def distance_since_request(data):
 def main(argv):
     stats = load_stats(argv)
 
+    num_experiments_success = 0
+
     all_experiment_time = 0
     all_message_sent = 0
     all_message_received = 0
@@ -610,6 +612,8 @@ def main(argv):
     all_request_time = 0
     all_robots_requested = 0
     all_distance = 0
+
+    all_started_working_time = 0
 
     # Plot single stats
     for scenario, data in stats.items():
@@ -644,6 +648,22 @@ def main(argv):
         finish_time = len(data)
         print('Finish Time: {}'.format(finish_time))
 
+        # Were tasks completed?
+        last_timestep = 'time_{}'.format(len(data))
+
+        is_tasks_completed = True
+
+        for task in data[last_timestep]['tasks']:
+            if task['demand'] > 0:
+                print('Tasks not completed')
+                is_tasks_completed = False
+                break
+
+        if is_tasks_completed:
+            num_experiments_success += 1
+        else:
+            continue
+
         all_experiment_time += finish_time
 
         # Initial request num and time (return two values)
@@ -656,6 +676,21 @@ def main(argv):
 
         all_request_time += first_request_time
         all_robots_requested += request_num
+
+        # Time that the robots started working on the constrained task
+        time_found = False
+        for timestep in data:
+            for task in data[timestep]['tasks']:
+                if task['id'] == 'task_3':
+                    if int(task['demand']) < 5000:
+                        started_working_time = int(timestep.split('_')[1])
+                        time_found = True
+                        break
+            if time_found:
+                break
+
+        print('Started working at: {}'.format(started_working_time))
+        all_started_working_time += started_working_time
 
         # Message ratio
         last_timestep = 'time_{}'.format(len(data))
@@ -690,22 +725,30 @@ def main(argv):
 
     print('\n-------- RESULT SUMMARY --------')
 
-    average_completion_time = all_experiment_time / len(stats)    
+    print('Number of successful experiments: {} of {}'.format(num_experiments_success, len(stats)))
+
+    average_completion_time = all_experiment_time / num_experiments_success   
     print('Average Time: {} -> {}s'.format(average_completion_time, average_completion_time/10))
 
     average_message_ratio = all_message_received / all_message_sent
     print('Average Ratio: {}'.format(average_message_ratio))
 
-    average_request_time = all_request_time / len(stats)
+    average_request_time = all_request_time / num_experiments_success
     print('Average Request Time: {} -> {}s'.format(average_request_time, average_request_time/10))
+
+    average_started_working_time = all_started_working_time / num_experiments_success
+    print('Average Time Started: {} -> {}s'.format(average_started_working_time, average_started_working_time/10))
+
+    average_waiting_time = average_started_working_time - average_request_time
+    print('Average Waiting Time: {} -> {}s'.format(average_waiting_time, average_waiting_time/10))
 
     average_service_time = average_completion_time - average_request_time
     print('Average Service Time: {} -> {}s'.format(average_service_time, average_service_time/10))
 
-    average_robots_requested = all_robots_requested /  len(stats)
+    average_robots_requested = all_robots_requested /  num_experiments_success
     print('Average Ratio: {}'.format(average_robots_requested))
 
-    average_distance = all_distance / len(stats)
+    average_distance = all_distance / num_experiments_success
     print('Average Distance: {}'.format(average_distance))
 
     # Plot overall stats
@@ -747,7 +790,7 @@ if __name__ == "__main__":
     #        ]
     argv = []
 
-    for i in range(1,21):
+    for i in range(1,51):
         id = ''
         if(i < 10):
             id += '0' + str(i)
@@ -757,8 +800,8 @@ if __name__ == "__main__":
         # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
-        # argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
     #     id = ''
