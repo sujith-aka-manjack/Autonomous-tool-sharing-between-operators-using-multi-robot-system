@@ -20,7 +20,7 @@ DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
 TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
@@ -30,7 +30,7 @@ RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
@@ -689,7 +689,7 @@ def main(argv):
 
         # Completion time (return int, not complete = None)
         finish_time = len(data)
-        print('Finish Time: {}'.format(finish_time))
+        # print('Finish Time: {}'.format(finish_time))
 
         # Were tasks completed?
         last_timestep = 'time_{}'.format(len(data))
@@ -698,7 +698,7 @@ def main(argv):
 
         for task in data[last_timestep]['tasks']:
             if task['demand'] > 0:
-                print('Tasks not completed')
+                # print('Tasks not completed')
                 is_tasks_completed = False
                 break
 
@@ -716,33 +716,33 @@ def main(argv):
                 num_connectors += 1
 
         all_final_connectors += num_connectors
-        print('Num final connectors: {}'.format(num_connectors))
+        # print('Num final connectors: {}'.format(num_connectors))
 
         # Initial request num and time (return two values)
-        # first_request_time, request_num = init_request_time(data)
+        first_request_time, request_num = init_request_time(data)
         # print('First Request Time: {}'.format(first_request_time))
         # print('Robots Requested: {}'.format(request_num))
 
-        # start_last_task_time = last_task_time(data)
+        start_last_task_time = last_task_time(data)
 
 
-        # all_request_time += first_request_time
-        # all_robots_requested += request_num
+        all_request_time += first_request_time
+        all_robots_requested += request_num
 
         # Time that the robots started working on the constrained task
-        # time_found = False
-        # for timestep in data:
-        #     for task in data[timestep]['tasks']:
-        #         if task['id'] == 'task_3':
-        #             if int(task['demand']) < 5000:
-        #                 started_working_time = int(timestep.split('_')[1])
-        #                 time_found = True
-        #                 break
-        #     if time_found:
-        #         break
+        time_found = False
+        for timestep in data:
+            for task in data[timestep]['tasks']:
+                if task['id'] == 'task_3':
+                    if int(task['demand']) < 5000:
+                        started_working_time = int(timestep.split('_')[1])
+                        time_found = True
+                        break
+            if time_found:
+                break
 
         # print('Started working at: {}'.format(started_working_time))
-        # all_started_working_time += started_working_time
+        all_started_working_time += started_working_time
 
         # Message ratio
         last_timestep = 'time_{}'.format(len(data))
@@ -758,9 +758,9 @@ def main(argv):
         total_sent = L1_sent + L2_sent
         total_received = L1_received + L2_received
         ratio = total_received / total_sent
-        print('Total Sent: {}'.format(total_sent))
-        print('Total Received: {}'.format(total_received))
-        print('Ratio: {}'.format(ratio))
+        # print('Total Sent: {}'.format(total_sent))
+        # print('Total Received: {}'.format(total_received))
+        # print('Ratio: {}'.format(ratio))
 
         all_message_sent += total_sent
         all_message_received += total_received
@@ -770,10 +770,13 @@ def main(argv):
         # print('Request Num: {}'.format(request_num))
 
         # Distance traveled since request first made (distance traveled by teamid != 1)
-        # distance = distance_since_request(data)
+        distance = distance_since_request(data)
         # print('Distance: {}'.format(distance))
 
-        # all_distance += distance
+        all_distance += distance
+
+        # Print (completion time, wait time, distance)
+        print('{},{},{}'.format(finish_time,(started_working_time-first_request_time),distance)) 
 
     print('\n-------- RESULT SUMMARY --------')
 
@@ -844,7 +847,7 @@ if __name__ == "__main__":
     #         'template_13.yaml',
     #        ]
     argv = []
-    for i in range(1,51):
+    for i in range(2,26):
     # for i in range(1,26):
     # for i in range(26,51):
 
@@ -854,11 +857,11 @@ if __name__ == "__main__":
         else:
             id += str(i)
         # argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
         # argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        # argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
     #     id = ''
