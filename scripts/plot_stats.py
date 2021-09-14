@@ -656,6 +656,8 @@ def main(argv):
 
     all_started_working_time = 0
 
+    all_final_connectors = 0
+
     # Plot single stats
     for scenario, data in stats.items():
 
@@ -706,6 +708,15 @@ def main(argv):
             continue
 
         all_experiment_time += finish_time
+
+        # Number of connectors in the final timestep
+        num_connectors = 0
+        for robot in data[last_timestep]['robots']:
+            if robot['state'] == 'CONNECTOR':
+                num_connectors += 1
+
+        all_final_connectors += num_connectors
+        print('Num final connectors: {}'.format(num_connectors))
 
         # Initial request num and time (return two values)
         # first_request_time, request_num = init_request_time(data)
@@ -774,6 +785,9 @@ def main(argv):
     average_message_ratio = all_message_received / all_message_sent
     print('Average Ratio: {}'.format(average_message_ratio))
 
+    average_final_connectors = all_final_connectors / num_experiments_success
+    print('Average Final Connectors: {}'.format(average_final_connectors))
+
     average_request_time = all_request_time / num_experiments_success
     print('Average Request Time: {} -> {}s'.format(average_request_time, average_request_time/10))
 
@@ -793,7 +807,7 @@ def main(argv):
     print('Average Distance: {}'.format(average_distance))
 
     # Plot overall stats
-    plot_filename = '{0}/overall_robot-states.png'.format(OUTPUT_DIR)
+    plot_filename = '{0}/overall_robot-states.pdf'.format(OUTPUT_DIR)
     plot_overall_robot_states(stats,
                               title='Average number of robots in each team',
                               x_label='Time (seconds)',
