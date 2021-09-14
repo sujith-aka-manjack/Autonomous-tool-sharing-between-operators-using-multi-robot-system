@@ -5,7 +5,7 @@ SCENARIO_DIR=$PROJECT_DIR/experiments/scenario
 
 cd $PROJECT_DIR
 
-for robot_num in 20 30 40
+for robot_num in 30 #30 40
 do
     CONFIG=${robot_num}R_5T_5000D
     SCENARIO_DIR=$PROJECT_DIR/experiments/$CONFIG

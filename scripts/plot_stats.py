@@ -7,6 +7,7 @@ import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 import pprint
 from collections import defaultdict
 
@@ -19,7 +20,7 @@ DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
 TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
@@ -28,7 +29,7 @@ TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 OUTPUT_DIR = RESULTS_DIR
 
@@ -254,30 +255,58 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     x = range(0,total_time)
     x = [elem / 10 for elem in x]
 
+    # fig = plt.gcf()
+    # fig.set_size_inches(6.5, 3.5)
+
+    font = FontProperties()
+    font.set_family('serif')
+    font.set_name('Times New Roman')
+
+    plt.figure(figsize=(8,3))
+
     # plotting the lines
-    plt.plot(x, y1_mean, label = "Follower 1")
-    plt.plot(x, y2_mean, label = "Follower 2")
+    plt.plot(x, y1_mean, label = "Team 1 Follower")
+    plt.plot(x, y2_mean, label = "Team 2 Follower")
     plt.plot(x, y3_mean, label = "Connector")
     if np.amax(y4_mean) > 0:
         plt.plot(x, y4_mean, label = "Traveler")
 
     # plt.title(title)
-    plt.xlabel(x_label, fontsize=15)
-    plt.ylabel(y_label, fontsize=15)
+    plt.xlabel(x_label, fontsize=15, fontproperties=font)
+    plt.ylabel(y_label, fontsize=15, fontproperties=font)
 
-    plt.xticks(np.arange(0, total_time/10, 50), fontsize=12)
+    plt.xticks(np.arange(0, total_time/10, 50), fontsize=14, fontproperties=font)
     # plt.yticks(np.arange(0, total_robots, 5), fontsize=12)
-    plt.yticks(np.arange(0, 25, 5), fontsize=12)
+    plt.yticks(np.arange(0, 25, 5), fontsize=14, fontproperties=font)
 
-    plt.ylim([0,y_limit])
+    plt.xlim([0,360])
+    plt.ylim([-0.5,17])
 
     if np.amax(y4_mean) > 0:
         num_col = 4
     else:
         num_col = 3
-    plt.legend(loc='upper left', ncol=num_col)
 
-    plt.savefig('{}{}.pdf'.format(out_filename.split('.yaml')[0], '_mean'))
+    font2 = FontProperties()
+    font2.set_family('serif')
+    font2.set_name('Times New Roman')
+    font2.set_size(14)
+    
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc='lower left', ncol=num_col, frameon=False, prop=font2)
+
+    ax = plt.gca()
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_linewidth(1)
+    ax.spines['bottom'].set_linewidth(1)
+    ax.tick_params(width=1)
+
+    plt.axhline(y=0, linewidth=1, color='black', linestyle='--')
+
+    # set_size(4.85, 3.4)
+
+    plt.savefig('{}{}.pdf'.format(out_filename.split('.yaml')[0], '_mean'), bbox_inches='tight')
 
     plt.fill_between(x, y1_min, y1_max, alpha=0.2)
     plt.fill_between(x, y2_min, y2_max, alpha=0.2)
@@ -291,8 +320,20 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     # if np.amax(y4_95) > 0:
     #     plt.fill_between(x, y4_5, y4_95, alpha=0.2)
 
-    plt.savefig(out_filename)
+    plt.savefig(out_filename, bbox_inches='tight')
     plt.close()
+
+
+def set_size(w,h, ax=None):
+    """ w, h: width, height in inches """
+    if not ax: ax=plt.gca()
+    l = ax.figure.subplotpars.left
+    r = ax.figure.subplotpars.right
+    t = ax.figure.subplotpars.top
+    b = ax.figure.subplotpars.bottom
+    figw = float(w)/(r-l)
+    figh = float(h)/(t-b)
+    ax.figure.set_size_inches(figw, figh)
 
 
 def plot_task_demands(scenario, data, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
@@ -667,30 +708,30 @@ def main(argv):
         all_experiment_time += finish_time
 
         # Initial request num and time (return two values)
-        first_request_time, request_num = init_request_time(data)
-        print('First Request Time: {}'.format(first_request_time))
-        print('Robots Requested: {}'.format(request_num))
+        # first_request_time, request_num = init_request_time(data)
+        # print('First Request Time: {}'.format(first_request_time))
+        # print('Robots Requested: {}'.format(request_num))
 
-        start_last_task_time = last_task_time(data)
+        # start_last_task_time = last_task_time(data)
 
 
-        all_request_time += first_request_time
-        all_robots_requested += request_num
+        # all_request_time += first_request_time
+        # all_robots_requested += request_num
 
         # Time that the robots started working on the constrained task
-        time_found = False
-        for timestep in data:
-            for task in data[timestep]['tasks']:
-                if task['id'] == 'task_3':
-                    if int(task['demand']) < 5000:
-                        started_working_time = int(timestep.split('_')[1])
-                        time_found = True
-                        break
-            if time_found:
-                break
+        # time_found = False
+        # for timestep in data:
+        #     for task in data[timestep]['tasks']:
+        #         if task['id'] == 'task_3':
+        #             if int(task['demand']) < 5000:
+        #                 started_working_time = int(timestep.split('_')[1])
+        #                 time_found = True
+        #                 break
+        #     if time_found:
+        #         break
 
-        print('Started working at: {}'.format(started_working_time))
-        all_started_working_time += started_working_time
+        # print('Started working at: {}'.format(started_working_time))
+        # all_started_working_time += started_working_time
 
         # Message ratio
         last_timestep = 'time_{}'.format(len(data))
@@ -718,10 +759,10 @@ def main(argv):
         # print('Request Num: {}'.format(request_num))
 
         # Distance traveled since request first made (distance traveled by teamid != 1)
-        distance = distance_since_request(data)
-        print('Distance: {}'.format(distance))
+        # distance = distance_since_request(data)
+        # print('Distance: {}'.format(distance))
 
-        all_distance += distance
+        # all_distance += distance
 
     print('\n-------- RESULT SUMMARY --------')
 
@@ -752,7 +793,7 @@ def main(argv):
     print('Average Distance: {}'.format(average_distance))
 
     # Plot overall stats
-    plot_filename = '{0}/overall_robot-states.pdf'.format(OUTPUT_DIR)
+    plot_filename = '{0}/overall_robot-states.png'.format(OUTPUT_DIR)
     plot_overall_robot_states(stats,
                               title='Average number of robots in each team',
                               x_label='Time (seconds)',
@@ -789,18 +830,20 @@ if __name__ == "__main__":
     #         'template_13.yaml',
     #        ]
     argv = []
-
     for i in range(1,51):
+    # for i in range(1,26):
+    # for i in range(26,51):
+
         id = ''
         if(i < 10):
             id += '0' + str(i)
         else:
             id += str(i)
         # argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
-        argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
