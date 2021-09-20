@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="10000"
                 ticks_per_second="10"
-                random_seed="52290" />
+                random_seed="52296" />
   </framework>
 
   <!-- *************** -->
@@ -26,7 +26,7 @@
         <leds implementation="default" medium="leds" />
       </actuators>
       <sensors>
-        <proximity implementation="default" show_rays="true" />
+        <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
         <positioning implementation="default" />
       </sensors>
@@ -91,7 +91,7 @@
     <!-- Output file name -->
     <output logging="false"
             out_path="results/template.yaml" 
-            frame_grabbing="true" 
+            frame_grabbing="false" 
             camera_index="0" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
@@ -128,10 +128,10 @@
 
       <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
 
       <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="7500" />
     </tasks>
   </loop_functions>
 

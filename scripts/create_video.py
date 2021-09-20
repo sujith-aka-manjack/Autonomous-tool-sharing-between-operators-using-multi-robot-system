@@ -36,6 +36,6 @@ def create_video(dir_path, fps):
 
 if __name__ == "__main__":
     # dir_path = '/home/genki/GIT/argos-sct/frames/'
-    path = os.path.join(os.environ['HOME'], 'GIT/argos-sct/frames/')
+    path = os.path.join(os.environ['HOME'], 'GIT/argos-sct/frames_30_ex_3/')
     fps = 10
     create_video(path, fps)

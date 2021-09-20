@@ -456,10 +456,12 @@ void CFollower::ControlStep() {
             //     if(msg.second.from == "L1")
             //         relaying = true;
             // }
-            if(relaying)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else
-                m_pcLEDs->SetAllColors(teamColor[teamID]);
+            // if(relaying)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else
+            //     m_pcLEDs->SetAllColors(teamColor[teamID]);
+
+            m_pcLEDs->SetAllColors(CColor::GREEN);
 
             /* Relay task signal from leader */
             msg[msg_index++] = leaderSignal;
@@ -491,12 +493,14 @@ void CFollower::ControlStep() {
             //     // if(msg.second.type == 'R')
             //     //     requesting = true;
             // }
-            if(requesting)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else if(sending)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else
-                m_pcLEDs->SetAllColors(CColor::CYAN);
+            // if(requesting)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else if(sending)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else
+            //     m_pcLEDs->SetAllColors(CColor::CYAN);
+
+            m_pcLEDs->SetAllColors(CColor::BLUE);
 
             /* Leader task signal */
             msg_index++; // Skip to next part
@@ -1801,7 +1805,7 @@ void CFollower::Travel() {
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
 
-    CVector2 sumForce      = teamWeight*travelForce + 0*robotForce + 0.5*obstacleWeight*obstacleForce;
+    CVector2 sumForce      = teamWeight*travelForce + 0.3*robotForce + 0.5*obstacleWeight*obstacleForce;
 
     /* Set Wheel Speed */
     if(travelForce.Length() > 0.0f)

@@ -214,7 +214,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     }
 
     /* Set LED color */
-    m_pcLEDs->SetAllColors(teamColor[teamID]);
+    // m_pcLEDs->SetAllColors(teamColor[teamID]);
+    m_pcLEDs->SetAllColors(CColor::RED);
 
     /* Init PID Controller */
     PIDHeading = new PID(0.1,                             // dt  (loop interval time)
@@ -358,8 +359,10 @@ void CLeader::ControlStep() {
     /* Set LED */
     if(m_bSignal)
         m_pcLEDs->SetAllColors(CColor::WHITE);
-    else
-        m_pcLEDs->SetAllColors(teamColor[teamID]);
+    else {
+        // m_pcLEDs->SetAllColors(teamColor[teamID]);
+        m_pcLEDs->SetAllColors(CColor::RED);
+    }
 
     /* Set Motion */
     if(initStepTimer > 4) {
@@ -1014,11 +1017,11 @@ void CLeader::CheckHeartBeat() {
                                 // Add waypoints
 
                                 // std::queue<CVector2> waypoints; // Queue to provide to the robot
-                                waypoints.push(CVector2(1.5, -0.5));
-                                waypoints.push(CVector2(-0.5, -0.5));
-                                waypoints.push(CVector2(-0.5, 0.5));
-                                waypoints.push(CVector2(0.5, 1.5));
-                                requestReceived = true;
+                                // waypoints.push(CVector2(1.5, -0.5));
+                                // waypoints.push(CVector2(-0.5, -0.5));
+                                // waypoints.push(CVector2(-0.5, 0.5));
+                                // waypoints.push(CVector2(0.5, 1.5));
+                                // requestReceived = true;
                             }
                         }
                     }/*  else {
@@ -1030,10 +1033,10 @@ void CLeader::CheckHeartBeat() {
                 } 
                 
                 /* Set a follower that received the leader message from a non-team robot as a candidate to switch teams */
-                // if( switchCandidate.empty() && !beat.firstFollower.empty()) {
-                //     switchCandidate = beat.firstFollower;
-                //     // std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
-                // }
+                if( switchCandidate.empty() && !beat.firstFollower.empty()) {
+                    switchCandidate = beat.firstFollower;
+                    // std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
+                }
             }
         }
     }
@@ -1288,7 +1291,7 @@ void CLeader::Callback_Message(void* data) {
                 if(robotsNeeded - currentFollowerCount > 0) {
                     beat.type = 'R';
                     // beat.robot_num = 100; // TEMP: Large number to send all robots
-                    beat.robot_num = robotsNeeded - currentFollowerCount + 2;
+                    beat.robot_num = robotsNeeded - currentFollowerCount + 1;
                     std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
                 }
             }
