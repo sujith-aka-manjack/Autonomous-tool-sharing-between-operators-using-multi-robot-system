@@ -302,6 +302,14 @@ void CManualControlQTUserFunctions::DrawInWorld() {
                   cText.str(),
                   CColor::BLACK,
                   taskFont);
+
+         cText.str("");
+         cText << cTask.GetCurrentRobotNum() << " / " << cTask.GetMinRobotNum();
+         QFont numFont("Helvetica [Cronyx]", 20);
+         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-0.25, 0.01),
+                  cText.str(),
+                  CColor::BLACK,
+                  numFont);
       }
    }
 }

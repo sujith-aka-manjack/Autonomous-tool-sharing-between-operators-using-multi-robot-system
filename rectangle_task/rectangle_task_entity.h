@@ -62,6 +62,17 @@ namespace argos {
          return m_unMaxRobotNum;
       }
 
+      virtual UInt32 GetCurrentRobotNum() const {
+         if(m_unDemand > 0)
+            return m_unCurrentRobotNum;
+         else
+            return 0;
+      }
+
+      virtual void SetCurrentRobotNum(UInt32 un_robot_num) {
+         m_unCurrentRobotNum = un_robot_num;
+      }
+
       virtual bool InArea(const CVector2& pos);
 
       virtual std::string GetTypeDescription() const {
@@ -77,6 +88,7 @@ namespace argos {
       UInt32              m_unDemand;
       UInt32              m_unMinRobotNum;
       UInt32              m_unMaxRobotNum;
+      UInt32              m_unCurrentRobotNum;
 
    };
 
