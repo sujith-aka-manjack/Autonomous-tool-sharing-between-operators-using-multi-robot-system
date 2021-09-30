@@ -65,5 +65,8 @@
         "qopenglwidget": "cpp",
         "forward_list": "cpp"
     },
-    "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python"
+    "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python",
+    "files.watcherExclude": {
+        "**/.venv/**": true
+    }
 }
