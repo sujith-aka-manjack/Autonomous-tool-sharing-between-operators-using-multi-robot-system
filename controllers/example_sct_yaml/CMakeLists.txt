@@ -6,4 +6,5 @@ add_library(example_sct_yaml MODULE
 target_link_libraries(example_sct_yaml
   argos3core_simulator
   argos3plugin_simulator_epuck
-  argos3plugin_simulator_genericrobot)
+  argos3plugin_simulator_genericrobot
+  yaml-cpp)

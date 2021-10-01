@@ -26,11 +26,11 @@ void CExampleSCTYaml::Init(TConfigurationNode& t_node) {
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
     /* Initialize the SCT controller */
-    sct = new SCT();
-    sct->add_callback(this, EV_a, &CExampleSCTYaml::callback_a, NULL, NULL);
-    sct->add_callback(this, EV_b, &CExampleSCTYaml::callback_b, NULL, NULL);
-    sct->add_callback(this, EV_c, NULL, &CExampleSCTYaml::check_c, NULL);
-    sct->add_callback(this, EV_d, NULL, &CExampleSCTYaml::check_d, NULL);
+    sct = new SCT("/home/genki/GIT/argos-sct/SCT_models/example_sct_yaml.yaml");
+    sct->add_callback(this, sct->events["EV_a"], &CExampleSCTYaml::callback_a, NULL, NULL);
+    sct->add_callback(this, sct->events["EV_b"], &CExampleSCTYaml::callback_b, NULL, NULL);
+    sct->add_callback(this, sct->events["EV_c"], NULL, &CExampleSCTYaml::check_c, NULL);
+    sct->add_callback(this, sct->events["EV_d"], NULL, &CExampleSCTYaml::check_d, NULL);
 
     Reset();
 }

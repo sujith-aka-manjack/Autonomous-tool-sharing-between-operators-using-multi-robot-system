@@ -10,19 +10,6 @@
 
 #include <argos3/core/utility/math/rng.h>
 
-/* Supervisor Info */
-#define NUM_EVENTS 4
-#define NUM_SUPERVISORS 1
-
-/* Event Info */
-#define EV_a 0
-
-#define EV_d 1
-
-#define EV_c 2
-
-#define EV_b 3
-
 /* Structure to store member functions */
 struct Scallback {
     std::function<void(void* data)> callback;
@@ -39,7 +26,7 @@ class SCT {
 public:
 
     /* Class constructor */
-    SCT();
+    SCT(const std::string& yaml_path);
 
     /* Class destructor */
     ~SCT();
@@ -76,6 +63,9 @@ public:
 
     virtual std::string get_current_state_string();
 
+    /* Map used to convert an event name into its corresponding number */
+    std::map<std::string, size_t> events;
+
 protected:
 
     /* Return whether an uncontrollable event has occured */
@@ -109,13 +99,15 @@ protected:
     std::queue<unsigned char> input_buffer;
 
     /* Supervisors */
-    const unsigned char     ev_controllable[4] = { 1,0,0,1 };
-    const unsigned char     sup_events[1][4] = { { 1,1,1,1 } };
-    const unsigned long int sup_init_state[1]     = { 0 };
-    unsigned long int       sup_current_state[1]  = { 0 };
-    const unsigned long int sup_data_pos[1] = { 0 };
-    const unsigned char     sup_data[ 26 ] = { 4,EV_a,0,0,EV_d,0,0,EV_c,0,1,EV_b,0,0,4,EV_a,0,1,EV_d,0,0,EV_c,0,1,EV_b,0,1 };
-    
+    size_t                           num_events;
+    size_t                           num_supervisors;
+    std::vector<size_t>              ev_controllable;
+    std::vector<std::vector<size_t>> sup_events;
+    std::vector<size_t>              sup_init_state;
+    std::vector<size_t>              sup_current_state;
+    std::vector<size_t>              sup_data_pos;
+    std::vector<size_t>              sup_data;
+
     /* Random number generator */
     argos::CRandom::CRNG* m_pcRNG;
 

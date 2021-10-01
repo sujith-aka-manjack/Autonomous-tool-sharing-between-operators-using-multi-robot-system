@@ -1,12 +1,73 @@
 #include "SCT.h"
+#include "yaml-cpp/yaml.h"
+
+bool isNumber(const std::string& str)
+{
+    return str.find_first_not_of("0123456789") == std::string::npos;
+}
 
 /****************************************/
 /*                 SCT                  */
 /****************************************/
 
-SCT::SCT(){
+SCT::SCT(const std::string& yaml_path){
     /* Create a new RNG */
     m_pcRNG = argos::CRandom::CreateRNG("argos");
+
+    /* Load SCT from YAML file */
+    YAML::Node node = YAML::LoadFile(yaml_path);
+
+    num_events        = node["num_events"].as<size_t>();
+    num_supervisors   = node["num_supervisors"].as<size_t>();
+    ev_controllable   = node["ev_controllable"].as<std::vector<size_t>>();
+    sup_events        = node["sup_events"].as<std::vector<std::vector<size_t>>>();
+    sup_init_state    = node["sup_init_state"].as<std::vector<size_t>>();
+    sup_current_state = node["sup_current_state"].as<std::vector<size_t>>();
+    sup_data_pos      = node["sup_data_pos"].as<std::vector<size_t>>();
+
+    std::vector<std::string> event_strings = node["events"].as<std::vector<std::string>>();
+    std::vector<std::string> data          = node["sup_data"].as<std::vector<std::string>>();
+
+    /* Convert event names into corresponding numbers */
+    for(size_t i = 0; i < event_strings.size(); i++)
+        events[event_strings[i]] = i;
+
+    for(const auto& val : data) {
+        if(isNumber(val))
+            sup_data.push_back(stoi(val));
+        else
+            sup_data.push_back(events[val]);    
+    }
+
+    // std::cout << yaml_path << std::endl;
+    // std::cout << "num_events " << num_events << std::endl;
+    // std::cout << "num_supervisors " << num_supervisors << std::endl;
+    // for(const auto& ev : event_strings)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : ev_controllable)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : sup_events) {
+    //     for (const auto& ev2 : ev)
+    //         std::cout << ev2 << std::endl;
+    //     std::cout << std::endl;
+    // }
+    // for(const auto& ev : sup_init_state)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : sup_current_state)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : sup_data_pos)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : data)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
+    // for(const auto& ev : sup_data)
+    //     std::cout << ev << std::endl;
+    // std::cout << std::endl;
 }
 
 SCT::~SCT(){}
@@ -32,9 +93,9 @@ std::string SCT::get_current_state_string() {
     std::ostringstream stream;
     stream.str("");
     stream << "sup:[";
-    for(size_t i = 0; i < NUM_SUPERVISORS; i++) {
+    for(size_t i = 0; i < num_supervisors; i++) {
         stream << (int) sup_current_state[i];
-        if(i < NUM_SUPERVISORS - 1)
+        if(i < num_supervisors - 1)
             stream << ",";
     }
     stream << "]";
@@ -43,14 +104,14 @@ std::string SCT::get_current_state_string() {
 }
 
 unsigned char SCT::input_read( unsigned char ev ){
-    if( ev < NUM_EVENTS && callback[ ev ].check_input != NULL )
+    if( ev < num_events && callback[ ev ].check_input != NULL )
         return callback[ ev ].check_input( callback[ ev ].data );
     return 0;
 }
 
 void SCT::update_input(){
     unsigned char i;
-    for(i=0;i<NUM_EVENTS;i++){
+    for(i=0;i<num_events;i++){
         if( !ev_controllable[i] ){   /* Check the UCEs only */
             if( input_read( i ) ){
                 input_buffer.push(i);
@@ -77,7 +138,7 @@ void SCT::make_transition( unsigned char event ){
     unsigned char num_transitions;
 
     /* Apply transition to each local supervisor */
-    for(i=0; i<NUM_SUPERVISORS; i++){
+    for(i=0; i<num_supervisors; i++){
         if(sup_events[i][event]){   /* Check if the given event is part of this supervisor */
             
             /* Current state info of supervisor */
@@ -98,7 +159,7 @@ void SCT::make_transition( unsigned char event ){
 }
 
 void SCT::exec_callback( unsigned char ev ){
-    if( ev < NUM_EVENTS && callback[ ev ].callback != NULL )
+    if( ev < num_events && callback[ ev ].callback != NULL )
         callback[ ev ].callback( callback[ ev ].data );
 }
 
@@ -112,7 +173,7 @@ unsigned char SCT::get_next_uncontrollable( unsigned char *event ){
 }
 
 unsigned char SCT::get_next_controllable( unsigned char *event ){
-    unsigned char events[NUM_EVENTS], i, count_actives;
+    unsigned char events[num_events], i, count_actives;
     unsigned long int random_pos;
     
     /* Get controllable events that are enabled -> events */
@@ -120,7 +181,7 @@ unsigned char SCT::get_next_controllable( unsigned char *event ){
 
     if( count_actives ){                        /* If at least one event is enabled do */
         random_pos = m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) % count_actives;    /* Pick a random index (event) */
-        for(i=0; i<NUM_EVENTS; i++){
+        for(i=0; i<num_events; i++){
             if( !random_pos && events[i] ){
                 *event = i;
                 return 1;
@@ -137,7 +198,7 @@ unsigned char SCT::get_active_controllable_events( unsigned char *events ){
     unsigned char count_actives = 0;
 
     /* Disable all non controllable events */
-    for( i=0; i<NUM_EVENTS; i++ ){
+    for( i=0; i<num_events; i++ ){
         if( !ev_controllable[i] ){
             events[i] = 0;
         } else {
@@ -147,18 +208,18 @@ unsigned char SCT::get_active_controllable_events( unsigned char *events ){
     }
 
     /* Check if a controllable event is disabled in any of the supervisors */
-    for(i=0; i<NUM_SUPERVISORS; i++){
+    for(i=0; i<num_supervisors; i++){
         unsigned long int position;
-        unsigned char ev_disable[NUM_EVENTS], k;
+        unsigned char ev_disable[num_events], k;
         unsigned char num_transitions;
 
         /* Init an array where all events are disabled */
-        for(k=0; k < NUM_EVENTS;k++){
+        for(k=0; k < num_events;k++){
             ev_disable[k] = 1;  
         }
 
         /* Enable all events that are not part of this supervisor */
-        for( j=0; j < NUM_EVENTS; j++ ){
+        for( j=0; j < num_events; j++ ){
             if( !sup_events[i][j] ){
                 ev_disable[j] = 0;
             }
@@ -176,7 +237,7 @@ unsigned char SCT::get_active_controllable_events( unsigned char *events ){
         }
 
         /* Remove the controllable events to disable, leaving an array of enabled controllable events */
-        for( j=0; j<NUM_EVENTS; j++ ){
+        for( j=0; j<num_events; j++ ){
             if( ev_disable[j] == 1 && events[ j ] ){
                 events[ j ] = 0;
                 count_actives--;

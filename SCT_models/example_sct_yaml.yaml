@@ -1,0 +1,9 @@
+num_events: 4
+num_supervisors: 1
+events: [ EV_a,EV_d,EV_c,EV_b ]
+ev_controllable: [ 1,0,0,1 ]
+sup_events: [ [ 1,1,1,1 ] ]
+sup_init_state: [ 0 ]
+sup_current_state: [ 0 ]
+sup_data_pos: [ 0 ]
+sup_data: [ 4,EV_a,0,0,EV_d,0,0,EV_c,0,1,EV_b,0,0,4,EV_a,0,1,EV_d,0,0,EV_c,0,1,EV_b,0,1 ]
