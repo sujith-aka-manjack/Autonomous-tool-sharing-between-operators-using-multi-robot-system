@@ -38,9 +38,19 @@ void CExampleSCT::Init(TConfigurationNode& t_node) {
 /****************************************/
 /****************************************/
 
+CExampleSCT::~CExampleSCT() {
+    std::cout << "total_a: " << total_a << ", total_b: " << total_b << std::endl;
+    delete sct;
+}
+
+/****************************************/
+/****************************************/
+
 void CExampleSCT::ControlStep() {
 
     update_sensors();
+
+    std::cout << sct->get_current_state_string() << std::endl;
 
     /* Run the generator player */
     sct->run_step();

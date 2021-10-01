@@ -3,11 +3,12 @@
 
 #include <stdlib.h>
 #include <ctime>
-#include <random>
 #include <queue>
 #include <map>
 #include <functional>
 #include <iostream>
+
+#include <argos3/core/utility/math/rng.h>
 
 /* Supervisor Info */
 #define NUM_EVENTS 4
@@ -43,8 +44,6 @@ public:
     /* Class destructor */
     ~SCT();
 
-    // void reset();
-
     /* Add callback function for a controllable event */
     template<typename Class>
     void add_callback(Class* p, unsigned char event, void (Class::*clbk)( void* ), void* empty_ci, void* data) {
@@ -74,6 +73,8 @@ public:
 
     /* Run the generator player to execute the next action */
     virtual void run_step();
+
+    virtual std::string get_current_state_string();
 
 protected:
 
@@ -114,6 +115,9 @@ protected:
     unsigned long int       sup_current_state[1]  = { 0 };
     const unsigned long int sup_data_pos[1] = { 0 };
     const unsigned char     sup_data[ 26 ] = { 4,EV_a,0,0,EV_d,0,0,EV_c,0,1,EV_b,0,0,4,EV_a,0,1,EV_d,0,0,EV_c,0,1,EV_b,0,1 };
+    
+    /* Random number generator */
+    argos::CRandom::CRNG* m_pcRNG;
 
 };
 

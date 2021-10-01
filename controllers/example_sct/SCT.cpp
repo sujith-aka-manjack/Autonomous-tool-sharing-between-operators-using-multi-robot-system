@@ -5,14 +5,8 @@
 /****************************************/
 
 SCT::SCT(){
-    unsigned char i;
-    for(i=0; i<NUM_EVENTS; i++){
-        callback[i].callback    = NULL;
-        callback[i].check_input = NULL;
-        callback[i].data        = NULL;
-    }
-
-    std::srand(std::time(nullptr));
+    /* Create a new RNG */
+    m_pcRNG = argos::CRandom::CreateRNG("argos");
 }
 
 SCT::~SCT(){}
@@ -32,6 +26,20 @@ void SCT::run_step(){
         make_transition( event );
         exec_callback( event );
     }
+}
+
+std::string SCT::get_current_state_string() {
+    std::ostringstream stream;
+    stream.str("");
+    stream << "sup:[";
+    for(size_t i = 0; i < NUM_SUPERVISORS; i++) {
+        stream << (int) sup_current_state[i];
+        if(i < NUM_SUPERVISORS - 1)
+            stream << ",";
+    }
+    stream << "]";
+
+    return stream.str();
 }
 
 unsigned char SCT::input_read( unsigned char ev ){
@@ -111,7 +119,7 @@ unsigned char SCT::get_next_controllable( unsigned char *event ){
     count_actives = get_active_controllable_events( events );
 
     if( count_actives ){                        /* If at least one event is enabled do */
-        random_pos = rand() % count_actives;    /* Pick a random index (event) */
+        random_pos = m_pcRNG->Uniform(argos::CRange<argos::UInt32>(0,4294967295)) % count_actives;    /* Pick a random index (event) */
         for(i=0; i<NUM_EVENTS; i++){
             if( !random_pos && events[i] ){
                 *event = i;

@@ -49,9 +49,7 @@ public:
     CExampleSCT();
 
     /* Class destructor. */
-    virtual ~CExampleSCT() {
-        std::cout << "total_a: " << total_a << ", total_b: " << total_b << std::endl;
-    }
+    virtual ~CExampleSCT();
 
     /*
     * This function initializes the controller.
