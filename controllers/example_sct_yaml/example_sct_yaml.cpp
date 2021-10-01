@@ -23,10 +23,11 @@ void CExampleSCTYaml::Init(TConfigurationNode& t_node) {
     m_pcRABSens   = GetSensor  <CCI_RangeAndBearingSensor       >("range_and_bearing" );
     
     /* Parse the configuration file */
-    GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
+    GetNodeAttribute(t_node, "velocity", m_fWheelVelocity);
+    GetNodeAttribute(t_node, "SCT", m_strSCTPath);
 
     /* Initialize the SCT controller */
-    sct = new SCT("/home/genki/GIT/argos-sct/SCT_models/example_sct_yaml.yaml");
+    sct = new SCT(m_strSCTPath);
     sct->add_callback(this, sct->events["EV_a"], &CExampleSCTYaml::callback_a, NULL, NULL);
     sct->add_callback(this, sct->events["EV_b"], &CExampleSCTYaml::callback_b, NULL, NULL);
     sct->add_callback(this, sct->events["EV_c"], NULL, &CExampleSCTYaml::check_c, NULL);

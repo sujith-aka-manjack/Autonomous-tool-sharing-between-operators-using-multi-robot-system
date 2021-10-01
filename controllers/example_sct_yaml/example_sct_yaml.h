@@ -102,6 +102,9 @@ private:
     /* Wheel speed. */
     Real m_fWheelVelocity;
 
+    /* SCT yaml path */
+    std::string m_strSCTPath;
+
     /*
     * SCT callbacks
     */

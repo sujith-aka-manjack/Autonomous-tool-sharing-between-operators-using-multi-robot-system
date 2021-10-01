@@ -26,7 +26,8 @@
         <proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
-      <params velocity="5" />
+      <params velocity="5" 
+              SCT="SCT_models/example_sct_yaml.yaml"/>
     </example_sct_yaml_controller>
 
   </controllers>
