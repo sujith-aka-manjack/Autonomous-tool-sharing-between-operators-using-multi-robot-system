@@ -29,7 +29,7 @@ public:
     SCT(const std::string& yaml_path);
 
     /* Class destructor */
-    ~SCT();
+    virtual ~SCT();
 
     /* Add callback function for a controllable event */
     template<typename Class>
