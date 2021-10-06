@@ -1,0 +1,2 @@
+add_subdirectory(circle_task)
+add_subdirectory(rectangle_task)

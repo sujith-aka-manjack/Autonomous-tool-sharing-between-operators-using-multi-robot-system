@@ -31,9 +31,7 @@ add_subdirectory(controllers)
 add_subdirectory(loop_functions)
 
 # Custom entities
-add_subdirectory(e-puck_leader)
-add_subdirectory(circle_task)
-add_subdirectory(rectangle_task)
+add_subdirectory(plugins)
 
 # Utility scripts
 add_subdirectory(utility)
