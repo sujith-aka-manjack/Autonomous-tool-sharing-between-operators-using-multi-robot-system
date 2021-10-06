@@ -15,10 +15,10 @@
 
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_user_functions.h>
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
-#include <plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
+#include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
-#include <plugins/simulator/circle_task/circle_task_entity.h>
-#include <plugins/simulator/rectangle_task/rectangle_task_entity.h>
+#include <argos3/plugins/simulator/circle_task/circle_task_entity.h>
+#include <argos3/plugins/simulator/rectangle_task/rectangle_task_entity.h>
 
 using namespace argos;
 

@@ -2,11 +2,11 @@
 #include <argos3/core/simulator/simulator.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
-#include <plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
+#include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
-#include <plugins/simulator/circle_task/circle_task_entity.h>
-#include <plugins/simulator/rectangle_task/rectangle_task_entity.h>
+#include <argos3/plugins/simulator/circle_task/circle_task_entity.h>
+#include <argos3/plugins/simulator/rectangle_task/rectangle_task_entity.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 #include "yaml-cpp/yaml.h"
