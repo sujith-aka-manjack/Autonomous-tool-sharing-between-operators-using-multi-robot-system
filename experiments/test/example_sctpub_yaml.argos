@@ -27,7 +27,7 @@
         <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
       </sensors>
       <params velocity="5"
-              SCT="SCT_models/example_sctpub_yaml.yaml" />
+              SCT="src/SCT_models/example_sctpub_yaml.yaml" />
     </example_sctpub_yaml_controller>
 
   </controllers>
