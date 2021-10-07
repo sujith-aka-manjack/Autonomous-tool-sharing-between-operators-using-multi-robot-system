@@ -17,8 +17,8 @@
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
-#include <argos3/plugins/simulator/circle_task/circle_task_entity.h>
-#include <argos3/plugins/simulator/rectangle_task/rectangle_task_entity.h>
+#include <argos3/plugins/simulator/entities/circle_task_entity.h>
+#include <argos3/plugins/simulator/entities/rectangle_task_entity.h>
 
 using namespace argos;
 

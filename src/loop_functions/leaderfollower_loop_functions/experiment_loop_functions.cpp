@@ -5,8 +5,8 @@
 #include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
-#include <argos3/plugins/simulator/circle_task/circle_task_entity.h>
-#include <argos3/plugins/simulator/rectangle_task/rectangle_task_entity.h>
+#include <argos3/plugins/simulator/entities/circle_task_entity.h>
+#include <argos3/plugins/simulator/entities/rectangle_task_entity.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 #include "yaml-cpp/yaml.h"
