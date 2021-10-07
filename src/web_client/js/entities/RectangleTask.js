@@ -10,6 +10,7 @@
         this.scale = scale;
         this.entity = entity;
 
+        var that = this;
         var geometry = new THREE.BoxBufferGeometry(
             entity.scale.x * scale,
             entity.scale.y * scale,
@@ -19,9 +20,11 @@
         /* Bring above ground */
         geometry.translate(0, 0, entity.scale.z * scale * 0.5);
 
+        var demand = entity.task.demand;
+
         var color = null;
-        if (entity.is_movable) {
-            color = 0xff0000;
+        if (demand == 0) {
+            color = 0x00ff00;
         } else {
             color = 0xff0000;
         }
@@ -39,13 +42,35 @@
             entity.orientation.y,
             entity.orientation.z,
             entity.orientation.w));
-        task.position.x = entity.position.x * scale;
-        task.position.y = entity.position.y * scale;
-        task.position.z = entity.position.z * scale;
 
-        this.mesh = task;
+        var meshParent = new THREE.Group();
+        /* Add all parts to a parent mesh */
+        meshParent.add(task);
 
-        EntityLoadingFinishedFn(this);
+        var text = new THREE.TextPlane({
+            alignment: 'left',
+            color: '#24ff00',
+            backgroundColor: '#1A84A500',
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: 8,
+            fontStyle: 'italic',
+            text: [
+              entity.task.demand,
+            ].join('\n'),
+        });
+
+        text.position.z = 10;
+
+        meshParent.add(text);
+
+        /* Update mesh parent */
+        meshParent.position.x = entity.position.x * scale;
+        meshParent.position.y = entity.position.y * scale;
+        meshParent.position.z = entity.position.z * scale;
+
+        that.mesh = meshParent;
+
+        EntityLoadingFinishedFn(that);
     }
 
     getMesh() {
@@ -65,5 +90,20 @@
                     entity.orientation.w));
             } catch (ignored) { }
         }
+
+        var color = null;
+        if (entity.task.demand == 0) {
+            color = 0x00ff00;
+        } else {
+            color = 0xff0000;
+        }
+
+        try {
+            this.mesh.material = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.5,
+            });
+        } catch (ignored) { }
     }
 }

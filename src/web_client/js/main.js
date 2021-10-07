@@ -257,5 +257,8 @@ loadJS("/js/libs/CSS2DRenderer.js", true);
 loadJS("/js/libs/stats.min.js", true);
 loadJS("/js/libs/GLTFLoader.js", true);
 
+loadJS("/js/libs/three.text-texture.js", true);
+loadJS("/js/libs/three.text-plane.js", true);
+
 /* Start running javascript after all files are loaded */
 loadJS("/js/libs/rivets.bundled.min.js", onAllFilesLoaded, true);
