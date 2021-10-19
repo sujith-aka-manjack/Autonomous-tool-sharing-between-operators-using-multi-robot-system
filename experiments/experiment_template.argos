@@ -89,7 +89,7 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <output logging="false"
+    <output logging="true"
             out_path="results/template.yaml" 
             frame_grabbing="false" 
             camera_index="0" />

@@ -15,4 +15,5 @@ target_link_libraries(leaderfollower_loop_functions
   argos3plugin_simulator_epuckleader
   argos3plugin_simulator_qtopengl
   yaml-cpp
+  avrocpp
   ${ARGOS_QTOPENGL_LIBRARIES})
