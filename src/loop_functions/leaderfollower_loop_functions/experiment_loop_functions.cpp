@@ -11,10 +11,6 @@
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 #include "yaml-cpp/yaml.h"
 
-#include "avro/Encoder.hh"
-#include "avro/Decoder.hh"
-#include "/home/genki/Downloads/avro-src-1.10.2/lang/c++/examples/mycpx.hh"
-
 /****************************************/
 /****************************************/
 
@@ -496,26 +492,6 @@ void CExperimentLoopFunctions::PreStep() {
         YAML::Node timestep;
         std::string t_str = "time_" + std::to_string(GetSpace().GetSimulationClock());
 
-        /* Avro reader */
-        std::cout << "Running..." << std::endl;
-
-        std::unique_ptr<avro::OutputStream> outStream = avro::memoryOutputStream();
-        avro::EncoderPtr e = avro::binaryEncoder();
-        e->init(*outStream);
-        c::cpx c1;
-        c1.re = 1.0;
-        c1.im = 2.13;
-        avro::encode(*e, c1);
-
-        std::unique_ptr<avro::InputStream> in = avro::memoryInputStream(*outStream);
-        avro::DecoderPtr d = avro::binaryDecoder();
-        d->init(*in);
-
-        c::cpx c2;
-        avro::decode(*d, c2);
-        std::cout << '(' << c2.re << ", " << c2.im << ')' << std::endl;
-
-        std::cout << "Ran" << std::endl;
 
         /* Output leader info */
         for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
