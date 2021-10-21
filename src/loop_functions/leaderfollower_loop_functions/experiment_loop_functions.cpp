@@ -11,6 +11,11 @@
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 #include "yaml-cpp/yaml.h"
 
+#include <fstream>
+
+#include <google/protobuf/util/json_util.h>
+#include <google/protobuf/util/delimited_message_util.h>
+
 /****************************************/
 /****************************************/
 
