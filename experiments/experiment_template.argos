@@ -90,7 +90,7 @@
 
     <!-- Output file name -->
     <output logging="true"
-            out_path="results/template.yaml" 
+            out_path="results/template.data" 
             frame_grabbing="false" 
             camera_index="0" />
 
