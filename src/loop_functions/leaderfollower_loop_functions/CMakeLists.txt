@@ -9,11 +9,10 @@ add_library(leaderfollower_loop_functions MODULE
 target_link_libraries(leaderfollower_loop_functions
   leader
   follower
+  protos
   argos3core_simulator
   argos3plugin_simulator_entities
   argos3plugin_simulator_epuck
   argos3plugin_simulator_epuckleader
   argos3plugin_simulator_qtopengl
-  yaml-cpp
-  protobuf
   ${ARGOS_QTOPENGL_LIBRARIES})

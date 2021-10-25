@@ -9,12 +9,11 @@
 #include <argos3/plugins/simulator/entities/rectangle_task_entity.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
-#include "yaml-cpp/yaml.h"
 
 #include <fstream>
-
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/delimited_message_util.h>
+#include <protos/generated/time_step.pb.h>
 
 /****************************************/
 /****************************************/
@@ -494,9 +493,8 @@ void CExperimentLoopFunctions::PreStep() {
 
     if(m_bLogging) {
         /* Create new node for this timestep */
-        YAML::Node timestep;
-        std::string t_str = "time_" + std::to_string(GetSpace().GetSimulationClock());
-
+        TimeStep tData;
+        tData.set_time(GetSpace().GetSimulationClock());
 
         /* Output leader info */
         for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
@@ -506,20 +504,15 @@ void CExperimentLoopFunctions::PreStep() {
             CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
             CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-            YAML::Node robot;
-            robot["id"] = cEPuckLeader.GetId();
-            robot["teamid"] = (int)cController.GetTeamID();
-            robot["state"] = "LEADER";
-            robot["pos"]["x"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            robot["pos"]["y"] = cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
-            // robot["beat_sent"] = cController.GetLatestTimeSent();
-            // robot["beat_received"] = cController.GetLatestTimeReceived();
-            robot["total_sent"] = cController.GetTotalSent();
-            robot["total_received"] = cController.GetTotalReceived();
-            robot["action"] = cController.GetLastAction();
-
-            timestep[t_str]["robots"].push_back(robot);
+            Robot* robot = tData.add_robots();
+            robot->set_name(cEPuckLeader.GetId());
+            robot->set_teamid(cController.GetTeamID());
+            robot->set_state(Robot_State_LEADER);
+            robot->mutable_position()->set_x(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
+            robot->mutable_position()->set_y(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+            robot->set_totalsent((int)cController.GetTotalSent());
+            robot->set_totalreceived((int)cController.GetTotalReceived());
+            robot->set_action(cController.GetLastAction());
         }
 
         /* Output follower info */
@@ -530,28 +523,25 @@ void CExperimentLoopFunctions::PreStep() {
             CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
             CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
-            YAML::Node robot;
-            robot["id"] = cEPuck.GetId();
-            robot["teamid"] = (int)cController.GetTeamID();
+            Robot* robot = tData.add_robots();
+            robot->set_name(cEPuck.GetId());
+            robot->set_teamid(cController.GetTeamID());
             switch(cController.currentState) {
                 case CFollower::RobotState::FOLLOWER:
-                    robot["state"] = "FOLLOWER";
+                    robot->set_state(Robot_State_FOLLOWER);
                     break;
                 case CFollower::RobotState::CONNECTOR:
-                    robot["state"] = "CONNECTOR";
+                    robot->set_state(Robot_State_CONNECTOR);
                     break;
                 case CFollower::RobotState::TRAVELER:
-                    robot["state"] = "TRAVELER";
+                    robot->set_state(Robot_State_TRAVELER);
                     break;
                 default:
                     std::cerr << "Tried to log unknown state " << int(cController.currentState) << std::endl;
                     break;
             }
-            robot["pos"]["x"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX();
-            robot["pos"]["y"] = cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY();
-            robot["pos"].SetStyle(YAML::EmitterStyle::Flow);
-
-            timestep[t_str]["robots"].push_back(robot);
+            robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
+            robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
         }
 
         if(taskExists) {
@@ -561,43 +551,16 @@ void CExperimentLoopFunctions::PreStep() {
                 itTask != m_cCTasks->end();
                 ++itTask) {
 
-                // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-
-                // YAML::Node task;
-                // task["id"] = cCTask.GetId();
-                // task["shape"] = "CIRCLE";
-                // task["demand"] = (int)cCTask.GetDemand();
-                // task["pos"]["x"] = cCTask.GetPosition().GetX();
-                // task["pos"]["y"] = cCTask.GetPosition().GetY();
-                // task["pos"].SetStyle(YAML::EmitterStyle::Flow);
-                // task["radius"] = cCTask.GetRadius();
-                // task["max_robot"] = (int)cCTask.GetMaxRobotNum();
-                // task["min_robot"] = (int)cCTask.GetMinRobotNum();
-
                 CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
-                YAML::Node task;
-                task["id"] = cCTask.GetId();
-                // task["shape"] = "RECTANGLE";
-                task["demand"] = (int)cCTask.GetDemand();
-                // task["pos"]["x"] = cCTask.GetPosition().GetX();
-                // task["pos"]["y"] = cCTask.GetPosition().GetY();
-                // task["pos"].SetStyle(YAML::EmitterStyle::Flow);
-                // task["width"] = cCTask.GetWidth();
-                // task["height"] = cCTask.GetHeight();
-                // task["max_robot"] = (int)cCTask.GetMaxRobotNum();
-                // task["min_robot"] = (int)cCTask.GetMinRobotNum();
-
-                timestep[t_str]["tasks"].push_back(task);
+                Task* task = tData.add_tasks();
+                task->set_demand(cCTask.GetDemand());
             }
         }
 
         /* Write to file */
-        YAML::Emitter out;
-        out << timestep;
-
-        m_cOutput.open(m_strOutput.c_str(), std::ios_base::app);
-        m_cOutput << out.c_str() << std::endl;
+        m_cOutput.open(m_strOutput.c_str(), std::ios::app | std::ios::binary);
+        google::protobuf::util::SerializeDelimitedToOstream(tData, &m_cOutput);
         m_cOutput.close();
     }
 

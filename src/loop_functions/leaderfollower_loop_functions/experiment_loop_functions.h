@@ -34,7 +34,7 @@ private:
    /* Output file */
    bool m_bLogging;
    std::string m_strOutput;
-   std::ofstream m_cOutput;
+   std::fstream m_cOutput;
 
    /* Frame Grabbing */
    bool m_bFrameGrabbing;
