@@ -11,7 +11,9 @@ from google.protobuf.internal.decoder import _DecodeVarint32
  
 def main():
 
-    with open('../../results/cpp_sensor.data', 'rb') as f:
+    s = {}
+
+    with open('../../results/result.pb', 'rb') as f:
         buf = f.read()
         n = 0
         while n < len(buf):
@@ -21,7 +23,10 @@ def main():
             n += msg_len
             read_metric = time_step_pb2.TimeStep()
             read_metric.ParseFromString(msg_buf)
-            print(read_metric)
+            # print(read_metric)
+            s[read_metric.time] = read_metric
  
+    print(s[4000].tasks[0].demand)
+
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
 syntax = "proto3";
- 
+
 message TimeStep {
   uint64 time = 1;
   repeated Robot robots = 2;
