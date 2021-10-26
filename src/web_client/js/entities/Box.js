@@ -14,6 +14,7 @@ class Box {
         this.scale = scale;
         this.entity = entity;
 
+        var that = this;
         var geometry = new THREE.BoxBufferGeometry(
             entity.scale.x * scale,
             entity.scale.y * scale,
@@ -36,18 +37,26 @@ class Box {
 
         var box = new THREE.Mesh(geometry, material);
 
-        box.rotation.setFromQuaternion(new THREE.Quaternion(
+        var meshParent = new THREE.Group();
+        /* Add all parts to a parent mesh */
+        meshParent.add(box);
+
+        const edges = new THREE.EdgesGeometry( geometry );
+        const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+        meshParent.add(line);
+
+        meshParent.rotation.setFromQuaternion(new THREE.Quaternion(
             entity.orientation.x,
             entity.orientation.y,
             entity.orientation.z,
             entity.orientation.w));
-        box.position.x = entity.position.x * scale;
-        box.position.y = entity.position.y * scale;
-        box.position.z = entity.position.z * scale;
+        meshParent.position.x = entity.position.x * scale;
+        meshParent.position.y = entity.position.y * scale;
+        meshParent.position.z = entity.position.z * scale;
 
-        this.mesh = box;
+        that.mesh = meshParent;
 
-        EntityLoadingFinishedFn(this);
+        EntityLoadingFinishedFn(that);
     }
 
     getMesh() {
