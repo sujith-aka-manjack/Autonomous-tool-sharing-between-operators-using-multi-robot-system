@@ -260,7 +260,7 @@ void CLeader::ControlStep() {
     // std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
-    std::cout << "TIME: " << initStepTimer << std::endl;
+    // std::cout << "TIME: " << initStepTimer << std::endl;
 
     /*-----------------*/
     /* Reset variables */

@@ -297,6 +297,8 @@ CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_pla
 
 void CExperimentLoopFunctions::PreStep() {
 
+    std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
+
     UInt32 unFollowers1 = 0;
     UInt32 unFollowers2 = 0;
     UInt32 unConnectors = 0;
@@ -554,6 +556,7 @@ void CExperimentLoopFunctions::PreStep() {
                 CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
                 Task* task = tData.add_tasks();
+                task->set_name(cCTask.GetId());
                 task->set_demand(cCTask.GetDemand());
             }
         }
