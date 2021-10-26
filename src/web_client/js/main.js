@@ -257,8 +257,9 @@ loadJS("/js/libs/CSS2DRenderer.js", true);
 loadJS("/js/libs/stats.min.js", true);
 loadJS("/js/libs/GLTFLoader.js", true);
 
+// From https://www.npmjs.com/package/@seregpie/three.text-sprite
 loadJS("/js/libs/three.text-texture.js", true);
-loadJS("/js/libs/three.text-plane.js", true);
+loadJS("/js/libs/three.text-sprite.js", true);
 
 /* Start running javascript after all files are loaded */
 loadJS("/js/libs/rivets.bundled.min.js", onAllFilesLoaded, true);

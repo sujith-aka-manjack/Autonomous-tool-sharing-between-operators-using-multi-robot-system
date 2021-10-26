@@ -47,21 +47,19 @@
         /* Add all parts to a parent mesh */
         meshParent.add(task);
 
-        var text = new THREE.TextPlane({
-            alignment: 'left',
-            color: '#24ff00',
-            backgroundColor: '#1A84A500',
+        let sprite = new THREE.TextSprite({
+            alignment: 'center',
+            color: '#000000',
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: 8,
-            fontStyle: 'italic',
             text: [
-              entity.task.demand,
+                entity.task.demand,
             ].join('\n'),
         });
 
-        text.position.z = 10;
+        sprite.position.z = 10;
 
-        meshParent.add(text);
+        meshParent.add(sprite);
 
         /* Update mesh parent */
         meshParent.position.x = entity.position.x * scale;
