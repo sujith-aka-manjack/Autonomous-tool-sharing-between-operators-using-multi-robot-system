@@ -68,5 +68,8 @@
     "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python",
     "files.watcherExclude": {
         "**/.venv/**": true
-    }
+    },
+    "python.analysis.extraPaths": [
+        "./src/protos/generated"
+    ]
 }
