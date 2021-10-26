@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "argos-sct"
+version = "0.5.0"
+description = "Multi-operator swarm control framework"
+authors = ["Genki Miyauchi <4963919-genki_miyauchi@users.noreply.gitlab.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.10"
+numpy = "^1.21.3"
+matplotlib = "^3.4.3"
+protobuf = "^3.19.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
