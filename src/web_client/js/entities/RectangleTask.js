@@ -47,7 +47,7 @@
         /* Add all parts to a parent mesh */
         meshParent.add(task);
 
-        let sprite = new THREE.TextSprite({
+        var sprite = new THREE.TextSprite({
             alignment: 'center',
             color: '#000000',
             fontFamily: '"Times New Roman", Times, serif',
@@ -89,19 +89,22 @@
             } catch (ignored) { }
         }
 
-        var color = null;
-        if (entity.task.demand == 0) {
-            color = 0x00ff00;
-        } else {
-            color = 0xff0000;
+        if(this.mesh) {
+            this.mesh.children[0].text = [
+                entity.task.demand,
+            ].join('\n');
+            // this.mesh.children[0].texture.needsUpdate = true;
+            // console.log(this.mesh);
+    
+            /* Update color of task */
+            var color = null;
+            if (entity.task.demand == 0) {
+                color = 0x00ff00;
+            } else {
+                color = 0xff0000;
+            }
+    
+            this.mesh.children[0].material.color.setHex(color);
         }
-
-        try {
-            this.mesh.material = new THREE.MeshPhongMaterial({
-                color: color,
-                transparent: true,
-                opacity: 0.5,
-            });
-        } catch (ignored) { }
     }
 }
