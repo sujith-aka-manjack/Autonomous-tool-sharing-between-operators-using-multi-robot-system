@@ -35,9 +35,9 @@
             opacity: 0.5,
         });
 
-        var task = new THREE.Mesh(geometry, material);
+        this.task = new THREE.Mesh(geometry, material);
 
-        task.rotation.setFromQuaternion(new THREE.Quaternion(
+        this.task.rotation.setFromQuaternion(new THREE.Quaternion(
             entity.orientation.x,
             entity.orientation.y,
             entity.orientation.z,
@@ -45,9 +45,9 @@
 
         var meshParent = new THREE.Group();
         /* Add all parts to a parent mesh */
-        meshParent.add(task);
+        meshParent.add(this.task);
 
-        var sprite = new THREE.TextSprite({
+        this.sprite = new THREE.TextSprite({
             alignment: 'center',
             color: '#000000',
             fontFamily: '"Times New Roman", Times, serif',
@@ -57,9 +57,9 @@
             ].join('\n'),
         });
 
-        sprite.position.z = 10;
+        this.sprite.position.z = 10;
 
-        meshParent.add(sprite);
+        meshParent.add(this.sprite);
 
         /* Update mesh parent */
         meshParent.position.x = entity.position.x * scale;
@@ -90,12 +90,20 @@
         }
 
         if(this.mesh) {
-            this.mesh.children[0].text = [
+
+            /* Delete existing child objects */
+            for (let i = 0; i < this.mesh.children.length; i++) {
+                this.mesh.remove(this.mesh.children[1]);
+            }
+
+            /* Add the child objects back */
+            this.mesh.add(this.task);
+
+            this.sprite.text = [
                 entity.task.demand,
             ].join('\n');
-            // this.mesh.children[0].texture.needsUpdate = true;
-            // console.log(this.mesh);
-    
+            this.mesh.add(this.sprite);
+
             /* Update color of task */
             var color = null;
             if (entity.task.demand == 0) {
