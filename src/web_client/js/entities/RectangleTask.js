@@ -92,9 +92,7 @@
         if(this.mesh) {
 
             /* Delete existing child objects */
-            for (let i = 0; i < this.mesh.children.length; i++) {
-                this.mesh.remove(this.mesh.children[1]);
-            }
+            this.mesh.remove(...this.mesh.children);
 
             /* Add the child objects back */
             this.mesh.add(this.task);
