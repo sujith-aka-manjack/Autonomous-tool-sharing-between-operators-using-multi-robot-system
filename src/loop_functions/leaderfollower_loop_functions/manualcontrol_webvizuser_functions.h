@@ -3,9 +3,10 @@
 
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/simulator/simulator.h>
-#include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
+#include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <argos3/plugins/simulator/visualizations/webviz/webviz_user_functions.h>
-// #include <user_functions/loop_functions/foraging_loop_functions.h>
+#include <loop_functions/leaderfollower_loop_functions/experiment_loop_functions.h>
+#include <controllers/leader/leader.h>
 
 #include <iostream>
 
@@ -17,14 +18,11 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual ~CManualControlWebvizUserFunctions();
 
-//   virtual const nlohmann::json sendExtraData();
-
-        nlohmann::json sendRobotData(CFootBotEntity &);
-
         virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
 
     private:
-//   CForagingLoopFunctions *m_pcForagingLoopFunctions;
+
+        CExperimentLoopFunctions *m_pcExperimentLoopFunctions;
 };
 
 #endif

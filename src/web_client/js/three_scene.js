@@ -522,25 +522,27 @@ function keyboardUpdate() {
 
   window.keyboard.update();
 
+  var target = 'L1';
+
   if( keyboard.pressed("up") ) {
 
     console.log("up pressed");
-    window.wsp.sendPacked({ command: 'move', direction: 'U' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'U' })
 
   } else if( keyboard.pressed("down") ) {
 
     console.log("down pressed");
-    window.wsp.sendPacked({ command: 'move', direction: 'D' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'D' })
 
   } else if( keyboard.pressed("left") ) {
 
     console.log("left pressed");
-    window.wsp.sendPacked({ command: 'move', direction: 'L' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'L' })
 
   } else if( keyboard.pressed("right") ) {
 
     console.log("right pressed");
-    window.wsp.sendPacked({ command: 'move', direction: 'R' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'R' })
 
   }
 
