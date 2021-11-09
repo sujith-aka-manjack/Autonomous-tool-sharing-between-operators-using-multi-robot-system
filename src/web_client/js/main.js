@@ -218,6 +218,22 @@ var onAllFilesLoaded = function () {
           })
         )
 
+        /* Divider */
+        .append($("<div/>")
+          .addClass('toolbar_divider')
+        )
+
+        .append($("<div/>")
+          .addClass('button')
+          .addClass('icon-move-left')
+          .attr('id', 'move_left_button')
+          .attr("title", "Move leader left")
+          .prop("title", "Move leader left")//for IE
+          .click(function () {
+            window.wsp.sendPacked({ command: 'move-left' })
+          })
+        )
+
         /* Spacer */
         .append($("<div/>").addClass('toolbar-spacer'))
 

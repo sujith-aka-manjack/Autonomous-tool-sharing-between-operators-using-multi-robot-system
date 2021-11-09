@@ -236,3 +236,7 @@ pre {
 .icon-help:before {
     content: '\004c';
 }
+
+.icon-move-left:before {
+    content: '\004d';
+}

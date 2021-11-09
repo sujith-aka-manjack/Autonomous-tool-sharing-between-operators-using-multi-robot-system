@@ -3,6 +3,8 @@ include_directories(${ARGOS_QTOPENGL_INCLUDE_DIRS})
 add_library(leaderfollower_loop_functions MODULE 
   manualcontrol_qtuser_functions.h
   manualcontrol_qtuser_functions.cpp
+  manualcontrol_webvizuser_functions.h
+  manualcontrol_webvizuser_functions.cpp
   experiment_loop_functions.h
   experiment_loop_functions.cpp)
 
