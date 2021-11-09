@@ -513,7 +513,37 @@ function get2DProjectedPosition(mouse, object) {
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+  keyboardUpdate();
   render();
+}
+
+
+function keyboardUpdate() {
+
+  window.keyboard.update();
+
+  if( keyboard.pressed("up") ) {
+
+    console.log("up pressed");
+    window.wsp.sendPacked({ command: 'move', direction: 'U' })
+
+  } else if( keyboard.pressed("down") ) {
+
+    console.log("down pressed");
+    window.wsp.sendPacked({ command: 'move', direction: 'D' })
+
+  } else if( keyboard.pressed("left") ) {
+
+    console.log("left pressed");
+    window.wsp.sendPacked({ command: 'move', direction: 'L' })
+
+  } else if( keyboard.pressed("right") ) {
+
+    console.log("right pressed");
+    window.wsp.sendPacked({ command: 'move', direction: 'R' })
+
+  }
+
 }
 
 
