@@ -23,7 +23,12 @@ CManualControlWebvizUserFunctions::~CManualControlWebvizUserFunctions() {}
 void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::string& str_ip, 
                                                                 nlohmann::json c_json_command) {
 
-    std::cout << "Handle Command From Client" << std::endl;
+
+    std::string robot_command = c_json_command["command"];
+    std::string direction = c_json_command["direction"];
+
+    std::cout << "From client: " << direction << std::endl;
+
 }
 
 /****************************************/

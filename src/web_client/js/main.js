@@ -251,6 +251,42 @@ var onAllFilesLoaded = function () {
       $("#preloader").fadeOut()
       ConnectWebSockets()
     }, true);
+
+    window.addEventListener("keydown", handleKeydown);
+
+    keys = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 };
+
+    /* Send control inputs */
+    function handleKeydown(event){
+
+      // console.log("Keyboard press");
+
+      switch ( event.keyCode ) {
+
+        case keys.UP:
+          console.log("UP pressed");
+          window.wsp.sendPacked({ command: 'move', direction: 'U' })
+          break;
+
+        case keys.DOWN:
+          console.log("DOWN pressed");
+          window.wsp.sendPacked({ command: 'move', direction: 'D' })
+          break;
+        
+        case keys.LEFT:
+          console.log("LEFT pressed");
+          window.wsp.sendPacked({ command: 'move', direction: 'L' })
+          break;
+        
+        case keys.RIGHT:
+          console.log("RIGHT pressed");
+          window.wsp.sendPacked({ command: 'move', direction: 'R' })
+          break;
+        
+        default:
+          break;
+      }
+    }
   });
 }
 
