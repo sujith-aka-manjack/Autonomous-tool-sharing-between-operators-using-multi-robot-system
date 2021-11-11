@@ -99,6 +99,13 @@ var onAllFilesLoaded = function () {
         contentId: 'contentAreaLogErr'
       });
 
+      let dropListTag = "".concat(
+        "<select>"
+        + "<option value='Select leader'>Select leader</option>"
+        + "<option value='L1'>L1</option>"
+        + "<option value='L2'>L2</option>"
+        + "</select>"
+      );
 
       /* Add button on top panel */
       $("#layout_app_layout_panel_top>div.w2ui-panel-content")
@@ -226,14 +233,24 @@ var onAllFilesLoaded = function () {
           .addClass('toolbar_divider')
         )
 
+        .append($(dropListTag)
+          .attr('id', 'leader_selected')
+          .attr("title", "Select leader")
+          .prop("title", "Select leader")//for IE
+        )
         .append($("<div/>")
           .addClass('button')
-          .addClass('icon-move-left')
-          .attr('id', 'move_left_button')
-          .attr("title", "Move leader left")
-          .prop("title", "Move leader left")//for IE
+          .addClass('icon-select-leader')
+          .attr('id', 'leader_select_button')
+          .attr("title", "Connect to leader")
+          .prop("title", "Connect to leader")//for IE
           .click(function () {
-            window.wsp.sendPacked({ command: 'move-left' })
+            let e = document.getElementById("leader_selected");
+            let target = e.options[e.selectedIndex].text;
+
+            window.wsp.sendPacked({ command: 'select_leader', robot: target });
+
+            console.log("sent " + target);
           })
         )
 

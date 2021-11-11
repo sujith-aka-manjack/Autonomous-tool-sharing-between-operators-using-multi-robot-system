@@ -27,51 +27,59 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     if(c_json_command.empty())
         return;
 
-    // 1) Determine which robot the command is for
-
-    std::string target = c_json_command["robot"];
     std::string command = c_json_command["command"];
-    std::string direction = c_json_command["direction"];
 
-    std::cout << "From client: " << direction << std::endl;
+    if(command == "move") {
 
-    // 2) Get robot controller
+        // 1) Determine which robot the command is for
 
-    CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
-    for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-        it != m_cEPuckLeaders.end();
-        ++it) {
+        std::string target = c_json_command["robot"];
+        std::string direction = c_json_command["direction"];
 
-        /* Get handle to e-puck_leader entity and controller */
-        CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-        CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+        std::cout << "From client: " << direction << std::endl;
 
-        if(cController.GetId() == target) {
-            
-            // 3) Determine the direction factor
+        // 2) Get robot controller
 
-            /* Forward/backward direction factor (local robot X axis) */
-            SInt32 FBDirection = 0;
-            /* Left/right direction factor (local robot Y axis) */
-            SInt32 LRDirection = 0;
-            /* Calculate direction factor */
-            if(direction == "U") ++FBDirection;
-            if(direction == "D") --FBDirection;
-            if(direction == "L") ++LRDirection;
-            if(direction == "R") --LRDirection;
-            /* Calculate direction */
-            CVector2 cDir =
-                DIRECTION_VECTOR_FACTOR *
-                (CVector2(FBDirection, 0.0f) +
-                CVector2(0.0f, LRDirection));
+        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+            it != m_cEPuckLeaders.end();
+            ++it) {
 
-            // 4) Set direction
-            /* Tell that e-puck that it is selected */
-            cController.Select();
-            cController.SetControlVector(cDir);
+            /* Get handle to e-puck_leader entity and controller */
+            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-            return;
+            if(cController.GetId() == target) {
+                
+                // 3) Determine the direction factor
+
+                /* Forward/backward direction factor (local robot X axis) */
+                SInt32 FBDirection = 0;
+                /* Left/right direction factor (local robot Y axis) */
+                SInt32 LRDirection = 0;
+                /* Calculate direction factor */
+                if(direction == "U") ++FBDirection;
+                if(direction == "D") --FBDirection;
+                if(direction == "L") ++LRDirection;
+                if(direction == "R") --LRDirection;
+                /* Calculate direction */
+                CVector2 cDir =
+                    DIRECTION_VECTOR_FACTOR *
+                    (CVector2(FBDirection, 0.0f) +
+                    CVector2(0.0f, LRDirection));
+
+                // 4) Set direction
+                /* Tell that e-puck that it is selected */
+                cController.Select();
+                cController.SetControlVector(cDir);
+
+                return;
+            }
         }
+    }
+    else if(command == "select_leader") {
+        std::string target = c_json_command["robot"];
+        std::cout << "Selected " << target << std::endl;
     }
 }
 
