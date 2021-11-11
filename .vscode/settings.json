@@ -63,7 +63,10 @@
         "*.ipp": "cpp",
         "unordered_set": "cpp",
         "qopenglwidget": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp",
+        "valarray": "cpp"
     },
     "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python",
     "files.watcherExclude": {

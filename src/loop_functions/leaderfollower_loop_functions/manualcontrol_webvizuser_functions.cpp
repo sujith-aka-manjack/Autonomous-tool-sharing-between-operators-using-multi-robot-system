@@ -21,6 +21,13 @@ CManualControlWebvizUserFunctions::~CManualControlWebvizUserFunctions() {}
 /****************************************/
 /****************************************/
 
+const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
+    
+}
+
+/****************************************/
+/****************************************/
+
 void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::string& str_ip, 
                                                                 nlohmann::json c_json_command) {
 
@@ -78,8 +85,64 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         }
     }
     else if(command == "select_leader") {
+
         std::string target = c_json_command["robot"];
+
+        if(target == "Select leader") {
+            // Deselect
+            // delete from others
+            // add id to default
+            
+            // m_pcClientRobotConnections;
+            return;
+        }
+
         std::cout << "Selected " << target << std::endl;
+
+        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+            it != m_cEPuckLeaders.end();
+            ++it) {
+
+            /* Get handle to e-puck_leader entity and controller */
+            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+            if(cController.GetId() == target) {
+                cController.Select();
+                // m_pcClientRobotConnections;
+                return;
+            }
+        }
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
+    std::cout << "Adding client pointer " << str_id << std::endl;
+
+    /* Remove key from map */
+    m_pcClientRobotConnections["default"].push_back(str_id);
+
+    for(auto x : m_pcClientRobotConnections["default"]) {
+        std::cout << x << std::endl;
+    }
+}
+
+/****************************************/
+/****************************************/
+
+void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
+    std::cout << "Deleting client pointer " << str_id << std::endl;
+
+    /* Remove key from map */
+    auto itr = std::find(m_pcClientRobotConnections["default"].begin(), m_pcClientRobotConnections["default"].end(), str_id);
+    if (itr != m_pcClientRobotConnections["default"].end()) m_pcClientRobotConnections["default"].erase(itr);
+
+    for(auto x : m_pcClientRobotConnections["default"]) {
+        std::cout << x << std::endl;
     }
 }
 
