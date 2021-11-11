@@ -522,7 +522,8 @@ function keyboardUpdate() {
 
   window.keyboard.update();
 
-  var target = 'L1';
+  let e = document.getElementById("leader_selected");
+  let target = e.options[e.selectedIndex].text;
 
   if( keyboard.pressed("up") ) {
 

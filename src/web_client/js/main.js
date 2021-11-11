@@ -253,6 +253,11 @@ var onAllFilesLoaded = function () {
             console.log("sent " + target);
           })
         )
+        /* Leader selection status */
+        .append($("<div/>")
+          .addClass("toolbar_status")
+          .html("{experiment.status}")
+        )
 
         /* Spacer */
         .append($("<div/>").addClass('toolbar-spacer'))
