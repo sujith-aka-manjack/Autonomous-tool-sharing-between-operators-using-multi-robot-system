@@ -43,7 +43,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         std::string target = c_json_command["robot"];
         std::string direction = c_json_command["direction"];
 
-        std::cout << "From client: " << direction << std::endl;
+        // std::cout << "From client: " << direction << std::endl;
 
         // 2) Get robot controller
 
@@ -121,7 +121,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
-    std::cout << "Adding client pointer " << str_id << std::endl;
+    std::cout << "Adding client " << str_id << std::endl;
 
     /* Remove key from map */
     m_pcClientRobotConnections["default"].push_back(str_id);
@@ -135,7 +135,7 @@ void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
-    std::cout << "Deleting client pointer " << str_id << std::endl;
+    std::cout << "Deleting client " << str_id << std::endl;
 
     /* Remove key from map */
     auto itr = std::find(m_pcClientRobotConnections["default"].begin(), m_pcClientRobotConnections["default"].end(), str_id);

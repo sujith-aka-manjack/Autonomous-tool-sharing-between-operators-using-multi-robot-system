@@ -528,22 +528,26 @@ function keyboardUpdate() {
   if( keyboard.pressed("up") ) {
 
     console.log("up pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'U' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'U' }) // Up
 
   } else if( keyboard.pressed("down") ) {
 
     console.log("down pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'D' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'D' }) // Down
 
   } else if( keyboard.pressed("left") ) {
 
     console.log("left pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'L' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'L' }) // Left
 
   } else if( keyboard.pressed("right") ) {
 
     console.log("right pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'R' })
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'R' }) // Right
+
+  } else {
+
+    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'S'}) // Stop
 
   }
 
