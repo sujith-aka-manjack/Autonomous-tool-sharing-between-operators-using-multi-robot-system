@@ -512,8 +512,9 @@ function get2DProjectedPosition(mouse, object) {
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
   keyboardUpdate();
+  controls.update();
+  cameraUpdate();
   render();
 }
 
@@ -551,6 +552,38 @@ function keyboardUpdate() {
 
   }
 
+}
+
+
+function cameraUpdate() {
+
+  // /* Camera offsets */
+  
+  // var relativeCameraOffset = new THREE.Vector3(0,0,50);
+
+  // /* Behind back */
+  // // var relativeCameraOffset = new THREE.Vector3(-40,0,20);
+
+  // /* Front facing */
+  // // var relativeCameraOffset = new THREE.Vector3(4,0,1);
+
+  // if (sceneEntities.hasOwnProperty('L1')) {
+
+  //   const leader = scene.getObjectByProperty('uuid', sceneEntities['L1'].uuid);
+  //   var cameraOffset = relativeCameraOffset.applyMatrix4( leader.matrixWorld );
+
+  //   camera.position.x = cameraOffset.x;
+  //   camera.position.y = cameraOffset.y;
+  //   camera.position.z = cameraOffset.z;
+  //   // camera.position.lerp(cameraOffset, 0.5);
+  //   var focus = leader.position;
+  //   // focus.y = -(Math.abs(camera.position.y - leader.position.y) * 2);
+  //   // focus.x = -(Math.abs(camera.position.x - leader.position.x) * 2);     
+  //   camera.lookAt( focus );
+  //   console.log(leader.position);
+
+
+  // }
 }
 
 
