@@ -107,6 +107,10 @@ var onAllFilesLoaded = function () {
         + "</select>"
       );
 
+      let confirmButtonTag = "".concat(
+        "<button type='button'>Connect</button>"
+      );
+
       /* Add button on top panel */
       $("#layout_app_layout_panel_top>div.w2ui-panel-content")
         .addClass('toolbar-flex-container')
@@ -238,12 +242,28 @@ var onAllFilesLoaded = function () {
           .attr("title", "Select leader")
           .prop("title", "Select leader")//for IE
         )
-        .append($("<div/>")
-          .addClass('button')
-          .addClass('icon-select-leader')
-          .attr('id', 'leader_select_button')
-          .attr("title", "Connect to leader")
-          .prop("title", "Connect to leader")//for IE
+        // .append($("<div/>")
+        //   .addClass('button')
+        //   .addClass('icon-select-leader')
+        //   .attr('id', 'leader_select_button')
+        //   .attr("title", "Connect to leader")
+        //   .prop("title", "Connect to leader")//for IE
+        //   .click(function () {
+        //     let e = document.getElementById("leader_selected");
+        //     let target = e.options[e.selectedIndex].text;
+
+        //     window.wsp.sendPacked({ command: 'select_leader', robot: target });
+
+        //     console.log("sent " + target);
+        //   })
+        // )
+        /* Leader selection status */
+        // .append($("<div/>")
+        //   .addClass("toolbar_status")
+        //   .html("{experiment.status}")
+        // )
+
+        .append($(confirmButtonTag)
           .click(function () {
             let e = document.getElementById("leader_selected");
             let target = e.options[e.selectedIndex].text;
@@ -252,11 +272,6 @@ var onAllFilesLoaded = function () {
 
             console.log("sent " + target);
           })
-        )
-        /* Leader selection status */
-        .append($("<div/>")
-          .addClass("toolbar_status")
-          .html("{experiment.status}")
         )
 
         /* Spacer */
