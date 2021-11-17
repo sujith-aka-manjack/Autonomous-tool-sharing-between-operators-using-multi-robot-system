@@ -27,7 +27,7 @@ class Epuck {
     geometry.translate(0, 0, 53 * UNIT_SCALE * 0.5 + 4.7 * UNIT_SCALE);
 
     var material = new THREE.MeshPhongMaterial({
-      color: 0x2f22ff
+      color: 0x00ff00
     });
 
     var epuck = new THREE.Mesh(geometry, material);
@@ -36,22 +36,27 @@ class Epuck {
     /* Add all parts to a parent mesh */
     meshParent.add(epuck);
 
-    // /* LEDs */
-    // for (let i = 0; i < 12; ++i) {
-    //   var ledGeom = new THREE.SphereBufferGeometry(
-    //     0.1,
-    //     4,
-    //     4
-    //   );
+    /* Direction indicator */
+    const dir_geometry = new THREE.CylinderGeometry( 0, 0.3, 1.5, 6 );
+    dir_geometry.translate(0, 0, 86 * UNIT_SCALE + 0.4);
+    dir_geometry.rotateZ(-Math.PI / 2);
+    const dir_material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    const dir_cylinder = new THREE.Mesh( dir_geometry, dir_material );
+    meshParent.add(dir_cylinder);
 
-    //   ledGeom.translate(85 * UNIT_SCALE /* Radius */, 0, 50 * UNIT_SCALE /* Height */)
-    //   ledGeom.rotateZ(i * (2 * 3.142 / 12));
-    //   var led = new THREE.Mesh(ledGeom, new THREE.MeshLambertMaterial({
-    //     emissive: 0x000000,
-    //     color: 0x000000
-    //   }));
-    //   meshParent.add(led);
-    // }
+    const dir_edges = new THREE.EdgesGeometry( dir_geometry );
+    const dir_line = new THREE.LineSegments( dir_edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+    meshParent.add(dir_line);
+
+    /* LEDs */
+    var led_geometry = new THREE.TorusGeometry( 35 * UNIT_SCALE * 0.9, 
+                                                0.2, 
+                                                16, 
+                                                100 );
+    led_geometry.translate(0, 0, 86 * UNIT_SCALE * 0.9)
+    var led_material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+    var led = new THREE.Mesh( led_geometry, led_material );
+    meshParent.add(led);
 
     /* Add Intersection Points */
     var pointsGeom = new THREE.BufferGeometry();
@@ -108,10 +113,7 @@ class Epuck {
 
       if (entity.leds) {
         /* Update LED colors */
-        for (let i = 0; i < 12; i++) {
-          this.mesh.children[1 + i].material.color.setHex(entity.leds[i]);
-          this.mesh.children[1 + i].material.emissive.setHex(entity.leds[i]);
-        }
+        this.mesh.children[3].material.color.setHex(entity.leds[0]);
       }
 
       var pointMesh = this.mesh.children[13];
