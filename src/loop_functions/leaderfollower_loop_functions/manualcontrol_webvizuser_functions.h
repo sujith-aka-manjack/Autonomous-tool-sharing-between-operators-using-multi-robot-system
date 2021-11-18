@@ -22,13 +22,19 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
 
-        // virtual void ClientConnected(std::string str_id);
+        virtual void ClientConnected(std::string str_id);
 
-        // virtual void ClientDisconnected(std::string str_id);
+        virtual void ClientDisconnected(std::string str_id);
 
     private:
 
         CExperimentLoopFunctions *m_pcExperimentLoopFunctions;
+
+        /*
+         * Map storing the ws pointer to client ID.
+         * Key is the client pointer. Value is client ID.
+         */
+        std::map<std::string, std::string> m_pcClientPointerToId;
 
         /* 
          * Map of connections between robots and clients 

@@ -34,12 +34,17 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     if(c_json_command.empty())
         return;
 
+    std::string client = c_json_command["client"];
     std::string command = c_json_command["command"];
+
+    /* Store the client's id if its the first time receiving it */
+    if(m_pcClientPointerToId[str_ip] == "") {
+        m_pcClientPointerToId[str_ip] = client;
+    }
 
     if(command == "move") {
 
         // 1) Determine which robot the command is for
-        std::string client = c_json_command["client"];
         std::string target = c_json_command["robot"];
         std::string direction = c_json_command["direction"];
 
@@ -87,7 +92,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     else if(command == "select_leader") {
 
         std::string target = c_json_command["robot"];
-        std::string client = c_json_command["client"];
 
         /* Target robot is already controlled by a client */
         if(m_pcClientRobotConnections.count(target)) {
@@ -98,10 +102,10 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         }
         
         /* Disconnect client from existing connections */
-        for(auto& entry : m_pcClientRobotConnections) {
-            if(entry.second == client) {
-                entry.second = "";
-                std::cout << "[LOG]: (" << entry.first << ") released" << std::endl;
+        for(auto& [key, value] : m_pcClientRobotConnections) {
+            if(value == client) {
+                value = "";
+                std::cout << "[LOG]: (" << key << ") released" << std::endl;
             }
         }
 
@@ -135,31 +139,30 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 /****************************************/
 /****************************************/
 
-// void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
-//     std::cout << "Adding client " << str_id << std::endl;
+void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
+    std::cout << "Adding client " << str_id << std::endl;
 
-//     /* Remove key from map */
-//     // m_pcClientRobotConnections["default"].push_back(str_id);
+    /* Create entry for connected client */
+    m_pcClientPointerToId[str_id] = "";
+}
 
-//     for(auto x : m_pcClientRobotConnections["default"]) {
-//         std::cout << x << std::endl;
-//     }
-// }
+/****************************************/
+/****************************************/
 
-// /****************************************/
-// /****************************************/
+void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
+    std::cout << "Disconnected " << str_id << std::endl;
 
-// void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
-//     std::cout << "Deleting client " << str_id << std::endl;
+    /* Release any robots that were selected by this client */
+    for(auto& [key, value] : m_pcClientRobotConnections) {
+        if(value == m_pcClientPointerToId[str_id]) {
+            value = "";
+            std::cout << "[LOG]: (" << key << ") released" << std::endl;
+        }
+    }
 
-//     /* Remove key from map */
-//     auto itr = std::find(m_pcClientRobotConnections["default"].begin(), m_pcClientRobotConnections["default"].end(), str_id);
-//     if (itr != m_pcClientRobotConnections["default"].end()) m_pcClientRobotConnections["default"].erase(itr);
-
-//     for(auto x : m_pcClientRobotConnections["default"]) {
-//         std::cout << x << std::endl;
-//     }
-// }
+    /* Remove entry for connected client */
+    m_pcClientPointerToId.erase(str_id);
+}
 
 /****************************************/
 /****************************************/
