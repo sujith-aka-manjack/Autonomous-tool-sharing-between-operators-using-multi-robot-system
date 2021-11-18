@@ -20,6 +20,8 @@ var onAllFilesLoaded = function () {
   window.client_id = generateRandomUUID();
   console.log(window.client_id);
 
+  window.target = ''; // Init robot selection to nothing
+
   /* On Jquery load */
   $(function () {
     /* main panel-layout of the page */
@@ -271,15 +273,15 @@ var onAllFilesLoaded = function () {
           .attr('id','button-connect')
           .click(function () {
             let e = document.getElementById('leader_selected');
-            let target = e.options[e.selectedIndex].text;
+            window.target = e.options[e.selectedIndex].text;
 
             window.wsp.sendPacked({ command: 'select_leader', 
-                                    robot: target,
+                                    robot: window.target,
                                     client: window.client_id });
 
-            console.log("sent " + target);
+            console.log("sent " + window.target);
 
-            if(target == 'Select leader') {
+            if(window.target == 'Select leader') {
               var status = document.getElementById('connection-status');
               var button = document.getElementById('button-connect');
 

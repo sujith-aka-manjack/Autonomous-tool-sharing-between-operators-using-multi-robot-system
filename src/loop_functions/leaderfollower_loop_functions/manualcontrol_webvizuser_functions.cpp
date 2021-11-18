@@ -21,9 +21,25 @@ CManualControlWebvizUserFunctions::~CManualControlWebvizUserFunctions() {}
 /****************************************/
 /****************************************/
 
-// const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
-    
-// }
+const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
+    nlohmann::json outJson;
+
+    if(m_pcClientRobotConnections.empty()) {
+
+        outJson["connections"] = nlohmann::json();
+
+    } else {
+
+        for(const auto& [key, value] : m_pcClientRobotConnections) {
+            nlohmann::json pairJson;
+            pairJson[key] = value;
+            outJson["connections"] = pairJson;
+        }
+
+    }
+
+    return outJson;
+}
 
 /****************************************/
 /****************************************/

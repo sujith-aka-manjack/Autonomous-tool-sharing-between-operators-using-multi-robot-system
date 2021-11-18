@@ -18,7 +18,7 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual ~CManualControlWebvizUserFunctions();
 
-        // virtual const nlohmann::json sendUserData();
+        virtual const nlohmann::json sendUserData();
 
         virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
 
