@@ -21,9 +21,9 @@ CManualControlWebvizUserFunctions::~CManualControlWebvizUserFunctions() {}
 /****************************************/
 /****************************************/
 
-const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
+// const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
     
-}
+// }
 
 /****************************************/
 /****************************************/
@@ -89,17 +89,31 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         std::string target = c_json_command["robot"];
         std::string client = c_json_command["client"];
 
+        /* Target robot is already controlled by a client */
+        if(m_pcClientRobotConnections.count(target)) {
+            if(m_pcClientRobotConnections[target] != "") { 
+                std::cout << "[ERR]: (" << target << ") is already being controlled by " << client << std::endl;
+                return; 
+            }
+        }
+        
+        /* Disconnect client from existing connections */
+        for(auto& entry : m_pcClientRobotConnections) {
+            if(entry.second == client) {
+                entry.second = "";
+                std::cout << "[LOG]: (" << entry.first << ") released" << std::endl;
+            }
+        }
+
+        // for(const auto& [key, value] : m_pcClientRobotConnections) {
+        //     std::cout << "key: " << key << ", val: " << value << std::endl;
+        // }
+
         if(target == "Select leader") {
-            // Deselect
-            // delete from others
-            // add id to default
-            std::cout << "Client deselected: " << client << std::endl;
-            // m_pcClientRobotConnections;
             return;
         }
 
-        std::cout << "Selected " << target << std::endl;
-
+        /* Connect client to leader */
         CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
         for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
             it != m_cEPuckLeaders.end();
@@ -111,8 +125,8 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
             if(cController.GetId() == target) {
                 cController.Select();
-                // m_pcClientRobotConnections;
-                return;
+                m_pcClientRobotConnections[target] = client;
+                std::cout << "[LOG]: (" << target << ") connected to " << client << std::endl;
             }
         }
     }
@@ -121,31 +135,31 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 /****************************************/
 /****************************************/
 
-void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
-    std::cout << "Adding client " << str_id << std::endl;
+// void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
+//     std::cout << "Adding client " << str_id << std::endl;
 
-    /* Remove key from map */
-    m_pcClientRobotConnections["default"].push_back(str_id);
+//     /* Remove key from map */
+//     // m_pcClientRobotConnections["default"].push_back(str_id);
 
-    for(auto x : m_pcClientRobotConnections["default"]) {
-        std::cout << x << std::endl;
-    }
-}
+//     for(auto x : m_pcClientRobotConnections["default"]) {
+//         std::cout << x << std::endl;
+//     }
+// }
 
-/****************************************/
-/****************************************/
+// /****************************************/
+// /****************************************/
 
-void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
-    std::cout << "Deleting client " << str_id << std::endl;
+// void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
+//     std::cout << "Deleting client " << str_id << std::endl;
 
-    /* Remove key from map */
-    auto itr = std::find(m_pcClientRobotConnections["default"].begin(), m_pcClientRobotConnections["default"].end(), str_id);
-    if (itr != m_pcClientRobotConnections["default"].end()) m_pcClientRobotConnections["default"].erase(itr);
+//     /* Remove key from map */
+//     auto itr = std::find(m_pcClientRobotConnections["default"].begin(), m_pcClientRobotConnections["default"].end(), str_id);
+//     if (itr != m_pcClientRobotConnections["default"].end()) m_pcClientRobotConnections["default"].erase(itr);
 
-    for(auto x : m_pcClientRobotConnections["default"]) {
-        std::cout << x << std::endl;
-    }
-}
+//     for(auto x : m_pcClientRobotConnections["default"]) {
+//         std::cout << x << std::endl;
+//     }
+// }
 
 /****************************************/
 /****************************************/

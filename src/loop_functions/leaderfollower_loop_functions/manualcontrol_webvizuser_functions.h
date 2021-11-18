@@ -18,13 +18,13 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual ~CManualControlWebvizUserFunctions();
 
-        virtual const nlohmann::json sendUserData();
+        // virtual const nlohmann::json sendUserData();
 
         virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
 
-        virtual void ClientConnected(std::string str_id);
+        // virtual void ClientConnected(std::string str_id);
 
-        virtual void ClientDisconnected(std::string str_id);
+        // virtual void ClientDisconnected(std::string str_id);
 
     private:
 
@@ -32,9 +32,9 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         /* 
          * Map of connections between robots and clients 
-         * Key is the robot ID. Value is a vector of client IDs.
+         * Key is the robot ID. Value is client ID.
          */
-        std::map<std::string, std::vector<std::string>> m_pcClientRobotConnections;
+        std::map<std::string, std::string> m_pcClientRobotConnections;
 };
 
 #endif

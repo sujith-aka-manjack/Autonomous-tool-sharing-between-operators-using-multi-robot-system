@@ -112,7 +112,7 @@ var onAllFilesLoaded = function () {
       );
 
       let confirmButtonTag = "".concat(
-        "<button type='button'>Connect</button>"
+        "<button type='button'>Confirm</button>"
       );
 
       /* Add button on top panel */
@@ -283,18 +283,18 @@ var onAllFilesLoaded = function () {
               var status = document.getElementById('connection-status');
               var button = document.getElementById('button-connect');
 
-              status.style.color = '#4CAF50';
-              status.textContent = 'Connected';
-              button.textContent = 'Disconnect';
+              // status.style.color = '#4CAF50';
+              // status.textContent = 'Connected';
+              // button.textContent = 'Disconnect';
             }
           })
         )
 
-        .append($("<div/>")
-          .addClass("toolbar_status")
-          .attr('id', 'connection-status')
-          .html("Disconnected")
-        )
+        // .append($("<div/>")
+        //   .addClass("toolbar_status")
+        //   .attr('id', 'connection-status')
+        //   .html("Disconnected")
+        // )
 
         /* Spacer */
         .append($("<div/>").addClass('toolbar-spacer'))
