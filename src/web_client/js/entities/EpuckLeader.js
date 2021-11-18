@@ -142,7 +142,7 @@ class EpuckLeader {
         this.mesh.children[3].material.color.setHex(entity.leds[0]);
       }
 
-      console.log(this.mesh);
+      // console.log(this.mesh);
 
       var pointMesh = this.mesh.children[13];
 

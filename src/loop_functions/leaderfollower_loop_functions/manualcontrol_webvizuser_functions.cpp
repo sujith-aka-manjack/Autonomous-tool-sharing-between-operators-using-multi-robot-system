@@ -39,7 +39,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     if(command == "move") {
 
         // 1) Determine which robot the command is for
-
+        std::string client = c_json_command["client"];
         std::string target = c_json_command["robot"];
         std::string direction = c_json_command["direction"];
 
@@ -87,12 +87,13 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     else if(command == "select_leader") {
 
         std::string target = c_json_command["robot"];
+        std::string client = c_json_command["client"];
 
         if(target == "Select leader") {
             // Deselect
             // delete from others
             // add id to default
-            
+            std::cout << "Client deselected: " << client << std::endl;
             // m_pcClientRobotConnections;
             return;
         }

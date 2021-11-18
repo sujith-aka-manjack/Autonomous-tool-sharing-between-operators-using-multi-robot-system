@@ -16,6 +16,10 @@ var onAllFilesLoaded = function () {
   /* Init KeyboardState */
   window.keyboard = new KeyboardState();
 
+  /* Generate uuid */
+  window.client_id = generateRandomUUID();
+  console.log(window.client_id);
+
   /* On Jquery load */
   $(function () {
     /* main panel-layout of the page */
@@ -269,7 +273,9 @@ var onAllFilesLoaded = function () {
             let e = document.getElementById('leader_selected');
             let target = e.options[e.selectedIndex].text;
 
-            window.wsp.sendPacked({ command: 'select_leader', robot: target });
+            window.wsp.sendPacked({ command: 'select_leader', 
+                                    robot: target,
+                                    client: window.client_id });
 
             console.log("sent " + target);
 
@@ -277,7 +283,6 @@ var onAllFilesLoaded = function () {
               var status = document.getElementById('connection-status');
               var button = document.getElementById('button-connect');
 
-              // all.style.backgroundColor = '#4CAF50';
               status.style.color = '#4CAF50';
               status.textContent = 'Connected';
               button.textContent = 'Disconnect';
@@ -336,6 +341,9 @@ loadJS("/js/libs/three.text-sprite.js", true);
 
 /* Load keyboard inputs code */
 loadJS("/js/libs/KeyboardState.js", true);
+
+/* Load uuid generator */
+loadJS("/js/libs/generateRandomUUID.js", true);
 
 /* Start running javascript after all files are loaded */
 loadJS("/js/libs/rivets.bundled.min.js", onAllFilesLoaded, true);

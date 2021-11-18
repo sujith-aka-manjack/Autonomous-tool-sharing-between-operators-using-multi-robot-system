@@ -529,26 +529,41 @@ function keyboardUpdate() {
   if( keyboard.pressed("up") ) {
 
     console.log("up pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'U' }) // Up
+    window.wsp.sendPacked({ client: window.client_id,
+                            robot: target, 
+                            command: 'move', 
+                            direction: 'U' }) // Up
 
   } else if( keyboard.pressed("down") ) {
 
     console.log("down pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'D' }) // Down
+    window.wsp.sendPacked({ client: window.client_id,
+                            robot: target, 
+                            command: 'move', 
+                            direction: 'D' }) // Down
 
   } else if( keyboard.pressed("left") ) {
 
     console.log("left pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'L' }) // Left
+    window.wsp.sendPacked({ client: window.client_id,
+                            robot: target, 
+                            command: 'move', 
+                            direction: 'L' }) // Left
 
   } else if( keyboard.pressed("right") ) {
 
     console.log("right pressed");
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'R' }) // Right
+    window.wsp.sendPacked({ client: window.client_id,
+                            robot: target, 
+                            command: 'move', 
+                            direction: 'R' }) // Right
 
   } else {
 
-    window.wsp.sendPacked({ robot: target, command: 'move', direction: 'S'}) // Stop
+    window.wsp.sendPacked({ client: window.client_id,
+                            robot: target, 
+                            command: 'move', 
+                            direction: 'S'}) // Stop
 
   }
 
