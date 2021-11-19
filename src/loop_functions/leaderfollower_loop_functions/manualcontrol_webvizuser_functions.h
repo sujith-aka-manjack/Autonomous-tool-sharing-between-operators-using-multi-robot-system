@@ -30,17 +30,22 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         CExperimentLoopFunctions *m_pcExperimentLoopFunctions;
 
+        struct ClientData {
+            std::string id = "";
+            std::string username = "";
+        };
+
         /*
          * Map storing the ws pointer to client ID.
          * Key is the client pointer. Value is client ID.
          */
-        std::map<std::string, std::string> m_pcClientPointerToId;
+        std::map<std::string, ClientData> m_pcClientPointerToId;
 
         /* 
          * Map of connections between robots and clients 
          * Key is the robot ID. Value is client ID.
          */
-        std::map<std::string, std::string> m_pcClientRobotConnections;
+        std::map<std::string, ClientData> m_pcClientRobotConnections;
 };
 
 #endif

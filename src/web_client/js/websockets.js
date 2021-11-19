@@ -116,14 +116,30 @@
 
         // TODO: Check whether this client is in control of the right robot
         // TODO: Check any occurance of its id appearing in other robots.
+
+        connectionExists = false;
+
         if (data.user_data.connections) {
           for (const key in data.user_data.connections){
             if(data.user_data.connections.hasOwnProperty(key)){
-              if(data.user_data.connections[key] == window.client_id) {
-                console.log("I'm in control of ", key);
+              if(data.user_data.connections[key].id == window.client_id) {
+
+                // Change color and text of status
+                let e = document.getElementById('connection-status');
+                e.textContent = 'Connected to '.concat(key);
+                e.style.color = '#4CAF50';
+
+                connectionExists = true;
               }
             }
           }
+        }
+
+        if( !connectionExists ) {
+          // Change color and text of status
+          let e = document.getElementById('connection-status');
+          e.textContent = 'Disconnected';
+          e.style.color = '#000000';
         }
 
         if (!window.isInitialized) {

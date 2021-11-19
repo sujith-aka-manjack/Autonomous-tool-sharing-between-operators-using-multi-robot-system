@@ -243,6 +243,21 @@ var onAllFilesLoaded = function () {
           .addClass('toolbar_divider')
         )
 
+        .append($("<div/>")
+          .addClass("toolbar_status")
+          .attr('id', 'name-label')
+          .html("Username")
+        )
+
+        .append($("<input/>")
+          .attr('id', 'username')
+          .attr('value', window.client_id.substring(0,8))
+          .attr('size', 10)
+          .attr('maxlength', 16)
+          .attr("title", "User name")
+          .prop("title", "User name")//for IE
+        )
+
         .append($(dropListTag)
           .attr('id', 'leader_selected')
           .attr("title", "Select leader")
@@ -272,31 +287,25 @@ var onAllFilesLoaded = function () {
         .append($(confirmButtonTag)
           .attr('id','button-connect')
           .click(function () {
-            let e = document.getElementById('leader_selected');
-            window.target = e.options[e.selectedIndex].text;
+            let e_name = document.getElementById('username');
+            window.username = e_name.value;
+            let e_leader = document.getElementById('leader_selected');
+            window.target = e_leader.options[e_leader.selectedIndex].text;
 
-            window.wsp.sendPacked({ command: 'select_leader', 
-                                    robot: window.target,
-                                    client: window.client_id });
+            window.wsp.sendPacked({ client: window.client_id,
+                                    username: window.username,
+                                    command: 'select_leader', 
+                                    robot: window.target });
 
             console.log("sent " + window.target);
-
-            if(window.target == 'Select leader') {
-              var status = document.getElementById('connection-status');
-              var button = document.getElementById('button-connect');
-
-              // status.style.color = '#4CAF50';
-              // status.textContent = 'Connected';
-              // button.textContent = 'Disconnect';
-            }
           })
         )
 
-        // .append($("<div/>")
-        //   .addClass("toolbar_status")
-        //   .attr('id', 'connection-status')
-        //   .html("Disconnected")
-        // )
+        .append($("<div/>")
+          .addClass("toolbar_status")
+          .attr('id', 'connection-status')
+          .html("Disconnected")
+        )
 
         /* Spacer */
         .append($("<div/>").addClass('toolbar-spacer'))

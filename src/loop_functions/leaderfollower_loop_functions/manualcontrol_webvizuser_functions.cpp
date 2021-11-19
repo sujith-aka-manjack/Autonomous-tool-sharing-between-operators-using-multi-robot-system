@@ -25,17 +25,12 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
     nlohmann::json outJson;
 
     if(m_pcClientRobotConnections.empty()) {
-
         outJson["connections"] = nlohmann::json();
-
     } else {
-
         for(const auto& [key, value] : m_pcClientRobotConnections) {
-            nlohmann::json pairJson;
-            pairJson[key] = value;
-            outJson["connections"] = pairJson;
+            outJson["connections"][key]["id"] = value.id;
+            outJson["connections"][key]["username"] = value.username;
         }
-
     }
 
     return outJson;
@@ -51,11 +46,16 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         return;
 
     std::string client = c_json_command["client"];
+    std::string username = c_json_command["username"];
     std::string command = c_json_command["command"];
 
-    /* Store the client's id if its the first time receiving it */
-    if(m_pcClientPointerToId[str_ip] == "") {
-        m_pcClientPointerToId[str_ip] = client;
+    /* Store the client's id and username if its the first time receiving it */
+    std::cout << m_pcClientPointerToId.count(str_ip) << std::endl;
+    if(m_pcClientPointerToId[str_ip].id == "") {
+        m_pcClientPointerToId[str_ip].id = client;
+    }
+    if(username != "") {
+        m_pcClientPointerToId[str_ip].username = username;
     }
 
     if(command == "move") {
@@ -111,7 +111,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
         /* Target robot is already controlled by a client */
         if(m_pcClientRobotConnections.count(target)) {
-            if(m_pcClientRobotConnections[target] != "") { 
+            if(m_pcClientRobotConnections[target].id != "") { 
                 std::cout << "[ERR]: (" << target << ") is already being controlled by " << client << std::endl;
                 return; 
             }
@@ -119,8 +119,8 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         
         /* Disconnect client from existing connections */
         for(auto& [key, value] : m_pcClientRobotConnections) {
-            if(value == client) {
-                value = "";
+            if(value.id == client) {
+                value = ClientData();
                 std::cout << "[LOG]: (" << key << ") released" << std::endl;
             }
         }
@@ -145,7 +145,8 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
             if(cController.GetId() == target) {
                 cController.Select();
-                m_pcClientRobotConnections[target] = client;
+                m_pcClientRobotConnections[target].id = client;
+                m_pcClientRobotConnections[target].username = username;
                 std::cout << "[LOG]: (" << target << ") connected to " << client << std::endl;
             }
         }
@@ -159,7 +160,7 @@ void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
     std::cout << "Adding client " << str_id << std::endl;
 
     /* Create entry for connected client */
-    m_pcClientPointerToId[str_id] = "";
+    m_pcClientPointerToId[str_id] = ClientData();
 }
 
 /****************************************/
@@ -170,8 +171,8 @@ void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
 
     /* Release any robots that were selected by this client */
     for(auto& [key, value] : m_pcClientRobotConnections) {
-        if(value == m_pcClientPointerToId[str_id]) {
-            value = "";
+        if(value.id == m_pcClientPointerToId[str_id].id) {
+            value = ClientData();
             std::cout << "[LOG]: (" << key << ") released" << std::endl;
         }
     }
