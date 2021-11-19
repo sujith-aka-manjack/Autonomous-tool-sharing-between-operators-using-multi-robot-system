@@ -246,7 +246,7 @@ var onAllFilesLoaded = function () {
         .append($("<div/>")
           .addClass("toolbar_status")
           .attr('id', 'name-label')
-          .html("Username")
+          .html("Username:")
         )
 
         .append($("<input/>")
@@ -256,6 +256,11 @@ var onAllFilesLoaded = function () {
           .attr('maxlength', 16)
           .attr("title", "User name")
           .prop("title", "User name")//for IE
+        )
+
+        /* Divider */
+        .append($("<div/>")
+          .addClass('toolbar_divider')
         )
 
         .append($(dropListTag)
@@ -285,7 +290,7 @@ var onAllFilesLoaded = function () {
         // )
 
         .append($(confirmButtonTag)
-          .attr('id','button-connect')
+          .attr('id','button_connect')
           .click(function () {
             let e_name = document.getElementById('username');
             window.username = e_name.value;

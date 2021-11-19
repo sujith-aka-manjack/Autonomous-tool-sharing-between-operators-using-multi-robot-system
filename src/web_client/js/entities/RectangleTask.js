@@ -91,16 +91,10 @@
 
         if(this.mesh) {
 
-            /* Delete existing child objects */
-            this.mesh.remove(...this.mesh.children);
-
-            /* Add the child objects back */
-            this.mesh.add(this.task);
-
+            /* Update task demand */
             this.sprite.text = [
                 entity.task.demand,
             ].join('\n');
-            this.mesh.add(this.sprite);
 
             /* Update color of task */
             var color = null;

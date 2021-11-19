@@ -205,7 +205,15 @@ pre {
     color: #5cb85c;
 }
 
-#button-connect {
+#username {
+    margin-right: 10px;
+}
+
+#leader_selected {
+    margin-left: 10px;
+}
+
+#button_connect {
     background-color: #b9b9b9;
     border: none;
     color: black;
@@ -214,7 +222,7 @@ pre {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 20px;
+    margin: 4px 10px;
     cursor: pointer;
     width: 130px;
 }

@@ -297,7 +297,7 @@ CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_pla
 
 void CExperimentLoopFunctions::PreStep() {
 
-    std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
+    // std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
 
     UInt32 unFollowers1 = 0;
     UInt32 unFollowers2 = 0;

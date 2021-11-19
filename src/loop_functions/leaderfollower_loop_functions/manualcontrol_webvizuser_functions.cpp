@@ -11,6 +11,9 @@ static const Real DIRECTION_VECTOR_FACTOR = 10.;
 CManualControlWebvizUserFunctions::CManualControlWebvizUserFunctions() {
     m_pcExperimentLoopFunctions = static_cast<CExperimentLoopFunctions *>(
         &CSimulator::GetInstance().GetLoopFunctions());
+
+    RegisterWebvizUserFunction<CManualControlWebvizUserFunctions, CEPuckLeaderEntity>(
+        &CManualControlWebvizUserFunctions::sendRobotData);
 }
 
 /****************************************/
@@ -39,14 +42,14 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
 /****************************************/
 /****************************************/
 
-// const nlohmann::json CManualControlWebvizUserFunctions::sendRobotData(CEPuckLeaderEntity& robot) {
-//     nlohmann::json outJson;
+const nlohmann::json CManualControlWebvizUserFunctions::sendRobotData(CEPuckLeaderEntity& robot) {
+    nlohmann::json outJson;
 
-//     CLeader& cController = dynamic_cast<CLeader&>(robot.GetControllableEntity().GetController());
-//     outJson["username"] = cController.GetUsername();
+    CLeader& cController = dynamic_cast<CLeader&>(robot.GetControllableEntity().GetController());
+    outJson["username"] = cController.GetUsername();
 
-//     return outJson;
-// }
+    return outJson;
+}
 
 /****************************************/
 /****************************************/
@@ -71,14 +74,11 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
     if(command == "move") {
 
-        // 1) Determine which robot the command is for
+        /* Determine which robot the command is for */
         std::string target = c_json_command["robot"];
         std::string direction = c_json_command["direction"];
 
-        // std::cout << "From client: " << direction << std::endl;
-
-        // 2) Get robot controller
-
+        /* Get robot controller */
         CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
         for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
             it != m_cEPuckLeaders.end();
@@ -90,8 +90,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
             if(cController.GetId() == target) {
                 
-                // 3) Determine the direction factor
-
                 /* Forward/backward direction factor (local robot X axis) */
                 SInt32 FBDirection = 0;
                 /* Left/right direction factor (local robot Y axis) */
@@ -107,10 +105,10 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     (CVector2(FBDirection, 0.0f) +
                     CVector2(0.0f, LRDirection));
 
-                // 4) Set direction
                 /* Tell that e-puck that it is selected */
                 cController.Select();
-                cController.SetUsername(username);
+
+                /* Set direction */
                 cController.SetControlVector(cDir);
 
                 return;
@@ -119,12 +117,46 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     }
     else if(command == "select_leader") {
 
+        // std::cout << "Select received (begin)" << std::endl;
+
+        // for(const auto& [key, value] : m_pcClientRobotConnections) {
+        //     std::cout << "robot: " << key << " - " << value.username << ", " << value.id << std::endl;
+        // }
+
+        // for(const auto& [key, value] : m_pcClientPointerToId) {
+        //     std::cout << "pt: " << key << " - " << value.username << ", " << value.id << std::endl;
+        // }
+
         std::string target = c_json_command["robot"];
 
         /* Target robot is already controlled by a client */
         if(m_pcClientRobotConnections.count(target)) {
-            if(m_pcClientRobotConnections[target].id != "") { 
-                std::cout << "[ERR]: (" << target << ") is already being controlled by " << client << std::endl;
+            ClientData clientInControl = m_pcClientRobotConnections[target];
+            if(clientInControl.id == client) {
+                if(username != "") {
+                    /* Update username */
+                    CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+                    for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                        it != m_cEPuckLeaders.end();
+                        ++it) {
+
+                        /* Get handle to e-puck_leader entity and controller */
+                        CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                        CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                        if(cController.GetId() == target) {
+                            cController.SetUsername(username);
+                            std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                            break;
+                        }
+                    }
+                    m_pcClientRobotConnections[target].username = username;
+                }
+                return;
+            } 
+            else if(clientInControl.id != "") { 
+                std::cout << "[ERR]: (" << target << ") is already being controlled by " 
+                          << clientInControl.username << " (" << clientInControl.id << ")" << std::endl;
                 return; 
             }
         }
@@ -172,8 +204,13 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
             if(cController.GetId() == target) {
                 cController.Select();
                 cController.SetUsername(username);
-                m_pcClientRobotConnections[target].id = client;
-                m_pcClientRobotConnections[target].username = username;
+
+                /* Update robot connection dict */
+                ClientData newClient;
+                newClient.id = client;
+                newClient.username = username;
+                m_pcClientRobotConnections[target] = newClient;
+
                 std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
             }
         }
