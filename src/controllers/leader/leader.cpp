@@ -111,6 +111,7 @@ CLeader::CLeader() :
     m_pcLEDs(NULL),
     m_pcPosSens(NULL),
     m_bSelected(false),
+    m_strUsername(""),
     m_bSignal(false),
     PIDHeading(NULL),
     nearRobot(false),
@@ -518,6 +519,20 @@ void CLeader::Select() {
 void CLeader::Deselect() {
    m_bSelected = false;
 //    m_pcLEDs->SetAllColors(CColor::BLACK);
+}
+
+/****************************************/
+/****************************************/
+
+std::string CLeader::GetUsername() {
+    return m_strUsername;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetUsername(std::string username) {
+    m_strUsername = username;
 }
 
 /****************************************/

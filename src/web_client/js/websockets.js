@@ -114,9 +114,7 @@
 
         window.experiment.counter = data.steps;
 
-        // TODO: Check whether this client is in control of the right robot
-        // TODO: Check any occurance of its id appearing in other robots.
-
+        /* Check whether this client is in control of a robot */
         connectionExists = false;
 
         if (data.user_data.connections) {

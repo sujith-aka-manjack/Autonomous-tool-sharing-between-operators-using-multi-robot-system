@@ -291,6 +291,9 @@ var onAllFilesLoaded = function () {
             window.username = e_name.value;
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
+            if(window.target == 'Select leader') {
+              window.target = '';
+            }
 
             window.wsp.sendPacked({ client: window.client_id,
                                     username: window.username,

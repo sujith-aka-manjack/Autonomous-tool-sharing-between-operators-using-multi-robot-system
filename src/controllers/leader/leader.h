@@ -299,6 +299,16 @@ public:
     void Deselect();
 
     /*
+    * Gets the username of the operator that is currently controlling this robot.
+    */
+    std::string GetUsername();
+
+    /*
+    * Sets the username of the operator that has selected this robot.
+    */
+    void SetUsername(std::string username);
+
+    /*
     * Sets the control vector.
     */
     void SetControlVector(const CVector2& c_control);
@@ -476,6 +486,9 @@ private:
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;
+
+    /* Operator username */
+    std::string m_strUsername;
 
     /* The control vector */
     CVector2 m_cControl;

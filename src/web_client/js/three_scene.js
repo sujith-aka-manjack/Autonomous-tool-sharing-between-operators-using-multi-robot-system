@@ -530,6 +530,7 @@ function keyboardUpdate() {
 
     console.log("up pressed");
     window.wsp.sendPacked({ client: window.client_id,
+                            username: window.username,
                             robot: target, 
                             command: 'move', 
                             direction: 'U' }) // Up
@@ -538,6 +539,7 @@ function keyboardUpdate() {
 
     console.log("down pressed");
     window.wsp.sendPacked({ client: window.client_id,
+                            username: window.username,
                             robot: target, 
                             command: 'move', 
                             direction: 'D' }) // Down
@@ -546,6 +548,7 @@ function keyboardUpdate() {
 
     console.log("left pressed");
     window.wsp.sendPacked({ client: window.client_id,
+                            username: window.username,
                             robot: target, 
                             command: 'move', 
                             direction: 'L' }) // Left
@@ -554,19 +557,22 @@ function keyboardUpdate() {
 
     console.log("right pressed");
     window.wsp.sendPacked({ client: window.client_id,
+                            username: window.username,
                             robot: target, 
                             command: 'move', 
                             direction: 'R' }) // Right
 
   } else {
 
-    window.wsp.sendPacked({ client: window.client_id,
-                            robot: target, 
-                            command: 'move', 
-                            direction: 'S'}) // Stop
-
+    if(window.target != '') {
+      window.wsp.sendPacked({ client: window.client_id,
+                              username: window.username,
+                              robot: target, 
+                              command: 'move', 
+                              direction: 'S'}) // Stop
+    }
+    
   }
-
 }
 
 

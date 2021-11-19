@@ -110,6 +110,23 @@ class EpuckLeader {
       that.lines.push(line);
     }
 
+    console.log(entity.user_data);
+
+    // if(entity.user_data) {
+    //   this.sprite = new THREE.TextSprite({
+    //     alignment: 'center',
+    //     color: '#000000',
+    //     fontFamily: '"Times New Roman", Times, serif',
+    //     fontSize: 8,
+    //     text: [
+    //       entity.user_data.username,
+    //     ].join('\n'),
+    //   });
+    //   this.sprite.position.z = 10;
+
+    //   meshParent.add(this.sprite);
+    // }
+
     /* Update mesh parent */
     meshParent.position.x = entity.position.x * scale;
     meshParent.position.y = entity.position.y * scale;
