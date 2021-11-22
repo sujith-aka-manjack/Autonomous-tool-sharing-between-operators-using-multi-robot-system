@@ -216,6 +216,7 @@ pre {
 #button_connect {
     background-color: #edca5f;
     border: none;
+    border-radius: 8px;
     color: black;
     padding: 10px 10px;
     text-align: center;
@@ -230,6 +231,7 @@ pre {
 #button_task {
     background-color: #b9b9b9;
     border: none;
+    border-radius: 8px;
     color: black;
     padding: 10px 10px;
     text-align: center;
