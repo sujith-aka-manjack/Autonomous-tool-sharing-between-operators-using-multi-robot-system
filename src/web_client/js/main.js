@@ -199,20 +199,20 @@ var onAllFilesLoaded = function () {
         //     // window.wsp.send('step')
         //   })
         // )
-        .append($("<div/>")
-          .addClass('button')
-          .addClass('icon-reset')
-          .attr('id', 'reset_button')
-          .attr("title", "Reset experiment")
-          .prop("title", "Reset experiment")//for IE
-          .click(function () {
-            window.wsp.sendPacked({ command: 'reset' })
-          })
-        )
-        /* Divider */
-        .append($("<div/>")
-          .addClass('toolbar_divider')
-        )
+        // .append($("<div/>")
+        //   .addClass('button')
+        //   .addClass('icon-reset')
+        //   .attr('id', 'reset_button')
+        //   .attr("title", "Reset experiment")
+        //   .prop("title", "Reset experiment")//for IE
+        //   .click(function () {
+        //     window.wsp.sendPacked({ command: 'reset' })
+        //   })
+        // )
+        // /* Divider */
+        // .append($("<div/>")
+        //   .addClass('toolbar_divider')
+        // )
         // .append($("<div/>")
         //   .addClass('button')
         //   .addClass('icon-settings')
@@ -250,7 +250,7 @@ var onAllFilesLoaded = function () {
         )
 
         .append($("<input/>")
-          .attr('id', 'username')
+          .attr('id', 'username_label')
           .attr('value', window.client_id.substring(0,8))
           .attr('size', 10)
           .attr('maxlength', 16)
@@ -292,7 +292,7 @@ var onAllFilesLoaded = function () {
         .append($(confirmButtonTag)
           .attr('id','button_connect')
           .click(function () {
-            let e_name = document.getElementById('username');
+            let e_name = document.getElementById('username_label');
             window.username = e_name.value;
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
