@@ -62,7 +62,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
     std::string client = c_json_command["client"];
     std::string username = c_json_command["username"];
-    std::string command = c_json_command["command"];
+    nlohmann::json commands = c_json_command["commands"];
 
     /* Store the client's id and username if its the first time receiving it */
     if(m_pcClientPointerToId[str_ip].id == "") {
@@ -72,69 +72,104 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         m_pcClientPointerToId[str_ip].username = username;
     }
 
-    if(command == "move") {
+    /* Apply commands from client */
+    for (const auto& c_data : commands) {
+        // std::cout << "value:" << c_data << std::endl;
 
-        /* Determine which robot the command is for */
-        std::string target = c_json_command["robot"];
-        std::string direction = c_json_command["direction"];
+        if(c_data["command"] == "move") {
 
-        /* Get robot controller */
-        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
-        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-            it != m_cEPuckLeaders.end();
-            ++it) {
+            /* Determine which robot the command is for */
+            std::string target = c_json_command["robot"];
+            std::string direction = c_data["direction"];
 
-            /* Get handle to e-puck_leader entity and controller */
-            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            /* Get robot controller */
+            CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                it != m_cEPuckLeaders.end();
+                ++it) {
 
-            if(cController.GetId() == target) {
-                
-                /* Forward/backward direction factor (local robot X axis) */
-                SInt32 FBDirection = 0;
-                /* Left/right direction factor (local robot Y axis) */
-                SInt32 LRDirection = 0;
-                /* Calculate direction factor */
-                if(direction == "U") ++FBDirection;
-                if(direction == "D") --FBDirection;
-                if(direction == "L") ++LRDirection;
-                if(direction == "R") --LRDirection;
-                /* Calculate direction */
-                CVector2 cDir =
-                    DIRECTION_VECTOR_FACTOR *
-                    (CVector2(FBDirection, 0.0f) +
-                    CVector2(0.0f, LRDirection));
+                /* Get handle to e-puck_leader entity and controller */
+                CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-                /* Tell that e-puck that it is selected */
-                cController.Select();
+                if(cController.GetId() == target) {
+                    
+                    /* Forward/backward direction factor (local robot X axis) */
+                    SInt32 FBDirection = 0;
+                    /* Left/right direction factor (local robot Y axis) */
+                    SInt32 LRDirection = 0;
+                    /* Calculate direction factor */
+                    if(direction == "U") ++FBDirection;
+                    if(direction == "D") --FBDirection;
+                    if(direction == "L") ++LRDirection;
+                    if(direction == "R") --LRDirection;
+                    /* Calculate direction */
+                    CVector2 cDir =
+                        DIRECTION_VECTOR_FACTOR *
+                        (CVector2(FBDirection, 0.0f) +
+                        CVector2(0.0f, LRDirection));
 
-                /* Set direction */
-                cController.SetControlVector(cDir);
+                    /* Tell that e-puck that it is selected */
+                    cController.Select();
 
-                return;
+                    /* Set direction */
+                    cController.SetControlVector(cDir);
+
+                    break;
+                }
             }
         }
-    }
-    else if(command == "select_leader") {
+        else if(c_data["command"] == "select_leader") {
 
-        // std::cout << "Select received (begin)" << std::endl;
+            // std::cout << "Select received (begin)" << std::endl;
 
-        // for(const auto& [key, value] : m_pcClientRobotConnections) {
-        //     std::cout << "robot: " << key << " - " << value.username << ", " << value.id << std::endl;
-        // }
+            // for(const auto& [key, value] : m_pcClientRobotConnections) {
+            //     std::cout << "robot: " << key << " - " << value.username << ", " << value.id << std::endl;
+            // }
 
-        // for(const auto& [key, value] : m_pcClientPointerToId) {
-        //     std::cout << "pt: " << key << " - " << value.username << ", " << value.id << std::endl;
-        // }
+            // for(const auto& [key, value] : m_pcClientPointerToId) {
+            //     std::cout << "pt: " << key << " - " << value.username << ", " << value.id << std::endl;
+            // }
 
-        std::string target = c_json_command["robot"];
+            std::string target = c_json_command["robot"];
 
-        /* Target robot is already controlled by a client */
-        if(m_pcClientRobotConnections.count(target)) {
-            ClientData clientInControl = m_pcClientRobotConnections[target];
-            if(clientInControl.id == client) {
-                if(username != "") {
-                    /* Update username */
+            /* Target robot is already controlled by a client */
+            if(m_pcClientRobotConnections.count(target)) {
+                ClientData clientInControl = m_pcClientRobotConnections[target];
+                if(clientInControl.id == client) {
+                    if(username != "") {
+                        /* Update username */
+                        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+                        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                            it != m_cEPuckLeaders.end();
+                            ++it) {
+
+                            /* Get handle to e-puck_leader entity and controller */
+                            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                            if(cController.GetId() == target) {
+                                cController.SetUsername(username);
+                                std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                                break;
+                            }
+                        }
+                        m_pcClientRobotConnections[target].username = username;
+                    }
+                    continue;
+                } 
+                else if(clientInControl.id != "") { 
+                    std::cout << "[ERR]: (" << target << ") is already being controlled by " 
+                            << clientInControl.username << " (" << clientInControl.id << ")" << std::endl;
+                    continue;
+                }
+            }
+            
+            /* Disconnect client from existing connections */
+            for(auto& [key, value] : m_pcClientRobotConnections) {
+                if(value.id == client) {
+
+                    /* Deselect robot */
                     CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
                     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
                         it != m_cEPuckLeaders.end();
@@ -144,74 +179,44 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
                         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-                        if(cController.GetId() == target) {
-                            cController.SetUsername(username);
-                            std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                        if(cController.GetId() == key) {
+                            cController.Deselect();
+                            cController.SetUsername("");
                             break;
                         }
                     }
-                    m_pcClientRobotConnections[target].username = username;
+
+                    value = ClientData();
+                    std::cout << "[LOG]: (" << key << ") released" << std::endl;
                 }
-                return;
-            } 
-            else if(clientInControl.id != "") { 
-                std::cout << "[ERR]: (" << target << ") is already being controlled by " 
-                          << clientInControl.username << " (" << clientInControl.id << ")" << std::endl;
-                return; 
             }
-        }
-        
-        /* Disconnect client from existing connections */
-        for(auto& [key, value] : m_pcClientRobotConnections) {
-            if(value.id == client) {
 
-                /* Deselect robot */
-                CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
-                for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-                    it != m_cEPuckLeaders.end();
-                    ++it) {
+            if(target == "Select leader") {
+                continue;
+            }
 
-                    /* Get handle to e-puck_leader entity and controller */
-                    CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-                    CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            /* Connect client to leader */
+            CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                it != m_cEPuckLeaders.end();
+                ++it) {
 
-                    if(cController.GetId() == key) {
-                        cController.Deselect();
-                        cController.SetUsername("");
-                        break;
-                    }
+                /* Get handle to e-puck_leader entity and controller */
+                CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                if(cController.GetId() == target) {
+                    cController.Select();
+                    cController.SetUsername(username);
+
+                    /* Update robot connection dict */
+                    ClientData newClient;
+                    newClient.id = client;
+                    newClient.username = username;
+                    m_pcClientRobotConnections[target] = newClient;
+
+                    std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
                 }
-
-                value = ClientData();
-                std::cout << "[LOG]: (" << key << ") released" << std::endl;
-            }
-        }
-
-        if(target == "Select leader") {
-            return;
-        }
-
-        /* Connect client to leader */
-        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
-        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-            it != m_cEPuckLeaders.end();
-            ++it) {
-
-            /* Get handle to e-puck_leader entity and controller */
-            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
-
-            if(cController.GetId() == target) {
-                cController.Select();
-                cController.SetUsername(username);
-
-                /* Update robot connection dict */
-                ClientData newClient;
-                newClient.id = client;
-                newClient.username = username;
-                m_pcClientRobotConnections[target] = newClient;
-
-                std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
             }
         }
     }

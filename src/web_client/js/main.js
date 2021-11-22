@@ -15,9 +15,12 @@ var onAllFilesLoaded = function () {
 
   /* Init KeyboardState */
   window.keyboard = new KeyboardState();
+  
+  window.connectFlag = false;
 
   /* Generate uuid */
   window.client_id = generateRandomUUID();
+  window.username = window.client_id.substring(0,8);
   console.log(window.client_id);
 
   window.target = ''; // Init robot selection to nothing
@@ -251,7 +254,7 @@ var onAllFilesLoaded = function () {
 
         .append($("<input/>")
           .attr('id', 'username_label')
-          .attr('value', window.client_id.substring(0,8))
+          .attr('value', window.username)
           .attr('size', 10)
           .attr('maxlength', 16)
           .attr("title", "User name")
@@ -300,12 +303,8 @@ var onAllFilesLoaded = function () {
               window.target = '';
             }
 
-            window.wsp.sendPacked({ client: window.client_id,
-                                    username: window.username,
-                                    command: 'select_leader', 
-                                    robot: window.target });
-
-            console.log("sent " + window.target);
+            window.connectFlag = true;
+            window.connectCommand = { command: 'select_leader' };
           })
         )
 

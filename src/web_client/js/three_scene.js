@@ -512,67 +512,86 @@ function get2DProjectedPosition(mouse, object) {
 
 function animate() {
   requestAnimationFrame(animate);
-  keyboardUpdate();
+  commandUpdate();
   controls.update();
   cameraUpdate();
   render();
 }
 
 
-function keyboardUpdate() {
+function commandUpdate() {
 
   window.keyboard.update();
 
   let e = document.getElementById("leader_selected");
   let target = e.options[e.selectedIndex].text;
 
+  /* Build paacket to send */
+  var packet = {
+                client: window.client_id,
+                username: window.username,
+                robot: target 
+               };
+  var commands = [];
+
+  /* Check movement command */
   if( keyboard.pressed("up") ) {
 
     console.log("up pressed");
-    window.wsp.sendPacked({ client: window.client_id,
-                            username: window.username,
-                            robot: target, 
-                            command: 'move', 
-                            direction: 'U' }) // Up
+    let data = {
+                command: 'move',
+                direction: 'U'  // Up
+               }
+    commands.push(data);
 
   } else if( keyboard.pressed("down") ) {
 
     console.log("down pressed");
-    window.wsp.sendPacked({ client: window.client_id,
-                            username: window.username,
-                            robot: target, 
-                            command: 'move', 
-                            direction: 'D' }) // Down
+    let data = {
+                command: 'move',
+                direction: 'D'  // Down
+               }
+    commands.push(data);
 
   } else if( keyboard.pressed("left") ) {
 
     console.log("left pressed");
-    window.wsp.sendPacked({ client: window.client_id,
-                            username: window.username,
-                            robot: target, 
-                            command: 'move', 
-                            direction: 'L' }) // Left
+    let data = {
+                command: 'move',
+                direction: 'L'  // Left
+                }
+    commands.push(data);
 
   } else if( keyboard.pressed("right") ) {
 
     console.log("right pressed");
-    window.wsp.sendPacked({ client: window.client_id,
-                            username: window.username,
-                            robot: target, 
-                            command: 'move', 
-                            direction: 'R' }) // Right
+    let data = {
+                command: 'move',
+                direction: 'R'  // Right
+               }
+    commands.push(data);
 
   } else {
 
     if(window.target != '') {
-      window.wsp.sendPacked({ client: window.client_id,
-                              username: window.username,
-                              robot: target, 
-                              command: 'move', 
-                              direction: 'S'}) // Stop
+      let data = {
+                  command: 'move',
+                  direction: 'S'  // Stop
+                 }
+      commands.push(data);
     }
-    
+
   }
+
+  /* Check connect command (select_leader) */
+  if(window.connectFlag) {
+    commands.push(window.connectCommand);
+    window.connectFlag = false;
+  }
+
+  packet['commands'] = commands;
+  window.wsp.sendPacked(packet);
+  console.log(packet);
 }
 
 
