@@ -523,14 +523,11 @@ function commandUpdate() {
 
   window.keyboard.update();
 
-  let e = document.getElementById("leader_selected");
-  let target = e.options[e.selectedIndex].text;
-
   /* Build paacket to send */
   var packet = {
                 client: window.client_id,
                 username: window.username,
-                robot: target 
+                robot: window.target 
                };
   var commands = [];
 
@@ -544,6 +541,19 @@ function commandUpdate() {
   if( window.taskFlag ) {
     commands.push(window.taskCommand);
     window.taskFlag = false;
+  }
+
+  /* Check for a new request command */
+  if( window.requestFlag ) {
+    commands.push(window.requestCommand);
+    window.requestFlag = false;
+    console.log(packet);
+  }
+
+  /* Check for a new send command */
+  if( window.sendFlag ) {
+    commands.push(window.sendCommand);
+    window.sendFlag = false;
     console.log(packet);
   }
 

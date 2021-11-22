@@ -62,6 +62,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
     std::string client = c_json_command["client"];
     std::string username = c_json_command["username"];
+    std::string target = c_json_command["robot"];
     nlohmann::json commands = c_json_command["commands"];
 
     /* Store the client's id and username if its the first time receiving it */
@@ -78,8 +79,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
         if(c_data["command"] == "move") {
 
-            /* Determine which robot the command is for */
-            std::string target = c_json_command["robot"];
             std::string direction = c_data["direction"];
 
             /* Get robot controller */
@@ -121,7 +120,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
         }
         else if(c_data["command"] == "task") {
 
-            std::string target = c_json_command["robot"];
             std::string signal = c_data["signal"];
 
             /* Get robot controller */
@@ -149,6 +147,20 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                 }
             }
         }
+        else if(c_data["command"] == "request") {
+
+            int num_robot = c_data["number"];
+
+            std::cout << "Request received: " << num_robot << std::endl;
+
+        }
+        else if(c_data["command"] == "send") {
+
+            int num_robot = c_data["number"];
+
+            std::cout << "Send received: " << num_robot << std::endl;
+
+        }
         else if(c_data["command"] == "select_leader") {
 
             // std::cout << "Select received (begin)" << std::endl;
@@ -160,8 +172,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
             // for(const auto& [key, value] : m_pcClientPointerToId) {
             //     std::cout << "pt: " << key << " - " << value.username << ", " << value.id << std::endl;
             // }
-
-            std::string target = c_json_command["robot"];
 
             /* Target robot is already controlled by a client */
             if(m_pcClientRobotConnections.count(target)) {

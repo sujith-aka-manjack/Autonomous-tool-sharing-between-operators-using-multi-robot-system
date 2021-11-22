@@ -213,6 +213,14 @@ pre {
     margin-left: 10px;
 }
 
+#request_input {
+    margin-left: 12px;
+}
+
+#send_input {
+    margin-left: 12px;
+}
+
 #button_connect {
     background-color: #edca5f;
     border: none;
@@ -241,6 +249,36 @@ pre {
     margin: 4px 10px;
     cursor: pointer;
     width: 130px;
+}
+
+#button_request {
+    background-color: #edca5f;
+    border: none;
+    border-radius: 8px;
+    color: black;
+    padding: 10px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    width: 100px;
+}
+
+#button_send {
+    background-color: #edca5f;
+    border: none;
+    border-radius: 8px;
+    color: black;
+    padding: 10px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    width: 100px;
 }
 
 #connection-status {

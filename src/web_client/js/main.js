@@ -20,6 +20,10 @@ var onAllFilesLoaded = function () {
   window.connectFlag = false;
   window.taskFlag = false;
   window.taskCommand = { command: 'task', signal: 'stop' };
+  window.requestFlag = false;
+  window.requestCommand = { command: 'request', number: 0 };
+  window.sendFlag = false;
+  window.sendCommand = { command: 'send', number: 0 };
 
   /* Generate uuid */
   window.client_id = generateRandomUUID();
@@ -393,9 +397,60 @@ var onAllFilesLoaded = function () {
           .html("{experiment.status}")
         )
 
+      let requestButtonTag = "".concat(
+        "<button type='button'>Request</button>"
+      );
+
+      let sendButtonTag = "".concat(
+        "<button type='button'>Send</button>"
+      );
+
+      /* Add button on top panel */
+      $("#layout_toolbar_layout_panel_main>div.w2ui-panel-content")
+        .addClass('toolbar-flex-container')
+        .append($("<input/>")
+          .attr('type', 'number')
+          .attr('id', 'request_input')
+          .attr('min', '0')
+          .attr('max', '1000')
+          .attr('value', '0')
+          .attr("title", "Number of robots to request")
+          .prop("title", "Number of robots to request")//for IE
+        )
+
+        .append($(requestButtonTag)
+          .attr('id','button_request')
+          .attr("title", "Request robots")
+          .prop("title", "Request robots")//for IE
+          .click(function () {
+            window.requestCommand['number'] = parseInt($("#request_input").val());
+            window.requestFlag = true;
+          })
+        )
+
         /* Divider */
         .append($("<div/>")
-          .attr('type', 'new-line')
+          .addClass('toolbar_divider')
+        )
+
+        .append($("<input/>")
+          .attr('type', 'number')
+          .attr('id', 'send_input')
+          .attr('min', '0')
+          .attr('max', '1000')
+          .attr('value', '0')
+          .attr("title", "Number of robots to send")
+          .prop("title", "Number of robots to send")//for IE
+        )
+
+        .append($(sendButtonTag)
+          .attr('id','button_send')
+          .attr("title", "Send robots")
+          .prop("title", "Send robots")//for IE
+          .click(function () {
+            window.sendCommand['number'] = parseInt($("#send_input").val());
+            window.sendFlag = true;
+          })
         )
 
       window.experiment = {}
