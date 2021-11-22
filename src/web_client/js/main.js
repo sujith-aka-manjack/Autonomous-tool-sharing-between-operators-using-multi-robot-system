@@ -35,7 +35,7 @@ var onAllFilesLoaded = function () {
       name: 'app_layout',
       padding: 4,
       panels: [
-        { type: 'top', size: 50, resizable: false },
+        { type: 'top', size: 110, resizable: false },
         { type: 'left', size: "10%", resizable: true, content: 'left', hidden: true },
         { type: 'main', resizable: true, },
         { type: 'right', size: "30%", style: "background-color: #f2f2f2;border:0px", resizable: true, content: 'right' }
@@ -61,10 +61,28 @@ var onAllFilesLoaded = function () {
         content: '<div id="contentAreaLogErr" class="clusterize-content"></div>'
       }]
     });
+    /* Toolbar layout */
+    $().w2layout({
+      name: 'toolbar_layout',
+      padding: 5,
+      panels: [{
+        type: 'top',
+        size: "50%",
+        resizable: false,
+        // style: "padding:4px 8px;background:white",
+        // content: '<div id="contentAreaLog" class="clusterize-content"></div>'
+      }, {
+        type: 'main',
+        size: "50%",
+        resizable: false,
+        // style: "padding:4px 8px;background:white",
+        // content: '<div id="contentAreaLogErr" class="clusterize-content"></div>'
+      }]
+    });
 
     /* Make them nested */
     w2ui['app_layout'].content('right', w2ui['log_layout']);
-
+    w2ui['app_layout'].content('top', w2ui['toolbar_layout']);
 
     /* On Threejs panel Resize */
     w2ui['app_layout'].on('resize', function (event) {
@@ -128,7 +146,7 @@ var onAllFilesLoaded = function () {
       );
 
       /* Add button on top panel */
-      $("#layout_app_layout_panel_top>div.w2ui-panel-content")
+      $("#layout_toolbar_layout_panel_top>div.w2ui-panel-content")
         .addClass('toolbar-flex-container')
         .append($("<div/>")
           .addClass('toolbar_counter')
@@ -373,6 +391,11 @@ var onAllFilesLoaded = function () {
         .append($("<div/>")
           .addClass("toolbar_status")
           .html("{experiment.status}")
+        )
+
+        /* Divider */
+        .append($("<div/>")
+          .attr('type', 'new-line')
         )
 
       window.experiment = {}
