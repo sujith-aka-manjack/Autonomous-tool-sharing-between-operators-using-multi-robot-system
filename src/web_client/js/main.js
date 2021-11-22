@@ -16,7 +16,10 @@ var onAllFilesLoaded = function () {
   /* Init KeyboardState */
   window.keyboard = new KeyboardState();
   
+  /* Init client signals and flags */
   window.connectFlag = false;
+  window.taskFlag = false;
+  window.taskCommand = { command: 'task', signal: 'stop' };
 
   /* Generate uuid */
   window.client_id = generateRandomUUID();
@@ -118,6 +121,10 @@ var onAllFilesLoaded = function () {
 
       let confirmButtonTag = "".concat(
         "<button type='button'>Confirm</button>"
+      );
+
+      let taskButtonTag = "".concat(
+        "<button type='button'>START task</button>"
       );
 
       /* Add button on top panel */
@@ -299,8 +306,22 @@ var onAllFilesLoaded = function () {
             window.username = e_name.value;
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
+
+            var e_task = document.getElementById("button_task");
+
             if(window.target == 'Select leader') {
               window.target = '';
+
+              e_task.textContent = 'START task';
+              e_task.style.background = '#b9b9b9';
+              window.taskFlag = false;
+              window.taskCommand = { command: 'task', signal: 'stop' };
+
+            } else {
+              e_task.textContent = 'START task';
+              e_task.style.background = '#5fde81';
+              window.taskFlag = false;
+              window.taskCommand = { command: 'task', signal: 'stop' };
             }
 
             window.connectFlag = true;
@@ -312,6 +333,37 @@ var onAllFilesLoaded = function () {
           .addClass("toolbar_status")
           .attr('id', 'connection-status')
           .html("Disconnected")
+        )
+
+        /* Divider */
+        .append($("<div/>")
+          .addClass('toolbar_divider')
+        )
+
+        .append($(taskButtonTag)
+          .attr('id','button_task')
+          .click(function () {
+            
+            if(window.target != '') {
+              var e = document.getElementById("button_task");
+            
+              if(window.taskCommand['signal'] == 'stop') {
+
+                window.taskCommand['signal'] = 'start';
+                e.textContent = 'STOP task';
+                e.style.background = '#de5f5f';
+
+              } else if(window.taskCommand['signal'] == 'start') {
+
+                window.taskCommand['signal'] = 'stop';  
+                e.textContent = 'START task';
+                e.style.background = '#5fde81';
+
+              }
+
+              window.taskFlag = true;
+            }
+          })
         )
 
         /* Spacer */

@@ -119,6 +119,36 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                 }
             }
         }
+        else if(c_data["command"] == "task") {
+
+            std::string target = c_json_command["robot"];
+            std::string signal = c_data["signal"];
+
+            /* Get robot controller */
+            CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                it != m_cEPuckLeaders.end();
+                ++it) {
+
+                /* Get handle to e-puck_leader entity and controller */
+                CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                if(cController.GetId() == target) {
+                    
+                    /* Tell the e-puck to send a task signal */
+                    if(signal == "start") {
+                        std::cout << "[LOG]: (" << cController.GetId() << ") sending START task signal" << std::endl;
+                        cController.SetSignal(true);
+                    } else if(signal == "stop") {
+                        std::cout << "[LOG]: (" << cController.GetId() << ") sending STOP task signal" << std::endl;
+                        cController.SetSignal(false);
+                    }
+
+                    break;
+                }
+            }
+        }
         else if(c_data["command"] == "select_leader") {
 
             // std::cout << "Select received (begin)" << std::endl;
@@ -182,6 +212,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                         if(cController.GetId() == key) {
                             cController.Deselect();
                             cController.SetUsername("");
+                            cController.SetSignal(false);
                             break;
                         }
                     }
@@ -255,6 +286,7 @@ void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
                 if(cController.GetId() == key) {
                     cController.Deselect();
                     cController.SetUsername("");
+                    cController.SetSignal(false);
                     break;
                 }
             }

@@ -214,6 +214,20 @@ pre {
 }
 
 #button_connect {
+    background-color: #edca5f;
+    border: none;
+    color: black;
+    padding: 10px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    width: 130px;
+}
+
+#button_task {
     background-color: #b9b9b9;
     border: none;
     color: black;
@@ -229,6 +243,8 @@ pre {
 
 #connection-status {
     color: black;
+    text-align: center;
+    width: 140px;
 }
 
 .icon-pause:before {

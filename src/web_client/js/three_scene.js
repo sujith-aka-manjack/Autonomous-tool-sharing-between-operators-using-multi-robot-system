@@ -534,8 +534,21 @@ function commandUpdate() {
                };
   var commands = [];
 
+  /* Check connect command (select_leader) */
+  if(window.connectFlag) {
+    commands.push(window.connectCommand);
+    window.connectFlag = false;
+  }
+
+  /* Check if task signal is toggelled (start/stop) */
+  if( window.taskFlag ) {
+    commands.push(window.taskCommand);
+    window.taskFlag = false;
+    console.log(packet);
+  }
+
   /* Check movement command */
-  if( keyboard.pressed("up") ) {
+  if( keyboard.pressed("W") ) {
 
     console.log("up pressed");
     let data = {
@@ -544,7 +557,7 @@ function commandUpdate() {
                }
     commands.push(data);
 
-  } else if( keyboard.pressed("down") ) {
+  } else if( keyboard.pressed("S") ) {
 
     console.log("down pressed");
     let data = {
@@ -553,7 +566,7 @@ function commandUpdate() {
                }
     commands.push(data);
 
-  } else if( keyboard.pressed("left") ) {
+  } else if( keyboard.pressed("A") ) {
 
     console.log("left pressed");
     let data = {
@@ -562,7 +575,7 @@ function commandUpdate() {
                 }
     commands.push(data);
 
-  } else if( keyboard.pressed("right") ) {
+  } else if( keyboard.pressed("D") ) {
 
     console.log("right pressed");
     let data = {
@@ -583,15 +596,9 @@ function commandUpdate() {
 
   }
 
-  /* Check connect command (select_leader) */
-  if(window.connectFlag) {
-    commands.push(window.connectCommand);
-    window.connectFlag = false;
-  }
-
   packet['commands'] = commands;
   window.wsp.sendPacked(packet);
-  console.log(packet);
+  // console.log(packet);
 }
 
 
