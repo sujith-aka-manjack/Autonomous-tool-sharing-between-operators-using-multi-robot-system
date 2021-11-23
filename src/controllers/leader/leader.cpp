@@ -555,6 +555,20 @@ void CLeader::SetSignal(const bool b_signal) {
 /****************************************/
 /****************************************/
 
+void CLeader::SetRobotsToSend(const UInt32 un_robots) {
+
+    /* Only send robots if,
+     * (1) it is in the process of sending robots
+     * (2) there are enough number of robots to send in the current team
+     */
+    if(numRobotsToSend == 0 && currentFollowerCount >= un_robots) {
+        numRobotsToSend = un_robots;
+    }
+}
+
+/****************************************/
+/****************************************/
+
 CVector2 CLeader::GetNextWaypoint() {
     return waypoints.front();
 }
@@ -836,6 +850,13 @@ void CLeader::Update() {
 
     CheckHeartBeat();
 
+    /* If there are no followers in the team, cancel sending the */
+    /* remaining number of robots                                */
+    if(numRobotsToSend > 0 && currentFollowerCount == 0) {
+        numRobotsToSend = 0;
+    }
+
+    /* Only for simulated users */
     /* Check if task is completed or not to set signal to send */
     if( !m_bSelected ) {
 

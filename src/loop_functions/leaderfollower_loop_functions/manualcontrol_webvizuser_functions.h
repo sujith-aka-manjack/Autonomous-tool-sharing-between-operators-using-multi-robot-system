@@ -18,11 +18,11 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual ~CManualControlWebvizUserFunctions();
 
+        virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
+
         virtual const nlohmann::json sendUserData();
 
         virtual const nlohmann::json sendRobotData(CEPuckLeaderEntity& robot);
-
-        virtual void HandleCommandFromClient(const std::string& str_ip, nlohmann::json c_json_command);
 
         virtual void ClientConnected(std::string str_id);
 

@@ -290,58 +290,64 @@ public:
     * Sets the selected flag on this robot.
     * When selected, a robot follows the control vector.
     */
-    void Select();
+    virtual void Select();
 
     /*
     * Unsets the selected flag on this robot.
     * When unselected, a robot stays still.
     */
-    void Deselect();
+    virtual void Deselect();
 
     /*
     * Gets the username of the operator that is currently controlling this robot.
     */
-    std::string GetUsername();
+    virtual std::string GetUsername();
 
     /*
     * Sets the username of the operator that has selected this robot.
     */
-    void SetUsername(std::string username);
+    virtual void SetUsername(std::string username);
 
     /*
     * Sets the control vector.
     */
-    void SetControlVector(const CVector2& c_control);
+    virtual void SetControlVector(const CVector2& c_control);
 
     /*
     * Sets the start/stop signal.
     */
-    void SetSignal(const bool b_signal);
+    virtual void SetSignal(const bool b_signal);
+
+    /*
+    * Sets the number of followers to send to the other team.
+    * While the leader is sending robots, calls to this function will be ignored.
+    */
+    virtual void SetRobotsToSend(const UInt32 un_robots);
 
     /*
     * Get the next waypoint in the queue.
     */
-    CVector2 GetNextWaypoint();
+    virtual CVector2 GetNextWaypoint();
 
     /*
     * Sets the list of waypoints to visit.
     */
-    void SetWaypoints(const std::queue<CVector2> waypts);
+    virtual void SetWaypoints(const std::queue<CVector2> waypts);
 
     /* 
     * Sets the current task info.
     */
-    void SetTaskDemand(const UInt32 un_demand);
+    virtual void SetTaskDemand(const UInt32 un_demand);
 
     /* 
     * Sets the current task info.
     */
-    void SetMinimumCount(const UInt32 un_min);
+    virtual void SetMinimumCount(const UInt32 un_min);
 
     /*
     * Sets the current number of followers in the team.
     */
-    void SetFollowerCount(const UInt32 un_count);
+    virtual void SetFollowerCount(const UInt32 un_count);
 
     /*
     * Get team ID.

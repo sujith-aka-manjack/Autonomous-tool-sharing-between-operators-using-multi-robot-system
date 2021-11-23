@@ -24,36 +24,6 @@ CManualControlWebvizUserFunctions::~CManualControlWebvizUserFunctions() {}
 /****************************************/
 /****************************************/
 
-const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
-    nlohmann::json outJson;
-
-    if(m_pcClientRobotConnections.empty()) {
-        outJson["connections"] = nlohmann::json();
-    } else {
-        for(const auto& [key, value] : m_pcClientRobotConnections) {
-            outJson["connections"][key]["id"] = value.id;
-            outJson["connections"][key]["username"] = value.username;
-        }
-    }
-
-    return outJson;
-}
-
-/****************************************/
-/****************************************/
-
-const nlohmann::json CManualControlWebvizUserFunctions::sendRobotData(CEPuckLeaderEntity& robot) {
-    nlohmann::json outJson;
-
-    CLeader& cController = dynamic_cast<CLeader&>(robot.GetControllableEntity().GetController());
-    outJson["username"] = cController.GetUsername();
-
-    return outJson;
-}
-
-/****************************************/
-/****************************************/
-
 void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::string& str_ip, 
                                                                 nlohmann::json c_json_command) {
 
@@ -160,6 +130,23 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
             std::cout << "Send received: " << num_robot << std::endl;
 
+            /* Get robot controller */
+            CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                it != m_cEPuckLeaders.end();
+                ++it) {
+
+                /* Get handle to e-puck_leader entity and controller */
+                CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                if(cController.GetId() == target) {
+                    
+                    /* Tell the e-puck to send its followers to the other team */
+                    cController.SetRobotsToSend(num_robot);
+                    break;
+                }
+            } 
         }
         else if(c_data["command"] == "select_leader") {
 
@@ -261,6 +248,36 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
             }
         }
     }
+}
+
+/****************************************/
+/****************************************/
+
+const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
+    nlohmann::json outJson;
+
+    if(m_pcClientRobotConnections.empty()) {
+        outJson["connections"] = nlohmann::json();
+    } else {
+        for(const auto& [key, value] : m_pcClientRobotConnections) {
+            outJson["connections"][key]["id"] = value.id;
+            outJson["connections"][key]["username"] = value.username;
+        }
+    }
+
+    return outJson;
+}
+
+/****************************************/
+/****************************************/
+
+const nlohmann::json CManualControlWebvizUserFunctions::sendRobotData(CEPuckLeaderEntity& robot) {
+    nlohmann::json outJson;
+
+    CLeader& cController = dynamic_cast<CLeader&>(robot.GetControllableEntity().GetController());
+    outJson["username"] = cController.GetUsername();
+
+    return outJson;
 }
 
 /****************************************/
