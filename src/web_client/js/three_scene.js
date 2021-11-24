@@ -87,12 +87,21 @@ var IntializeThreejs = function (threejs_panel) {
 function initSceneWithScale(_scale) {
   scale = _scale;
 
+  /* Top-view camera */
   camera = new THREE.PerspectiveCamera(45, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
 
   camera.position.set(-scale * 3, 0, scale * 5);
 
   camera.layers.enable(0); // enabled by default
   camera.layers.enable(1); // All selectable objects
+
+  /* Robot perspective camera */
+  robot_camera = new THREE.PerspectiveCamera(60, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
+
+  robot_camera.position.set(-scale * 3, 0, scale * 5);
+
+  robot_camera.layers.enable(0); // enabled by default
+  robot_camera.layers.enable(1); // All selectable objects
 
   // Controls
   // Possible types: OrbitControls, MapControls
@@ -614,33 +623,28 @@ function commandUpdate() {
 
 function cameraUpdate() {
 
-  // /* Camera offsets */
+  /* Find selected leader position and orientation */
+  if(window.target != '') {
+    if(sceneEntities.hasOwnProperty(window.target)) {
+
+      // Update camera 
+      const relativeCameraOffset = new THREE.Vector3(0,0,3);
+
+      const object = scene.getObjectByProperty('uuid', sceneEntities[window.target].uuid);
+      const cameraOffset = relativeCameraOffset.applyMatrix4( object.matrixWorld );
   
-  // var relativeCameraOffset = new THREE.Vector3(0,0,50);
+      robot_camera.position.x = cameraOffset.x;
+      robot_camera.position.y = cameraOffset.y;
+      robot_camera.position.z = cameraOffset.z;
+  
+      const relativeFocusOffset = new THREE.Vector3(20,0,0);
+      const focusOffset = relativeFocusOffset.applyMatrix4( object.matrixWorld );
 
-  // /* Behind back */
-  // // var relativeCameraOffset = new THREE.Vector3(-40,0,20);
+      robot_camera.lookAt( focusOffset );
+    }
+  } else {
 
-  // /* Front facing */
-  // // var relativeCameraOffset = new THREE.Vector3(4,0,1);
-
-  // if (sceneEntities.hasOwnProperty('L1')) {
-
-  //   const leader = scene.getObjectByProperty('uuid', sceneEntities['L1'].uuid);
-  //   var cameraOffset = relativeCameraOffset.applyMatrix4( leader.matrixWorld );
-
-  //   camera.position.x = cameraOffset.x;
-  //   camera.position.y = cameraOffset.y;
-  //   camera.position.z = cameraOffset.z;
-  //   // camera.position.lerp(cameraOffset, 0.5);
-  //   var focus = leader.position;
-  //   // focus.y = -(Math.abs(camera.position.y - leader.position.y) * 2);
-  //   // focus.x = -(Math.abs(camera.position.x - leader.position.x) * 2);     
-  //   camera.lookAt( focus );
-  //   console.log(leader.position);
-
-
-  // }
+  }
 }
 
 
@@ -670,6 +674,12 @@ function render() {
     }
   }
 
-  renderer.render(scene, camera);
-  menuRenderer.render(scene, camera);
+  if(window.target == '') {
+    renderer.render(scene, camera);
+    menuRenderer.render(scene, camera);
+  } else {
+    renderer.render(scene, robot_camera);
+    menuRenderer.render(scene, robot_camera);
+  }
+
 }
