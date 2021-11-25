@@ -45,10 +45,14 @@ function update_minimap() {
   for (const key in sceneEntities) {
     if (sceneEntities.hasOwnProperty(key)) {
       const entity = sceneEntities[key].entity;
+
       if(entity.type == 'box') {
 
         if(key in entities) {
-          // TODO: Update location
+
+          entities[key].left = OFFSET + SCALE * entity.position.x;
+          entities[key].top = OFFSET - SCALE * entity.position.y;
+
         } else {
 
           var box = new fabric.Rect({
@@ -66,6 +70,7 @@ function update_minimap() {
           entities[key] = box;
           canvas.add(box);
         }
+
       } else if(entity.type == 'e-puck_leader') {
         // TODO:
         // - Number of followers
@@ -95,11 +100,35 @@ function update_minimap() {
 
       } else if(entity.type == 'e-puck') {
         // TODO: How to determine if e-puck is a connector? -> Add to sendRobotData
-      } else if(entity.type == 'rectangle_Task') {
+
+      } else if(entity.type == 'rectangle_task') {
         // TODO: 
         // - Remaining demand
         // - Total demand
         // - Number of robots needed
+
+        if(key in entities) {
+
+          entities[key].left = OFFSET + SCALE * entity.position.x;
+          entities[key].top = OFFSET - SCALE * entity.position.y;
+
+        } else {
+
+          var task = new fabric.Rect({
+            left: OFFSET + SCALE * entity.position.x,
+            top: OFFSET - SCALE * entity.position.y,
+            fill: 'rgba(200,0,0,0.5)',
+            width: SCALE * entity.scale.x,
+            height: SCALE * entity.scale.y,
+            originX: "center",
+            originY: "center"
+          });
+
+          task.rotate(2 * Math.acos(entity.orientation.w) * 180 / Math.PI)
+          
+          entities[key] = task;
+          canvas.add(task);
+        }
       }
     }
   }
