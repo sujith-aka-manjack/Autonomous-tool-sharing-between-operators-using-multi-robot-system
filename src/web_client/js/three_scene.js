@@ -541,7 +541,7 @@ function commandUpdate() {
   var commands = [];
 
   /* Check connect command (select_leader) */
-  if(window.connectFlag) {
+  if( window.connectFlag ) {
     commands.push(window.connectCommand);
     window.connectFlag = false;
   }
@@ -674,12 +674,12 @@ function render() {
     }
   }
 
-  if(window.target == '') {
-    renderer.render(scene, camera);
-    menuRenderer.render(scene, camera);
-  } else {
+  if(window.connected) {
     renderer.render(scene, robot_camera);
     menuRenderer.render(scene, robot_camera);
+  } else {
+    renderer.render(scene, camera);
+    menuRenderer.render(scene, camera);
   }
 
 }

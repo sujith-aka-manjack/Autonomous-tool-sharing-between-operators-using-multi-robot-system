@@ -115,29 +115,39 @@
         window.experiment.counter = data.steps;
 
         /* Check whether this client is in control of a robot */
-        connectionExists = false;
+        var connectionExists = false;
+        var robot_id = '';
 
         if (data.user_data.connections) {
           for (const key in data.user_data.connections){
             if(data.user_data.connections.hasOwnProperty(key)){
               if(data.user_data.connections[key].id == window.client_id) {
-
-                // Change color and text of status
-                let e = document.getElementById('connection-status');
-                e.textContent = 'Connected to '.concat(key);
-                e.style.color = '#4CAF50';
-
                 connectionExists = true;
+                robot_id = key;
               }
             }
           }
         }
 
-        if( !connectionExists ) {
+        let e_status = document.getElementById('connection-status');
+        let e_task = document.getElementById("button_task");
+
+        if(connectionExists) {
+
+          window.connected = true;
           // Change color and text of status
-          let e = document.getElementById('connection-status');
-          e.textContent = 'Disconnected';
-          e.style.color = '#000000';
+          e_status.textContent = 'Connected to '.concat(robot_id);
+          e_status.style.color = '#4CAF50';
+          e_task.textContent = 'START task';
+          e_task.style.background = '#5fde81';
+
+        } else {
+
+          window.connected = false;
+          // Change color and text of status
+          e_status.textContent = 'Disconnected';
+          e_status.style.color = '#000000';
+
         }
 
         if (!window.isInitialized) {

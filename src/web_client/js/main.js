@@ -31,6 +31,7 @@ var onAllFilesLoaded = function () {
   console.log(window.client_id);
 
   window.target = ''; // Init robot selection to nothing
+  window.connected = false; // Connected to a robot
 
   /* On Jquery load */
   $(function () {
@@ -53,12 +54,19 @@ var onAllFilesLoaded = function () {
         type: 'top',
         size: "50%",
         resizable: true,
+        title: "Minimap",
+        style: "padding:4px 8px;background:white",
+        content: '<canvas></canvas>'
+      },{
+        type: 'main',
+        size: "25%",
+        resizable: true,
         title: "Log",
         style: "padding:4px 8px;background:white",
         content: '<div id="contentAreaLog" class="clusterize-content"></div>'
       }, {
-        type: 'main',
-        size: "50%",
+        type: 'bottom',
+        size: "25%",
         title: "LogErr",
         resizable: true,
         style: "padding:4px 8px;background:white",
@@ -112,11 +120,11 @@ var onAllFilesLoaded = function () {
     loadJS("/js/websockets.js", function () {
 
       /* Add styling for log divs */
-      $("#layout_log_layout_panel_top>div.w2ui-panel-content")
+      $("#layout_log_layout_panel_main>div.w2ui-panel-content")
         .attr("id", "scrollAreaLog")
         .addClass("clusterize-scroll")
 
-      $("#layout_log_layout_panel_main>div.w2ui-panel-content")
+      $("#layout_log_layout_panel_bottom>div.w2ui-panel-content")
         .attr("id", "scrollAreaLogErr")
         .addClass("clusterize-scroll")
 
@@ -340,8 +348,8 @@ var onAllFilesLoaded = function () {
               window.taskCommand = { command: 'task', signal: 'stop' };
 
             } else {
-              e_task.textContent = 'START task';
-              e_task.style.background = '#5fde81';
+            //   e_task.textContent = 'START task';
+            //   e_task.style.background = '#5fde81';
               window.taskFlag = false;
               window.taskCommand = { command: 'task', signal: 'stop' };
             }
