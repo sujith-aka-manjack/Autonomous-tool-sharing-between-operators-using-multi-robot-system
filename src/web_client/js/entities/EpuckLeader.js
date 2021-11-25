@@ -145,6 +145,7 @@ class EpuckLeader {
 
   update(entity) {
     var scale = this.scale
+    this.entity = entity
 
     if (this.mesh) {
       this.mesh.position.x = entity.position.x * scale;

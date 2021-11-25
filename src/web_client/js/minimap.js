@@ -48,7 +48,7 @@ function update_minimap() {
       if(entity.type == 'box') {
 
         if(key in entities) {
-          // console.log("already here");
+          // TODO: Update location
         } else {
 
           var box = new fabric.Rect({
@@ -66,9 +66,45 @@ function update_minimap() {
           entities[key] = box;
           canvas.add(box);
         }
+      } else if(entity.type == 'e-puck_leader') {
+        // TODO:
+        // - Number of followers
+
+        if(key in entities) {
+
+          entities[key].left = OFFSET + SCALE * entity.position.x;
+          entities[key].top = OFFSET - SCALE * entity.position.y;
+
+        } else {
+          var robot = new fabric.Circle({
+            radius: SCALE * 0.035,
+            fill: 'red',
+            left: OFFSET + SCALE * entity.position.x,
+            top: OFFSET - SCALE * entity.position.y,
+            originX: "center",
+            originY: "center",
+            // strokeWidth: 15,
+            // stroke: 'rgba(100,200,200,0.5)'
+          });
+
+          entities[key] = robot;
+          canvas.add(robot);
+
+          // console.log(entity);
+        }
+
+      } else if(entity.type == 'e-puck') {
+        // TODO: How to determine if e-puck is a connector? -> Add to sendRobotData
+      } else if(entity.type == 'rectangle_Task') {
+        // TODO: 
+        // - Remaining demand
+        // - Total demand
+        // - Number of robots needed
       }
     }
   }
+
+  // console.log(sceneEntities);
 
   canvas.renderAll()
 }
