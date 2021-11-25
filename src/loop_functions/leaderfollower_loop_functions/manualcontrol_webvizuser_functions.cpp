@@ -13,7 +13,10 @@ CManualControlWebvizUserFunctions::CManualControlWebvizUserFunctions() {
         &CSimulator::GetInstance().GetLoopFunctions());
 
     RegisterWebvizUserFunction<CManualControlWebvizUserFunctions, CEPuckLeaderEntity>(
-        &CManualControlWebvizUserFunctions::sendRobotData);
+        &CManualControlWebvizUserFunctions::sendLeaderData);
+
+    RegisterWebvizUserFunction<CManualControlWebvizUserFunctions, CEPuckEntity>(
+        &CManualControlWebvizUserFunctions::sendFollowerData);
 }
 
 /****************************************/
@@ -271,11 +274,40 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
 /****************************************/
 /****************************************/
 
-const nlohmann::json CManualControlWebvizUserFunctions::sendRobotData(CEPuckLeaderEntity& robot) {
+const nlohmann::json CManualControlWebvizUserFunctions::sendLeaderData(CEPuckLeaderEntity& robot) {
     nlohmann::json outJson;
 
     CLeader& cController = dynamic_cast<CLeader&>(robot.GetControllableEntity().GetController());
+    
+    /* Username of operator controlling the leader */
     outJson["username"] = cController.GetUsername();
+
+    return outJson;
+}
+
+/****************************************/
+/****************************************/
+
+const nlohmann::json CManualControlWebvizUserFunctions::sendFollowerData(CEPuckEntity& robot) {
+    nlohmann::json outJson;
+
+    CFollower& cController = dynamic_cast<CFollower&>(robot.GetControllableEntity().GetController());
+    
+    /* Robot's current state */
+    switch(cController.currentState) {
+        case CFollower::RobotState::FOLLOWER: 
+            outJson["state"] = "F";
+            break;
+        case CFollower::RobotState::CONNECTOR: 
+            outJson["state"] = "C";
+            break;
+        case CFollower::RobotState::TRAVELER:
+            outJson["state"] = "T";
+            break;
+        default:
+            std::cerr << "[ERROR] Follower robot should not be a leader!" << std::endl;
+            break;
+    }
 
     return outJson;
 }

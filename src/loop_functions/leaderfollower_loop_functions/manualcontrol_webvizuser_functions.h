@@ -3,10 +3,12 @@
 
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/simulator/simulator.h>
+#include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <argos3/plugins/simulator/visualizations/webviz/webviz_user_functions.h>
 #include <loop_functions/leaderfollower_loop_functions/experiment_loop_functions.h>
 #include <controllers/leader/leader.h>
+#include <controllers/follower/follower.h>
 
 #include <iostream>
 
@@ -22,7 +24,9 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
 
         virtual const nlohmann::json sendUserData();
 
-        virtual const nlohmann::json sendRobotData(CEPuckLeaderEntity& robot);
+        virtual const nlohmann::json sendLeaderData(CEPuckLeaderEntity& robot);
+        
+        virtual const nlohmann::json sendFollowerData(CEPuckEntity& robot);
 
         virtual void ClientConnected(std::string str_id);
 

@@ -37,11 +37,7 @@ var InitializeMinimap = function (minimap_panel) {
 
 function update_minimap() {
 
-  // Loop all entities
-    // If entity is box, get id
-      // if id not in map, create new object
-      // else, update object
-
+  /* Update entities in the minimap */
   for (const key in sceneEntities) {
     if (sceneEntities.hasOwnProperty(key)) {
       const entity = sceneEntities[key].entity;
@@ -50,11 +46,13 @@ function update_minimap() {
 
         if(key in entities) {
 
+          /* Update position */
           entities[key].left = OFFSET + SCALE * entity.position.x;
           entities[key].top = OFFSET - SCALE * entity.position.y;
 
         } else {
 
+          /* Add box to map */
           var box = new fabric.Rect({
             left: OFFSET + SCALE * entity.position.x,
             top: OFFSET - SCALE * entity.position.y,
@@ -72,15 +70,17 @@ function update_minimap() {
         }
 
       } else if(entity.type == 'e-puck_leader') {
-        // TODO:
-        // - Number of followers
+        // TODO: Number of followers
 
         if(key in entities) {
 
+          /* Update position */
           entities[key].left = OFFSET + SCALE * entity.position.x;
           entities[key].top = OFFSET - SCALE * entity.position.y;
 
         } else {
+
+          /* Add leader to map */
           var robot = new fabric.Circle({
             radius: SCALE * 0.035,
             fill: 'red',
@@ -94,12 +94,43 @@ function update_minimap() {
 
           entities[key] = robot;
           canvas.add(robot);
-
-          // console.log(entity);
         }
 
       } else if(entity.type == 'e-puck') {
-        // TODO: How to determine if e-puck is a connector? -> Add to sendRobotData
+
+        // console.log(entity);
+
+        /* Display information about workers that are connectors */
+        if(entity.user_data.state == "C") {
+
+          if(key in entities) {
+
+            /* Update position */
+            entities[key].left = OFFSET + SCALE * entity.position.x;
+            entities[key].top = OFFSET - SCALE * entity.position.y;
+  
+          } else {
+  
+            /* Add connector to map */
+            var robot = new fabric.Circle({
+              radius: SCALE * 0.035,
+              fill: 'blue',
+              left: OFFSET + SCALE * entity.position.x,
+              top: OFFSET - SCALE * entity.position.y,
+              originX: "center",
+              originY: "center",
+              // strokeWidth: 15,
+              // stroke: 'rgba(100,200,200,0.5)'
+            });
+  
+            robot.rotate(2 * Math.acos(entity.orientation.w) * 180 / Math.PI)
+            
+            entities[key] = robot;
+            canvas.add(robot);
+          }
+        }
+
+        // TODO: Delete connector from minimap when they become a follower again
 
       } else if(entity.type == 'rectangle_task') {
         // TODO: 
@@ -109,11 +140,13 @@ function update_minimap() {
 
         if(key in entities) {
 
+          /* Update position */
           entities[key].left = OFFSET + SCALE * entity.position.x;
           entities[key].top = OFFSET - SCALE * entity.position.y;
 
         } else {
 
+          /* Add task to map */
           var task = new fabric.Rect({
             left: OFFSET + SCALE * entity.position.x,
             top: OFFSET - SCALE * entity.position.y,
