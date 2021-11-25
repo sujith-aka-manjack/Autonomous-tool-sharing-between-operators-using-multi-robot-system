@@ -30,7 +30,7 @@ scene.background = new THREE.Color(0x007f7f);
 /* ----------------------- */
 var sceneEntities = [];
 
-var IntializeThreejs = function (threejs_panel) {
+var InitializeThreejs = function (threejs_panel) {
   var _width = threejs_panel.width();
   var _height = threejs_panel.height();
 
@@ -525,6 +525,7 @@ function animate() {
   controls.update();
   cameraUpdate();
   render();
+  update_minimap();
 }
 
 

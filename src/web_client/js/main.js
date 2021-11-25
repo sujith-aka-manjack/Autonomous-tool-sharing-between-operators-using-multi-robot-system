@@ -54,9 +54,9 @@ var onAllFilesLoaded = function () {
         type: 'top',
         size: "50%",
         resizable: true,
-        title: "Minimap",
-        style: "padding:4px 8px;background:white",
-        content: '<canvas></canvas>'
+        // title: "Map",
+        // style: "padding:4px 8px;background:white",
+        content: '<canvas id="mini-map"></canvas>'
       },{
         type: 'main',
         size: "25%",
@@ -113,7 +113,18 @@ var onAllFilesLoaded = function () {
       window.threejs_panel = $("#layout_app_layout_panel_main .w2ui-panel-content")
 
       /* Setup scene */
-      IntializeThreejs(threejs_panel)
+      InitializeThreejs(threejs_panel)
+    }, true);
+
+    loadJS("/js/minimap.js", function () {
+      /* Get the panel from layout */
+      window.minimap_panel = $("#layout_log_layout_panel_top")
+
+      /* Setup mini-map */
+      InitializeMinimap(minimap_panel)
+      console.log(window.minimap_panel.width())
+      console.log(document.getElementById('mini-map'));
+
     }, true);
 
     /* Load websockets and connect to server */
@@ -474,6 +485,9 @@ loadJS("/js/libs/GLTFLoader.js", true);
 // From https://www.npmjs.com/package/@seregpie/three.text-sprite
 loadJS("/js/libs/three.text-texture.js", true);
 loadJS("/js/libs/three.text-sprite.js", true);
+
+/* Load fabric code */
+loadJS("/js/libs/fabric.min.js", true);
 
 /* Load keyboard inputs code */
 loadJS("/js/libs/KeyboardState.js", true);
