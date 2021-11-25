@@ -138,15 +138,29 @@
           // Change color and text of status
           e_status.textContent = 'Connected to '.concat(robot_id);
           e_status.style.color = '#4CAF50';
-          e_task.textContent = 'START task';
-          e_task.style.background = '#5fde81';
 
+          /* Change appearance depending on last signal sent */
+          if(window.taskCommand['signal'] == 'stop') {
+            
+            if(window.target != '') {
+              e_task.textContent = 'START task';
+              e_task.style.background = '#5fde81';
+            }
+
+          } else if(window.taskCommand['signal'] == 'start') {
+
+            e_task.textContent = 'STOP task';
+            e_task.style.background = '#de5f5f';
+
+          }
         } else {
 
           window.connected = false;
           // Change color and text of status
           e_status.textContent = 'Disconnected';
           e_status.style.color = '#000000';
+          e_task.textContent = 'START task';
+          e_task.style.background = '#b9b9b9';
 
         }
 

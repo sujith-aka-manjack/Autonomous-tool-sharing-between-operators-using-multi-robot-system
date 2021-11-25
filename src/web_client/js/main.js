@@ -337,23 +337,12 @@ var onAllFilesLoaded = function () {
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
 
-            var e_task = document.getElementById("button_task");
-
             if(window.target == 'Select leader') {
               window.target = '';
-
-              e_task.textContent = 'START task';
-              e_task.style.background = '#b9b9b9';
-              window.taskFlag = false;
-              window.taskCommand = { command: 'task', signal: 'stop' };
-
-            } else {
-            //   e_task.textContent = 'START task';
-            //   e_task.style.background = '#5fde81';
-              window.taskFlag = false;
-              window.taskCommand = { command: 'task', signal: 'stop' };
             }
 
+            window.taskFlag = false;
+            window.taskCommand = { command: 'task', signal: 'stop' };
             window.connectFlag = true;
             window.connectCommand = { command: 'select_leader' };
           })
@@ -375,20 +364,11 @@ var onAllFilesLoaded = function () {
           .click(function () {
             
             if(window.target != '') {
-              var e = document.getElementById("button_task");
             
               if(window.taskCommand['signal'] == 'stop') {
-
                 window.taskCommand['signal'] = 'start';
-                e.textContent = 'STOP task';
-                e.style.background = '#de5f5f';
-
               } else if(window.taskCommand['signal'] == 'start') {
-
                 window.taskCommand['signal'] = 'stop';  
-                e.textContent = 'START task';
-                e.style.background = '#5fde81';
-
               }
 
               window.taskFlag = true;
