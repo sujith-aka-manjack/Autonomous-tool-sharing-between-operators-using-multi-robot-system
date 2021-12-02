@@ -10,14 +10,18 @@
  */
 
 
-var camera, controls, renderer, stats, menuRenderer;
+var camera, cameraOrtho, cameraRobot, controls, renderer, stats, menuRenderer;
 var scale;
 var uuid2idMap = {};
 var selectedEntities = {}
 
 var mouseDownEvent = null
 
+/* Main 3D scene */
 var scene = new THREE.Scene();
+
+/* Second scene to display HUD sprites */
+var sceneOrtho = new THREE.Scene();
 
 window.isInitialized = false;
 window.isLoadingModels = false;
@@ -44,6 +48,8 @@ var InitializeThreejs = function (threejs_panel) {
   /* Add canvas to page */
   renderer.setSize(_width, _height);
   threejs_panel.append(renderer.domElement);
+
+  renderer.autoClear = false; // To allow render overlay
 
   /* Right click menu renderer */
   menuRenderer = new THREE.CSS2DRenderer();
@@ -95,13 +101,20 @@ function initSceneWithScale(_scale) {
   camera.layers.enable(0); // enabled by default
   camera.layers.enable(1); // All selectable objects
 
+  /* Orthogonal camera */
+  cameraOrtho = new THREE.OrthographicCamera( - window.threejs_panel.width() / 2, window.threejs_panel.width() / 2, window.threejs_panel.height() / 2, - window.threejs_panel.height() / 2, 1, 100 );
+  cameraOrtho.position.z = 10;
+  
+  cameraOrtho.layers.enable(0); // enabled by default
+  cameraOrtho.layers.enable(1); // All selectable objects
+
   /* Robot perspective camera */
-  robot_camera = new THREE.PerspectiveCamera(60, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
+  cameraRobot = new THREE.PerspectiveCamera(60, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
 
-  robot_camera.position.set(-scale * 3, 0, scale * 5);
+  cameraRobot.position.set(-scale * 3, 0, scale * 5);
 
-  robot_camera.layers.enable(0); // enabled by default
-  robot_camera.layers.enable(1); // All selectable objects
+  cameraRobot.layers.enable(0); // enabled by default
+  cameraRobot.layers.enable(1); // All selectable objects
 
   // Controls
   // Possible types: OrbitControls, MapControls
@@ -149,6 +162,73 @@ function initSceneWithScale(_scale) {
       scene.add(plane)
     });
   }
+
+  /***************************/
+  /* Placeholder info labels */
+
+  let infoLabel = new THREE.TextSprite({
+    alignment: 'right',
+    color: '#000000',
+    fontFamily: '"Times New Roman", Times, serif',
+    fontSize: 24,
+    fontWeight: 'bold',
+    text: [
+      'INFO            ',
+      'My Team:',
+      '',
+      'Other Team:',
+    ].join('\n'),
+  });
+  infoLabel.center.set( 0.0, 1.0 );
+  infoLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
+  infoLabel.position.set( -window.threejs_panel.width() / 2, window.threejs_panel.height() / 2, 1 ); // top left
+
+  // console.log(window.threejs_panel.width());
+  // console.log(window.threejs_panel.height());
+
+  sceneOrtho.add(infoLabel);
+
+  let robotNumLabel = new THREE.TextSprite({
+    alignment: 'right',
+    color: '#000000',
+    fontFamily: '"Times New Roman", Times, serif',
+    fontSize: 24,
+    fontWeight: 'bold',
+    text: [
+      '',
+      '10',
+      '',
+      '8',
+    ].join('\n'),
+  });
+  robotNumLabel.center.set( 0.0, 1.0 );
+  robotNumLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
+  robotNumLabel.position.set( -window.threejs_panel.width() / 2 + 150, window.threejs_panel.height() / 2, 1 ); // top left
+
+  sceneOrtho.add(robotNumLabel);
+
+  let taskLabel = new THREE.TextSprite({
+    alignment: 'left',
+    color: '#000000',
+    fontFamily: '"Times New Roman", Times, serif',
+    fontSize: 24,
+    // fontWeight: 'bold',
+    text: [
+      '',
+      'Task: 5/10 (-5)',
+      'Progress: 0 %',
+      'Task: 12/10 (+2)',
+      'Progress: 100 %'
+    ].join('\n'),
+  });
+  taskLabel.center.set( 0.0, 1.0 );
+  taskLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
+  taskLabel.position.set( -window.threejs_panel.width() / 2 + 200, window.threejs_panel.height() / 2, 1 ); // top left
+
+  sceneOrtho.add(taskLabel);
+
+  /***************************/
+
 }
 
 function cleanUpdateScene() {
@@ -634,14 +714,14 @@ function cameraUpdate() {
       const object = scene.getObjectByProperty('uuid', sceneEntities[window.target].uuid);
       const cameraOffset = relativeCameraOffset.applyMatrix4( object.matrixWorld );
   
-      robot_camera.position.x = cameraOffset.x;
-      robot_camera.position.y = cameraOffset.y;
-      robot_camera.position.z = cameraOffset.z;
+      cameraRobot.position.x = cameraOffset.x;
+      cameraRobot.position.y = cameraOffset.y;
+      cameraRobot.position.z = cameraOffset.z;
   
       const relativeFocusOffset = new THREE.Vector3(20,0,0);
       const focusOffset = relativeFocusOffset.applyMatrix4( object.matrixWorld );
 
-      robot_camera.lookAt( focusOffset );
+      cameraRobot.lookAt( focusOffset );
     }
   } else {
 
@@ -676,11 +756,14 @@ function render() {
   }
 
   if(window.connected) {
-    renderer.render(scene, robot_camera);
-    menuRenderer.render(scene, robot_camera);
+    renderer.render(scene, cameraRobot);
+    menuRenderer.render(scene, cameraRobot);
   } else {
     renderer.render(scene, camera);
     menuRenderer.render(scene, camera);
   }
+
+  renderer.clearDepth();
+  renderer.render( sceneOrtho, cameraOrtho );
 
 }
