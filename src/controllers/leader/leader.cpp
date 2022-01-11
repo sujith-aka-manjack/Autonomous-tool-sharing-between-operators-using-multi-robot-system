@@ -145,10 +145,13 @@ void CLeader::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "team_distance"), "separation_threshold", separationThres);
         /* Minimum duration the accept message will be sent for */
         GetNodeAttribute(GetNode(t_node, "timeout"), "send_message", sendDuration);
+        /* SCT Model */
+        GetNodeAttribute(GetNode(t_node, "SCT"), "path", m_strSCTPath);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
+    std::cout << m_strSCTPath << std::endl;
 
     /* Get team ID from leader ID */
     teamID = stoi(GetId().substr(1));
@@ -172,46 +175,48 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /*
     * Init SCT Controller
     */
-    // sct = new leader::SCTPub();
-    sct = new leader_exchange::SCTPub();
+    sct = new SCT(m_strSCTPath);
 
-    if( !exchangeUsed ) {
+    if( m_strSCTPath == "src/SCT_models/leader.yaml" ) {
 
         /* Without exchange */
 
         /* Register controllable events */
-        sct->add_callback(this, leader::SCT::EV_start,    &CLeader::Callback_Start,    NULL, NULL);
-        sct->add_callback(this, leader::SCT::EV_stop,     &CLeader::Callback_Stop,     NULL, NULL);
-        sct->add_callback(this, leader::SCT::EV_message,  &CLeader::Callback_Message,  NULL, NULL);
-        sct->add_callback(this, leader::SCT::EV_respond,  &CLeader::Callback_Respond,  NULL, NULL);
+        sct->add_callback(this, sct->events["EV_start"],    &CLeader::Callback_Start,    NULL, NULL);
+        sct->add_callback(this, sct->events["EV_stop"],     &CLeader::Callback_Stop,     NULL, NULL);
+        // sct->add_callback(this, sct->events["EV_message"],  &CLeader::Callback_Message,  NULL, NULL);
+        sct->add_callback(this, sct->events["EV_respond"],  &CLeader::Callback_Respond,  NULL, NULL);
 
         /* Register uncontrollable events */
-        sct->add_callback(this, leader::SCT::EV__message,      NULL, &CLeader::Check__Message,      NULL);
-        sct->add_callback(this, leader::SCT::EV__relay,        NULL, &CLeader::Check__Relay,        NULL);
-        sct->add_callback(this, leader::SCT::EV__requestL,     NULL, &CLeader::Check__RequestL,     NULL);
-        sct->add_callback(this, leader::SCT::EV_inputStart,    NULL, &CLeader::Check_InputStart,    NULL);
-        sct->add_callback(this, leader::SCT::EV_inputStop,     NULL, &CLeader::Check_InputStop,     NULL);
-        sct->add_callback(this, leader::SCT::EV_inputMessage,  NULL, &CLeader::Check_InputMessage,  NULL);
+        // sct->add_callback(this, sct->events["EV__message"],      NULL, &CLeader::Check__Message,      NULL);
+        // sct->add_callback(this, sct->events["EV__relay"],        NULL, &CLeader::Check__Relay,        NULL);
+        sct->add_callback(this, sct->events["EV__requestL"],     NULL, &CLeader::Check__RequestL,     NULL);
+        sct->add_callback(this, sct->events["EV_pressStart"],    NULL, &CLeader::Check_PressStart,    NULL);
+        sct->add_callback(this, sct->events["EV_pressStop"],     NULL, &CLeader::Check_PressStop,     NULL);
+        // sct->add_callback(this, sct->events["EV_inputMessage"],  NULL, &CLeader::Check_InputMessage,  NULL);
 
-    } else {
+    } else if( m_strSCTPath == "src/SCT_models/leader_exchange.yaml" ) {
 
         /* With exchange */
 
         /* Register controllable events */
-        sct->add_callback(this, leader_exchange::SCT::EV_start,    &CLeader::Callback_Start,    NULL, NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_stop,     &CLeader::Callback_Stop,     NULL, NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_message,  &CLeader::Callback_Message,  NULL, NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_respond,  &CLeader::Callback_Respond,  NULL, NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_exchange, &CLeader::Callback_Exchange, NULL, NULL);
+        sct->add_callback(this, sct->events["EV_start"],    &CLeader::Callback_Start,    NULL, NULL);
+        sct->add_callback(this, sct->events["EV_stop"],     &CLeader::Callback_Stop,     NULL, NULL);
+        sct->add_callback(this, sct->events["EV_message"],  &CLeader::Callback_Message,  NULL, NULL);
+        sct->add_callback(this, sct->events["EV_respond"],  &CLeader::Callback_Respond,  NULL, NULL);
+        sct->add_callback(this, sct->events["EV_exchange"], &CLeader::Callback_Exchange, NULL, NULL);
 
         /* Register uncontrollable events */
-        sct->add_callback(this, leader_exchange::SCT::EV__message,      NULL, &CLeader::Check__Message,      NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV__relay,        NULL, &CLeader::Check__Relay,        NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV__requestL,     NULL, &CLeader::Check__RequestL,     NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_inputStart,    NULL, &CLeader::Check_InputStart,    NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_inputStop,     NULL, &CLeader::Check_InputStop,     NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_inputMessage,  NULL, &CLeader::Check_InputMessage,  NULL);
-        sct->add_callback(this, leader_exchange::SCT::EV_inputExchange, NULL, &CLeader::Check_InputExchange, NULL);
+        // sct->add_callback(this, sct->events["EV__message"],      NULL, &CLeader::Check__Message,      NULL);
+        // sct->add_callback(this, sct->events["EV__relay"],        NULL, &CLeader::Check__Relay,        NULL);
+        sct->add_callback(this, sct->events["EV__requestL"],     NULL, &CLeader::Check__RequestL,     NULL);
+        sct->add_callback(this, sct->events["EV_pressStart"],    NULL, &CLeader::Check_PressStart,    NULL);
+        sct->add_callback(this, sct->events["EV_pressStop"],     NULL, &CLeader::Check_PressStop,     NULL);
+        sct->add_callback(this, sct->events["EV_inputMessage"],  NULL, &CLeader::Check_InputMessage,  NULL);
+        sct->add_callback(this, sct->events["EV_inputExchange"], NULL, &CLeader::Check_InputExchange, NULL);
+    
+    } else {
+        std::cout << "Unknown SCT file path: " << m_strSCTPath << std::endl;
     }
 
     /* Set LED color */
@@ -1297,18 +1302,18 @@ void CLeader::Callback_Message(void* data) {
     beat.time = initStepTimer;
 
     /* For every 10 timesteps, check if the demand is not decreasing to request robots from the other team */
-    if(exchangeUsed) {
-        if(initStepTimer > 0 /* && initStepTimer % 10 == 0 */) {
-            if(m_bSignal) { // Sending start signal to robots
-                if(robotsNeeded - currentFollowerCount > 0) {
-                    beat.type = 'R';
-                    // beat.robot_num = 100; // TEMP: Large number to send all robots
-                    beat.robot_num = robotsNeeded - currentFollowerCount + 1;
-                    std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
-                }
-            }
-        }
-    }
+    // if(exchangeUsed) {
+    //     if(initStepTimer > 0 /* && initStepTimer % 10 == 0 */) {
+    //         if(m_bSignal) { // Sending start signal to robots
+    //             if(robotsNeeded - currentFollowerCount > 0) {
+    //                 beat.type = 'R';
+    //                 // beat.robot_num = 100; // TEMP: Large number to send all robots
+    //                 beat.robot_num = robotsNeeded - currentFollowerCount + 1;
+    //                 std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+    //             }
+    //         }
+    //     }
+    // }
 
     rmsgToResend.push_back({sendDuration,beat});
     lastSent = initStepTimer;
@@ -1389,13 +1394,13 @@ unsigned char CLeader::Check__RequestL(void* data) {
     return receivedRequest;
 }
 
-unsigned char CLeader::Check_InputStart(void* data) {
-    // std::cout << "Event: " << inputStart << " - inputStart" << std::endl;
+unsigned char CLeader::Check_PressStart(void* data) {
+    // std::cout << "Event: " << pressStart << " - pressStart" << std::endl;
     return inputStart;
 }
 
-unsigned char CLeader::Check_InputStop(void* data) {
-    // std::cout << "Event: " << inputStop << " - inputStop" << std::endl;
+unsigned char CLeader::Check_PressStop(void* data) {
+    // std::cout << "Event: " << pressStop << " - inputStop" << std::endl;
     return inputStop;
 }
 

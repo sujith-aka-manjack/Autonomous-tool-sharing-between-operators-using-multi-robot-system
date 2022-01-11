@@ -46,6 +46,7 @@
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
         <timeout send_message="4" />
+        <SCT path="src/SCT_models/leader_exchange.yaml" />
       </params>
     </leader_controller>
 
@@ -77,6 +78,7 @@
                           obstacle="15" />
         <timeout send_message="4" 
                  wait_request="6" />
+        <SCT path="src/SCT_models/follower_exchange.yaml" />
       </params>
     </follower_controller>
 
@@ -256,6 +258,31 @@
       <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions" 
                       label="manualcontrol_webvizuser_functions" />
     </webviz>
+
+    <!-- <qt-opengl autoplay="false">
+
+      <frame_grabbing directory="frames"
+                      base_name="frame_"
+                      format="png"
+                      quality="100"
+                      headless_grabbing="false"
+                      headless_frame_size="1600x1200"
+                      headless_frame_rate="1"/>
+
+      <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions"
+                      label="manualcontrol_qtuser_functions" />
+
+      <camera>
+        <placements>
+          <placement index="2" position="-1.13679,0.00582551,2.45548" look_at="-0.704207,0.00502653,1.55389" up="0.901591,-0.00166523,0.432586" lens_focal_length="50" />
+          <placement index="1" position="-1.67387,-0.0881827,2.71917" look_at="-1.24128,-0.0889817,1.81758" up="0.901591,-0.00166523,0.432586" lens_focal_length="20" />
+          <placement index="3" position="0,0,13" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+          <placement index="4" position="0,-0.146444,10.092" look_at="0,-0.146444,9.09204" up="1,0,0" lens_focal_length="65" />
+          <placement index="0" position="0,0,10.5" look_at="0,0,0" up="0,1,0" lens_focal_length="65" />
+        </placements>
+      </camera>
+
+    </qt-opengl> -->
   </visualization>
 
 </argos-configuration>

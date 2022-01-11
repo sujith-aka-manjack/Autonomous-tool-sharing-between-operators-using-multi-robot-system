@@ -175,33 +175,33 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck
     */
-   // try {
-   //    CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
+   try {
+      CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
 
-   //    std::string text = c_entity.GetId().c_str();
+      std::string text = c_entity.GetId().c_str();
 
-   //    /* For connector, draw the hop count to each team */
-   //    if(cController.currentState == CFollower::RobotState::CONNECTOR) {
-   //       std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
+      /* For connector, draw the hop count to each team */
+      if(cController.currentState == CFollower::RobotState::CONNECTOR) {
+         std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
 
-   //       for(const auto& it : hops) {
-   //          text += "(T" + std::to_string(it.first);
-   //          if( !it.second.ID.empty() ) {
-   //             text += "-" + it.second.ID;
-   //          } else {
-   //             text += "-__";
-   //          }
-   //          text += "-" + std::to_string(it.second.count) + ")";
-   //       }
-   //    }
+         for(const auto& it : hops) {
+            text += "(T" + std::to_string(it.first);
+            if( !it.second.ID.empty() ) {
+               text += "-" + it.second.ID;
+            } else {
+               text += "-__";
+            }
+            text += "-" + std::to_string(it.second.count) + ")";
+         }
+      }
 
-   //    DrawText(CVector3(0.0, 0.0, 0.2),   // position
-   //             text); // text
-   // } catch(CARGoSException& ex) {
-   //    THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
-   // } catch(const std::bad_cast& e) {
-   //    std::cout << e.what() << " in Draw" << '\n';
-   // }
+      DrawText(CVector3(0.0, 0.0, 0.2),   // position
+               text); // text
+   } catch(CARGoSException& ex) {
+      THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
+   } catch(const std::bad_cast& e) {
+      std::cout << e.what() << " in Draw" << '\n';
+   }
 }
 
 /****************************************/
@@ -212,11 +212,11 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck_leader
     */
-   // QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
-   // DrawText(CVector3(0.0, 0.0, 0.2),   // position
-   //          c_entity.GetId().c_str(),
-   //          CColor::BLACK,
-   //          leaderFont); // text
+   QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
+   DrawText(CVector3(0.0, 0.0, 0.2),   // position
+            c_entity.GetId().c_str(),
+            CColor::BLACK,
+            leaderFont); // text
 }
 
 /****************************************/

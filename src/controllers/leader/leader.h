@@ -35,10 +35,10 @@
 /* Definition of the positioning sensor */
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
-#include "SCT_leader.h"
-#include "SCT_leader_exchange.h"
-
+/* PID controller */
 #include <utility/pid.h>
+/* SCT generator player */
+#include <utility/sct.h>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -455,8 +455,8 @@ protected:
     virtual unsigned char Check__Message(void* data);
     virtual unsigned char Check__Relay(void* data);
     virtual unsigned char Check__RequestL(void* data);
-    virtual unsigned char Check_InputStart(void* data);
-    virtual unsigned char Check_InputStop(void* data);
+    virtual unsigned char Check_PressStart(void* data);
+    virtual unsigned char Check_PressStop(void* data);
     virtual unsigned char Check_InputMessage(void* data);
     virtual unsigned char Check_InputExchange(void* data);
 
@@ -482,13 +482,8 @@ private:
     /* The flocking interaction parameters between teammates. */
     SFlockingInteractionParams m_sTeamFlockingParams;
 
-    /* Controller */
-    // leader::SCTPub* sct;
-    // bool exchangeUsed = false;
-    leader_exchange::SCTPub* sct;
-    bool exchangeUsed = true;
-
-    /* Type of SCT being used */
+    /* SCT Controller */
+    SCT* sct;
 
     /* Flag to know whether this robot is selected */
     bool m_bSelected;
@@ -590,6 +585,9 @@ private:
     Real separationThres;
 
     size_t sendDuration;
+
+    /* SCT yaml path */
+    std::string m_strSCTPath;
 };
 
 #endif

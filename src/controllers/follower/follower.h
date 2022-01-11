@@ -33,8 +33,9 @@
 /* Definition of the LEDs actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
-#include "SCT_follower.h"
-#include "SCT_follower_exchange.h"
+/* SCT generator player */
+#include <utility/sct.h>
+
 #include <set>
 
 /*
@@ -471,10 +472,7 @@ private:
     Real obstacleWeight;
 
     /* Controller */
-    // follower::SCTPub* sct;
-    // bool exchangeUsed = false;
-    follower_exchange::SCTPub* sct;
-    bool exchangeUsed = true;
+    SCT * sct;
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
@@ -549,6 +547,9 @@ private:
 
     size_t sendDuration;
     size_t waitRequestDuration;
+
+    /* SCT yaml path */
+    std::string m_strSCTPath;
 };
 
 #endif
