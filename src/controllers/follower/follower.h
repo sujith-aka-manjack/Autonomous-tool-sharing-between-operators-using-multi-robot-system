@@ -408,7 +408,7 @@ protected:
 
     /* Callback functions */
     virtual void Callback_MoveFlock(void* data);
-    virtual void Callback_MoveTeam(void* data);
+    virtual void Callback_MoveChain(void* data);
     virtual void Callback_MoveStop(void* data);
     virtual void Callback_TaskStart(void* data);
     virtual void Callback_TaskStop(void* data);

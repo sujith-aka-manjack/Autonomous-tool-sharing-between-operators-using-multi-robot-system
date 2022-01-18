@@ -268,7 +268,7 @@ void CFollower::Init(TConfigurationNode& t_node) {
 
         /* Register controllable events */
         sct->add_callback(this, sct->events["EV_moveFlock"], &CFollower::Callback_MoveFlock, NULL, NULL);
-        sct->add_callback(this, sct->events["EV_moveTeam"],  &CFollower::Callback_MoveTeam,  NULL, NULL);
+        sct->add_callback(this, sct->events["EV_moveChain"], &CFollower::Callback_MoveChain, NULL, NULL);
         sct->add_callback(this, sct->events["EV_moveStop"],  &CFollower::Callback_MoveStop,  NULL, NULL);
         sct->add_callback(this, sct->events["EV_taskStart"], &CFollower::Callback_TaskStart, NULL, NULL);
         sct->add_callback(this, sct->events["EV_taskStop"],  &CFollower::Callback_TaskStop,  NULL, NULL);
@@ -2018,8 +2018,8 @@ void CFollower::Callback_MoveFlock(void* data) {
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
-void CFollower::Callback_MoveTeam(void* data) {
-    //std::cout << "Action: moveTeam" << std::endl;
+void CFollower::Callback_MoveChain(void* data) {
+    //std::cout << "Action: moveChain" << std::endl;
     currentMoveType = MoveType::TRAVEL;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
