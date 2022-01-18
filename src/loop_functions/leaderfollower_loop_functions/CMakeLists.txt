@@ -9,6 +9,7 @@ add_library(leaderfollower_loop_functions MODULE
   experiment_loop_functions.cpp)
 
 target_link_libraries(leaderfollower_loop_functions
+  utility
   leader
   follower
   protos

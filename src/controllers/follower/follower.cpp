@@ -141,16 +141,6 @@ Real CFollower::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Rea
 /****************************************/
 /****************************************/
 
-/* 
-* Checks whethe the Message is empty or not by checking the direction it was received from
-*/
-bool CFollower::Message::Empty() {
-    return direction.Length() == 0.0f;
-}
-
-/****************************************/
-/****************************************/
-
 CFollower::CFollower() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
@@ -319,7 +309,7 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(115, 255);
+    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -350,7 +340,14 @@ void CFollower::SetTeamID(const UInt8 id) {
 /****************************************/
 /****************************************/
 
-const std::map<UInt8, CFollower::HopMsg>& CFollower::GetHops() const {
+RobotState CFollower::GetRobotState() {
+    return currentState;
+}
+
+/****************************************/
+/****************************************/
+
+const std::map<UInt8, HopMsg>& CFollower::GetHops() const {
     return hopsDict;
 }
 
@@ -376,7 +373,7 @@ void CFollower::ControlStep() {
     /*-----------------*/
 
     /* Create new msg */
-    msg = CByteArray(115, 255);
+    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
     msg_index = 0;
 
     /* Clear messages received */
@@ -1112,7 +1109,7 @@ void CFollower::GetLeaderInfo() {
 /****************************************/
 /****************************************/
 
-CFollower::Message CFollower::GetClosestNonTeam() {
+Message CFollower::GetClosestNonTeam() {
     
     /* Check for the robot that this robot can connect */
     Real minDist = 10000;

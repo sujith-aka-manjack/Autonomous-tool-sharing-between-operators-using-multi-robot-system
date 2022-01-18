@@ -181,8 +181,8 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
       std::string text = c_entity.GetId().c_str();
 
       /* For connector, draw the hop count to each team */
-      if(cController.currentState == CFollower::RobotState::CONNECTOR) {
-         std::map<UInt8,CFollower::HopMsg> hops = cController.GetHops();
+      if(cController.GetRobotState() == RobotState::CONNECTOR) {
+         std::map<UInt8,HopMsg> hops = cController.GetHops();
 
          for(const auto& it : hops) {
             text += "(T" + std::to_string(it.first);

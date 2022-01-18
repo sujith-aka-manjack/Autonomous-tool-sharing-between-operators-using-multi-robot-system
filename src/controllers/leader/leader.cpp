@@ -93,16 +93,6 @@ Real CLeader::SFlockingInteractionParams::GeneralizedLennardJonesRepulsion(Real 
 /****************************************/
 /****************************************/
 
-/* 
-* Checks whethe the Message is empty or not by checking the direction it was received from
-*/
-bool CLeader::Message::Empty() {
-    return direction.Length() == 0.0f;
-}
-
-/****************************************/
-/****************************************/
-
 CLeader::CLeader() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
@@ -249,7 +239,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(115, 255);
+    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
     m_pcRABAct->SetData(msg);
     msg_index = 0;
 
@@ -273,7 +263,7 @@ void CLeader::ControlStep() {
     /*-----------------*/
 
     /* Create new message */
-    msg = CByteArray(115, 255);
+    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
     msg_index = 0;
 
     /* Clear messages received */

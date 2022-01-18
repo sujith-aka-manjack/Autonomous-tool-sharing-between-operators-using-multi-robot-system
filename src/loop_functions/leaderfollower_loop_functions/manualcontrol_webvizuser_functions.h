@@ -6,7 +6,11 @@
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <argos3/plugins/robots/e-puck_leader/simulator/epuckleader_entity.h>
 #include <argos3/plugins/simulator/visualizations/webviz/webviz_user_functions.h>
+
+#include <utility/robot_message.h>
+
 #include <loop_functions/leaderfollower_loop_functions/experiment_loop_functions.h>
+
 #include <controllers/leader/leader.h>
 #include <controllers/follower/follower.h>
 

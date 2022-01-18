@@ -294,14 +294,14 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendFollowerData(CEPuckE
     CFollower& cController = dynamic_cast<CFollower&>(robot.GetControllableEntity().GetController());
     
     /* Robot's current state */
-    switch(cController.currentState) {
-        case CFollower::RobotState::FOLLOWER: 
+    switch(cController.GetRobotState()) {
+        case RobotState::FOLLOWER: 
             outJson["state"] = "F";
             break;
-        case CFollower::RobotState::CONNECTOR: 
+        case RobotState::CONNECTOR: 
             outJson["state"] = "C";
             break;
-        case CFollower::RobotState::TRAVELER:
+        case RobotState::TRAVELER:
             outJson["state"] = "T";
             break;
         default:

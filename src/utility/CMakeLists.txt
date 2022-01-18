@@ -3,6 +3,7 @@ add_library(utility SHARED
     pid.h
     pid.cpp
     sct.h
-    sct.cpp)
+    sct.cpp
+    robot_message.h)
 target_link_libraries(utility
     yaml-cpp)

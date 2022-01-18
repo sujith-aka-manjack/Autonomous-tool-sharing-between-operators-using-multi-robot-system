@@ -10,6 +10,8 @@
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_render.h>
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_widget.h>
 
+#include <utility/robot_message.h>
+
 #include <fstream>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/delimited_message_util.h>
@@ -21,7 +23,7 @@
 static const Real        EP_RADIUS        = 0.035f;
 static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
 static const Real        EP_RAB_RANGE     = 0.8f;
-static const Real        EP_RAB_DATA_SIZE = 115;
+static const Real        EP_RAB_DATA_SIZE = MESSAGE_BYTE_SIZE;
 static const std::string HL_CONTROLLER    = "el";
 static const std::string EP_CONTROLLER    = "ef";
 static const UInt32      MAX_PLACE_TRIALS = 20;
@@ -388,7 +390,7 @@ void CExperimentLoopFunctions::PreStep() {
             UInt8 unTeamId = cController.GetTeamID();
 
             /* Count how many e-pucks are in each state */
-            if( cController.currentState == CFollower::RobotState::FOLLOWER ) {
+            if( cController.GetRobotState() == RobotState::FOLLOWER ) {
                 // Count flock state
                 if( unTeamId == 1 ) ++unFollowers1;
                 else ++unFollowers2;
@@ -528,18 +530,18 @@ void CExperimentLoopFunctions::PreStep() {
             Robot* robot = tData.add_robots();
             robot->set_name(cEPuck.GetId());
             robot->set_teamid(cController.GetTeamID());
-            switch(cController.currentState) {
-                case CFollower::RobotState::FOLLOWER:
+            switch(cController.GetRobotState()) {
+                case RobotState::FOLLOWER:
                     robot->set_state(Robot_State_FOLLOWER);
                     break;
-                case CFollower::RobotState::CONNECTOR:
+                case RobotState::CONNECTOR:
                     robot->set_state(Robot_State_CONNECTOR);
                     break;
-                case CFollower::RobotState::TRAVELER:
+                case RobotState::TRAVELER:
                     robot->set_state(Robot_State_TRAVELER);
                     break;
                 default:
-                    std::cerr << "Tried to log unknown state " << int(cController.currentState) << std::endl;
+                    std::cerr << "Tried to log unknown state " << int(cController.GetRobotState()) << std::endl;
                     break;
             }
             robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
