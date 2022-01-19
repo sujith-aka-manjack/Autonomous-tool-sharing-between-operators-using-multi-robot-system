@@ -123,49 +123,6 @@ static const UInt32 MESSAGE_BYTE_SIZE = 115;
 *       - Message sent by a leader to other leaders
 * 
 */
-// struct Message {
-    
-//     /* Core */
-//     CVector2 direction;
-//     RobotState state;
-//     std::string ID;
-//     UInt8 teamID;
-
-//     /* Leader Signal */
-//     UInt8 leaderSignal;
-
-//     /* Team Switch */
-//     std::string robotToSwitch = "";
-//     UInt8 teamToJoin;
-
-//     /* Hop Count */
-//     std::map<UInt8, HopMsg> hops; // Key is teamID
-
-//     /* Connection Message*/
-//     std::vector<ConnectionMsg> cmsg;
-
-//     /* Shared Message */
-//     std::string shareToLeader = "";
-//     std::string shareToTeam = "";
-//     UInt8 shareDist = 255;
-
-//     /* Teams Nearby */
-//     std::vector<UInt8> nearbyTeams;
-
-//     /* Relay Message */
-//     std::vector<RelayMsg> rmsg;
-
-//     /* Detected neighbors */
-//     std::vector<std::string> connections;
-
-//     /* 
-//     * Checks whether the Message is empty or not by checking the direction it was received from
-//     */
-//     bool Empty() {
-//         return direction.Length() == 0.0f;
-//     }
-// };
-
 class Message {
 
     public:
