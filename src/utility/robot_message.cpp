@@ -155,11 +155,13 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         } else
             index += 2;
 
+        relayMsg.follower_num = packet.Data[index++];
+        relayMsg.task_min_num = packet.Data[index++];
         relayMsg.robot_num = packet.Data[index++];
 
         rmsg.push_back(relayMsg);
     }
-    index += (2 - msg_num) * 8; // TEMP: Currently assuming only two teams
+    index += (2 - msg_num) * 10; // TEMP: Currently assuming only two teams
 
     /* Connections */
     while(packet.Data[index] != 255) {    // Check if data exists

@@ -469,10 +469,12 @@ void CLeader::ControlStep() {
         msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
         msg[msg_index++] = (UInt8)(relayMsg.time % 256);
         msg_index += 2; // Skip firstFollower;
+        msg[msg_index++] = relayMsg.follower_num;
+        msg[msg_index++] = relayMsg.task_min_num;
         msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
-    msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
+    msg_index += (2 - rmsgToSend.size()) * 10; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -863,7 +865,7 @@ void CLeader::CheckHeartBeat() {
                 if(beat.time > lastBeatTime) {
                     beatReceived++;
                     lastBeatTime = beat.time;
-                    // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                    std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                     // if(this->GetId() == "L2")
                     //     std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
 
@@ -877,6 +879,8 @@ void CLeader::CheckHeartBeat() {
                     // std::cout << "beat.robot_num " << beat.robot_num << std::endl;
                     // std::cout << "numPreviousRequest " << numPreviousRequest << std::endl;
                     // std::cout << "numRobotsToSend " << numRobotsToSend << std::endl;
+                    std::cout << "follower_num " << beat.follower_num << std::endl;
+                    std::cout << "task_min_num " << beat.task_min_num << std::endl;
 
                     if(beat.type == 'R') {
                         if( !requestReceived ) {
@@ -1133,6 +1137,8 @@ void CLeader::Callback_Message(void* data) {
     beat.type = 'H';
     beat.from = this->GetId();
     beat.time = initStepTimer;
+    beat.follower_num = (UInt8)currentFollowerCount;
+    beat.task_min_num = (UInt8)robotsNeeded;
 
     /* For every 10 timesteps, check if the demand is not decreasing to request robots from the other team */
     // if(exchangeUsed) {

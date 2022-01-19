@@ -371,6 +371,7 @@ void CExperimentLoopFunctions::PreStep() {
                 if((nextTaskPos-cTaskPos).Length() < 0.3 && cCTask.InArea(cPos)) {
                     cController.SetTaskDemand(cCTask.GetDemand());
                     cController.SetMinimumCount(cCTask.GetMinRobotNum());
+                    std::cout << cCTask.GetMinRobotNum() << std::endl;
                     break;
                 }
             }

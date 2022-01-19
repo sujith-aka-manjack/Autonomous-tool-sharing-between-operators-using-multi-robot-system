@@ -653,11 +653,12 @@ void CFollower::ControlStep() {
             msg[msg_index++] = stoi(relayMsg.firstFollower.substr(1));
         } else
             msg_index += 2;
-
+        msg[msg_index++] = relayMsg.follower_num;
+        msg[msg_index++] = relayMsg.task_min_num;
         msg[msg_index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
-    msg_index += (2 - rmsgToSend.size()) * 8; // TEMP: Currently assuming only two teams
+    msg_index += (2 - rmsgToSend.size()) * 10; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
