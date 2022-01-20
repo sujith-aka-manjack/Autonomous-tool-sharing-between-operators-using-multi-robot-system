@@ -346,6 +346,8 @@ void CExperimentLoopFunctions::PreStep() {
                                  cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
         leaderPos[cEPuckLeader.GetId()] = cPos;
 
+        bool leaderAtTask = false;
+
         /* Give the leader its next task info if it is within the task range */        
         if(taskExists) {
 
@@ -369,9 +371,16 @@ void CExperimentLoopFunctions::PreStep() {
                 if(cCTask.InArea(cPos)) {
                     cController.SetTaskDemand(cCTask.GetDemand());
                     cController.SetMinimumCount(cCTask.GetMinRobotNum());
+                    leaderAtTask = true;
                     break;
                 }
             }
+        }
+
+        /* Reset task info if the leader is not at any task */
+        if( !leaderAtTask ) {
+            cController.SetTaskDemand(0);
+            cController.SetMinimumCount(0);
         }
     }
 
