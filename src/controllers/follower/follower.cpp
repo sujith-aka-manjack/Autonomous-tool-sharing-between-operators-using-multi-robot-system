@@ -420,7 +420,7 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -451,7 +451,7 @@ void CFollower::ControlStep() {
             else
                 m_pcLEDs->SetAllColors(teamColor[teamID]);
 
-            m_pcLEDs->SetAllColors(CColor::GREEN);
+            // m_pcLEDs->SetAllColors(CColor::GREEN);
 
             /* Relay task signal from leader */
             msg.leaderSignal = leaderSignal;
@@ -487,7 +487,7 @@ void CFollower::ControlStep() {
             else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
-            m_pcLEDs->SetAllColors(CColor::BLUE);
+            // m_pcLEDs->SetAllColors(CColor::BLUE);
 
             /* Leader task signal */
             // Skip to next part

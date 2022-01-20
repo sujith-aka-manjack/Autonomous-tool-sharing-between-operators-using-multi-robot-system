@@ -825,7 +825,7 @@ void CLeader::CheckHeartBeat() {
                 if(beat.time > lastBeatTime) {
                     beatReceived++;
                     lastBeatTime = beat.time;
-                    std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
+                    // std::cout << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
                     // if(this->GetId() == "L2")
                     //     std::cerr << this->GetId() << " received " << lastBeatTime << "! (" << beatReceived << ")" << std::endl;
 
@@ -839,8 +839,8 @@ void CLeader::CheckHeartBeat() {
                     // std::cout << "beat.robot_num " << beat.robot_num << std::endl;
                     // std::cout << "numPreviousRequest " << numPreviousRequest << std::endl;
                     // std::cout << "numRobotsToSend " << numRobotsToSend << std::endl;
-                    std::cout << "follower_num " << beat.follower_num << std::endl;
-                    std::cout << "task_min_num " << beat.task_min_num << std::endl;
+                    // std::cout << "follower_num " << beat.follower_num << std::endl;
+                    // std::cout << "task_min_num " << beat.task_min_num << std::endl;
 
                     if(beat.type == 'R') {
                         if( !requestReceived ) {

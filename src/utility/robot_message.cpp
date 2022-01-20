@@ -169,7 +169,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         connections.push_back(robotID);
     }
 
-    this->Print();
+    // this->Print();
 
 }
 
