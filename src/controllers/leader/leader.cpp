@@ -252,7 +252,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    // std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     // std::cout << "TIME: " << initStepTimer << std::endl;

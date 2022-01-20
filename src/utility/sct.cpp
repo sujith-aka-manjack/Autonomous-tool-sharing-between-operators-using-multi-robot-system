@@ -180,12 +180,12 @@ unsigned char SCT::get_next_controllable( unsigned char *event ){
     count_actives = get_active_controllable_events( events );
 
     // DEBUG
-    std::cout << "count_actives: " << std::to_string(count_actives) << std::endl;
-    for(i = 0; i < num_events; i++) {
-        if(events[i]) {
-            std::cout << "event: " << std::to_string(i) << " active" << std::endl;
-        }
-    }
+    // std::cout << "count_actives: " << std::to_string(count_actives) << std::endl;
+    // for(i = 0; i < num_events; i++) {
+    //     if(events[i]) {
+    //         std::cout << "event: " << std::to_string(i) << " active" << std::endl;
+    //     }
+    // }
     // DEBUG END
 
     if( count_actives ){                        /* If at least one event is enabled do */
