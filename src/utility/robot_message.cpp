@@ -12,8 +12,6 @@ Message::Message() {
 
 Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
 
-    //std::cout << packet.Data << std::endl;
-
     size_t index = 0;
 
     /* Core */
@@ -171,6 +169,8 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         connections.push_back(robotID);
     }
 
+    this->Print();
+
 }
 
 /****************************************/
@@ -183,9 +183,216 @@ Message::~Message() {
 /****************************************/
 /****************************************/
 
+CByteArray Message::GetCByteArray() {
+
+    CByteArray arr = CByteArray(MESSAGE_BYTE_SIZE, 255);
+    size_t index = 0;
+
+    /* Sender State */
+    arr[index++] = static_cast<UInt8>(state);
+
+    /* Sender ID */
+    arr[index++] = stoi(ID.substr(1));
+
+    /* Sender TeamID */
+    arr[index++] = teamID;
+
+    /* Leader Signal */
+    arr[index++] = leaderSignal;
+
+    /* Team Switch */
+    if( !robotToSwitch.empty() ) {
+        arr[index++] = robotToSwitch[0];
+        arr[index++] = stoi(robotToSwitch.substr(1));
+        arr[index++] = teamToJoin;
+    } else
+        index += 3;
+
+    /* Hop count */
+    arr[index++] = hops.size(); // Set the number of HopMsg
+    for(const auto& it : hops) {
+
+        arr[index++] = it.first;                     // Team ID
+        arr[index++] = it.second.count;              // Count
+
+        if( it.second.ID.empty() )
+            index += 2; // Skip
+        else {
+            arr[index++] = it.second.ID[0];              // ID
+            arr[index++] = stoi(it.second.ID.substr(1)); // ID
+        }
+    }
+    // Skip if not all bytes are used
+    index += (2 - hops.size()) * 4; // TEMP: Currently assuming only two teams
+
+    /* Connection Message */
+    arr[index++] = cmsg.size(); // Set the number of ConnectionMsg
+    for(const auto& conMsg : cmsg) {
+        arr[index++] = (UInt8)conMsg.type;
+        arr[index++] = conMsg.from[0];
+        arr[index++] = stoi(conMsg.from.substr(1));
+        arr[index++] = conMsg.to[0];
+        arr[index++] = stoi(conMsg.to.substr(1));
+        arr[index++] = conMsg.toTeam;
+    }
+    // Skip if not all bytes are used
+    index += (2 - cmsg.size()) * 6; // TEMP: Currently assuming only two teams
+
+    /* Shared Message */
+    if( !shareToLeader.empty() ) {
+        arr[index++] = shareToLeader[0];
+        arr[index++] = stoi(shareToLeader.substr(1));
+    } else
+        index += 2;
+
+    if( !shareToTeam.empty() ) {
+        arr[index++] = shareToTeam[0];
+        arr[index++] = stoi(shareToTeam.substr(1));
+    } else
+        index += 2;
+
+    arr[index++] = shareDist;
+
+    /* Teams Nearby */
+    arr[index++] = nearbyTeams.size(); // Set the number of nearby teams
+    for(const auto& id : nearbyTeams) {
+        arr[index++] = id;
+    }
+    // Skip if not all bytes are used
+    index += (2 - nearbyTeams.size()) * 1; // TEMP: Currently assuming only two teams
+
+    /* Relay Message */
+    arr[index++] = rmsg.size(); // Set the number of RelayMsg
+    for(const auto& relayMsg : rmsg) {
+        arr[index++] = (UInt8)relayMsg.type;
+        arr[index++] = relayMsg.from[0];
+        arr[index++] = stoi(relayMsg.from.substr(1));
+        arr[index++] = (UInt8)(relayMsg.time / 256.0);
+        arr[index++] = (UInt8)(relayMsg.time % 256);
+
+        if( !relayMsg.firstFollower.empty() ) {
+            arr[index++] = relayMsg.firstFollower[0];
+            arr[index++] = stoi(relayMsg.firstFollower.substr(1));
+        } else
+            index += 2;
+
+        arr[index++] = relayMsg.follower_num;
+        arr[index++] = relayMsg.task_min_num;
+        arr[index++] = relayMsg.robot_num;
+    }
+    // Skip if not all bytes are used
+    index += (2 - rmsg.size()) * 10; // TEMP: Currently assuming only two teams
+
+    /* Connections */
+    for(size_t i = 0; i < connections.size(); i++) {
+    
+        //std::cout << allMsgs[i].ID << ", ";
+
+        arr[index++] = connections[i][0];    // First character of ID
+        arr[index++] = stoi(connections[i].substr(1));    // ID number
+
+        if(i >= 29){
+            std::cerr << "[" << ID << "] max connections reached" << std::endl;
+            break;
+        }
+    }
+
+    return arr;
+}
+
+/****************************************/
+/****************************************/
+
 /* 
 * Checks whether the Message is empty or not by checking the direction it was received from
 */
 bool Message::Empty() {
     return direction.Length() == 0.0f;
+}
+
+/****************************************/
+/****************************************/
+
+void Message::Print() {
+
+    std::cout << "\n##########" << std::endl;
+
+    switch(state) {
+        case RobotState::LEADER:
+            std::cout << "state: LEADER" << std::endl;
+            break;
+        case RobotState::FOLLOWER:
+            std::cout << "state: FOLLOWER" << std::endl;
+            break;
+        case RobotState::CONNECTOR:
+            std::cout << "state: CONNECTOR" << std::endl;
+            break;
+        case RobotState::TRAVELER:
+            std::cout << "state: TRAVELER" << std::endl;
+            break;
+        default:
+            /* The message is not initialised */
+            if(int(state) != 255) {
+                std::cerr << "Unknown state " << int(state) << " in " << ID << std::endl;
+            }
+            break;
+    }
+
+    std::cout << "ID: " << ID << std::endl;
+
+    std::cout << "teamID: " << teamID << std::endl;
+
+    std::cout << "leaderSignal: " << leaderSignal << std::endl;
+
+    std::cout << "robotToSwitch: " << robotToSwitch << std::endl;
+
+    std::cout << "teamToJoin: " << teamToJoin << std::endl;
+
+    std::cout << "hops:" << std::endl;
+    for(const auto& hop : hops) {
+        std::cout << "--- team: " << hop.first
+                  << ", count: " << hop.second.count
+                  << ", ID: " << hop.second.ID
+                  << std::endl;
+    }
+
+    std::cout << "cmsg:" << std::endl;
+    for(const auto& conMsg : cmsg) {
+        std::cout << "--- type: " << conMsg.type
+                  << ", from: " << conMsg.from
+                  << ", to: " << conMsg.to
+                  << ", toTeam: " << conMsg.toTeam
+                  << std::endl;
+    }
+
+    std::cout << "shareToLeader: " << shareToLeader << std::endl;
+
+    std::cout << "shareToTeam: " << shareToTeam << std::endl;
+
+    std::cout << "shareDist: " << shareDist << std::endl;
+
+    std::cout << "nearbyTeams:" << std::endl;
+    for(const auto& team : nearbyTeams) {
+        std::cout << "--- team: " << team << std::endl;
+    }
+
+    std::cout << "rmsg:" << std::endl;
+    for(const auto& relayMsg : rmsg) {
+        std::cout << "--- type: " << relayMsg.type
+                  << ", from: " << relayMsg.from
+                  << ", time: " << relayMsg.time
+                  << ", firstFollower: " << relayMsg.firstFollower
+                  << ", follower_num: " << relayMsg.follower_num
+                  << ", task_min_num: " << relayMsg.task_min_num
+                  << ", robot_num: " << relayMsg.robot_num
+                  << std::endl;
+    }
+
+    std::cout << "connections: ";
+    for(const auto& connection : connections) {
+        std::cout << connection << ",";
+    }
+    std::cout << std::endl;
+
+
 }

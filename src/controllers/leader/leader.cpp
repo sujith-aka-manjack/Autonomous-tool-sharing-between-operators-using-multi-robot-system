@@ -239,9 +239,8 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
-    m_pcRABAct->SetData(msg);
-    msg_index = 0;
+    cbyte_msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
+    m_pcRABAct->SetData(cbyte_msg);
 
     /* Reset the incoming public events */
     // pub_events.clear();
@@ -253,7 +252,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    // std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     // std::cout << "TIME: " << initStepTimer << std::endl;
@@ -261,10 +260,6 @@ void CLeader::ControlStep() {
     /*-----------------*/
     /* Reset variables */
     /*-----------------*/
-
-    /* Create new message */
-    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
-    msg_index = 0;
 
     /* Clear messages received */
     teamMsgs.clear();
@@ -312,13 +307,6 @@ void CLeader::ControlStep() {
     /*-----------------------------*/
     /* Implement action to perform */
     /*-----------------------------*/
-
-    /* Set its state in msg */
-    msg[msg_index++] = static_cast<UInt8>(currentState);
-    /* Set sender ID in msg */
-    msg[msg_index++] = teamID;  // For leader, ID = teamID
-    /* Set team ID in msg */
-    msg[msg_index++] = teamID;
 
     /*---------*/
     /* Control */
@@ -410,71 +398,41 @@ void CLeader::ControlStep() {
         }
     }
     
-    /* Leade task signal */
-    msg[msg_index++] = int(m_bSignal);
+    /* Create new message to send */
+    Message msg = Message();
 
-    /* Leader team switch signal */
+    /* Set message content */
+    msg.state = currentState;
+    msg.ID = this->GetId();
+    msg.teamID = teamID;
+    msg.leaderSignal = m_bSignal;
     if( !robotToSwitch.empty() ) {
-        msg[msg_index++] = robotToSwitch[0];
-        msg[msg_index++] = stoi(robotToSwitch.substr(1));
-        msg[msg_index++] = teamToJoin;
-    } else
-        msg_index += 3;
+        msg.robotToSwitch = robotToSwitch;
+        msg.teamToJoin = teamToJoin;
+    }
+    
+    /* Hop Count */
+    HopMsg hop;
+    hop.count = 0;
+    // Skip ID
 
-    /* Hop count */
-    msg[msg_index++] = 1; // Number of HopMsg
-
-    msg[msg_index++] = teamID;
-    msg[msg_index++] = 0; // Hop count
-    msg_index += 2; // Skip ID
-
-    msg_index += 4; // Skip to next part
+    msg.hops[teamID] = hop;
 
     /* Connection Message */
-    // std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
-    msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& conMsg : cmsgToSend) {
-        msg[msg_index++] = (UInt8)conMsg.type;
-        msg[msg_index++] = conMsg.from[0];
-        msg[msg_index++] = stoi(conMsg.from.substr(1));
-        msg[msg_index++] = conMsg.to[0];
-        msg[msg_index++] = stoi(conMsg.to.substr(1));
-        msg[msg_index++] = conMsg.toTeam;
+        msg.cmsg.push_back(conMsg);
     }
-    // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
-
-    /* Shared Message */
-    msg_index += 2; // Skip shareToLeader
 
     if( !shareToTeam.empty() ) {
-        msg[msg_index++] = shareToTeam[0];
-        msg[msg_index++] = stoi(shareToTeam.substr(1));
-    } else
-        msg_index += 2;
+        msg.shareToTeam = shareToTeam;
+    }
 
-    msg_index += 1; //Skip shareDist
-
-    /* Nearby Teams */
-    msg[msg_index++] = 0;
-    msg_index += 2; // Skip to next part
+    // Skip Teams Nearby
 
     /* Relay Message */
-    //std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
-    msg[msg_index++] = rmsgToSend.size(); // Set the number of ConnectionMsg
     for(const auto& relayMsg : rmsgToSend) {
-        msg[msg_index++] = (UInt8)relayMsg.type;
-        msg[msg_index++] = relayMsg.from[0];
-        msg[msg_index++] = stoi(relayMsg.from.substr(1));
-        msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
-        msg[msg_index++] = (UInt8)(relayMsg.time % 256);
-        msg_index += 2; // Skip firstFollower;
-        msg[msg_index++] = relayMsg.follower_num;
-        msg[msg_index++] = relayMsg.task_min_num;
-        msg[msg_index++] = relayMsg.robot_num;
+        msg.rmsg.push_back(relayMsg);
     }
-    // Skip if not all bytes are used
-    msg_index += (2 - rmsgToSend.size()) * 10; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -483,17 +441,19 @@ void CLeader::ControlStep() {
     allMsgs.insert(std::end(allMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
 
     for(size_t i = 0; i < allMsgs.size(); i++) {
-        msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
-        msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
+        msg.connections.push_back(allMsgs[i].ID);
 
         if(i >= 29)
             break;
     }
 
+    /* Convert message into CByteArray */
+    cbyte_msg = msg.GetCByteArray();
+
     /*--------------*/
     /* Send message */
     /*--------------*/
-    m_pcRABAct->SetData(msg);
+    m_pcRABAct->SetData(cbyte_msg);
 
     /* Reset task demand */
     currentTaskDemand = 0;

@@ -309,10 +309,8 @@ void CFollower::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
-    m_pcRABAct->SetData(msg);
-    msg_index = 0;
-
+    cbyte_msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
+    m_pcRABAct->SetData(cbyte_msg);
 }
 
 /****************************************/
@@ -364,17 +362,13 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    // std::cout << "\n---------- " << id << " ----------" << std::endl;
+    std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
     /*-----------------*/
     /* Reset variables */
     /*-----------------*/
-
-    /* Create new msg */
-    msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
-    msg_index = 0;
 
     /* Clear messages received */
     leaderMsg = Message();
@@ -432,14 +426,11 @@ void CFollower::ControlStep() {
     /* Implement action to perform */
     /*-----------------------------*/
 
-    /* Set current state in msg */
-    msg[msg_index++] = static_cast<UInt8>(currentState);
+    Message msg = Message();
 
-    /* Set sender ID in msg */
-    msg[msg_index++] = stoi(id.substr(1));
-
-    /* Set current team ID in msg */
-    msg[msg_index++] = teamID;
+    msg.state = currentState;
+    msg.ID = id;
+    msg.teamID = teamID;
 
     // if(this->GetId() == "F1") {
     //     std::cout << "state: " << (int)currentState << std::endl;
@@ -451,33 +442,30 @@ void CFollower::ControlStep() {
         case RobotState::FOLLOWER: {
             //std::cout << "State: FOLLOWER" << std::endl;
             bool relaying = false;
-            // for(const auto& msg : rmsgToResend) {
-            //     if(msg.second.from == "L1")
-            //         relaying = true;
-            // }
-            // if(relaying)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else
-            //     m_pcLEDs->SetAllColors(teamColor[teamID]);
+            for(const auto& msg : rmsgToResend) {
+                if(msg.second.from == "L1")
+                    relaying = true;
+            }
+            if(relaying)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else
+                m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             m_pcLEDs->SetAllColors(CColor::GREEN);
 
             /* Relay task signal from leader */
-            msg[msg_index++] = leaderSignal;
+            msg.leaderSignal = leaderSignal;
 
             /* Relay team switch signal from leader */
-            msg_index += 3; // Skip to next part
+            // Skip to next part
 
             /* Hop count */
             /* Set its hop count to the leader */
-            //std::cout << "Hops to leader: " << hopCountToLeader << std::endl;
-            msg[msg_index++] = 1; // Number of HopMsg
+            HopMsg hop;
+            hop.count = hopCountToLeader;
+            // Skip ID
 
-            msg[msg_index++] = teamID;
-            msg[msg_index++] = hopCountToLeader;
-            msg_index += 2; // Skip ID
-
-            msg_index += 4; // Skip to next part
+            msg.hops[teamID] = hop;
 
             break;
         }
@@ -486,44 +474,39 @@ void CFollower::ControlStep() {
 
             bool sending = false;
             bool requesting = false;
-            // for(const auto& msg : rmsgToResend) {
-            //     if(msg.second.from == "L1")
-            //         sending = true;
-            //     // if(msg.second.type == 'R')
-            //     //     requesting = true;
-            // }
-            // if(requesting)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else if(sending)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else
-            //     m_pcLEDs->SetAllColors(CColor::CYAN);
+            for(const auto& msg : rmsgToResend) {
+                if(msg.second.from == "L1")
+                    sending = true;
+                // if(msg.second.type == 'R')
+                //     requesting = true;
+            }
+            if(requesting)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else if(sending)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else
+                m_pcLEDs->SetAllColors(CColor::CYAN);
 
             m_pcLEDs->SetAllColors(CColor::BLUE);
 
             /* Leader task signal */
-            msg_index++; // Skip to next part
+            // Skip to next part
 
             /* Leader team switch signal */
-            msg_index += 3; // Skip to next part
+            // Skip to next part
 
             /* Hop count */
-            msg[msg_index++] = hopsDict.size(); // Set the number of HopMsg
-
             for(const auto& it : hopsDict) {
 
-                msg[msg_index++] = it.first;                     // Team ID
-                msg[msg_index++] = it.second.count;              // Count
+                HopMsg hop = HopMsg();
 
-                if( it.second.ID.empty() )
-                    msg_index += 2; // Skip
-                else {
-                    msg[msg_index++] = it.second.ID[0];              // ID
-                    msg[msg_index++] = stoi(it.second.ID.substr(1)); // ID
-                }
+                hop.count = it.second.count;
+
+                if( !it.second.ID.empty() )
+                    hop.ID = it.second.ID;
+
+                msg.hops[it.first] = hop;
             }
-            // Skip if not all bytes are used
-            msg_index += (2 - hopsDict.size()) * 4; // TEMP: Currently assuming only two teams
 
             break;
         }
@@ -532,13 +515,13 @@ void CFollower::ControlStep() {
             m_pcLEDs->SetAllColors(CColor::YELLOW);
 
             /* Leader signal */
-            msg_index++; // Skip to next part
+            // Skip to next part
 
             /* Leader team switch signal */
-            msg_index += 3; // Skip to next part
+            // Skip to next part
 
             /* Hop count */
-            msg_index += 9; // Skip to next part
+            // Skip to next part
             
             break;
         }
@@ -584,46 +567,30 @@ void CFollower::ControlStep() {
     }
     // //std::cout << "resend size: " << cmsgToResend.size() << std::endl;
 
-    //std::cout << "cmsgToSend.size: " << cmsgToSend.size() << std::endl;
-    msg[msg_index++] = cmsgToSend.size(); // Set the number of ConnectionMsg
+    /* Connection Message */
     for(const auto& conMsg : cmsgToSend) {
-        msg[msg_index++] = (UInt8)conMsg.type;
-        msg[msg_index++] = conMsg.from[0];
-        msg[msg_index++] = stoi(conMsg.from.substr(1));
-        msg[msg_index++] = conMsg.to[0];
-        msg[msg_index++] = stoi(conMsg.to.substr(1));
-        msg[msg_index++] = conMsg.toTeam;
+        msg.cmsg.push_back(conMsg);
     }
-    // Skip if not all bytes are used
-    msg_index += (2 - cmsgToSend.size()) * 6; // TEMP: Currently assuming only two teams
 
     /* Shared Message */
     if( !shareToLeader.empty() ) {
-        msg[msg_index++] = shareToLeader[0];
-        msg[msg_index++] = stoi(shareToLeader.substr(1));
-    } else
-        msg_index += 2;
+        msg.shareToLeader = shareToLeader;
+    }
 
     //std::cout << "Share to leader: " << shareToLeader << std::endl;
 
     if( !shareToTeam.empty() ) {
-        msg[msg_index++] = shareToTeam[0];
-        msg[msg_index++] = stoi(shareToTeam.substr(1));
-    } else
-        msg_index += 2;
+        msg.shareToTeam = shareToTeam;
+    }
 
     //std::cout << "Share to team: " << shareToTeam << std::endl;
 
-    msg[msg_index++] = shareDist;
+    msg.shareDist = shareDist;
 
     /* Teams Nearby */
-    //std::cout << "nearbyTeams.size: " << nearbyTeams.size() << std::endl;
-    msg[msg_index++] = nearbyTeams.size(); // Set the number of nearby teams
     for(const auto& id : nearbyTeams) {
-        msg[msg_index++] = id;
+        msg.nearbyTeams.push_back(id);
     }
-    // Skip if not all bytes are used
-    msg_index += (2 - nearbyTeams.size()) * 1; // TEMP: Currently assuming only two teams
 
     /* Relay Message */
     /* Set RelayMsg to send during this timestep */
@@ -639,26 +606,10 @@ void CFollower::ControlStep() {
         }
     }
 
-    //std::cout << "rmsgToSend.size: " << rmsgToSend.size() << std::endl;
-    msg[msg_index++] = rmsgToSend.size(); // Set the number of RelayMsg
+    /* Relay Message */
     for(const auto& relayMsg : rmsgToSend) {
-        msg[msg_index++] = (UInt8)relayMsg.type;
-        msg[msg_index++] = relayMsg.from[0];
-        msg[msg_index++] = stoi(relayMsg.from.substr(1));
-        msg[msg_index++] = (UInt8)(relayMsg.time / 256.0);
-        msg[msg_index++] = (UInt8)(relayMsg.time % 256);
-
-        if( !relayMsg.firstFollower.empty() ) {
-            msg[msg_index++] = relayMsg.firstFollower[0];
-            msg[msg_index++] = stoi(relayMsg.firstFollower.substr(1));
-        } else
-            msg_index += 2;
-        msg[msg_index++] = relayMsg.follower_num;
-        msg[msg_index++] = relayMsg.task_min_num;
-        msg[msg_index++] = relayMsg.robot_num;
+        msg.rmsg.push_back(relayMsg);
     }
-    // Skip if not all bytes are used
-    msg_index += (2 - rmsgToSend.size()) * 10; // TEMP: Currently assuming only two teams
 
     /* Set ID of all connections to msg */
     std::vector<Message> allMsgs(teamMsgs);
@@ -670,24 +621,19 @@ void CFollower::ControlStep() {
         allMsgs.push_back(leaderMsg);
     }
 
-    //std::cout << "I saw: ";
     for(size_t i = 0; i < allMsgs.size(); i++) {
-        //std::cout << allMsgs[i].ID << ", ";
+        msg.connections.push_back(allMsgs[i].ID);
 
-        msg[msg_index++] = allMsgs[i].ID[0];    // First character of ID
-        msg[msg_index++] = stoi(allMsgs[i].ID.substr(1));    // ID number
-
-        if(i >= 29){
-            std::cerr << "[" << this->GetId() << "] max connections reached" << std::endl;
+        if(i >= 29)
             break;
-        }
     }
-    //std::cout << std::endl;
+
+    cbyte_msg = msg.GetCByteArray();
 
     /*--------------*/
     /* Send message */
     /*--------------*/
-    m_pcRABAct->SetData(msg);
+    m_pcRABAct->SetData(cbyte_msg);
 
 }
 

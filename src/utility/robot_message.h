@@ -90,7 +90,7 @@ static const UInt32 MESSAGE_BYTE_SIZE = 119;
 * 
 * - (8)-(16) Hop count
 *   Prefix with number of messages (max 2) [1]
-*   - HopMsg (teamID [1], count [1], ID [2])
+*   - HopMsg [4] (teamID [1], count [1], ID [2])
 * 
 * - (17)-(29) Connection Message
 *   Prefix with number of messages (max 2) [1]
@@ -120,7 +120,7 @@ static const UInt32 MESSAGE_BYTE_SIZE = 119;
 * 
 * - (38)-(58) Relay Message
 *   Prefix with number of messages (max 2) [1]
-*   - RelayMsg (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [1], task_min_num [1]. robot_num [1])
+*   - RelayMsg [10] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [1], task_min_num [1]. robot_num [1])
 * 
 *       - Message sent by a leader to other leaders
 * 
@@ -136,7 +136,11 @@ class Message {
 
         virtual ~Message();
 
+        virtual CByteArray GetCByteArray();
+
         virtual bool Empty();
+
+        virtual void Print();
 
     public:
 
@@ -170,7 +174,7 @@ class Message {
         /* Relay Message */
         std::vector<RelayMsg> rmsg;
 
-        /* Detected neighbors */
+        /* Connections */
         std::vector<std::string> connections;
 
 };

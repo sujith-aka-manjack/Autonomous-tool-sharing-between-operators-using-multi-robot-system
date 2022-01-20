@@ -356,8 +356,7 @@ private:
     UInt8 teamID;
 
     /* Outgoing message */
-    CByteArray msg;
-    size_t msg_index = 0;
+    CByteArray cbyte_msg;
 
     /* Messages received from nearby robots */
     Message leaderMsg;
