@@ -46,6 +46,7 @@
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
         <timeout send_message="4" />
+        <SCT path="src/SCT_models/leader_exchange.yaml" />
       </params>
     </leader_controller>
 
@@ -77,6 +78,7 @@
                           obstacle="15" />
         <timeout send_message="4" 
                  wait_request="6" />
+        <SCT path="src/SCT_models/follower_exchange.yaml" />
       </params>
     </follower_controller>
 
@@ -89,7 +91,7 @@
                   label="experiment_loop_functions">
 
     <!-- Output file name -->
-    <output logging="true"
+    <output logging="false"
             out_path="results/template.pb" 
             frame_grabbing="false" 
             camera_index="0" />

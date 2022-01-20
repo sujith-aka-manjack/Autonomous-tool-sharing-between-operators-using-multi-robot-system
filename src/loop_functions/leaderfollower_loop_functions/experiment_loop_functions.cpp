@@ -346,9 +346,7 @@ void CExperimentLoopFunctions::PreStep() {
                                  cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
         leaderPos[cEPuckLeader.GetId()] = cPos;
 
-        /* Give the leader its next task info if it is within the task range */
-        CVector2 nextTaskPos = cController.GetNextWaypoint();
-        
+        /* Give the leader its next task info if it is within the task range */        
         if(taskExists) {
 
             for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
@@ -362,16 +360,15 @@ void CExperimentLoopFunctions::PreStep() {
                 CVector2 cTaskPos = cCTask.GetPosition();
 
                 // /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                // if(nextTaskPos == cTaskPos && (cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
                 //     cController.SetTaskDemand(cCTask.GetDemand());
                 //     break;
                 // }
 
                 /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                if((nextTaskPos-cTaskPos).Length() < 0.3 && cCTask.InArea(cPos)) {
+                if(cCTask.InArea(cPos)) {
                     cController.SetTaskDemand(cCTask.GetDemand());
                     cController.SetMinimumCount(cCTask.GetMinRobotNum());
-                    std::cout << cCTask.GetMinRobotNum() << std::endl;
                     break;
                 }
             }
