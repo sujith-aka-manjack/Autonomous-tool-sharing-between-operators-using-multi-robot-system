@@ -220,6 +220,11 @@ public:
     virtual void SetMinimumCount(const UInt32 un_min);
 
     /*
+    * Get the minimum number of robots needed for the other leader's current task.
+    */ 
+    virtual UInt32 GetOtherMinimumCount();
+
+    /*
     * Get the current number of followers in the team.
     */
     virtual UInt32 GetFollowerCount();
@@ -228,6 +233,11 @@ public:
     * Sets the current number of followers in the team.
     */
     virtual void SetFollowerCount(const UInt32 un_count);
+
+    /*
+    * Get the current number of followers in the other leader's team.
+    */
+    virtual UInt32 GetOtherFollowerCount();
 
     /*
     * Get team ID.
@@ -424,7 +434,7 @@ private:
 
     /* Connection related info to send in the current timestep */
     std::vector<ConnectionMsg> cmsgToSend; 
-    std::vector<std::pair<size_t,ConnectionMsg>> cmsgToResend; // ConnectionMsg attached with a timer. Messages gets added into cmsgToSend while timer is running
+    std::vector<std::pair<size_t, ConnectionMsg>> cmsgToResend; // ConnectionMsg attached with a timer. Messages gets added into cmsgToSend while timer is running
     std::string shareToTeam;
 
     std::vector<RelayMsg> rmsgToSend;
@@ -435,6 +445,10 @@ private:
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
     std::string previousCandidate;
     bool notDecremented;
+
+    // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)
+    UInt8 numOtherFollower;
+    UInt8 numOtherTaskRequire;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;

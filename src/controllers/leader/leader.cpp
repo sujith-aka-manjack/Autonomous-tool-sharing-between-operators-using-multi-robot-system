@@ -561,6 +561,13 @@ void CLeader::SetMinimumCount(const UInt32 un_min) {
 /****************************************/
 /****************************************/
 
+UInt32 CLeader::GetOtherMinimumCount() {
+    return numOtherTaskRequire;
+}
+
+/****************************************/
+/****************************************/
+
 UInt32 CLeader::GetFollowerCount() {
     return currentFollowerCount;
 }
@@ -570,6 +577,13 @@ UInt32 CLeader::GetFollowerCount() {
 
 void CLeader::SetFollowerCount(const UInt32 un_count) {
     currentFollowerCount = un_count;
+}
+
+/****************************************/
+/****************************************/
+
+UInt32 CLeader::GetOtherFollowerCount() {
+    return numOtherFollower;
 }
 
 /****************************************/
@@ -855,6 +869,10 @@ void CLeader::CheckHeartBeat() {
                     // std::cout << "numRobotsToSend " << numRobotsToSend << std::endl;
                     // std::cout << "follower_num " << beat.follower_num << std::endl;
                     // std::cout << "task_min_num " << beat.task_min_num << std::endl;
+
+                    /* Store message info from other leader */
+                    numOtherFollower = beat.follower_num;
+                    numOtherTaskRequire = beat.task_min_num;
 
                     if(beat.type == 'R') {
                         if( !requestReceived ) {

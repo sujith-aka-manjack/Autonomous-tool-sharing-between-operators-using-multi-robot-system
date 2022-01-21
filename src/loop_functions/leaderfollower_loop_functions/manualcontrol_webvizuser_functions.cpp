@@ -291,8 +291,10 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendLeaderData(CEPuckLea
     /* Task completion rate */
 
     /* Number of follower in the other team */
+    outJson["num_other_followers"] = cController.GetOtherFollowerCount();
 
     /* Minimum number of robots needed for the other team's task */
+    outJson["num_other_task_require"] = cController.GetOtherMinimumCount();
 
     return outJson;
 }

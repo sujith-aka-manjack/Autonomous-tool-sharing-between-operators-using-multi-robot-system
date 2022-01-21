@@ -213,12 +213,24 @@ function initSceneWithScale(_scale) {
     content: "-",
   });
 
-  leaderInfo.add(window.numFollowers);
+  window.numTaskRequire = new ThreeMeshUI.Text({
+    content: "-",
+  });
+
+  leaderInfo.add(
+    window.numFollowers,
+
+    new ThreeMeshUI.Text({
+			content: " / ",
+		}),
+
+    window.numTaskRequire,
+  );
 
   container.add(leaderInfo);
 
   /* Other Leader Info labels */
-  otherLeaderInfo = new ThreeMeshUI.Block({
+  const otherLeaderInfo = new ThreeMeshUI.Block({
 		width: 300,
 		height: 100,
     margin: 10,
@@ -246,11 +258,23 @@ function initSceneWithScale(_scale) {
 
 	);
 
-  window.numTaskRequire = new ThreeMeshUI.Text({
+  window.numOtherFollowers = new ThreeMeshUI.Text({
     content: "-",
   });
 
-  otherLeaderInfo.add(window.numTaskRequire);
+  window.numOtherTaskRequire = new ThreeMeshUI.Text({
+    content: "-",
+  });
+
+  otherLeaderInfo.add(
+    window.numOtherFollowers,
+
+    new ThreeMeshUI.Text({
+			content: " / ",
+		}),
+
+    window.numOtherTaskRequire,
+  );
 
   container.add(otherLeaderInfo);
 
@@ -785,25 +809,65 @@ function render() {
     /* Update HUD values */
     if(window.target != '') {
       if(sceneEntities.hasOwnProperty(window.target)) {
-        console.log(sceneEntities[window.target].entity.user_data.num_followers.toString());
+
+        let num_followers = sceneEntities[window.target].entity.user_data.num_followers;
+        let num_task_require = sceneEntities[window.target].entity.user_data.num_task_require;
+        let num_other_followers = sceneEntities[window.target].entity.user_data.num_other_followers;
+        let num_other_task_require = sceneEntities[window.target].entity.user_data.num_other_task_require;
 
         window.numFollowers.set({
-          content: sceneEntities[window.target].entity.user_data.num_followers.toString(),
+          content: num_followers.toString(),
         });
 
-        // window.numTaskRequire.set({
-        //   content: sceneEntities[window.target].entity.user_data.num_task_require.toString(),
-        // });
+        if(num_task_require == 0) {
+          window.numTaskRequire.set({
+            content: "-",
+          });
+        } else {
+          window.numTaskRequire.set({
+            content: num_task_require.toString(),
+          });
+        }
+
+        if(num_other_followers == 0) {
+          window.numOtherFollowers.set({
+            content: "-",
+          });
+        } else {
+          window.numOtherFollowers.set({
+            content: num_other_followers.toString(),
+          });
+        }
+
+        if(num_other_task_require == 0) {
+          window.numOtherTaskRequire.set({
+            content: "-",
+          });
+        } else {
+          window.numOtherTaskRequire.set({
+            content: num_other_task_require.toString(),
+          });
+        }
 
       }
     } else {
+
+      /* Clear values */
       window.numFollowers.set({
         content: "-",
       });
 
-      // window.numTaskRequire.set({
-      //   content: "-",
-      // });
+      window.numTaskRequire.set({
+        content: "-",
+      });
+
+      window.numOtherFollowers.set({
+        content: "-",
+      });
+
+      window.numOtherTaskRequire.set({
+        content: "-",
+      });
     }
 
     // console.log(window.experiment.data);
