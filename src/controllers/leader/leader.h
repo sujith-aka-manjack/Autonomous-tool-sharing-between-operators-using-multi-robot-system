@@ -209,10 +209,20 @@ public:
     */
     virtual void SetTaskDemand(const UInt32 un_demand);
 
+    /*
+    * Get the minimum number of robots needed for the current task.
+    */ 
+    virtual UInt32 GetMinimumCount();
+
     /* 
-    * Sets the current task info.
+    * Sets the minimum number of robots needed for the current task.
     */
     virtual void SetMinimumCount(const UInt32 un_min);
+
+    /*
+    * Get the current number of followers in the team.
+    */
+    virtual UInt32 GetFollowerCount();
 
     /*
     * Sets the current number of followers in the team.

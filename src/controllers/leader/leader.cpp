@@ -547,8 +547,22 @@ void CLeader::SetTaskDemand(const UInt32 un_demand) {
 /****************************************/
 /****************************************/
 
+UInt32 CLeader::GetMinimumCount() {
+    return robotsNeeded;
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::SetMinimumCount(const UInt32 un_min) {
     robotsNeeded = un_min;
+}
+
+/****************************************/
+/****************************************/
+
+UInt32 CLeader::GetFollowerCount() {
+    return currentFollowerCount;
 }
 
 /****************************************/

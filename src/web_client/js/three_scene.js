@@ -205,18 +205,20 @@ function initSceneWithScale(_scale) {
 
 		new ThreeMeshUI.Text({
 			content: " Followers: ",
-		}),
-
-    new ThreeMeshUI.Text({
-			content: "XXX",
 		})
 
 	);
 
+  window.numFollowers = new ThreeMeshUI.Text({
+    content: "-",
+  });
+
+  leaderInfo.add(window.numFollowers);
+
   container.add(leaderInfo);
 
   /* Other Leader Info labels */
-  const otherLeaderInfo = new ThreeMeshUI.Block({
+  otherLeaderInfo = new ThreeMeshUI.Block({
 		width: 300,
 		height: 100,
     margin: 10,
@@ -240,13 +242,15 @@ function initSceneWithScale(_scale) {
 
 		new ThreeMeshUI.Text({
 			content: " Followers: ",
-		}),
-
-    new ThreeMeshUI.Text({
-			content: "XXX",
 		})
 
 	);
+
+  window.numTaskRequire = new ThreeMeshUI.Text({
+    content: "-",
+  });
+
+  otherLeaderInfo.add(window.numTaskRequire);
 
   container.add(otherLeaderInfo);
 
@@ -777,6 +781,32 @@ function render() {
         selectedEntities[uuid].update();
       }
     }
+
+    /* Update HUD values */
+    if(window.target != '') {
+      if(sceneEntities.hasOwnProperty(window.target)) {
+        console.log(sceneEntities[window.target].entity.user_data.num_followers.toString());
+
+        window.numFollowers.set({
+          content: sceneEntities[window.target].entity.user_data.num_followers.toString(),
+        });
+
+        // window.numTaskRequire.set({
+        //   content: sceneEntities[window.target].entity.user_data.num_task_require.toString(),
+        // });
+
+      }
+    } else {
+      window.numFollowers.set({
+        content: "-",
+      });
+
+      // window.numTaskRequire.set({
+      //   content: "-",
+      // });
+    }
+
+    // console.log(window.experiment.data);
   }
 
   if(window.connected) {

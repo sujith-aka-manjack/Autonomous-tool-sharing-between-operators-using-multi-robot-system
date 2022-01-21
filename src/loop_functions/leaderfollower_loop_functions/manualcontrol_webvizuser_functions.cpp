@@ -282,6 +282,18 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendLeaderData(CEPuckLea
     /* Username of operator controlling the leader */
     outJson["username"] = cController.GetUsername();
 
+    /* Number of followers */
+    outJson["num_followers"] = cController.GetFollowerCount();
+
+    /* Minimum number of robots needed for the current task */
+    outJson["num_task_require"] = cController.GetMinimumCount();
+
+    /* Task completion rate */
+
+    /* Number of follower in the other team */
+
+    /* Minimum number of robots needed for the other team's task */
+
     return outJson;
 }
 
