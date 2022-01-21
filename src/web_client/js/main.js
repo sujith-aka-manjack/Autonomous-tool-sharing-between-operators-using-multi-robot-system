@@ -43,21 +43,21 @@ var onAllFilesLoaded = function () {
         { type: 'top', size: 110, resizable: false },
         { type: 'left', size: "10%", resizable: true, content: 'left', hidden: true },
         { type: 'main', resizable: true, },
-        { type: 'right', size: "30%", style: "background-color: #f2f2f2;border:0px", resizable: true, content: 'right' }
+        { type: 'right', size: "25%", style: "background-color: #f2f2f2;border:0px", resizable: true, content: 'right' }
       ]
     });
     /* Log layout */
     $().w2layout({
       name: 'log_layout',
       padding: 5,
-      panels: [{
+      panels: [/* {
         type: 'top',
         size: "50%",
         resizable: true,
         // title: "Map",
         // style: "padding:4px 8px;background:white",
         content: '<canvas id="mini-map"></canvas>'
-      },{
+      }, */{
         type: 'main',
         size: "25%",
         resizable: true,
@@ -116,16 +116,16 @@ var onAllFilesLoaded = function () {
       InitializeThreejs(threejs_panel)
     }, true);
 
-    loadJS("/js/minimap.js", function () {
-      /* Get the panel from layout */
-      window.minimap_panel = $("#layout_log_layout_panel_top")
+    // loadJS("/js/minimap.js", function () {
+    //   /* Get the panel from layout */
+    //   window.minimap_panel = $("#layout_log_layout_panel_top")
 
-      /* Setup mini-map */
-      InitializeMinimap(minimap_panel)
-      console.log(window.minimap_panel.width())
-      console.log(document.getElementById('mini-map'));
+    //   /* Setup mini-map */
+    //   InitializeMinimap(minimap_panel)
+    //   console.log(window.minimap_panel.width())
+    //   console.log(document.getElementById('mini-map'));
 
-    }, true);
+    // }, true);
 
     /* Load websockets and connect to server */
     loadJS("/js/websockets.js", function () {
@@ -485,6 +485,9 @@ loadJS("/js/libs/GLTFLoader.js", true);
 // From https://www.npmjs.com/package/@seregpie/three.text-sprite
 loadJS("/js/libs/three.text-texture.js", true);
 loadJS("/js/libs/three.text-sprite.js", true);
+
+// From https://www.npmjs.com/package/three-mesh-ui
+loadJS("/js/libs/three-mesh-ui.js", true);
 
 /* Load fabric code */
 loadJS("/js/libs/fabric.min.js", true);

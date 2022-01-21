@@ -94,7 +94,8 @@ function initSceneWithScale(_scale) {
   scale = _scale;
 
   /* Top-view camera */
-  camera = new THREE.PerspectiveCamera(45, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
+  // camera = new THREE.PerspectiveCamera(45, window.threejs_panel.width() / window.threejs_panel.height(), 0.01, scale * 2500);
+  camera = new THREE.PerspectiveCamera( 60, window.threejs_panel.width() / window.threejs_panel.height(), 0.1, 1000 );
 
   camera.position.set(-scale * 3, 0, scale * 5);
 
@@ -164,68 +165,90 @@ function initSceneWithScale(_scale) {
   }
 
   /***************************/
-  /* Placeholder info labels */
 
-  let infoLabel = new THREE.TextSprite({
-    alignment: 'right',
-    color: '#000000',
-    fontFamily: '"Times New Roman", Times, serif',
-    fontSize: 24,
-    fontWeight: 'bold',
-    text: [
-      'INFO            ',
-      'My Team:',
-      '',
-      'Other Team:',
-    ].join('\n'),
+  const container = new ThreeMeshUI.Block({
+    ref: 'container',
+    padding: 0.025,
+    fontFamily: '/fonts/Roboto-msdf.json',
+    fontTexture: '/fonts/Roboto-msdf.png',
+    fontColor: new THREE.Color(0xffffff),
+    backgroundOpacity: 0,
+    alignContent: 'left',
   });
-  infoLabel.center.set( 0.0, 1.0 );
-  infoLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
-  infoLabel.position.set( -window.threejs_panel.width() / 2, window.threejs_panel.height() / 2, 1 ); // top left
 
-  // console.log(window.threejs_panel.width());
-  // console.log(window.threejs_panel.height());
+  container.position.set( 0, 0, 0 );
+  container.position.set( -window.threejs_panel.width() / 2 + 210, window.threejs_panel.height() / 2 - 140, 0 );
+  sceneOrtho.add(container);
 
-  sceneOrtho.add(infoLabel);
+  /* Leader Info labels */
+  const leaderInfo = new ThreeMeshUI.Block({
+		width: 400,
+		height: 130,
+    margin: 10,
+		padding: 15,
+		justifyContent: 'center',
+		alignContent: 'left',
+    fontSize: 28,
+    // backgroundOpacity: 0,
+    borderRadius: [0, 50, 0, 50],
+		borderWidth: 10,
+		borderColor: new THREE.Color( 0, 0.5, 1 ),
+		borderOpacity: 1,
+	});
+  
+	leaderInfo.add(
 
-  let robotNumLabel = new THREE.TextSprite({
-    alignment: 'right',
-    color: '#000000',
-    fontFamily: '"Times New Roman", Times, serif',
-    fontSize: 24,
-    fontWeight: 'bold',
-    text: [
-      '',
-      '10',
-      '',
-      '8',
-    ].join('\n'),
-  });
-  robotNumLabel.center.set( 0.0, 1.0 );
-  robotNumLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
-  robotNumLabel.position.set( -window.threejs_panel.width() / 2 + 150, window.threejs_panel.height() / 2, 1 ); // top left
+		new ThreeMeshUI.Text({
+			content: "User 1",
+			fontColor: new THREE.Color( 0, 0.5, 1 ),
+		}),
 
-  sceneOrtho.add(robotNumLabel);
+		new ThreeMeshUI.Text({
+			content: " Followers: ",
+		}),
 
-  let taskLabel = new THREE.TextSprite({
-    alignment: 'left',
-    color: '#000000',
-    fontFamily: '"Times New Roman", Times, serif',
-    fontSize: 24,
-    // fontWeight: 'bold',
-    text: [
-      '',
-      'Task: 5/10 (-5)',
-      'Progress: 0 %',
-      'Task: 12/10 (+2)',
-      'Progress: 100 %'
-    ].join('\n'),
-  });
-  taskLabel.center.set( 0.0, 1.0 );
-  taskLabel.scale.set( window.threejs_panel.width(), window.threejs_panel.height(), 1 );
-  taskLabel.position.set( -window.threejs_panel.width() / 2 + 200, window.threejs_panel.height() / 2, 1 ); // top left
+    new ThreeMeshUI.Text({
+			content: "XXX",
+		})
 
-  sceneOrtho.add(taskLabel);
+	);
+
+  container.add(leaderInfo);
+
+  /* Other Leader Info labels */
+  const otherLeaderInfo = new ThreeMeshUI.Block({
+		width: 300,
+		height: 100,
+    margin: 10,
+		padding: 15,
+		justifyContent: 'center',
+		alignContent: 'left',
+    fontSize: 20,
+    // backgroundOpacity: 0,
+    borderRadius: [0, 50, 0, 50],
+		borderWidth: 7,
+		borderColor: new THREE.Color( 0, 0.5, 1 ),
+		borderOpacity: 1,
+	});
+  
+	otherLeaderInfo.add(
+
+		new ThreeMeshUI.Text({
+			content: "User 2",
+			fontColor: new THREE.Color( 0, 0.5, 1 ),
+		}),
+
+		new ThreeMeshUI.Text({
+			content: " Followers: ",
+		}),
+
+    new ThreeMeshUI.Text({
+			content: "XXX",
+		})
+
+	);
+
+  container.add(otherLeaderInfo);
 
   /***************************/
 
@@ -601,11 +624,12 @@ function get2DProjectedPosition(mouse, object) {
 
 function animate() {
   requestAnimationFrame(animate);
+  ThreeMeshUI.update();
   commandUpdate();
   controls.update();
   cameraUpdate();
   render();
-  update_minimap();
+  // update_minimap();
 }
 
 
