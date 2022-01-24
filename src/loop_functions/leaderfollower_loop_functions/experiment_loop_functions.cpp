@@ -490,7 +490,8 @@ void CExperimentLoopFunctions::PreStep() {
                 if(currentDemand < taskWithRobot[cCTask.GetId()]) {
                     cCTask.SetDemand(0);
                 } else {
-                    cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+                    // cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+                    cCTask.SetDemand(currentDemand - 1);
                 }
             }
 

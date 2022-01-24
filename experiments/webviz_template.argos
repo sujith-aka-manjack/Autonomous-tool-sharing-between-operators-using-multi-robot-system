@@ -128,12 +128,12 @@
       <task position="1.5,-1.5" radius="0.45" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="1.5,1.5" radius="0.45" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" /> -->
 
-      <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
+      <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
+      <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="2500" />
 
-      <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="7500" />
+      <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="1000" />
     </tasks>
   </loop_functions>
 
