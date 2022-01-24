@@ -455,9 +455,7 @@ void CLeader::ControlStep() {
     /*--------------*/
     m_pcRABAct->SetData(cbyte_msg);
 
-    /* Reset task demand */
-    currentTaskDemand = 0;
-
+    /* Reset leader signal */
     inputStart = false;
     inputStop = false;
 }
@@ -540,8 +538,29 @@ void CLeader::SetWaypoints(const std::queue<CVector2> waypts) {
 /****************************************/
 /****************************************/
 
+UInt32 CLeader::GetTaskDemand() {
+    return currentTaskDemand;
+}
+
+/****************************************/
+/****************************************/
+
 void CLeader::SetTaskDemand(const UInt32 un_demand) {
     currentTaskDemand = un_demand;
+}
+
+/****************************************/
+/****************************************/
+
+UInt32 CLeader::GetInitTaskDemand() {
+    return currentInitTaskDemand;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetInitTaskDemand(const UInt32 un_init_demand) {
+    currentInitTaskDemand = un_init_demand;
 }
 
 /****************************************/

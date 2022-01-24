@@ -204,10 +204,25 @@ public:
     */
     virtual void SetWaypoints(const std::queue<CVector2> waypts);
 
+    /*
+    * Get the current task's demand.
+    */
+    virtual UInt32 GetTaskDemand();
+
     /* 
-    * Sets the current task info.
+    * Sets the current task's demand.
     */
     virtual void SetTaskDemand(const UInt32 un_demand);
+
+    /*
+    * Get the current task's initial demand.
+    */
+    virtual UInt32 GetInitTaskDemand();
+
+    /* 
+    * Sets the current task's initial demand.
+    */
+    virtual void SetInitTaskDemand(const UInt32 un_init_demand);
 
     /*
     * Get the minimum number of robots needed for the current task.
@@ -414,6 +429,7 @@ private:
 
     /* Task demand of the current working task */
     UInt32 currentTaskDemand;
+    UInt32 currentInitTaskDemand;
     UInt32 previousTaskDemand; // Task demand from 10 timesteps ago
 
     int robotsNeeded; // Minimum number of robots needed to perform the current task

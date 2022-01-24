@@ -166,117 +166,321 @@ function initSceneWithScale(_scale) {
 
   /***************************/
 
-  const container = new ThreeMeshUI.Block({
+
+
+  /* Main Block */
+
+  const mainContainer = new ThreeMeshUI.Block({
     ref: 'container',
     padding: 0.025,
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
     fontColor: new THREE.Color(0xffffff),
-    backgroundOpacity: 0,
+    backgroundOpacity: 0.1,
     alignContent: 'left',
   });
+  mainContainer.position.set( -window.threejs_panel.width() / 2 + 260, window.threejs_panel.height() / 2 - 140, 0 );
+  sceneOrtho.add(mainContainer);
 
-  container.position.set( 0, 0, 0 );
-  container.position.set( -window.threejs_panel.width() / 2 + 210, window.threejs_panel.height() / 2 - 140, 0 );
-  sceneOrtho.add(container);
+  /* User Block */
 
-  /* Leader Info labels */
-  const leaderInfo = new ThreeMeshUI.Block({
-		width: 400,
-		height: 130,
+  const userContainer = new ThreeMeshUI.Block({
     margin: 10,
-		padding: 15,
-		justifyContent: 'center',
-		alignContent: 'left',
-    fontSize: 28,
-    // backgroundOpacity: 0,
-    borderRadius: [0, 50, 0, 50],
-		borderWidth: 10,
-		borderColor: new THREE.Color( 0, 0.5, 1 ),
+		alignContent: 'right',
+    backgroundOpacity: 0.1,
+    // borderRadius: [0, 50, 0, 50],
+		borderWidth: 1,
+		// borderColor: new THREE.Color( 0, 0.5, 1 ),
 		borderOpacity: 1,
-	});
-  
-	leaderInfo.add(
+  });
+  mainContainer.add(userContainer);
 
+    /* User Follower Block */
+
+  const userFollowerContainer = new ThreeMeshUI.Block({
+    margin: 10,
+    contentDirection: "row",
+    backgroundOpacity: 0.1,
+    fontSize: 24,
+  });
+  userContainer.add(userFollowerContainer);
+
+      /* User Name Block */
+
+  const userNameContainer = new ThreeMeshUI.Block({
+    width: 80,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+  });
+  userFollowerContainer.add(userNameContainer);
+
+  userNameContainer.add(
 		new ThreeMeshUI.Text({
 			content: "User 1",
-			fontColor: new THREE.Color( 0, 0.5, 1 ),
+			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
+  );
 
+      /* User Follower Label Block */
+
+  const userFollowerLabelContainer = new ThreeMeshUI.Block({
+    width: 120,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+  });
+  userFollowerContainer.add(userFollowerLabelContainer);
+
+  userFollowerLabelContainer.add(
 		new ThreeMeshUI.Text({
-			content: " Followers: ",
-		})
+      content: "Followers: ",
+			fontColor: new THREE.Color( 0, 0, 0 ),
+		}),
+  );
 
-	);
+      /* User Follower Count Block */
+
+  const userFollowerCountContainer = new ThreeMeshUI.Block({
+    width: 100,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 28,
+    backgroundOpacity: 0.1,
+  });
+  userFollowerContainer.add(userFollowerCountContainer);
 
   window.numFollowers = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
   window.numTaskRequire = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
-  leaderInfo.add(
+  userFollowerCountContainer.add(
+
     window.numFollowers,
 
-    new ThreeMeshUI.Text({
-			content: " / ",
+		new ThreeMeshUI.Text({
+      content: " / ",
+			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
 
     window.numTaskRequire,
   );
 
-  container.add(leaderInfo);
+    /* User Task Block */
 
-  /* Other Leader Info labels */
-  const otherLeaderInfo = new ThreeMeshUI.Block({
-		width: 300,
-		height: 100,
+  const userTaskContainer = new ThreeMeshUI.Block({
     margin: 10,
-		padding: 15,
+    contentDirection: "row",
+    backgroundOpacity: 0.1,
+  });
+  userContainer.add(userTaskContainer);
+
+      /* User Progress Bar Block */
+
+  const userProgressBarContainer = new ThreeMeshUI.Block({
+    width: 200,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+  });
+  userTaskContainer.add(userProgressBarContainer);
+
+  /* Progress Bar background */
+  window.progressBarWidth = 200;
+
+  const progressBar = new ThreeMeshUI.Block({
+		width: window.progressBarWidth,
+		height: 20,
+    margin: 0,
+		padding: 0,
 		justifyContent: 'center',
 		alignContent: 'left',
-    fontSize: 20,
-    // backgroundOpacity: 0,
-    borderRadius: [0, 50, 0, 50],
-		borderWidth: 7,
-		borderColor: new THREE.Color( 0, 0.5, 1 ),
-		borderOpacity: 1,
+    backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+    backgroundOpacity: 1,
+    borderWidth: 0,
+    borderRadius: 5,
 	});
-  
-	otherLeaderInfo.add(
+  userProgressBarContainer.add(progressBar);
 
-		new ThreeMeshUI.Text({
-			content: "User 2",
-			fontColor: new THREE.Color( 0, 0.5, 1 ),
-		}),
+  /* Progress bar foreground */
+  window.progress = new ThreeMeshUI.Block({
+    width: 0.001,
+    height: 20,
+    margin: 0,
+    padding: 0,
+    backgroundColor: new THREE.Color( 0, 1, 0 ),
+    backgroundOpacity: 0,
+  });
+  progressBar.add(window.progress);
 
-		new ThreeMeshUI.Text({
-			content: " Followers: ",
-		})
+      /* User Progress Percent Block */
 
-	);
+  const userProgressPercentContainer = new ThreeMeshUI.Block({
+    width: 80,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'right',
+    backgroundOpacity: 0.1,
+    fontSize: 28,
+  });
+  userTaskContainer.add(userProgressPercentContainer);
 
-  window.numOtherFollowers = new ThreeMeshUI.Text({
+  window.numProgress = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
-  window.numOtherTaskRequire = new ThreeMeshUI.Text({
-    content: "-",
-  });
+  userProgressPercentContainer.add(
 
-  otherLeaderInfo.add(
-    window.numOtherFollowers,
+    window.numProgress,
 
-    new ThreeMeshUI.Text({
-			content: " / ",
+		new ThreeMeshUI.Text({
+      content: " %",
+			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
-
-    window.numOtherTaskRequire,
   );
 
-  container.add(otherLeaderInfo);
+  /* Other User Block */
+
+    /* Other User Follower Block */
+
+  // /* Leader Info labels */
+  // const leaderInfo = new ThreeMeshUI.Block({
+	// 	width: 400,
+	// 	height: 130,
+  //   margin: 10,
+	// 	padding: 15,
+	// 	justifyContent: 'center',
+	// 	alignContent: 'left',
+  //   fontSize: 28,
+  //   // backgroundOpacity: 0,
+  //   borderRadius: [0, 50, 0, 50],
+	// 	borderWidth: 10,
+	// 	borderColor: new THREE.Color( 0, 0.5, 1 ),
+	// 	borderOpacity: 1,
+	// });
+  
+	// leaderInfo.add(
+
+	// 	new ThreeMeshUI.Text({
+	// 		content: "User 1",
+	// 		fontColor: new THREE.Color( 0, 0.5, 1 ),
+	// 	}),
+
+	// 	new ThreeMeshUI.Text({
+	// 		content: " Followers: ",
+	// 	})
+
+	// );
+
+  // window.numFollowers = new ThreeMeshUI.Text({
+  //   content: "-",
+  // });
+
+  // window.numTaskRequire = new ThreeMeshUI.Text({
+  //   content: "-",
+  // });
+
+  // leaderInfo.add(
+  //   window.numFollowers,
+
+  //   new ThreeMeshUI.Text({
+	// 		content: " / ",
+	// 	}),
+
+  //   window.numTaskRequire,
+  // );
+
+  // container.add(leaderInfo);
+
+  // const progressBar = new ThreeMeshUI.Block({
+	// 	width: 200,
+	// 	height: 20,
+  //   margin: 20,
+	// 	padding: 0,
+	// 	justifyContent: 'center',
+	// 	alignContent: 'left',
+  //   // fontSize: 28,
+  //   backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+  //   backgroundOpacity: 1,
+	// });
+
+  // container.add(progressBar);
+
+  // const progress = new ThreeMeshUI.Block({
+  //   width: 100,
+  //   height: 20,
+  //   margin: 0,
+  //   padding: 0,
+  //   backgroundColor: new THREE.Color( 0, 1, 0 ),
+  //   backgroundOpacity: 1,
+  // });
+
+  // progressBar.add(progress);
+
+  // /* Other Leader Info labels */
+  // const otherLeaderInfo = new ThreeMeshUI.Block({
+	// 	width: 300,
+	// 	height: 100,
+  //   margin: 10,
+	// 	padding: 15,
+	// 	justifyContent: 'center',
+	// 	alignContent: 'left',
+  //   fontSize: 20,
+  //   // backgroundOpacity: 0,
+  //   borderRadius: [0, 50, 0, 50],
+	// 	borderWidth: 7,
+	// 	borderColor: new THREE.Color( 0, 0.5, 1 ),
+	// 	borderOpacity: 1,
+	// });
+  
+	// otherLeaderInfo.add(
+
+	// 	new ThreeMeshUI.Text({
+	// 		content: "User 2",
+	// 		fontColor: new THREE.Color( 0, 0.5, 1 ),
+	// 	}),
+
+	// 	new ThreeMeshUI.Text({
+	// 		content: " Followers: ",
+	// 	})
+
+	// );
+
+  // window.numOtherFollowers = new ThreeMeshUI.Text({
+  //   content: "-",
+  // });
+
+  // window.numOtherTaskRequire = new ThreeMeshUI.Text({
+  //   content: "-",
+  // });
+
+  // otherLeaderInfo.add(
+  //   window.numOtherFollowers,
+
+  //   new ThreeMeshUI.Text({
+	// 		content: " / ",
+	// 	}),
+
+  //   window.numOtherTaskRequire,
+  // );
+
+  // container.add(otherLeaderInfo);
 
   /***************************/
 
@@ -812,8 +1016,11 @@ function render() {
 
         let num_followers = sceneEntities[window.target].entity.user_data.num_followers;
         let num_task_require = sceneEntities[window.target].entity.user_data.num_task_require;
-        let num_other_followers = sceneEntities[window.target].entity.user_data.num_other_followers;
-        let num_other_task_require = sceneEntities[window.target].entity.user_data.num_other_task_require;
+        let num_task_demand = sceneEntities[window.target].entity.user_data.num_task_demand;
+        let num_init_task_demand = sceneEntities[window.target].entity.user_data.num_init_task_demand;
+
+        // let num_other_followers = sceneEntities[window.target].entity.user_data.num_other_followers;
+        // let num_other_task_require = sceneEntities[window.target].entity.user_data.num_other_task_require;
 
         window.numFollowers.set({
           content: num_followers.toString(),
@@ -829,25 +1036,49 @@ function render() {
           });
         }
 
-        if(num_other_followers == 0) {
-          window.numOtherFollowers.set({
+        if(num_init_task_demand == 0) {
+          window.numProgress.set({
             content: "-",
           });
-        } else {
-          window.numOtherFollowers.set({
-            content: num_other_followers.toString(),
+
+          window.progress.set({
+            width: 0.001,
+            backgroundOpacity: 0,
           });
+        } else {
+          let num_progress = 1 - num_task_demand / num_init_task_demand;
+
+          window.numProgress.set({
+            content: Math.floor(num_progress.toString() * 100).toString(),
+          });
+
+          if(num_progress != 0) {
+            window.progress.set({
+              width: num_progress * window.progressBarWidth,
+              backgroundOpacity: 1,
+            });
+          }
         }
 
-        if(num_other_task_require == 0) {
-          window.numOtherTaskRequire.set({
-            content: "-",
-          });
-        } else {
-          window.numOtherTaskRequire.set({
-            content: num_other_task_require.toString(),
-          });
-        }
+        // if(num_other_followers == 0) {
+        //   window.numOtherFollowers.set({
+        //     content: "-",
+        //   });
+        // } else {
+        //   window.numOtherFollowers.set({
+        //     content: num_other_followers.toString(),
+        //   });
+        // }
+
+        // if(num_other_task_require == 0) {
+        //   window.numOtherTaskRequire.set({
+        //     content: "-",
+        //   });
+        // } else {
+        //   window.numOtherTaskRequire.set({
+        //     content: num_other_task_require.toString(),
+        //   });
+        // }
 
       }
     } else {
@@ -861,13 +1092,13 @@ function render() {
         content: "-",
       });
 
-      window.numOtherFollowers.set({
-        content: "-",
-      });
+      // window.numOtherFollowers.set({
+      //   content: "-",
+      // });
 
-      window.numOtherTaskRequire.set({
-        content: "-",
-      });
+      // window.numOtherTaskRequire.set({
+      //   content: "-",
+      // });
     }
 
     // console.log(window.experiment.data);
