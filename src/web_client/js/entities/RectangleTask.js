@@ -47,13 +47,16 @@
         /* Add all parts to a parent mesh */
         meshParent.add(this.task);
 
+        /* Amount of task completed in percentage */
+        var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
+
         this.sprite = new THREE.TextSprite({
             alignment: 'center',
             color: '#000000',
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: 8,
             text: [
-                entity.task.demand,
+                task_completed + "%",
             ].join('\n'),
         });
 
@@ -92,8 +95,10 @@
         if(this.mesh) {
 
             /* Update task demand */
+            var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
+
             this.sprite.text = [
-                entity.task.demand,
+                task_completed + "%",
             ].join('\n');
 
             /* Update color of task */

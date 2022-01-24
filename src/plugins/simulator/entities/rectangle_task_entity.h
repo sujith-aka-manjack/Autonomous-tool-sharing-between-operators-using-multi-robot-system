@@ -50,6 +50,10 @@ namespace argos {
          return m_unDemand;
       }
 
+      virtual UInt32 GetInitDemand() const {
+         return m_unInitDemand;
+      }
+
       virtual void SetDemand(UInt32 un_demand) {
          m_unDemand = un_demand;
       }
@@ -86,6 +90,7 @@ namespace argos {
       Real                m_fWidth;
       Real                m_fHeight;
       UInt32              m_unDemand;
+      UInt32              m_unInitDemand;
       UInt32              m_unMinRobotNum;
       UInt32              m_unMaxRobotNum;
       UInt32              m_unCurrentRobotNum;

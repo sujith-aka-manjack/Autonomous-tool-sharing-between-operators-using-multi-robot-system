@@ -32,6 +32,7 @@ namespace argos {
       m_fWidth(f_width),
       m_fHeight(f_height),
       m_unDemand(un_demand),
+      m_unInitDemand(un_demand),
       m_unMinRobotNum(un_min_robot_num),
       m_unMaxRobotNum(un_max_robot_num),
       m_unCurrentRobotNum(0) {}
