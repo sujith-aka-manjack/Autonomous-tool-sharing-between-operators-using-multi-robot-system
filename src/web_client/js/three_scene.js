@@ -30,6 +30,39 @@ window.isLoadingModels = false;
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 scene.background = new THREE.Color(0x007f7f);
 
+// compute mouse position in normalized device coordinates
+// (-1 to +1) for both directions.
+// Used to raycasting against the interactive elements
+
+let objsToTest = [];
+
+const raycaster = new THREE.Raycaster();
+
+const mouse = new THREE.Vector2();
+mouse.x = mouse.y = null;
+
+let selectState = false;
+
+window.addEventListener( 'pointermove', ( event )=>{
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+});
+
+window.addEventListener( 'pointerdown', ()=> { selectState = true });
+
+window.addEventListener( 'pointerup', ()=> { selectState = false });
+
+window.addEventListener( 'touchstart', ( event )=> {
+	selectState = true;
+	mouse.x = ( event.touches[0].clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.touches[0].clientY / window.innerHeight ) * 2 + 1;
+});
+
+window.addEventListener( 'touchend', ()=> {
+	selectState = false;
+	mouse.x = null;
+	mouse.y = null;
+});
 
 /* ----------------------- */
 var sceneEntities = [];
@@ -179,7 +212,7 @@ function initSceneWithScale(_scale) {
     backgroundOpacity: 0.1,
     alignContent: 'left',
   });
-  mainContainer.position.set( -window.threejs_panel.width() / 2 + 260, window.threejs_panel.height() / 2 - 140, 0 );
+  mainContainer.position.set( -window.threejs_panel.width() / 2 + 220, window.threejs_panel.height() / 2 - 160, 0 );
   sceneOrtho.add(mainContainer);
 
   /* User Block */
@@ -357,7 +390,275 @@ function initSceneWithScale(_scale) {
 
   /* Other User Block */
 
+  const otherUserContainer = new ThreeMeshUI.Block({
+    margin: 10,
+		alignContent: 'right',
+    backgroundOpacity: 0.1,
+		borderWidth: 1,
+		borderOpacity: 1,
+  });
+  mainContainer.add(otherUserContainer);
+
     /* Other User Follower Block */
+
+  const otherUserFollowerContainer = new ThreeMeshUI.Block({
+    margin: 10,
+    contentDirection: "row",
+    backgroundOpacity: 0.1,
+    fontSize: 24,
+  });
+  otherUserContainer.add(otherUserFollowerContainer);
+
+      /* Other User Name Block */
+
+  const otherUserNameContainer = new ThreeMeshUI.Block({
+    width: 80,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+  });
+  otherUserFollowerContainer.add(otherUserNameContainer);
+
+  otherUserNameContainer.add(
+		new ThreeMeshUI.Text({
+			content: "User 2",
+			fontColor: new THREE.Color( 0, 0, 0 ),
+		}),
+  );
+
+      /* Other User Follower Label Block */
+
+  const otherUserFollowerLabelContainer = new ThreeMeshUI.Block({
+    width: 120,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+  });
+  otherUserFollowerContainer.add(otherUserFollowerLabelContainer);
+
+  otherUserFollowerLabelContainer.add(
+		new ThreeMeshUI.Text({
+      content: "Followers: ",
+			fontColor: new THREE.Color( 0, 0, 0 ),
+		}),
+  );
+
+      /* User Follower Count Block */
+
+  const otherUserFollowerCountContainer = new ThreeMeshUI.Block({
+    width: 100,
+    height: 40,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 28,
+    backgroundOpacity: 0.1,
+  });
+  otherUserFollowerContainer.add(otherUserFollowerCountContainer);
+
+  window.numOtherFollowers = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color( 0, 0, 0 ),
+    content: "-",
+  });
+
+  window.numOtherTaskRequire = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color( 0, 0, 0 ),
+    content: "-",
+  });
+
+  otherUserFollowerCountContainer.add(
+
+    window.numOtherFollowers,
+
+		new ThreeMeshUI.Text({
+      content: " / ",
+			fontColor: new THREE.Color( 0, 0, 0 ),
+		}),
+
+    window.numOtherTaskRequire,
+  );
+
+  
+  /* Send Robot Block */
+
+  const sendContainer = new ThreeMeshUI.Block({
+    ref: 'container',
+    padding: 0.025,
+    fontFamily: '/fonts/Roboto-msdf.json',
+    fontTexture: '/fonts/Roboto-msdf.png',
+    fontColor: new THREE.Color(0xffffff),
+    backgroundOpacity: 0.1,
+    alignContent: 'left',
+  });
+  sendContainer.position.set( -window.threejs_panel.width() / 2 + 550, window.threejs_panel.height() / 2 - 100, 0 );
+  sceneOrtho.add(sendContainer);
+
+    /* Label Block */
+
+  const sendLabelContainer = new ThreeMeshUI.Block({
+    width: 80,
+    height: 20,
+    margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+    // borderRadius: [0, 50, 0, 50],
+		borderWidth: 1,
+		// borderColor: new THREE.Color( 0, 0.5, 1 ),
+		borderOpacity: 1,
+  });
+  sendContainer.add(sendLabelContainer);
+
+  sendLabelContainer.add(
+    new ThreeMeshUI.Text({
+      content: "Followers:",
+      fontSize: 16,
+			fontColor: new THREE.Color( 0, 0, 0 ),
+    }),
+  );
+
+    /* Control Block */
+
+  const sendControlContainer = new ThreeMeshUI.Block({
+    margin: 10,
+    contentDirection: "row",
+    backgroundOpacity: 0.1,
+    // borderRadius: [0, 50, 0, 50],
+		borderWidth: 1,
+		// borderColor: new THREE.Color( 0, 0.5, 1 ),
+		borderOpacity: 1,
+  });
+  sendContainer.add(sendControlContainer);
+
+      /* Count Block */
+
+    const sendCountContainer = new ThreeMeshUI.Block({
+      width: 80,
+      height: 40,
+      margin: 10,
+      justifyContent: 'center',
+      alignContent: 'center',
+      backgroundOpacity: 0.1,
+    });
+    sendControlContainer.add(sendCountContainer);
+  
+    sendCountContainer.add(
+      new ThreeMeshUI.Text({
+        content: "XX",
+        fontSize: 28,
+        fontColor: new THREE.Color( 0, 0, 0 ),
+      }),
+    );
+
+      /* Toggle Block */
+
+    const sendToggleContainer = new ThreeMeshUI.Block({
+      margin: 10,
+      alignContent: 'right',
+      backgroundOpacity: 0.1,
+      // borderRadius: [0, 50, 0, 50],
+      borderWidth: 1,
+      // borderColor: new THREE.Color( 0, 0.5, 1 ),
+      borderOpacity: 1,
+    });
+    sendControlContainer.add(sendToggleContainer);
+
+    const hoveredStateAttributes = {
+      state: "hovered",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x999999 ),
+        backgroundOpacity: 1,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+  
+    const idleStateAttributes = {
+      state: "idle",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x666666 ),
+        backgroundOpacity: 0.3,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+
+        /* Add Block */
+
+    const sendAddButton = new ThreeMeshUI.Block({
+      width: 30,
+      height: 30,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      fontSize: 28,
+      borderRadius: 15,
+      backgroundOpacity: 1,
+    })
+
+    sendAddButton.add(
+      new ThreeMeshUI.Text({
+        content: "+",
+        // fontColor: new THREE.Color( 1, 1, 1 ),
+      }),
+    );
+
+        /* Subtract Block */
+
+    const sendSubtractButton = new ThreeMeshUI.Block({
+      width: 30,
+      height: 30,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      fontSize: 28,
+      borderRadius: 15,
+      backgroundOpacity: 1,
+    })
+
+    sendSubtractButton.add(
+      new ThreeMeshUI.Text({
+        content: "-",
+        // fontColor: new THREE.Color( 1, 1, 1 ),
+      }),
+    );
+
+    const selectedAttributes = {
+      offset: 0.02,
+      backgroundColor: new THREE.Color( 0x777777 ),
+      fontColor: new THREE.Color( 0x222222 )
+    };
+  
+    sendAddButton.setupState({
+      state: "selected",
+      attributes: selectedAttributes,
+      onSet: ()=> {
+        console.log("Add Selected");
+      }
+    });
+    sendAddButton.setupState( hoveredStateAttributes );
+    sendAddButton.setupState( idleStateAttributes );
+
+    sendSubtractButton.setupState({
+      state: "selected",
+      attributes: selectedAttributes,
+      onSet: ()=> {
+        console.log("Subtract Selected");
+
+      }
+    });
+    sendSubtractButton.setupState( hoveredStateAttributes );
+    sendSubtractButton.setupState( idleStateAttributes );
+
+    sendToggleContainer.add(sendAddButton, sendSubtractButton);
+    objsToTest.push(sendAddButton, sendSubtractButton);
+
+
+      /* Confirm Block */
 
   // /* Leader Info labels */
   // const leaderInfo = new ThreeMeshUI.Block({
@@ -485,6 +786,97 @@ function initSceneWithScale(_scale) {
   /***************************/
 
 }
+
+// Called in the loop, get intersection with either the mouse or the VR controllers,
+// then update the buttons states according to result
+
+function updateButtons() {
+
+  /* Adjust mouse position to match UI */
+
+  // console.log(mouse.x);
+  // console.log(mouse.y);
+
+  const newMouse = new THREE.Vector2();
+  newMouse.copy(mouse);
+
+  const translate = new THREE.Vector2(0.25,0.125);
+  newMouse.add(translate);
+
+  const resize = new THREE.Vector2(0.75,0.875);
+  newMouse.divide(resize);
+
+  // console.log(newMouse.x);
+  // console.log(newMouse.y);
+
+	// Find closest intersecting object
+
+	let intersect;
+
+	if ( newMouse.x !== null && newMouse.y !== null ) {
+
+		raycaster.setFromCamera( newMouse, cameraOrtho );
+
+		intersect = raycast();
+
+	};
+
+	// Update targeted button state (if any)
+
+	if ( intersect && intersect.object.isUI ) {
+
+		if ( selectState ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+
+		} else {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'hovered' );
+
+		};
+
+	};
+
+	// Update non-targeted buttons state
+
+	objsToTest.forEach( (obj)=> {
+
+		if ( (!intersect || obj !== intersect.object) && obj.isUI ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+
+		};
+
+	});
+
+};
+
+function raycast() {
+
+	return objsToTest.reduce( (closestIntersection, obj)=> {
+
+		const intersection = raycaster.intersectObject( obj, true );
+
+		if ( !intersection[0] ) return closestIntersection
+
+		if ( !closestIntersection || intersection[0].distance < closestIntersection.distance ) {
+
+			intersection[0].object = obj;
+
+			return intersection[0]
+
+		} else {
+
+			return closestIntersection
+
+		};
+
+	}, null );
+
+};
 
 function cleanUpdateScene() {
   window.isLoadingModels = true;
@@ -1019,8 +1411,8 @@ function render() {
         let num_task_demand = sceneEntities[window.target].entity.user_data.num_task_demand;
         let num_init_task_demand = sceneEntities[window.target].entity.user_data.num_init_task_demand;
 
-        // let num_other_followers = sceneEntities[window.target].entity.user_data.num_other_followers;
-        // let num_other_task_require = sceneEntities[window.target].entity.user_data.num_other_task_require;
+        let num_other_followers = sceneEntities[window.target].entity.user_data.num_other_followers;
+        let num_other_task_require = sceneEntities[window.target].entity.user_data.num_other_task_require;
 
         window.numFollowers.set({
           content: num_followers.toString(),
@@ -1060,25 +1452,25 @@ function render() {
           }
         }
 
-        // if(num_other_followers == 0) {
-        //   window.numOtherFollowers.set({
-        //     content: "-",
-        //   });
-        // } else {
-        //   window.numOtherFollowers.set({
-        //     content: num_other_followers.toString(),
-        //   });
-        // }
+        if(num_other_followers == 0) {
+          window.numOtherFollowers.set({
+            content: "-",
+          });
+        } else {
+          window.numOtherFollowers.set({
+            content: num_other_followers.toString(),
+          });
+        }
 
-        // if(num_other_task_require == 0) {
-        //   window.numOtherTaskRequire.set({
-        //     content: "-",
-        //   });
-        // } else {
-        //   window.numOtherTaskRequire.set({
-        //     content: num_other_task_require.toString(),
-        //   });
-        // }
+        if(num_other_task_require == 0) {
+          window.numOtherTaskRequire.set({
+            content: "-",
+          });
+        } else {
+          window.numOtherTaskRequire.set({
+            content: num_other_task_require.toString(),
+          });
+        }
 
       }
     } else {
@@ -1092,17 +1484,19 @@ function render() {
         content: "-",
       });
 
-      // window.numOtherFollowers.set({
-      //   content: "-",
-      // });
+      window.numOtherFollowers.set({
+        content: "-",
+      });
 
-      // window.numOtherTaskRequire.set({
-      //   content: "-",
-      // });
+      window.numOtherTaskRequire.set({
+        content: "-",
+      });
     }
 
     // console.log(window.experiment.data);
   }
+
+  updateButtons();
 
   if(window.connected) {
     renderer.render(scene, cameraRobot);
