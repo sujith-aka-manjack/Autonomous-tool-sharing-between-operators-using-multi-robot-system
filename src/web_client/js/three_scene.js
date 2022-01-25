@@ -1109,8 +1109,8 @@ function updateButtons() {
   const resize = new THREE.Vector2(0.75,0.935);
   newMouse.divide(resize);
 
-  console.log(newMouse.x);
-  console.log(newMouse.y);
+  // console.log(newMouse.x);
+  // console.log(newMouse.y);
 
 	// Find closest intersecting object
 
