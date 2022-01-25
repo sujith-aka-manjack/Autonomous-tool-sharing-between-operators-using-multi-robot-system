@@ -204,7 +204,7 @@ function initSceneWithScale(_scale) {
   /* Main Block */
 
   const mainContainer = new ThreeMeshUI.Block({
-    ref: 'container',
+    // ref: 'container',
     padding: 0.025,
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
@@ -486,7 +486,7 @@ function initSceneWithScale(_scale) {
   /* Send Robot Block */
 
   const sendContainer = new ThreeMeshUI.Block({
-    ref: 'container',
+    // ref: 'container',
     padding: 0.025,
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
@@ -494,7 +494,7 @@ function initSceneWithScale(_scale) {
     backgroundOpacity: 0.1,
     alignContent: 'left',
   });
-  sendContainer.position.set( -window.threejs_panel.width() / 2 + 550, window.threejs_panel.height() / 2 - 100, 0 );
+  sendContainer.position.set( -window.threejs_panel.width() / 2 + 580, window.threejs_panel.height() / 2 - 100, 0 );
   sceneOrtho.add(sendContainer);
 
     /* Label Block */
@@ -545,14 +545,17 @@ function initSceneWithScale(_scale) {
       backgroundOpacity: 0.1,
     });
     sendControlContainer.add(sendCountContainer);
-  
-    sendCountContainer.add(
-      new ThreeMeshUI.Text({
-        content: "XX",
-        fontSize: 28,
-        fontColor: new THREE.Color( 0, 0, 0 ),
-      }),
-    );
+
+      /* Counter */
+    window.toSendCount = 0;
+
+    window.sendCountLabel = new ThreeMeshUI.Text({
+      content: window.toSendCount.toString(),
+      fontSize: 28,
+      fontColor: new THREE.Color( 0, 0, 0 ),
+    });
+
+    sendCountContainer.add(window.sendCountLabel);
 
       /* Toggle Block */
 
@@ -597,7 +600,7 @@ function initSceneWithScale(_scale) {
       alignContent: 'center',
       fontSize: 28,
       borderRadius: 15,
-      backgroundOpacity: 1,
+      // backgroundOpacity: 1,
     })
 
     sendAddButton.add(
@@ -617,7 +620,7 @@ function initSceneWithScale(_scale) {
       alignContent: 'center',
       fontSize: 28,
       borderRadius: 15,
-      backgroundOpacity: 1,
+      // backgroundOpacity: 1,
     })
 
     sendSubtractButton.add(
@@ -638,6 +641,11 @@ function initSceneWithScale(_scale) {
       attributes: selectedAttributes,
       onSet: ()=> {
         console.log("Add Selected");
+        window.toSendCount++;
+        window.sendCommand['number'] = window.toSendCount;
+        window.sendCountLabel.set({
+          content: window.toSendCount.toString(),
+        });
       }
     });
     sendAddButton.setupState( hoveredStateAttributes );
@@ -648,7 +656,13 @@ function initSceneWithScale(_scale) {
       attributes: selectedAttributes,
       onSet: ()=> {
         console.log("Subtract Selected");
-
+        if(window.toSendCount > 0) {
+          window.toSendCount--;
+          window.sendCommand['number'] = window.toSendCount;
+          window.sendCountLabel.set({
+            content: window.toSendCount.toString(),
+          });
+        }
       }
     });
     sendSubtractButton.setupState( hoveredStateAttributes );
@@ -657,226 +671,45 @@ function initSceneWithScale(_scale) {
     sendToggleContainer.add(sendAddButton, sendSubtractButton);
     objsToTest.push(sendAddButton, sendSubtractButton);
 
-
       /* Confirm Block */
 
-  // /* Leader Info labels */
-  // const leaderInfo = new ThreeMeshUI.Block({
-	// 	width: 400,
-	// 	height: 130,
-  //   margin: 10,
-	// 	padding: 15,
-	// 	justifyContent: 'center',
-	// 	alignContent: 'left',
-  //   fontSize: 28,
-  //   // backgroundOpacity: 0,
-  //   borderRadius: [0, 50, 0, 50],
-	// 	borderWidth: 10,
-	// 	borderColor: new THREE.Color( 0, 0.5, 1 ),
-	// 	borderOpacity: 1,
-	// });
-  
-	// leaderInfo.add(
+    const sendConfirmButton = new ThreeMeshUI.Block({
+      width: 80,
+      height: 40,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      fontSize: 20,
+      borderRadius: 15,
+      // backgroundOpacity: 1,
+    });
 
-	// 	new ThreeMeshUI.Text({
-	// 		content: "User 1",
-	// 		fontColor: new THREE.Color( 0, 0.5, 1 ),
-	// 	}),
+    sendConfirmButton.add(
+      new ThreeMeshUI.Text({
+        content: "Send",
+        // fontColor: new THREE.Color( 1, 1, 1 ),
+      }),
+    );
 
-	// 	new ThreeMeshUI.Text({
-	// 		content: " Followers: ",
-	// 	})
+    sendConfirmButton.setupState({
+      state: "selected",
+      attributes: selectedAttributes,
+      onSet: ()=> {
+        console.log("Confirm Selected");
+        if(window.toSendCount > 0) {
+          window.sendFlag = true;
+        }
+      }
+    });
+    sendConfirmButton.setupState( hoveredStateAttributes );
+    sendConfirmButton.setupState( idleStateAttributes );
 
-	// );
-
-  // window.numFollowers = new ThreeMeshUI.Text({
-  //   content: "-",
-  // });
-
-  // window.numTaskRequire = new ThreeMeshUI.Text({
-  //   content: "-",
-  // });
-
-  // leaderInfo.add(
-  //   window.numFollowers,
-
-  //   new ThreeMeshUI.Text({
-	// 		content: " / ",
-	// 	}),
-
-  //   window.numTaskRequire,
-  // );
-
-  // container.add(leaderInfo);
-
-  // const progressBar = new ThreeMeshUI.Block({
-	// 	width: 200,
-	// 	height: 20,
-  //   margin: 20,
-	// 	padding: 0,
-	// 	justifyContent: 'center',
-	// 	alignContent: 'left',
-  //   // fontSize: 28,
-  //   backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
-  //   backgroundOpacity: 1,
-	// });
-
-  // container.add(progressBar);
-
-  // const progress = new ThreeMeshUI.Block({
-  //   width: 100,
-  //   height: 20,
-  //   margin: 0,
-  //   padding: 0,
-  //   backgroundColor: new THREE.Color( 0, 1, 0 ),
-  //   backgroundOpacity: 1,
-  // });
-
-  // progressBar.add(progress);
-
-  // /* Other Leader Info labels */
-  // const otherLeaderInfo = new ThreeMeshUI.Block({
-	// 	width: 300,
-	// 	height: 100,
-  //   margin: 10,
-	// 	padding: 15,
-	// 	justifyContent: 'center',
-	// 	alignContent: 'left',
-  //   fontSize: 20,
-  //   // backgroundOpacity: 0,
-  //   borderRadius: [0, 50, 0, 50],
-	// 	borderWidth: 7,
-	// 	borderColor: new THREE.Color( 0, 0.5, 1 ),
-	// 	borderOpacity: 1,
-	// });
-  
-	// otherLeaderInfo.add(
-
-	// 	new ThreeMeshUI.Text({
-	// 		content: "User 2",
-	// 		fontColor: new THREE.Color( 0, 0.5, 1 ),
-	// 	}),
-
-	// 	new ThreeMeshUI.Text({
-	// 		content: " Followers: ",
-	// 	})
-
-	// );
-
-  // window.numOtherFollowers = new ThreeMeshUI.Text({
-  //   content: "-",
-  // });
-
-  // window.numOtherTaskRequire = new ThreeMeshUI.Text({
-  //   content: "-",
-  // });
-
-  // otherLeaderInfo.add(
-  //   window.numOtherFollowers,
-
-  //   new ThreeMeshUI.Text({
-	// 		content: " / ",
-	// 	}),
-
-  //   window.numOtherTaskRequire,
-  // );
-
-  // container.add(otherLeaderInfo);
+    sendControlContainer.add(sendConfirmButton);
+    objsToTest.push(sendConfirmButton);
 
   /***************************/
 
 }
-
-// Called in the loop, get intersection with either the mouse or the VR controllers,
-// then update the buttons states according to result
-
-function updateButtons() {
-
-  /* Adjust mouse position to match UI */
-
-  // console.log(mouse.x);
-  // console.log(mouse.y);
-
-  const newMouse = new THREE.Vector2();
-  newMouse.copy(mouse);
-
-  const translate = new THREE.Vector2(0.25,0.125);
-  newMouse.add(translate);
-
-  const resize = new THREE.Vector2(0.75,0.875);
-  newMouse.divide(resize);
-
-  // console.log(newMouse.x);
-  // console.log(newMouse.y);
-
-	// Find closest intersecting object
-
-	let intersect;
-
-	if ( newMouse.x !== null && newMouse.y !== null ) {
-
-		raycaster.setFromCamera( newMouse, cameraOrtho );
-
-		intersect = raycast();
-
-	};
-
-	// Update targeted button state (if any)
-
-	if ( intersect && intersect.object.isUI ) {
-
-		if ( selectState ) {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			intersect.object.setState( 'selected' );
-
-		} else {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			intersect.object.setState( 'hovered' );
-
-		};
-
-	};
-
-	// Update non-targeted buttons state
-
-	objsToTest.forEach( (obj)=> {
-
-		if ( (!intersect || obj !== intersect.object) && obj.isUI ) {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			obj.setState( 'idle' );
-
-		};
-
-	});
-
-};
-
-function raycast() {
-
-	return objsToTest.reduce( (closestIntersection, obj)=> {
-
-		const intersection = raycaster.intersectObject( obj, true );
-
-		if ( !intersection[0] ) return closestIntersection
-
-		if ( !closestIntersection || intersection[0].distance < closestIntersection.distance ) {
-
-			intersection[0].object = obj;
-
-			return intersection[0]
-
-		} else {
-
-			return closestIntersection
-
-		};
-
-	}, null );
-
-};
 
 function cleanUpdateScene() {
   window.isLoadingModels = true;
@@ -1249,15 +1082,111 @@ function get2DProjectedPosition(mouse, object) {
 function animate() {
   requestAnimationFrame(animate);
   ThreeMeshUI.update();
-  commandUpdate();
+  updateButtons();
+  updateCommands();
   controls.update();
   cameraUpdate();
   render();
   // update_minimap();
 }
 
+// Called in the loop, get intersection with either the mouse or the VR controllers,
+// then update the buttons states according to result
 
-function commandUpdate() {
+function updateButtons() {
+
+  /* Adjust mouse position to match UI */
+
+  // console.log(mouse.x);
+  // console.log(mouse.y);
+
+  const newMouse = new THREE.Vector2();
+  newMouse.copy(mouse);
+
+  const translate = new THREE.Vector2(0.25,0.065);
+  newMouse.add(translate);
+
+  const resize = new THREE.Vector2(0.75,0.935);
+  newMouse.divide(resize);
+
+  console.log(newMouse.x);
+  console.log(newMouse.y);
+
+	// Find closest intersecting object
+
+	let intersect;
+
+	if ( newMouse.x !== null && newMouse.y !== null ) {
+
+		raycaster.setFromCamera( newMouse, cameraOrtho );
+
+		intersect = raycast();
+
+	};
+
+	// Update targeted button state (if any)
+
+	if ( intersect && intersect.object.isUI ) {
+
+    // Check if a leader is selected
+    if(window.target != "") {
+
+      // console.log(intersect.object);
+
+      if ( selectState ) {
+
+        // Component.setState internally call component.set with the options you defined in component.setupState
+        intersect.object.setState( 'selected' );
+  
+      } else {
+  
+        // Component.setState internally call component.set with the options you defined in component.setupState
+        intersect.object.setState( 'hovered' );
+  
+      };
+    };
+	};
+
+	// Update non-targeted buttons state
+
+	objsToTest.forEach( (obj)=> {
+
+		if ( (!intersect || obj !== intersect.object) && obj.isUI ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+
+		};
+
+	});
+
+};
+
+function raycast() {
+
+	return objsToTest.reduce( (closestIntersection, obj)=> {
+
+		const intersection = raycaster.intersectObject( obj, true );
+
+		if ( !intersection[0] ) return closestIntersection
+
+		if ( !closestIntersection || intersection[0].distance < closestIntersection.distance ) {
+
+			intersection[0].object = obj;
+
+			return intersection[0]
+
+		} else {
+
+			return closestIntersection
+
+		};
+
+	}, null );
+
+};
+
+function updateCommands() {
 
   window.keyboard.update();
 
@@ -1491,12 +1420,19 @@ function render() {
       window.numOtherTaskRequire.set({
         content: "-",
       });
+
+      window.numProgress.set({
+        content: "-",
+      });
+
+      window.progress.set({
+        width: 0.001,
+        backgroundOpacity: 0,
+      });
     }
 
     // console.log(window.experiment.data);
   }
-
-  updateButtons();
 
   if(window.connected) {
     renderer.render(scene, cameraRobot);

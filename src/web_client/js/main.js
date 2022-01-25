@@ -40,7 +40,7 @@ var onAllFilesLoaded = function () {
       name: 'app_layout',
       padding: 4,
       panels: [
-        { type: 'top', size: 110, resizable: false },
+        { type: 'top', size: 55, resizable: false },
         { type: 'left', size: "10%", resizable: true, content: 'left', hidden: true },
         { type: 'main', resizable: true, },
         { type: 'right', size: "25%", style: "background-color: #f2f2f2;border:0px", resizable: true, content: 'right' }
@@ -59,7 +59,7 @@ var onAllFilesLoaded = function () {
         content: '<canvas id="mini-map"></canvas>'
       }, */{
         type: 'main',
-        size: "25%",
+        size: "75%",
         resizable: true,
         title: "Log",
         style: "padding:4px 8px;background:white",
@@ -79,17 +79,17 @@ var onAllFilesLoaded = function () {
       padding: 5,
       panels: [{
         type: 'top',
-        size: "50%",
+        size: "100%",
         resizable: false,
         // style: "padding:4px 8px;background:white",
         // content: '<div id="contentAreaLog" class="clusterize-content"></div>'
-      }, {
+      }, /* {
         type: 'main',
         size: "50%",
         resizable: false,
         // style: "padding:4px 8px;background:white",
         // content: '<div id="contentAreaLogErr" class="clusterize-content"></div>'
-      }]
+      } */]
     });
 
     /* Make them nested */
@@ -396,61 +396,61 @@ var onAllFilesLoaded = function () {
           .html("{experiment.status}")
         )
 
-      let requestButtonTag = "".concat(
-        "<button type='button'>Request</button>"
-      );
+      // let requestButtonTag = "".concat(
+      //   "<button type='button'>Request</button>"
+      // );
 
-      let sendButtonTag = "".concat(
-        "<button type='button'>Send</button>"
-      );
+      // let sendButtonTag = "".concat(
+      //   "<button type='button'>Send</button>"
+      // );
 
-      /* Add button on top panel */
-      $("#layout_toolbar_layout_panel_main>div.w2ui-panel-content")
-        .addClass('toolbar-flex-container')
-        .append($("<input/>")
-          .attr('type', 'number')
-          .attr('id', 'request_input')
-          .attr('min', '0')
-          .attr('max', '1000')
-          .attr('value', '0')
-          .attr("title", "Number of robots to request")
-          .prop("title", "Number of robots to request")//for IE
-        )
+      // /* Add button on top panel */
+      // $("#layout_toolbar_layout_panel_main>div.w2ui-panel-content")
+      //   .addClass('toolbar-flex-container')
+      //   .append($("<input/>")
+      //     .attr('type', 'number')
+      //     .attr('id', 'request_input')
+      //     .attr('min', '0')
+      //     .attr('max', '1000')
+      //     .attr('value', '0')
+      //     .attr("title", "Number of robots to request")
+      //     .prop("title", "Number of robots to request")//for IE
+      //   )
 
-        .append($(requestButtonTag)
-          .attr('id','button_request')
-          .attr("title", "Request robots")
-          .prop("title", "Request robots")//for IE
-          .click(function () {
-            window.requestCommand['number'] = parseInt($("#request_input").val());
-            window.requestFlag = true;
-          })
-        )
+      //   .append($(requestButtonTag)
+      //     .attr('id','button_request')
+      //     .attr("title", "Request robots")
+      //     .prop("title", "Request robots")//for IE
+      //     .click(function () {
+      //       window.requestCommand['number'] = parseInt($("#request_input").val());
+      //       window.requestFlag = true;
+      //     })
+      //   )
 
-        /* Divider */
-        .append($("<div/>")
-          .addClass('toolbar_divider')
-        )
+      //   /* Divider */
+      //   .append($("<div/>")
+      //     .addClass('toolbar_divider')
+      //   )
 
-        .append($("<input/>")
-          .attr('type', 'number')
-          .attr('id', 'send_input')
-          .attr('min', '0')
-          .attr('max', '1000')
-          .attr('value', '0')
-          .attr("title", "Number of robots to send")
-          .prop("title", "Number of robots to send")//for IE
-        )
+      //   .append($("<input/>")
+      //     .attr('type', 'number')
+      //     .attr('id', 'send_input')
+      //     .attr('min', '0')
+      //     .attr('max', '1000')
+      //     .attr('value', '0')
+      //     .attr("title", "Number of robots to send")
+      //     .prop("title", "Number of robots to send")//for IE
+      //   )
 
-        .append($(sendButtonTag)
-          .attr('id','button_send')
-          .attr("title", "Send robots")
-          .prop("title", "Send robots")//for IE
-          .click(function () {
-            window.sendCommand['number'] = parseInt($("#send_input").val());
-            window.sendFlag = true;
-          })
-        )
+      //   .append($(sendButtonTag)
+      //     .attr('id','button_send')
+      //     .attr("title", "Send robots")
+      //     .prop("title", "Send robots")//for IE
+      //     .click(function () {
+      //       window.sendCommand['number'] = parseInt($("#send_input").val());
+      //       window.sendFlag = true;
+      //     })
+      //   )
 
       window.experiment = {}
 
