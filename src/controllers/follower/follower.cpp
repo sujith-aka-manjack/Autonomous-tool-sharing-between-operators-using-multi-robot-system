@@ -840,6 +840,58 @@ void CFollower::Update() {
                     }
                 }
             }
+        } else {
+
+            bool isOnlyConnector = true;
+
+            for(const auto& hop : hopsDict) {
+                if(hop.second.count != 1) {
+                    isOnlyConnector = false;
+                }
+            }
+
+            // It is the only connector between the two teams
+
+            if(isOnlyConnector) {
+
+                // Check the shortest distance between the followers of the two teams
+                // Followers that are visible to this robot
+
+                // Split otherTeamMsgs into two.
+                std::map<UInt8, std::vector<Message>> splitTeamMsgs;
+
+                for(const auto& msg : otherTeamMsgs) {
+                    if(splitTeamMsgs.find(msg.teamID) == splitTeamMsgs.end()) {
+                        // If key does't exist, create new entry
+                        splitTeamMsgs[msg.teamID] = std::vector<Message>();
+                    }
+
+                    splitTeamMsgs[msg.teamID].push_back(msg);
+                }
+                
+                /* Find the shortest distance between the two teams it connects to (O^2) */
+
+                // TEMP: Hardcoded team numbers
+                UInt8 team1 = 1;
+                UInt8 team2 = 2;
+
+                Real minDist = 10000;
+
+                for(const auto& msg1 : splitTeamMsgs[team1]) {
+                    for(const auto& msg2 : splitTeamMsgs[team2]) {
+                        CVector2 diff = msg1.direction - msg2.direction;
+                        Real dist = diff.Length();
+
+                        if(dist < minDist)
+                            minDist = dist;
+                    }
+                }
+
+                // The followers of the two teams are close by. This robot is not needed.
+                if(minDist + 2 < separationThres - 10) {
+                    condF2 = true;
+                }
+            }
         }
     } else if(currentState == RobotState::TRAVELER) {
 
@@ -933,7 +985,7 @@ Message CFollower::GetClosestNonTeam() {
         }
     }
 
-    if(minDist < 10000)
+    // if(minDist < 10000)
         //std::cout << "Dist to candidate: " << minDist << std::endl;
     
     return closestRobot;
