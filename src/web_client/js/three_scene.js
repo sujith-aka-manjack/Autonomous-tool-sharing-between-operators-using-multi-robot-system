@@ -209,135 +209,210 @@ function initSceneWithScale(_scale) {
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
     fontColor: new THREE.Color(0xffffff),
-    backgroundOpacity: 0.1,
+    fontSupersampling: true,
+    backgroundOpacity: 0,
     alignContent: 'left',
   });
-  mainContainer.position.set( -window.threejs_panel.width() / 2 + 220, window.threejs_panel.height() / 2 - 160, 0 );
+  mainContainer.position.set( -window.threejs_panel.width() / 2 + 180, window.threejs_panel.height() / 2 - 110, 0 );
   sceneOrtho.add(mainContainer);
 
   /* User Block */
 
   const userContainer = new ThreeMeshUI.Block({
-    margin: 10,
-		alignContent: 'right',
-    backgroundOpacity: 0.1,
-    // borderRadius: [0, 50, 0, 50],
-		borderWidth: 1,
-		// borderColor: new THREE.Color( 0, 0.5, 1 ),
+    margin: 5,
+    padding: 5,
+    contentDirection: "row",
+    backgroundOpacity: 0.9,
+    borderRadius: [0, 0, 50, 0],
+		borderWidth: 4,
 		borderOpacity: 1,
   });
   mainContainer.add(userContainer);
 
+    /* User Icon Block */
+
+  const userIconContainer = new ThreeMeshUI.Block({
+    margin: 2,
+    padding: 0,
+    borderRadius: 0,
+    borderWidth: 3,
+    backgroundOpacity: 1,
+    backgroundColor: new THREE.Color( 0.9, 0.9, 0.9 ),
+  });
+  userContainer.add(userIconContainer);
+
+  window.userIcon = new ThreeMeshUI.Block({
+    margin: 0,
+    padding: 10,
+    height: 80,
+    width: 75,
+  });
+  userIconContainer.add(window.userIcon);
+
+  new THREE.TextureLoader().load('/images/user_icon_blue.png', (texture) => {
+    // necessary for backgroundSize: 'contain'
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+
+    window.userIcon.set({
+      backgroundTexture: texture,
+      backgroundSize: 'stretch',
+    });
+  });
+
+    /* User Info Block */
+
+  const userInfoContainer = new ThreeMeshUI.Block({
+    margin: 2,
+    contentDirection: "column",
+    alignContent: 'left',
+    backgroundOpacity: 0,
+    borderOpacity: 0,
+    borderWidth: 1,
+    borderRadius: 0,
+  });
+  userContainer.add(userInfoContainer);
+
     /* User Follower Block */
 
-  const userFollowerContainer = new ThreeMeshUI.Block({
-    margin: 10,
+  const userTopContainer = new ThreeMeshUI.Block({
     contentDirection: "row",
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
     fontSize: 24,
   });
-  userContainer.add(userFollowerContainer);
+  userInfoContainer.add(userTopContainer);
 
       /* User Name Block */
 
   const userNameContainer = new ThreeMeshUI.Block({
     width: 80,
     height: 40,
-    margin: 10,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
+    borderRadius: 0,
   });
-  userFollowerContainer.add(userNameContainer);
+  userTopContainer.add(userNameContainer);
 
   userNameContainer.add(
 		new ThreeMeshUI.Text({
 			content: "User 1",
-			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
   );
 
       /* User Follower Label Block */
 
+  const userFollowerContainer = new ThreeMeshUI.Block({
+    contentDirection: "column",
+    backgroundOpacity: 0,
+  });
+  userTopContainer.add(userFollowerContainer);
+
   const userFollowerLabelContainer = new ThreeMeshUI.Block({
-    width: 120,
-    height: 40,
-    margin: 10,
+    width: 160,
+    height: 20,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
+    borderRadius: 0,
   });
   userFollowerContainer.add(userFollowerLabelContainer);
 
   userFollowerLabelContainer.add(
 		new ThreeMeshUI.Text({
-      content: "Followers: ",
-			fontColor: new THREE.Color( 0, 0, 0 ),
+      content: "Follower / Require ",
+      fontSize: 16,
 		}),
   );
 
       /* User Follower Count Block */
 
   const userFollowerCountContainer = new ThreeMeshUI.Block({
-    width: 100,
+    width: 160,
     height: 40,
-    margin: 10,
+    contentDirection: "row",
     justifyContent: 'center',
     alignContent: 'center',
     fontSize: 28,
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
   });
   userFollowerContainer.add(userFollowerCountContainer);
 
   window.numFollowers = new ThreeMeshUI.Text({
-    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
   window.numTaskRequire = new ThreeMeshUI.Text({
-    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
-  userFollowerCountContainer.add(
+  const userFollowerCount = new ThreeMeshUI.Block({
+    width: 70,
+    height: 40,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 36,
+    backgroundOpacity: 0,
+  });
+  userFollowerCountContainer.add(userFollowerCount);
+  userFollowerCount.add(window.numFollowers);
 
-    window.numFollowers,
-
-		new ThreeMeshUI.Text({
+  const userFollowerSlashLabel = new ThreeMeshUI.Block({
+    width: 15,
+    height: 40,
+    // margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 32,
+    backgroundOpacity: 0,
+  });
+  userFollowerCountContainer.add(userFollowerSlashLabel);
+  userFollowerSlashLabel.add(
+    new ThreeMeshUI.Text({
       content: " / ",
-			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
-
-    window.numTaskRequire,
   );
+
+  const userRequiredCount = new ThreeMeshUI.Block({
+    width: 70,
+    height: 40,
+    // margin: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 36,
+    backgroundOpacity: 0,
+  });
+  userFollowerCountContainer.add(userRequiredCount);
+  userRequiredCount.add(window.numTaskRequire);
 
     /* User Task Block */
 
   const userTaskContainer = new ThreeMeshUI.Block({
-    margin: 10,
+    // margin: 10,
     contentDirection: "row",
-    backgroundOpacity: 0.1,
+    // alignContent: 'left',
+    backgroundOpacity: 0,
   });
-  userContainer.add(userTaskContainer);
+  userInfoContainer.add(userTaskContainer);
 
       /* User Progress Bar Block */
 
+  /* Progress Bar background */
+  window.progressBarWidth = 150;
+      
   const userProgressBarContainer = new ThreeMeshUI.Block({
-    width: 200,
-    height: 40,
-    margin: 10,
+    width: window.progressBarWidth,
+    height: 20,
+    // margin: 10,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
   });
   userTaskContainer.add(userProgressBarContainer);
 
-  /* Progress Bar background */
-  window.progressBarWidth = 200;
-
   const progressBar = new ThreeMeshUI.Block({
 		width: window.progressBarWidth,
-		height: 20,
+		height: 10,
     margin: 0,
 		padding: 0,
 		justifyContent: 'center',
@@ -352,7 +427,7 @@ function initSceneWithScale(_scale) {
   /* Progress bar foreground */
   window.progress = new ThreeMeshUI.Block({
     width: 0.001,
-    height: 20,
+    height: 10,
     margin: 0,
     padding: 0,
     backgroundColor: new THREE.Color( 0, 1, 0 ),
@@ -363,18 +438,18 @@ function initSceneWithScale(_scale) {
       /* User Progress Percent Block */
 
   const userProgressPercentContainer = new ThreeMeshUI.Block({
-    width: 80,
-    height: 40,
-    margin: 10,
+    width: 60,
+    height: 30,
+    // margin: 10,
     justifyContent: 'center',
     alignContent: 'right',
-    backgroundOpacity: 0.1,
-    fontSize: 28,
+    backgroundOpacity: 0,
+    fontSize: 20,
   });
   userTaskContainer.add(userProgressPercentContainer);
 
   window.numProgress = new ThreeMeshUI.Text({
-    fontColor: new THREE.Color( 0, 0, 0 ),
+    // fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
@@ -384,103 +459,177 @@ function initSceneWithScale(_scale) {
 
 		new ThreeMeshUI.Text({
       content: " %",
-			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
   );
 
   /* Other User Block */
 
   const otherUserContainer = new ThreeMeshUI.Block({
-    margin: 10,
-		alignContent: 'right',
-    backgroundOpacity: 0.1,
-		borderWidth: 1,
+    margin: 5,
+    padding: 5,
+    contentDirection: "row",
+    backgroundOpacity: 0.9,
+    borderRadius: [0, 0, 40, 0],
+		borderWidth: 4,
 		borderOpacity: 1,
   });
   mainContainer.add(otherUserContainer);
 
+    /* Other User Icon Block */
+
+  const otherUserIconContainer = new ThreeMeshUI.Block({
+    margin: 2,
+    padding: 0,
+    borderRadius: 0,
+    borderWidth: 3,
+    backgroundOpacity: 1,
+    backgroundColor: new THREE.Color( 0.9, 0.9, 0.9 ),
+  });
+  otherUserContainer.add(otherUserIconContainer);
+
+  let iconScale = 0.7;
+
+  window.otherUserIcon = new ThreeMeshUI.Block({
+    margin: 0,
+    padding: 10,
+    height: 80 * iconScale,
+    width: 75 * iconScale,
+  });
+  otherUserIconContainer.add(window.otherUserIcon);
+
+  new THREE.TextureLoader().load('/images/user_icon_orange.png', (texture) => {
+    // necessary for backgroundSize: 'contain'
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+
+    window.otherUserIcon.set({
+      backgroundTexture: texture,
+      backgroundSize: 'stretch',
+    });
+  });
+
+    /* Other User Info Block */
+
+  const otherUserInfoContainer = new ThreeMeshUI.Block({
+    margin: 2,
+    contentDirection: "column",
+    alignContent: 'left',
+    backgroundOpacity: 0,
+    borderOpacity: 0,
+    borderWidth: 1,
+    borderRadius: 0,
+  });
+  otherUserContainer.add(otherUserInfoContainer);
+
     /* Other User Follower Block */
 
-  const otherUserFollowerContainer = new ThreeMeshUI.Block({
-    margin: 10,
+  const otherUserTopContainer = new ThreeMeshUI.Block({
     contentDirection: "row",
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
     fontSize: 24,
   });
-  otherUserContainer.add(otherUserFollowerContainer);
+  otherUserInfoContainer.add(otherUserTopContainer);
 
       /* Other User Name Block */
 
   const otherUserNameContainer = new ThreeMeshUI.Block({
     width: 80,
     height: 40,
-    margin: 10,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
+    borderRadius: 0,
   });
-  otherUserFollowerContainer.add(otherUserNameContainer);
+  otherUserTopContainer.add(otherUserNameContainer);
 
   otherUserNameContainer.add(
 		new ThreeMeshUI.Text({
 			content: "User 2",
-			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
   );
 
       /* Other User Follower Label Block */
 
+  const otherUserFollowerContainer = new ThreeMeshUI.Block({
+    contentDirection: "column",
+    backgroundOpacity: 0,
+  });
+  otherUserTopContainer.add(otherUserFollowerContainer);
+
   const otherUserFollowerLabelContainer = new ThreeMeshUI.Block({
-    width: 120,
-    height: 40,
-    margin: 10,
+    width: 160,
+    height: 20,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
+    borderRadius: 0,
   });
   otherUserFollowerContainer.add(otherUserFollowerLabelContainer);
 
   otherUserFollowerLabelContainer.add(
 		new ThreeMeshUI.Text({
-      content: "Followers: ",
-			fontColor: new THREE.Color( 0, 0, 0 ),
+      content: "Follower / Require ",
+      fontSize: 16,
 		}),
   );
 
-      /* User Follower Count Block */
+      /* Other User Follower Count Block */
 
   const otherUserFollowerCountContainer = new ThreeMeshUI.Block({
-    width: 100,
+    width: 160,
     height: 40,
-    margin: 10,
+    contentDirection: "row",
     justifyContent: 'center',
     alignContent: 'center',
     fontSize: 28,
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
   });
   otherUserFollowerContainer.add(otherUserFollowerCountContainer);
 
   window.numOtherFollowers = new ThreeMeshUI.Text({
-    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
   window.numOtherTaskRequire = new ThreeMeshUI.Text({
-    fontColor: new THREE.Color( 0, 0, 0 ),
     content: "-",
   });
 
-  otherUserFollowerCountContainer.add(
+  const otherUserFollowerCount = new ThreeMeshUI.Block({
+    width: 70,
+    height: 40,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 28,
+    backgroundOpacity: 0,
+  });
+  otherUserFollowerCountContainer.add(otherUserFollowerCount);
+  otherUserFollowerCount.add(window.numOtherFollowers);
 
-    window.numOtherFollowers,
-
-		new ThreeMeshUI.Text({
+  const otherUserFollowerSlashLabel = new ThreeMeshUI.Block({
+    width: 15,
+    height: 40,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 28,
+    backgroundOpacity: 0,
+  });
+  otherUserFollowerCountContainer.add(otherUserFollowerSlashLabel);
+  otherUserFollowerSlashLabel.add(
+    new ThreeMeshUI.Text({
       content: " / ",
-			fontColor: new THREE.Color( 0, 0, 0 ),
 		}),
-
-    window.numOtherTaskRequire,
   );
+
+  const otherUserRequiredCount = new ThreeMeshUI.Block({
+    width: 70,
+    height: 40,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 28,
+    backgroundOpacity: 0,
+  });
+  otherUserFollowerCountContainer.add(otherUserRequiredCount);
+  otherUserRequiredCount.add(window.numOtherTaskRequire);
 
   
   /* Send Robot Block */
@@ -1400,7 +1549,6 @@ function render() {
             content: num_other_task_require.toString(),
           });
         }
-
       }
     } else {
 
