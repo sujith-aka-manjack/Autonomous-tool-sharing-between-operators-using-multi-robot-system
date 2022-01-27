@@ -14,11 +14,11 @@
         var geometry = new THREE.BoxBufferGeometry(
             entity.scale.x * scale,
             entity.scale.y * scale,
-            0.3
+            10
         );
 
         /* Bring above ground */
-        geometry.translate(0, 0, entity.scale.z * scale * 0.5);
+        geometry.translate(0, 0, 4.9);
 
         var demand = entity.task.demand;
 
@@ -32,7 +32,7 @@
         var material = new THREE.MeshPhongMaterial({
             color: color,
             transparent: true,
-            opacity: 0.5,
+            opacity: 0.2,
         });
 
         this.task = new THREE.Mesh(geometry, material);
@@ -47,6 +47,11 @@
         /* Add all parts to a parent mesh */
         meshParent.add(this.task);
 
+        /* Add task outline */
+        const edges = new THREE.EdgesGeometry( geometry );
+        const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+        meshParent.add(line);
+
         /* Amount of task completed in percentage */
         var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
 
@@ -60,7 +65,7 @@
             ].join('\n'),
         });
 
-        this.sprite.position.z = 10;
+        this.sprite.position.z = 13;
 
         meshParent.add(this.sprite);
 
