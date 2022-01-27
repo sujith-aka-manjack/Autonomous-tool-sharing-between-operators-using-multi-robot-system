@@ -538,7 +538,8 @@ void CFollower::ControlStep() {
             break;
         }
         case MoveType::STOP: {
-            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            // m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            AdjustPosition();
             break;
         }
         case MoveType::TRAVEL: {
@@ -1760,6 +1761,67 @@ CVector2 CFollower::GetChainTravelVector() {
     }
 
     return resVec;
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::AdjustPosition() {
+
+    /* Assumes the robot is in the connector state */
+    if(currentState == RobotState::CONNECTOR) {
+        
+        // Copy other robot messages
+        std::vector<Message> otherMsgs = otherTeamMsgs;
+        otherMsgs.insert(std::end(otherMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+
+        CVector2 sumVec;
+        size_t count = 0;
+
+        // For each entry in hopsDict
+        for(const auto& hop : hopsDict) {
+
+            // Loop copy of connectionMsg
+            for(const auto& msg : otherMsgs) {
+                UInt8 teamToCheck = hop.first;
+                UInt8 myHopCount = hop.second.count;
+
+                if(msg.state == RobotState::FOLLOWER && myHopCount == 1) {
+
+                    if(msg.teamID == teamToCheck) {
+                        sumVec += msg.direction;
+                        count++;
+                        break;
+                    }
+                } else if(msg.state == RobotState::CONNECTOR) {
+
+                    for(const auto& otherHop : msg.hops) {
+                        UInt8 otherHopCount = otherHop.second.count;
+
+                        // If it has a lower hop count than itself, add it to the list of messages to average
+                        if(otherHopCount == myHopCount - 1) {
+                            sumVec += msg.direction;
+                            count++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // calculate the average vector of the ones added
+
+        sumVec /= count;
+
+        /* Limit the length of the vector to a fraction of the max speed */
+        if(sumVec.Length() > m_sWheelTurningParams.MaxSpeed * 0.3) {
+            sumVec.Normalize();
+            sumVec *= m_sWheelTurningParams.MaxSpeed * 0.3;
+        }
+
+        /* Set Wheel Speed */
+        SetWheelSpeedsFromVector(sumVec);
+    }
 }
 
 /****************************************/

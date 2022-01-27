@@ -272,6 +272,11 @@ protected:
     virtual CVector2 GetChainTravelVector();
 
     /*
+    * Move wheels according to the adjacent connectors to make the chain straight.
+    */
+    virtual void AdjustPosition();
+
+    /*
     * Gets a direction vector as input and transforms it into wheel actuation.
     */
     virtual void SetWheelSpeedsFromVector(const CVector2& c_heading);
