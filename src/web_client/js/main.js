@@ -31,6 +31,7 @@ var onAllFilesLoaded = function () {
   console.log(window.client_id);
 
   window.target = ''; // Init robot selection to nothing
+  window.targetChanged = false;
   window.connected = false; // Connected to a robot
 
   /* On Jquery load */
@@ -347,6 +348,7 @@ var onAllFilesLoaded = function () {
             window.username = e_name.value;
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
+            window.targetChanged = true;
 
             if(window.target == 'Select leader') {
               window.target = '';

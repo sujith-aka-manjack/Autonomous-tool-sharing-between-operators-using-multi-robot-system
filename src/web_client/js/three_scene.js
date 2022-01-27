@@ -30,6 +30,10 @@ window.isLoadingModels = false;
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 scene.background = new THREE.Color(0x007f7f);
 
+let iconGray = '/images/user_icon_gray.png';
+let iconBlue = '/images/user_icon_blue.png';
+let iconOrange = '/images/user_icon_orange.png';
+
 // compute mouse position in normalized device coordinates
 // (-1 to +1) for both directions.
 // Used to raycasting against the interactive elements
@@ -249,7 +253,7 @@ function initSceneWithScale(_scale) {
   });
   userIconContainer.add(window.userIcon);
 
-  new THREE.TextureLoader().load('/images/user_icon_blue.png', (texture) => {
+  new THREE.TextureLoader().load(iconGray, (texture) => {
     // necessary for backgroundSize: 'contain'
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
@@ -294,11 +298,11 @@ function initSceneWithScale(_scale) {
   });
   userTopContainer.add(userNameContainer);
 
-  userNameContainer.add(
-		new ThreeMeshUI.Text({
-			content: "User 1",
-		}),
-  );
+  window.userName = new ThreeMeshUI.Text({
+    content: "User -",
+  });
+
+  userNameContainer.add(window.userName);
 
       /* User Follower Label Block */
 
@@ -497,7 +501,7 @@ function initSceneWithScale(_scale) {
   });
   otherUserIconContainer.add(window.otherUserIcon);
 
-  new THREE.TextureLoader().load('/images/user_icon_orange.png', (texture) => {
+  new THREE.TextureLoader().load(iconGray, (texture) => {
     // necessary for backgroundSize: 'contain'
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
@@ -542,11 +546,11 @@ function initSceneWithScale(_scale) {
   });
   otherUserTopContainer.add(otherUserNameContainer);
 
-  otherUserNameContainer.add(
-		new ThreeMeshUI.Text({
-			content: "User 2",
-		}),
-  );
+  window.otherUserName = new ThreeMeshUI.Text({
+    content: "User -",
+  }),
+
+  otherUserNameContainer.add(window.otherUserName);
 
       /* Other User Follower Label Block */
 
@@ -1577,6 +1581,47 @@ function render() {
         width: 0.001,
         backgroundOpacity: 0,
       });
+    }
+
+    /* Update icon */
+    if(window.targetChanged) {
+
+      var icon1 = iconGray;
+      var icon2 = iconGray;
+      var user1 = 'User -';
+      var user2 = 'User -';
+
+      if(window.target === "L1") {
+        icon1 = iconBlue;
+        icon2 = iconOrange;
+        user1 = 'User 1';
+        user2 = 'User 2';
+      } else if(window.target === "L2") {
+        icon1 = iconOrange;
+        icon2 = iconBlue;
+        user1 = 'User 2';
+        user2 = 'User 1';
+      }
+
+      new THREE.TextureLoader().load(icon1, (texture) => {
+        window.userIcon.set({
+          backgroundTexture: texture,
+        });
+      });
+      new THREE.TextureLoader().load(icon2, (texture) => {
+        window.otherUserIcon.set({
+          backgroundTexture: texture,
+        });
+      });
+
+      window.userName.set({
+        content: user1,
+      });
+      window.otherUserName.set({
+        content: user2,
+      });
+
+      window.targetChanged = false;
     }
 
     // console.log(window.experiment.data);
