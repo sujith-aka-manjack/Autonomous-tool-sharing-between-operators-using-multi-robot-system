@@ -140,7 +140,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         // //std::cout << "FROM: " << relayMsg.from << std::endl;
         
         relayMsg.time = packet.Data[index++]*256 + packet.Data[index++]; 
-        if(relayMsg.time > 5000) {
+        if(relayMsg.time > 65535) {
             std::cerr << "INVALID TIME RECEIVED from " << ID << std::endl;
             std::cerr << packet.Data << std::endl;
         }
