@@ -1343,7 +1343,7 @@ function updateCommands() {
 
   window.keyboard.update();
 
-  /* Build paacket to send */
+  /* Build packet to send */
   var packet = {
                 client: window.client_id,
                 username: window.username,

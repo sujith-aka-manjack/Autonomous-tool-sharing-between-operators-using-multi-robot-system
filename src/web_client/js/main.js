@@ -298,16 +298,13 @@ var onAllFilesLoaded = function () {
         .append($("<div/>")
           .addClass("toolbar_status")
           .attr('id', 'name-label')
-          .html("Username:")
+          .html("User ID:")
         )
 
-        .append($("<input/>")
+        .append($("<div/>")
+          .addClass("toolbar_status")
           .attr('id', 'username_label')
-          .attr('value', window.username)
-          .attr('size', 10)
-          .attr('maxlength', 16)
-          .attr("title", "User name")
-          .prop("title", "User name")//for IE
+          .html(window.username)
         )
 
         /* Divider */
@@ -344,8 +341,8 @@ var onAllFilesLoaded = function () {
         .append($(confirmButtonTag)
           .attr('id','button_connect')
           .click(function () {
-            let e_name = document.getElementById('username_label');
-            window.username = e_name.value;
+            // let e_name = document.getElementById('username_label');
+            // window.username = e_name.value;
             let e_leader = document.getElementById('leader_selected');
             window.target = e_leader.options[e_leader.selectedIndex].text;
             window.targetChanged = true;
