@@ -1773,6 +1773,7 @@ void CFollower::AdjustPosition() {
         
         // Copy other robot messages
         std::vector<Message> otherMsgs = otherTeamMsgs;
+        otherMsgs.insert(std::end(otherMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
         otherMsgs.insert(std::end(otherMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
 
         CVector2 sumVec;
@@ -1786,7 +1787,7 @@ void CFollower::AdjustPosition() {
                 UInt8 teamToCheck = hop.first;
                 UInt8 myHopCount = hop.second.count;
 
-                if(msg.state == RobotState::FOLLOWER && myHopCount == 1) {
+                if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
 
                     if(msg.teamID == teamToCheck) {
                         sumVec += msg.direction;
