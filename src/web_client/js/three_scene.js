@@ -668,9 +668,9 @@ function initSceneWithScale(_scale) {
 
   sendLabelContainer.add(
     new ThreeMeshUI.Text({
-      content: "Followers:",
+      content: "Follower",
       fontSize: 16,
-			fontColor: new THREE.Color( 0, 0, 0 ),
+			// fontColor: new THREE.Color( 0, 0, 0 ),
     }),
   );
 
@@ -705,7 +705,7 @@ function initSceneWithScale(_scale) {
     window.sendCountLabel = new ThreeMeshUI.Text({
       content: window.toSendCount.toString(),
       fontSize: 28,
-      fontColor: new THREE.Color( 0, 0, 0 ),
+      // fontColor: new THREE.Color( 0, 0, 0 ),
     });
 
     sendCountContainer.add(window.sendCountLabel);
@@ -859,6 +859,137 @@ function initSceneWithScale(_scale) {
 
     sendControlContainer.add(sendConfirmButton);
     objsToTest.push(sendConfirmButton);
+
+    /* Task signal Block */
+
+    const signalContainer = new ThreeMeshUI.Block({
+      padding: 0.025,
+      fontFamily: '/fonts/Roboto-msdf.json',
+      fontTexture: '/fonts/Roboto-msdf.png',
+      fontColor: new THREE.Color(0xffffff),
+      fontSupersampling: true,
+      backgroundOpacity: 0.1,
+      borderWidth: 1,
+      borderOpacity: 0,
+      alignContent: 'left',
+    });
+    signalContainer.position.set( window.threejs_panel.width() / 2 - 180, window.threejs_panel.height() / 2 - 110, 0 );
+    sceneOrtho.add(signalContainer);
+
+    const signalLabelContainer = new ThreeMeshUI.Block({
+      width: 100,
+      height: 20,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      backgroundOpacity: 0,
+      borderOpacity: 1,
+      borderRadius: 1,
+    });
+    signalContainer.add(signalLabelContainer);
+
+    signalLabelContainer.add(
+      new ThreeMeshUI.Text({
+        content: "Task Signal",
+        fontSize: 16,
+      }),
+    );
+
+    // window.signalStateIndicatorWidth = 150;
+      
+    const signalStateContainer = new ThreeMeshUI.Block({
+      width: 20,
+      height: 20,
+      margin: 10,
+      justifyContent: 'center',
+      alignContent: 'center',
+      backgroundOpacity: 0,
+      borderWidth: 2,
+    });
+    signalContainer.add(signalStateContainer);
+  
+    window.signalIndicator = new ThreeMeshUI.Block({
+      width: 20,
+      height: 20,
+      // margin: 5,
+      padding: 0,
+      justifyContent: 'center',
+      alignContent: 'left',
+      backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+      backgroundOpacity: 1,
+      borderOpacity: 1,
+      borderRadius: 10,
+    });
+    signalStateContainer.add(window.signalIndicator);
+
+        /* Signal Button */
+
+    window.signalButton = new ThreeMeshUI.Block({
+      width: 100,
+      height: 60,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      fontSize: 24,
+      borderOpacity: 1,
+      borderWidth: 1,
+      borderRadius: 20,
+      // backgroundOpacity: 1,
+    })
+
+    window.signalButtonText = new ThreeMeshUI.Text({
+      content: "-",
+      // fontColor: new THREE.Color( 1, 1, 1 ),
+    });
+
+    window.signalButton.add(window.signalButtonText);
+
+    window.hoveredSignalStateAttributes = {
+      state: "hovered",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x999999 ),
+        backgroundOpacity: 1,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+  
+    window.idleSignalStateAttributes = {
+      state: "idle",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x666666 ),
+        backgroundOpacity: 0.3,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+
+    window.selectedSignalAttributes = {
+      offset: 0.02,
+      backgroundColor: new THREE.Color( 0x777777 ),
+      fontColor: new THREE.Color( 0x222222 )
+    };
+
+    window.signalButton.setupState({
+      state: "selected",
+      attributes: selectedSignalAttributes,
+      onSet: ()=> {
+        console.log("Task Signal Selected");
+            
+        if(window.taskCommand['signal'] == 'stop') {
+          window.taskCommand['signal'] = 'start';
+        } else if(window.taskCommand['signal'] == 'start') {
+          window.taskCommand['signal'] = 'stop';  
+        }
+
+        window.taskFlag = true;
+      }
+    });
+    window.signalButton.setupState( window.hoveredSignalStateAttributes );
+    window.signalButton.setupState( window.idleSignalStateAttributes );
+
+    signalContainer.add(window.signalButton);
+    objsToTest.push(window.signalButton);
 
   /***************************/
 

@@ -130,7 +130,6 @@
         }
 
         let e_status = document.getElementById('connection-status');
-        let e_task = document.getElementById("button_task");
 
         if(connectionExists) {
 
@@ -143,15 +142,25 @@
           if(window.taskCommand['signal'] == 'stop') {
             
             if(window.target != '') {
-              e_task.textContent = 'START task';
-              e_task.style.background = '#5fde81';
+
+              window.signalButtonText.set({
+                content: "START",
+              });
+
+              window.signalIndicator.set({
+                backgroundColor: new THREE.Color( 0xff0000 ),
+              });
             }
 
           } else if(window.taskCommand['signal'] == 'start') {
 
-            e_task.textContent = 'STOP task';
-            e_task.style.background = '#de5f5f';
+            window.signalButtonText.set({
+              content: "STOP",
+            });
 
+            window.signalIndicator.set({
+              backgroundColor: new THREE.Color( 0x00ff00 ),
+            });
           }
         } else {
 
@@ -159,9 +168,18 @@
           // Change color and text of status
           e_status.textContent = 'Disconnected';
           e_status.style.color = '#000000';
-          e_task.textContent = 'START task';
-          e_task.style.background = '#b9b9b9';
 
+          if (window.isInitialized) {
+
+            window.signalButtonText.set({
+              content: "-",
+            });
+
+            window.signalIndicator.set({
+              backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+            });
+
+          }
         }
 
         if (!window.isInitialized) {

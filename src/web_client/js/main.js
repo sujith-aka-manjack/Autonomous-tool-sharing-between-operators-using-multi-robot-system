@@ -365,26 +365,26 @@ var onAllFilesLoaded = function () {
         )
 
         /* Divider */
-        .append($("<div/>")
-          .addClass('toolbar_divider')
-        )
+        // .append($("<div/>")
+        //   .addClass('toolbar_divider')
+        // )
 
-        .append($(taskButtonTag)
-          .attr('id','button_task')
-          .click(function () {
+        // .append($(taskButtonTag)
+        //   .attr('id','button_task')
+        //   .click(function () {
             
-            if(window.target != '') {
+        //     if(window.target != '') {
             
-              if(window.taskCommand['signal'] == 'stop') {
-                window.taskCommand['signal'] = 'start';
-              } else if(window.taskCommand['signal'] == 'start') {
-                window.taskCommand['signal'] = 'stop';  
-              }
+        //       if(window.taskCommand['signal'] == 'stop') {
+        //         window.taskCommand['signal'] = 'start';
+        //       } else if(window.taskCommand['signal'] == 'start') {
+        //         window.taskCommand['signal'] = 'stop';  
+        //       }
 
-              window.taskFlag = true;
-            }
-          })
-        )
+        //       window.taskFlag = true;
+        //     }
+        //   })
+        // )
 
         /* Spacer */
         .append($("<div/>").addClass('toolbar-spacer'))
