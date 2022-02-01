@@ -1789,12 +1789,16 @@ void CFollower::AdjustPosition() {
 
                 if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
 
+                    /* Tail connector */
+
                     if(msg.teamID == teamToCheck) {
                         sumVec += msg.direction;
                         count++;
-                        break;
+                        break; // Only choose one from team
                     }
                 } else if(msg.state == RobotState::CONNECTOR) {
+
+                    /* Other connector */
 
                     for(const auto& otherHop : msg.hops) {
                         UInt8 otherHopCount = otherHop.second.count;
@@ -1815,9 +1819,9 @@ void CFollower::AdjustPosition() {
         sumVec /= count;
 
         /* Limit the length of the vector to a fraction of the max speed */
-        if(sumVec.Length() > m_sWheelTurningParams.MaxSpeed * 0.3) {
+        if(sumVec.Length() > m_sWheelTurningParams.MaxSpeed * 0.5) {
             sumVec.Normalize();
-            sumVec *= m_sWheelTurningParams.MaxSpeed * 0.3;
+            sumVec *= m_sWheelTurningParams.MaxSpeed * 0.5;
         }
 
         /* Set Wheel Speed */
