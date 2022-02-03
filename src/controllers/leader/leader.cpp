@@ -158,9 +158,16 @@ void CLeader::Init(TConfigurationNode& t_node) {
     numRobotsToSend = 0;
     numPreviousRequest = 0;
     switchCandidate = "";
+    robotToSwitch = "";
     notDecremented = true;
     robotsNeeded = 0;
     requestReceived = false;
+
+    // TEMP: hard coded team to join (Assuming two teams)
+    if(teamID == 1)
+        teamToJoin = 2;
+    else if(teamID == 2)
+        teamToJoin = 1;
 
     /*
     * Init SCT Controller
@@ -279,6 +286,8 @@ void CLeader::ControlStep() {
     inputMessage = false;
 
     lastAction = "";
+
+    robotToSwitch = "";
 
     // for(int i = 0; i < waypoints.size(); i++) {
     //     //std::cout << waypoints[i].GetX() << "," << waypoints[i].GetY() << std::endl;
@@ -512,11 +521,11 @@ void CLeader::SetSignal(const bool b_signal) {
 
 void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
-    /* Only send robots if,
-     * (1) it is in the process of sending robots
-     * (2) there are enough number of robots to send in the current team
-     */
-    if(numRobotsToSend == 0 && currentFollowerCount >= un_robots) {
+    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to send" << std::endl;
+
+    if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
+        numRobotsToSend = currentFollowerCount;
+    } else {
         numRobotsToSend = un_robots;
     }
 }
@@ -1205,23 +1214,21 @@ void CLeader::Callback_Respond(void* data) {
 void CLeader::Callback_Exchange(void* data) {
     // std::cout << "Action: exchange" << std::endl;
 
-    /* Signal a follower to switch to the other team */
-    if(notDecremented) {
-        numRobotsToSend--;
-        notDecremented = false;
+    if( !switchCandidate.empty() ) {
+        /* Signal a follower to switch to the other team */
+        if(notDecremented) {
+            numRobotsToSend--;
+            notDecremented = false;
+        }
+
+        robotToSwitch = switchCandidate;
+
+        std::cout << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
+
+        lastAction = "exchange";
+    } else {
+        std::cerr << "[" << this->GetId() << "] switchCandidate is empty" << std::endl;
     }
-
-    robotToSwitch = switchCandidate;
-
-    // TEMP: hard coded team to join (Assuming two teams)
-    if(teamID == 1)
-        teamToJoin = 2;
-    else if(teamID == 2)
-        teamToJoin = 1;
-
-    std::cout << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
-
-    lastAction = "exchange";
 }
 
 /****************************************/
@@ -1263,9 +1270,8 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 unsigned char CLeader::Check_InputExchange(void* data) {
     bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty());
 
-    if(exchangeRobot && (switchCandidate != previousCandidate)) {
+    if(exchangeRobot) {
         // std::cout << "Event: " << 1 << " - inputExchange" << std::endl;
-        previousCandidate = switchCandidate;
         return 1;
     }
     // std::cout << "Event: " << 0 << " - inputExchange" << std::endl;

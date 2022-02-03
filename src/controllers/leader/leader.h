@@ -459,7 +459,6 @@ private:
     Real lastBeatTime;
     size_t beatReceived, beatSent;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
-    std::string previousCandidate;
     bool notDecremented;
 
     // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)

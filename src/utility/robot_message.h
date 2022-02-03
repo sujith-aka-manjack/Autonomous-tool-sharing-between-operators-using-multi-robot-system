@@ -155,7 +155,7 @@ class Message {
 
         /* Team Switch */
         std::string robotToSwitch = "";
-        UInt8 teamToJoin;
+        UInt8 teamToJoin = 0;
 
         /* Hop Count */
         std::map<UInt8, HopMsg> hops; // Key is teamID

@@ -99,7 +99,7 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="5" center="-0.2,0.2.0" density="0.3">
+      <team leader_num="1" robot_num="3" center="-0.2,0.2.0" density="0.3">
         <!-- <waypoint coord="-1.5,-0.4" /> 
         <waypoint coord="-1.5,-1.7" />
         <waypoint coord="-1.4,-0.5" />
@@ -109,7 +109,7 @@
         <waypoint coord="-0.5,0.5" /> 
         <waypoint coord="0.6,1.6" />  -->
       </team>
-      <team leader_num="1" robot_num="5" center="0.2,-0.2.0" density="0.3">
+      <team leader_num="1" robot_num="2" center="0.2,-0.2.0" density="0.3">
         <!-- <waypoint coord="-0.5,-1.5" />
         <waypoint coord="1.7,-1.5" />
         <waypoint coord="-0.5,-1.5" />
@@ -172,7 +172,7 @@
   <!-- * Media * -->
   <!-- ********* -->
   <media>
-    <range_and_bearing id="rab" check_occlusions="true"/>
+    <range_and_bearing id="rab" check_occlusions="false"/>
     <led id="leds" />
   </media>
 

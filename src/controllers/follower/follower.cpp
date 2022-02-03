@@ -362,7 +362,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    // std::cout << "\n---------- " << id << " ----------" << std::endl;
+    std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -420,7 +420,7 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -446,9 +446,9 @@ void CFollower::ControlStep() {
                 if(msg.second.from == "L1")
                     relaying = true;
             }
-            if(relaying)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else
+            // if(relaying)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else
                 m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             // m_pcLEDs->SetAllColors(CColor::GREEN);
@@ -480,11 +480,11 @@ void CFollower::ControlStep() {
                 // if(msg.second.type == 'R')
                 //     requesting = true;
             }
-            if(requesting)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else if(sending)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else
+            // if(requesting)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else if(sending)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
             // m_pcLEDs->SetAllColors(CColor::BLUE);
@@ -899,12 +899,14 @@ void CFollower::Update() {
         std::vector<Message> combinedMsgs(otherTeamMsgs);
         combinedMsgs.insert(combinedMsgs.end(), otherLeaderMsgs.begin(), otherLeaderMsgs.end());
 
-        // std::cout << "Checking if team to join has been found" << std::endl;
+        if(teamToJoin != 1 && teamToJoin != 2) {
+            std::cerr << "[" << this->GetId() << "] INVALID TEAM TO JOIN " << std::to_string(teamToJoin) << std::endl;
+        }
 
         /* Check whether it has reached the other team */
         for(const auto& msg : combinedMsgs) {
             if(msg.teamID == teamToJoin) {
-                if(msg.direction.Length() < 50) {
+                if(msg.direction.Length() < 50) { // TODO: delete condition?
                     nearLF = true;
                     // std::cout << "TEAM FOUND!" << std::endl;
                     break;
@@ -925,8 +927,16 @@ void CFollower::GetLeaderInfo() {
 
         hopCountToLeader = 1;
         leaderSignal = leaderMsg.leaderSignal;
-        robotToSwitch = leaderMsg.robotToSwitch;
-        teamToJoin = leaderMsg.teamToJoin;
+
+        if(robotToSwitch != this->GetId()) {
+            robotToSwitch = leaderMsg.robotToSwitch;
+            teamToJoin = leaderMsg.teamToJoin;
+        }
+
+        // if(teamToJoin != 1 && teamToJoin != 2){
+        //     std::cerr << "[" << this->GetId() << "] INVALID TEAM TO JOIN (leader) " << std::to_string(teamToJoin) << std::endl;
+        //     leaderMsg.Print();
+        // }
 
     } else { // Leader is not in range. Relay leader signal
 
@@ -947,6 +957,12 @@ void CFollower::GetLeaderInfo() {
                 leaderSignal = teamMsgs[i].leaderSignal;
                 robotToSwitch = teamMsgs[i].robotToSwitch;
                 teamToJoin = teamMsgs[i].teamToJoin;
+
+                // if(teamToJoin != 1 && teamToJoin != 2){
+                //     std::cerr << "[" << this->GetId() << "] INVALID TEAM TO JOIN (relay) " << std::to_string(teamToJoin) << std::endl;
+                //     teamMsgs[i].Print();
+                // }
+
                 break;
             }
         }
@@ -1651,7 +1667,7 @@ void CFollower::Travel() {
     CVector2 robotForce    = GetRobotRepulsionVector();
     CVector2 obstacleForce = GetObstacleRepulsionVector();
 
-    CVector2 sumForce      = teamWeight*travelForce + 0.3*robotForce + 0.5*obstacleWeight*obstacleForce;
+    CVector2 sumForce      = teamWeight * travelForce + 0.3 * robotForce + 0.5 * obstacleWeight*obstacleForce;
 
     /* Set Wheel Speed */
     if(travelForce.Length() > 0.0f)
@@ -1744,8 +1760,10 @@ CVector2 CFollower::GetChainTravelVector() {
 
     // std::cout << "rotated: " << margin << std::endl;
 
-    margin.Normalize();
-    margin *= 20;
+    if(margin.Length() > 0) {
+        margin.Normalize();
+        margin *= 20;
+    }
 
     resVec = nextConnector.direction + margin;
 
@@ -1955,6 +1973,8 @@ void CFollower::Callback_SwitchF(void* data) {
     } else if(currentState == RobotState::TRAVELER) {
         teamID = teamToJoin;
     }
+
+    robotToSwitch = "";
 
     // std::cout << "JOINING TEAM" << std::endl;
 
