@@ -84,6 +84,25 @@ class Epuck {
       that.lines.push(line);
     }
 
+    /* Add username label */
+    this.sprite = new THREE.TextSprite({
+      alignment: 'center',
+      color: '#000000',
+      strokeColor: '#ff0000',
+      backgroundColor: 'rgba(100,100,100,0.2)',
+      fontWeight: 'bold',
+      fontFamily: '"Times New Roman", Times, serif',
+      fontSize: 1,
+      padding: 0.2,
+      text: [
+          entity.id,
+      ].join('\n'),
+    });
+
+    this.sprite.position.z = 4;
+
+    meshParent.add(this.sprite);
+
     /* Update mesh parent */
     meshParent.position.x = entity.position.x * scale;
     meshParent.position.y = entity.position.y * scale;
@@ -171,8 +190,8 @@ class Epuck {
       }
 
       /* Hide all the previous lines */
-      /* 14 are the number of objects in meshParent before rays */
-      for (let i = 14 + entity.rays.length; i < this.mesh.children.length; i++) {
+      /* 14 are the number of objects in meshParent before rays (-1 children.length if label is added) */
+      for (let i = 14 + entity.rays.length; i < this.mesh.children.length - 1; i++) {
         this.mesh.children[i].geometry.setDrawRange(0, 0);
       }
     }
