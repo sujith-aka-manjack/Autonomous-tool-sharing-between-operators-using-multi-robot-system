@@ -277,6 +277,11 @@ protected:
     virtual void AdjustPosition();
 
     /*
+    * Get a vector to adjust its position in the chain.
+    */
+    virtual CVector2 GetAdjustVector();
+
+    /*
     * Gets a direction vector as input and transforms it into wheel actuation.
     */
     virtual void SetWheelSpeedsFromVector(const CVector2& c_heading);

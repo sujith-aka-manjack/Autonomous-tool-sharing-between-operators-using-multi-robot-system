@@ -1511,12 +1511,12 @@ void CFollower::Flock() {
     CVector2 sumForce      = teamWeight*teamForce + robotWeight*robotForce + obstacleWeight*obstacleForce;
 
     /* DEBUGGING */
-    if(this->GetId() == "F1") {
-        //std::cout << "team: " << teamForce.Length() << std::endl;
-        //std::cout << "robot: " << robotForce.Length() << std::endl;
-        //std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
-        //std::cout << "sum: " << sumForce.Length() << std::endl;
-    }
+    // if(this->GetId() == "F1") {
+    //     std::cout << "team: " << teamForce.Length() << std::endl;
+    //     std::cout << "robot: " << robotForce.Length() << std::endl;
+    //     std::cout << "obstacle: " << obstacleForce.Length() << std::endl;
+    //     std::cout << "sum: " << sumForce.Length() << std::endl;
+    // }
 
     /* Set Wheel Speed */
     if(sumForce.Length() > 1.0f)
@@ -1590,6 +1590,7 @@ CVector2 CFollower::GetRobotRepulsionVector() {
     repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
     repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
     repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
 
     for(size_t i = 0; i < repulseMsgs.size(); i++) {
         /* Calculate LJ */
@@ -1786,6 +1787,29 @@ CVector2 CFollower::GetChainTravelVector() {
 
 void CFollower::AdjustPosition() {
 
+    /* Calculate overall force applied to the robot */
+    CVector2 adjustForce   = GetAdjustVector();
+    CVector2 robotForce    = GetRobotRepulsionVector();
+    CVector2 obstacleForce = GetObstacleRepulsionVector();
+    CVector2 sumForce      = 0.5 * adjustForce + 0.1 * robotWeight * robotForce + 0.1 * obstacleWeight * obstacleForce;
+
+    /* Set Wheel Speed */
+    if(sumForce.Length() > 1.0f)
+        SetWheelSpeedsFromVector(sumForce);
+    else
+        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+
+    /* Set Wheel Speed */
+    SetWheelSpeedsFromVector(sumForce);
+}
+
+/****************************************/
+/****************************************/
+
+CVector2 CFollower::GetAdjustVector() {
+    
+    CVector2 resVec;
+
     /* Assumes the robot is in the connector state */
     if(currentState == RobotState::CONNECTOR) {
         
@@ -1794,7 +1818,6 @@ void CFollower::AdjustPosition() {
         otherMsgs.insert(std::end(otherMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
         otherMsgs.insert(std::end(otherMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
 
-        CVector2 sumVec;
         size_t count = 0;
 
         // For each entry in hopsDict
@@ -1810,7 +1833,7 @@ void CFollower::AdjustPosition() {
                     /* Tail connector */
 
                     if(msg.teamID == teamToCheck) {
-                        sumVec += msg.direction;
+                        resVec += msg.direction;
                         count++;
                         break; // Only choose one from team
                     }
@@ -1823,7 +1846,7 @@ void CFollower::AdjustPosition() {
 
                         // If it has a lower hop count than itself, add it to the list of messages to average
                         if(otherHopCount == myHopCount - 1) {
-                            sumVec += msg.direction;
+                            resVec += msg.direction;
                             count++;
                             break;
                         }
@@ -1834,17 +1857,16 @@ void CFollower::AdjustPosition() {
 
         // calculate the average vector of the ones added
 
-        sumVec /= count;
+        resVec /= count;
 
-        /* Limit the length of the vector to a fraction of the max speed */
-        if(sumVec.Length() > m_sWheelTurningParams.MaxSpeed * 0.5) {
-            sumVec.Normalize();
-            sumVec *= m_sWheelTurningParams.MaxSpeed * 0.5;
+        /* Limit the length of the vector to the max speed */
+        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+            resVec.Normalize();
+            resVec *= m_sWheelTurningParams.MaxSpeed;
         }
-
-        /* Set Wheel Speed */
-        SetWheelSpeedsFromVector(sumVec);
     }
+
+    return resVec;
 }
 
 /****************************************/
