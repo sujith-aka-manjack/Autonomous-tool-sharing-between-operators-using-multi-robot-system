@@ -6,6 +6,9 @@ import time
 import math
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import pprint
@@ -20,7 +23,7 @@ DEMAND_PER_TASK = 5000
 NUMBER_OF_TASKS = 5
 TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 
-# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 # OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/40R_{}T_{}D'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK))
@@ -30,7 +33,7 @@ TOTAL_DEMAND = DEMAND_PER_TASK * NUMBER_OF_TASKS
 # OUTPUT_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/6T_500D')
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_no_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
-RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
+# RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results/{0}R_{1}T_{2}D_exchange'.format(TOTAL_ROBOTS, NUMBER_OF_TASKS, DEMAND_PER_TASK))
 OUTPUT_DIR = RESULTS_DIR
 
 # RESULTS_DIR = os.path.join(os.environ['HOME'], 'GIT/argos-sct/results')
@@ -719,15 +722,15 @@ def main(argv):
         # print('Num final connectors: {}'.format(num_connectors))
 
         # Initial request num and time (return two values)
-        first_request_time, request_num = init_request_time(data)
+        # first_request_time, request_num = init_request_time(data)
         # print('First Request Time: {}'.format(first_request_time))
         # print('Robots Requested: {}'.format(request_num))
 
         start_last_task_time = last_task_time(data)
 
 
-        all_request_time += first_request_time
-        all_robots_requested += request_num
+        # all_request_time += first_request_time
+        # all_robots_requested += request_num
 
         # Time that the robots started working on the constrained task
         time_found = False
@@ -776,7 +779,7 @@ def main(argv):
         all_distance += distance
 
         # Print (completion time, wait time, distance)
-        print('{},{},{}'.format(finish_time,(started_working_time-first_request_time),distance)) 
+        # print('{},{},{}'.format(finish_time,(started_working_time-first_request_time),distance)) 
 
     print('\n-------- RESULT SUMMARY --------')
 
@@ -848,8 +851,8 @@ if __name__ == "__main__":
     #        ]
     argv = []
     # for i in range(1,26):
-    # for i in range(1,26):
-    for i in range(44,45):
+    for i in range(1,51):
+    # for i in range(44,45):
 
         id = ''
         if(i < 10):
@@ -857,11 +860,11 @@ if __name__ == "__main__":
         else:
             id += str(i)
         # argv.append('20R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        # argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        argv.append('30R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
         # argv.append('40R_{0}T_{1}D_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
         # argv.append('30R_{0}T_{1}D_no_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
-        argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
+        # argv.append('30R_{0}T_{1}D_exchange_{2}.yaml'.format(NUMBER_OF_TASKS, DEMAND_PER_TASK, id))
 
     # for i in range(1,21):
     #     id = ''
