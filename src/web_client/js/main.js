@@ -165,9 +165,9 @@ var onAllFilesLoaded = function () {
         "<button type='button'>Confirm</button>"
       );
 
-      let taskButtonTag = "".concat(
-        "<button type='button'>START task</button>"
-      );
+      // let taskButtonTag = "".concat(
+      //   "<button type='button'>START task</button>"
+      // );
 
       /* Add button on top panel */
       $("#layout_toolbar_layout_panel_top>div.w2ui-panel-content")
@@ -351,8 +351,8 @@ var onAllFilesLoaded = function () {
               window.target = '';
             }
 
-            window.taskFlag = false;
-            window.taskCommand = { command: 'task', signal: 'stop' };
+            window.taskFlag = true;
+            window.taskCommand = { command: 'task', signal: 'start' };
             window.connectFlag = true;
             window.connectCommand = { command: 'select_leader' };
           })

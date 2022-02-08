@@ -139,29 +139,29 @@
           e_status.style.color = '#4CAF50';
 
           /* Change appearance depending on last signal sent */
-          if(window.taskCommand['signal'] == 'stop') {
+          // if(window.taskCommand['signal'] == 'stop') {
             
-            if(window.target != '') {
+          //   if(window.target != '') {
 
-              window.signalButtonText.set({
-                content: "START",
-              });
+          //     window.signalButtonText.set({
+          //       content: "START",
+          //     });
 
-              window.signalIndicator.set({
-                backgroundColor: new THREE.Color( 0xff0000 ),
-              });
-            }
+          //     window.signalIndicator.set({
+          //       backgroundColor: new THREE.Color( 0xff0000 ),
+          //     });
+          //   }
 
-          } else if(window.taskCommand['signal'] == 'start') {
+          // } else if(window.taskCommand['signal'] == 'start') {
 
-            window.signalButtonText.set({
-              content: "STOP",
-            });
+          //   window.signalButtonText.set({
+          //     content: "STOP",
+          //   });
 
-            window.signalIndicator.set({
-              backgroundColor: new THREE.Color( 0x00ff00 ),
-            });
-          }
+          //   window.signalIndicator.set({
+          //     backgroundColor: new THREE.Color( 0x00ff00 ),
+          //   });
+          // }
         } else {
 
           window.connected = false;
@@ -169,17 +169,17 @@
           e_status.textContent = 'Disconnected';
           e_status.style.color = '#000000';
 
-          if (window.isInitialized) {
+          // if (window.isInitialized) {
 
-            window.signalButtonText.set({
-              content: "-",
-            });
+          //   window.signalButtonText.set({
+          //     content: "-",
+          //   });
 
-            window.signalIndicator.set({
-              backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
-            });
+          //   window.signalIndicator.set({
+          //     backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+          //   });
 
-          }
+          // }
         }
 
         if (!window.isInitialized) {
