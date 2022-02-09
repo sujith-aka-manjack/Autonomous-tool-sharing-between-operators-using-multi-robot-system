@@ -645,12 +645,28 @@ function initSceneWithScale(_scale) {
     fontTexture: '/fonts/Roboto-msdf.png',
     fontColor: new THREE.Color(0xffffff),
     backgroundOpacity: 0.1,
+    contentDirection: "row",
     alignContent: 'left',
+    borderWidth: 1,
+		borderOpacity: 1,
   });
   sendContainer.position.set( -window.threejs_panel.width() / 2 + 580, window.threejs_panel.height() / 2 - 100, 0 );
   sceneOrtho.add(sendContainer);
 
-    /* Label Block */
+    /* Control Block */
+
+  const sendNumberContainer = new ThreeMeshUI.Block({
+    margin: 10,
+    contentDirection: "column",
+    backgroundOpacity: 0.1,
+    // borderRadius: [0, 50, 0, 50],
+		borderWidth: 1,
+		// borderColor: new THREE.Color( 0, 0.5, 1 ),
+		borderOpacity: 1,
+  });
+  sendContainer.add(sendNumberContainer);
+
+  /* Label Block */
 
   const sendLabelContainer = new ThreeMeshUI.Block({
     width: 80,
@@ -660,32 +676,19 @@ function initSceneWithScale(_scale) {
     alignContent: 'center',
     backgroundOpacity: 0.1,
     // borderRadius: [0, 50, 0, 50],
-		borderWidth: 1,
-		// borderColor: new THREE.Color( 0, 0.5, 1 ),
-		borderOpacity: 1,
+    borderWidth: 1,
+    // borderColor: new THREE.Color( 0, 0.5, 1 ),
+    borderOpacity: 1,
   });
-  sendContainer.add(sendLabelContainer);
+  sendNumberContainer.add(sendLabelContainer);
 
   sendLabelContainer.add(
     new ThreeMeshUI.Text({
       content: "Follower",
       fontSize: 16,
-			// fontColor: new THREE.Color( 0, 0, 0 ),
+      // fontColor: new THREE.Color( 0, 0, 0 ),
     }),
   );
-
-    /* Control Block */
-
-  const sendControlContainer = new ThreeMeshUI.Block({
-    margin: 10,
-    contentDirection: "row",
-    backgroundOpacity: 0.1,
-    // borderRadius: [0, 50, 0, 50],
-		borderWidth: 1,
-		// borderColor: new THREE.Color( 0, 0.5, 1 ),
-		borderOpacity: 1,
-  });
-  sendContainer.add(sendControlContainer);
 
     /* Count Block */
 
@@ -697,18 +700,18 @@ function initSceneWithScale(_scale) {
     alignContent: 'center',
     backgroundOpacity: 0.1,
   });
-  sendControlContainer.add(sendCountContainer);
+  sendNumberContainer.add(sendCountContainer);
 
     /* Counter */
-  window.toSendCount = 0;
+  window.robotCount = 0;
 
-  window.sendCountLabel = new ThreeMeshUI.Text({
-    content: window.toSendCount.toString(),
+  window.robotCountLabel = new ThreeMeshUI.Text({
+    content: window.robotCount.toString(),
     fontSize: 28,
     // fontColor: new THREE.Color( 0, 0, 0 ),
   });
 
-  sendCountContainer.add(window.sendCountLabel);
+  sendCountContainer.add(window.robotCountLabel);
 
     /* Toggle Block */
 
@@ -721,7 +724,7 @@ function initSceneWithScale(_scale) {
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
     borderOpacity: 1,
   });
-  sendControlContainer.add(sendToggleContainer);
+  sendContainer.add(sendToggleContainer);
 
   const hoveredStateAttributes = {
     state: "hovered",
@@ -794,10 +797,9 @@ function initSceneWithScale(_scale) {
     attributes: selectedAttributes,
     onSet: ()=> {
       console.log("Add Selected");
-      window.toSendCount++;
-      window.sendCommand['number'] = window.toSendCount;
-      window.sendCountLabel.set({
-        content: window.toSendCount.toString(),
+      window.robotCount++;
+      window.robotCountLabel.set({
+        content: window.robotCount.toString(),
       });
     }
   });
@@ -809,11 +811,10 @@ function initSceneWithScale(_scale) {
     attributes: selectedAttributes,
     onSet: ()=> {
       console.log("Subtract Selected");
-      if(window.toSendCount > 0) {
-        window.toSendCount--;
-        window.sendCommand['number'] = window.toSendCount;
-        window.sendCountLabel.set({
-          content: window.toSendCount.toString(),
+      if(window.robotCount > 0) {
+        window.robotCount--;
+        window.robotCountLabel.set({
+          content: window.robotCount.toString(),
         });
       }
     }
@@ -824,7 +825,54 @@ function initSceneWithScale(_scale) {
   sendToggleContainer.add(sendAddButton, sendSubtractButton);
   objsToTest.push(sendAddButton, sendSubtractButton);
 
-    /* Confirm Block */
+  /* Confirm Block */
+
+  const sendConfirmContainer = new ThreeMeshUI.Block({
+    margin: 10,
+    alignContent: 'center',
+    backgroundOpacity: 0.1,
+    // borderRadius: [0, 50, 0, 50],
+    borderWidth: 1,
+    // borderColor: new THREE.Color( 0, 0.5, 1 ),
+    borderOpacity: 1,
+  });
+  sendContainer.add(sendConfirmContainer);
+
+  const sendRequestButton = new ThreeMeshUI.Block({
+    width: 100,
+    height: 40,
+    margin: 5,
+    justifyContent: 'center',
+    alignContent: 'center',
+    fontSize: 20,
+    borderRadius: 15,
+    // backgroundOpacity: 1,
+  });
+
+  sendRequestButton.add(
+    new ThreeMeshUI.Text({
+      content: "Request",
+      // fontColor: new THREE.Color( 1, 1, 1 ),
+    }),
+  );
+
+  sendRequestButton.setupState({
+    state: "selected",
+    attributes: selectedAttributes,
+    onSet: ()=> {
+      console.log("Request Robots Selected");
+      if(window.robotCount > 0) {
+        window.requestFlag = true;
+        window.requestCommand['number'] = window.robotCount;
+      }
+    }
+  });
+  sendRequestButton.setupState( hoveredStateAttributes );
+  sendRequestButton.setupState( idleStateAttributes );
+
+  sendConfirmContainer.add(sendRequestButton);
+  objsToTest.push(sendRequestButton);
+
 
   const sendConfirmButton = new ThreeMeshUI.Block({
     width: 80,
@@ -848,16 +896,17 @@ function initSceneWithScale(_scale) {
     state: "selected",
     attributes: selectedAttributes,
     onSet: ()=> {
-      console.log("Confirm Selected");
-      if(window.toSendCount > 0) {
+      console.log("Send Robots Selected");
+      if(window.robotCount > 0) {
         window.sendFlag = true;
+        window.sendCommand['number'] = window.robotCount;
       }
     }
   });
   sendConfirmButton.setupState( hoveredStateAttributes );
   sendConfirmButton.setupState( idleStateAttributes );
 
-  sendControlContainer.add(sendConfirmButton);
+  sendConfirmContainer.add(sendConfirmButton);
   objsToTest.push(sendConfirmButton);
 
   /* Task signal Block */
@@ -1499,6 +1548,11 @@ function updateCommands() {
     commands.push(window.requestCommand);
     window.requestFlag = false;
     console.log(packet);
+
+    window.robotCount = 0;
+    window.robotCountLabel.set({
+      content: window.robotCount.toString(),
+    });
   }
 
   /* Check for a new send command */
@@ -1507,9 +1561,9 @@ function updateCommands() {
     window.sendFlag = false;
     console.log(packet);
 
-    window.toSendCount = 0;
-    window.sendCountLabel.set({
-      content: window.toSendCount.toString(),
+    window.robotCount = 0;
+    window.robotCountLabel.set({
+      content: window.robotCount.toString(),
     });
   }
 
