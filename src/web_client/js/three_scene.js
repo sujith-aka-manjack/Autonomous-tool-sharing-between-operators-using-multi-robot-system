@@ -644,13 +644,15 @@ function initSceneWithScale(_scale) {
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
     fontColor: new THREE.Color(0xffffff),
-    backgroundOpacity: 0.1,
+    fontSupersampling: true,
     contentDirection: "row",
-    alignContent: 'left',
-    borderWidth: 1,
+    // alignContent: 'left',
+    backgroundOpacity: 0.9,
+    borderRadius: [0, 0, 0, 30],
+		borderWidth: 4,
 		borderOpacity: 1,
   });
-  sendContainer.position.set( -window.threejs_panel.width() / 2 + 580, window.threejs_panel.height() / 2 - 100, 0 );
+  sendContainer.position.set( window.threejs_panel.width() / 2 - 155, window.threejs_panel.height() / 2 - 76, 0 );
   sceneOrtho.add(sendContainer);
 
     /* Control Block */
@@ -658,11 +660,11 @@ function initSceneWithScale(_scale) {
   const sendNumberContainer = new ThreeMeshUI.Block({
     margin: 10,
     contentDirection: "column",
-    backgroundOpacity: 0.1,
-    // borderRadius: [0, 50, 0, 50],
+    backgroundOpacity: 0,
+    borderRadius: 0,
 		borderWidth: 1,
 		// borderColor: new THREE.Color( 0, 0.5, 1 ),
-		borderOpacity: 1,
+		borderOpacity: 0,
   });
   sendContainer.add(sendNumberContainer);
 
@@ -671,14 +673,14 @@ function initSceneWithScale(_scale) {
   const sendLabelContainer = new ThreeMeshUI.Block({
     width: 80,
     height: 20,
-    margin: 10,
+    margin: 0,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    backgroundOpacity: 0,
     // borderRadius: [0, 50, 0, 50],
     borderWidth: 1,
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
-    borderOpacity: 1,
+    borderOpacity: 0,
   });
   sendNumberContainer.add(sendLabelContainer);
 
@@ -693,12 +695,13 @@ function initSceneWithScale(_scale) {
     /* Count Block */
 
   const sendCountContainer = new ThreeMeshUI.Block({
-    width: 80,
-    height: 40,
-    margin: 10,
+    width: 70,
+    height: 60,
     justifyContent: 'center',
     alignContent: 'center',
-    backgroundOpacity: 0.1,
+    fontSize: 36,
+    backgroundOpacity: 0,
+    borderOpacity: 1,
   });
   sendNumberContainer.add(sendCountContainer);
 
@@ -707,7 +710,7 @@ function initSceneWithScale(_scale) {
 
   window.robotCountLabel = new ThreeMeshUI.Text({
     content: window.robotCount.toString(),
-    fontSize: 28,
+    // fontSize: 28,
     // fontColor: new THREE.Color( 0, 0, 0 ),
   });
 
@@ -716,13 +719,13 @@ function initSceneWithScale(_scale) {
     /* Toggle Block */
 
   const sendToggleContainer = new ThreeMeshUI.Block({
-    margin: 10,
+    margin: 0,
     alignContent: 'right',
     backgroundOpacity: 0.1,
-    // borderRadius: [0, 50, 0, 50],
+    borderRadius: 0,
     borderWidth: 1,
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
-    borderOpacity: 1,
+    borderOpacity: 0,
   });
   sendContainer.add(sendToggleContainer);
 
@@ -749,13 +752,14 @@ function initSceneWithScale(_scale) {
       /* Add Block */
 
   const sendAddButton = new ThreeMeshUI.Block({
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     margin: 5,
     justifyContent: 'center',
     alignContent: 'center',
-    fontSize: 28,
-    borderRadius: 15,
+    fontSize: 32,
+    borderRadius: 20,
+    borderOpacity: 1,
     // backgroundOpacity: 1,
   })
 
@@ -769,13 +773,14 @@ function initSceneWithScale(_scale) {
       /* Subtract Block */
 
   const sendSubtractButton = new ThreeMeshUI.Block({
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     margin: 5,
     justifyContent: 'center',
     alignContent: 'center',
-    fontSize: 28,
-    borderRadius: 15,
+    fontSize: 36,
+    borderRadius: 20,
+    borderOpacity: 1,
     // backgroundOpacity: 1,
   })
 
@@ -831,10 +836,10 @@ function initSceneWithScale(_scale) {
     margin: 10,
     alignContent: 'center',
     backgroundOpacity: 0.1,
-    // borderRadius: [0, 50, 0, 50],
+    borderRadius: 0,
     borderWidth: 1,
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
-    borderOpacity: 1,
+    borderOpacity: 0,
   });
   sendContainer.add(sendConfirmContainer);
 
@@ -846,6 +851,7 @@ function initSceneWithScale(_scale) {
     alignContent: 'center',
     fontSize: 20,
     borderRadius: 15,
+    borderOpacity: 1,
     // backgroundOpacity: 1,
   });
 
@@ -882,6 +888,7 @@ function initSceneWithScale(_scale) {
     alignContent: 'center',
     fontSize: 20,
     borderRadius: 15,
+    borderOpacity: 1,
     // backgroundOpacity: 1,
   });
 
@@ -1770,6 +1777,11 @@ function render() {
       window.progress.set({
         width: 0.001,
         backgroundOpacity: 0,
+      });
+
+      window.robotCount = 0;
+      window.robotCountLabel.set({
+        content: window.robotCount.toString(),
       });
     }
 
