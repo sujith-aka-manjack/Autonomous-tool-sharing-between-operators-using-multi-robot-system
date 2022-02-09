@@ -126,6 +126,24 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
             std::cout << "Request received: " << num_robot << std::endl;
 
+            /* Get robot controller */
+            CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                it != m_cEPuckLeaders.end();
+                ++it) {
+
+                /* Get handle to e-puck_leader entity and controller */
+                CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+                if(cController.GetId() == target) {
+                    
+                    /* Tell the e-puck to request robots from the other team */
+                    cController.SetRobotsToRequest(num_robot);
+                    break;
+                }
+            } 
+
         }
         else if(c_data["command"] == "send") {
 

@@ -189,8 +189,12 @@ public:
     virtual void SetSignal(const bool b_signal);
 
     /*
+    * Sets the number of followers to request to the other team.
+    */
+    virtual void SetRobotsToRequest(const UInt32 un_robots);
+
+    /*
     * Sets the number of followers to send to the other team.
-    * While the leader is sending robots, calls to this function will be ignored.
     */
     virtual void SetRobotsToSend(const UInt32 un_robots);
 
@@ -470,7 +474,7 @@ private:
 
     /* Team switch variables */
     int numRobotsToSend;
-    int numPreviousRequest;
+    int numRobotsToRequest;
     std::string robotToSwitch;
     UInt8 teamToJoin;
 
@@ -481,7 +485,7 @@ private:
 
     std::string lastAction;
 
-    bool requestReceived; // request to send robots
+    // bool requestReceived; // request to send robots
 
     /*
     * The following variables are used as parameters for the

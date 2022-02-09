@@ -156,12 +156,12 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatReceived = 0;
     beatSent = 0;
     numRobotsToSend = 0;
-    numPreviousRequest = 0;
+    numRobotsToRequest = 0;
     switchCandidate = "";
     robotToSwitch = "";
     notDecremented = true;
     robotsNeeded = 0;
-    requestReceived = false;
+    // requestReceived = false;
 
     // TEMP: hard coded team to join (Assuming two teams)
     if(teamID == 1)
@@ -514,6 +514,16 @@ void CLeader::SetSignal(const bool b_signal) {
         inputStart = true;
     else if(!b_signal && m_bSignal)
         inputStop = true;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetRobotsToRequest(const UInt32 un_robots) {
+
+    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to request" << std::endl;
+
+    numRobotsToRequest = un_robots;
 }
 
 /****************************************/
@@ -892,36 +902,25 @@ void CLeader::CheckHeartBeat() {
 
                     notDecremented = true;
 
-                    // std::cout << "beat.robot_num " << beat.robot_num << std::endl;
-                    // std::cout << "numPreviousRequest " << numPreviousRequest << std::endl;
-                    // std::cout << "numRobotsToSend " << numRobotsToSend << std::endl;
-                    // std::cout << "follower_num " << beat.follower_num << std::endl;
-                    // std::cout << "task_min_num " << beat.task_min_num << std::endl;
-
                     /* Store message info from other leader */
                     numOtherFollower = beat.follower_num;
                     numOtherTaskRequire = beat.task_min_num;
 
                     if(beat.type == 'R') {
-                        if( !requestReceived ) {
-                            if(beat.robot_num != numPreviousRequest) {
-                                numRobotsToSend += beat.robot_num - numPreviousRequest;
-                                if(numRobotsToSend < 0)
-                                    numRobotsToSend = 0;
-                                numPreviousRequest = beat.robot_num;
-                                std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
+                        // if( !requestReceived ) {
+                        //     if(beat.robot_num != numPreviousRequest) {
+                        //         numRobotsToSend += beat.robot_num - numPreviousRequest;
+                        //         if(numRobotsToSend < 0)
+                        //             numRobotsToSend = 0;
+                        //         numPreviousRequest = beat.robot_num;
+                        //         std::cout << this->GetId() << ": request from " << beat.from << " to send " << numRobotsToSend << " robots" << std::endl;
 
-                                // TEMP
-                                // Add waypoints
+                        //     }
+                        // }
 
-                                // std::queue<CVector2> waypoints; // Queue to provide to the robot
-                                // waypoints.push(CVector2(1.5, -0.5));
-                                // waypoints.push(CVector2(-0.5, -0.5));
-                                // waypoints.push(CVector2(-0.5, 0.5));
-                                // waypoints.push(CVector2(0.5, 1.5));
-                                // requestReceived = true;
-                            }
-                        }
+                        int numRobotsRequested = beat.robot_num;
+                        std::cout << this->GetId() << ": Request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
+
                     }/*  else {
                         numRobotsToSend = 0;
                         numPreviousRequest = 0;
@@ -1173,6 +1172,13 @@ void CLeader::Callback_Message(void* data) {
     //         }
     //     }
     // }
+
+    if(numRobotsToRequest > 0) {
+        beat.type = 'R';
+        beat.robot_num = numRobotsToRequest;
+        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+        numRobotsToRequest = 0;
+    }
 
     rmsgToResend.push_back({sendDuration,beat});
     lastSent = initStepTimer;
