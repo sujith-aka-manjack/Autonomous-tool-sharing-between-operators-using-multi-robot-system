@@ -259,7 +259,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    // std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     // std::cout << "TIME: " << initStepTimer << std::endl;
@@ -285,7 +285,7 @@ void CLeader::ControlStep() {
     receivedRequest = false;
     inputMessage = false;
 
-    lastAction = "";
+    lastControllableAction = "";
 
     robotToSwitch = "";
 
@@ -311,7 +311,8 @@ void CLeader::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
     
-    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -663,7 +664,7 @@ Real CLeader::GetTotalReceived() {
 /****************************************/
 
 std::string CLeader::GetLastAction() {
-    return lastAction;
+    return lastControllableAction;
 }
 
 /****************************************/
@@ -1137,19 +1138,17 @@ void CLeader::PrintName() {
 /* Callback functions (Controllable events) */
 
 void CLeader::Callback_Start(void* data) {
-    // std::cout << "Action: start" << std::endl;
+    lastControllableAction = "start";
     m_bSignal = true;
-    lastAction = "start";
 }
 
 void CLeader::Callback_Stop(void* data) {
-    // std::cout << "Action: stop" << std::endl;
+    lastControllableAction = "stop";
     m_bSignal = false;
-    lastAction = "stop";
 }
 
 void CLeader::Callback_Message(void* data) {
-    // std::cout << "Action: message" << std::endl;
+    lastControllableAction = "message";
 
     /* Send a heart-beat message to the other leader every 10 timesteps */
     RelayMsg beat;
@@ -1183,15 +1182,14 @@ void CLeader::Callback_Message(void* data) {
     rmsgToResend.push_back({sendDuration,beat});
     lastSent = initStepTimer;
 
-    lastAction = "message";
     if(beat.type == 'R')
-        lastAction += "_" + std::to_string(beat.robot_num);
+        lastControllableAction += "_" + std::to_string(beat.robot_num);
 
     beatSent++;
 }
 
 void CLeader::Callback_Respond(void* data) {
-    // std::cout << "Action: respond" << std::endl;
+    lastControllableAction = "respond";
 
     ConnectionMsg response;
 
@@ -1213,12 +1211,10 @@ void CLeader::Callback_Respond(void* data) {
     }
 
     cmsgToResend.push_back({sendDuration,response});
-
-    lastAction = "respond";
 }
 
 void CLeader::Callback_Exchange(void* data) {
-    // std::cout << "Action: exchange" << std::endl;
+    lastControllableAction = "exchange";
 
     if( !switchCandidate.empty() ) {
         /* Signal a follower to switch to the other team */
@@ -1231,7 +1227,6 @@ void CLeader::Callback_Exchange(void* data) {
 
         std::cout << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
 
-        lastAction = "exchange";
     } else {
         std::cerr << "[" << this->GetId() << "] switchCandidate is empty" << std::endl;
     }

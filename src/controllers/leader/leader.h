@@ -394,6 +394,9 @@ private:
     /* SCT Controller */
     SCT* sct;
 
+    /* Last controllable action */
+    std::string lastControllableAction;
+
     /* Current robot state */
     RobotState currentState;
 
@@ -482,8 +485,6 @@ private:
     bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;
 
     std::string acceptID;
-
-    std::string lastAction;
 
     // bool requestReceived; // request to send robots
 

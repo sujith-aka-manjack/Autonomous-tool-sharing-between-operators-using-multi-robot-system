@@ -208,7 +208,6 @@ void CFollower::Init(TConfigurationNode& t_node) {
     shareToLeader = "";
     shareToTeam = "";
     shareDist = 255;
-    setCTriggered = false; // Initialize flag
     initStepTimer = 0;
 
     /*
@@ -402,6 +401,8 @@ void CFollower::ControlStep() {
     robotsToAccept.clear();
     nearbyTeams.clear();
 
+    lastControllableAction = "";
+
     /*----------------------*/
     /* Receive new messages */
     /*----------------------*/
@@ -421,6 +422,7 @@ void CFollower::ControlStep() {
         sct->run_step();    // Run the supervisor to get the next action
 
     std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -756,7 +758,10 @@ void CFollower::Update() {
         UpdateHopCounts();
 
         /* Find the teamIDs of followers that are within its safety range */
-        for(const auto& msg : otherTeamMsgs) {
+        std::vector<Message> nearbyMsgs(otherTeamMsgs);
+        nearbyMsgs.insert(std::end(nearbyMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+
+        for(const auto& msg : nearbyMsgs) {
             Real dist = msg.direction.Length();
             if(nearbyTeams.count(msg.teamID) == 0) {
                 if(dist < separationThres - 10) // TEMP: Added fixed buffer to distance
@@ -1953,34 +1958,34 @@ void CFollower::PrintName() {
 /* Callback functions (Controllable events) */
 
 void CFollower::Callback_TaskStart(void* data) {
-    //std::cout << "Action: taskStart" << std::endl;
+    lastControllableAction = "taskStart";
     performingTask = true;
 }
 
 void CFollower::Callback_TaskStop(void* data) {
-    //std::cout << "Action: taskStop" << std::endl;
+    lastControllableAction = "taskStop";
     performingTask = false;
 }
 
 void CFollower::Callback_MoveFlock(void* data) {
-    //std::cout << "Action: moveFlock" << std::endl;
+    lastControllableAction = "moveFlock";
     currentMoveType = MoveType::FLOCK;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveChain(void* data) {
-    //std::cout << "Action: moveChain" << std::endl;
+    lastControllableAction = "moveChain";
     currentMoveType = MoveType::TRAVEL;
     currentRequest = ConnectionMsg(); // Clear any existing requests
 }
 
 void CFollower::Callback_MoveStop(void* data) {
-    //std::cout << "Action: moveStop" << std::endl;
+    lastControllableAction = "moveStop";
     currentMoveType = MoveType::STOP;
 }
 
 void CFollower::Callback_SwitchF(void* data) {
-    //std::cout << "Action: switchF" << std::endl;
+    lastControllableAction = "switchF";
 
     /* Set new teamID */
     if(currentState == RobotState::CONNECTOR) {
@@ -2004,7 +2009,7 @@ void CFollower::Callback_SwitchF(void* data) {
 }
 
 void CFollower::Callback_SwitchC(void* data) {
-    //std::cout << "Action: switchC" << std::endl;
+    lastControllableAction = "switchC";
     
     if(currentAccept.from[0] == 'L') {  // Accept received from the leader
 
@@ -2044,11 +2049,10 @@ void CFollower::Callback_SwitchC(void* data) {
 
     currentState = RobotState::CONNECTOR;
     teamID = 255;
-    setCTriggered = true;
 }
 
 void CFollower::Callback_SwitchT(void* data) {
-    //std::cout << "Action: switchT" << std::endl;
+    lastControllableAction = "switchT";
 
     /* Reset variables */
     shareToLeader = "";
@@ -2060,7 +2064,7 @@ void CFollower::Callback_SwitchT(void* data) {
 }
 
 void CFollower::Callback_RequestL(void* data) {
-    //std::cout << "Action: RequestL" << std::endl;
+    lastControllableAction = "requestL";
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -2076,7 +2080,7 @@ void CFollower::Callback_RequestL(void* data) {
 }
 
 void CFollower::Callback_RequestC(void* data) {
-    //std::cout << "Action: RequestC" << std::endl;
+    lastControllableAction = "requestC";
 
     /* Set request to send */
     ConnectionMsg cmsg;
@@ -2092,7 +2096,7 @@ void CFollower::Callback_RequestC(void* data) {
 }
 
 void CFollower::Callback_Respond(void* data) {
-    //std::cout << "Action: Respond" << std::endl;
+    lastControllableAction = "respond";
 
     for(const auto& it : robotsToAccept) {
         ConnectionMsg cmsg;
@@ -2109,7 +2113,7 @@ void CFollower::Callback_Respond(void* data) {
 }
 
 void CFollower::Callback_Relay(void* data) {
-    //std::cout << "Action: relay" << std::endl;
+    lastControllableAction = "relay";
 
     for(const auto& info : lastBeat) {
 

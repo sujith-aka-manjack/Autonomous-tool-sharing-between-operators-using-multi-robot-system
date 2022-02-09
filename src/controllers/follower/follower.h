@@ -359,6 +359,9 @@ private:
     /* Controller */
     SCT * sct;
 
+    /* Last controllable action */
+    std::string lastControllableAction;
+
     /* Current robot state */
     RobotState currentState;
 
@@ -413,8 +416,6 @@ private:
 
     /* Flag to indicate whether this robot is working on a task */
     bool performingTask;
-
-    bool setCTriggered; // Flag to trigger the uncontrollable event taskEnded
 
     /* Followers that are within the safety range */
     std::set<UInt8> nearbyTeams;
