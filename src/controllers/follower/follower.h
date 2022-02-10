@@ -254,7 +254,7 @@ protected:
     /* 
     * Get a repulsion vector between itself and all other robots.
     */
-    virtual CVector2 GetRobotRepulsionVector();
+    virtual CVector2 GetRobotRepulsionVector(std::vector<Message>& msgs);
 
     /*
     * Get a repulsion vector from obstacles.

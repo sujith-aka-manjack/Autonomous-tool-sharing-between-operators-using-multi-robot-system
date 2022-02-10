@@ -866,6 +866,15 @@ void CFollower::Update() {
                 // Split otherTeamMsgs into two.
                 std::map<UInt8, std::vector<Message>> splitTeamMsgs;
 
+                for(const auto& msg : otherLeaderMsgs) {
+                    if(splitTeamMsgs.find(msg.teamID) == splitTeamMsgs.end()) {
+                        // If key does't exist, create new entry
+                        splitTeamMsgs[msg.teamID] = std::vector<Message>();
+                    }
+
+                    splitTeamMsgs[msg.teamID].push_back(msg);
+                }
+
                 for(const auto& msg : otherTeamMsgs) {
                     if(splitTeamMsgs.find(msg.teamID) == splitTeamMsgs.end()) {
                         // If key does't exist, create new entry
@@ -894,7 +903,7 @@ void CFollower::Update() {
                 }
 
                 // The followers of the two teams are close by. This robot is not needed.
-                if(minDist + 2 < separationThres - 10) {
+                if(minDist < separationThres - 10) {
                     condF2 = true;
                 }
             }
@@ -1509,9 +1518,21 @@ void CFollower::UpdateHopCounts() {
 /****************************************/
 
 void CFollower::Flock() {
+    
+    std::vector<Message> repulseMsgs;
+
+    /* Add robots to repel from */
+    if( !leaderMsg.Empty() )
+        repulseMsgs.push_back(leaderMsg);
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
+    
     /* Calculate overall force applied to the robot */
     CVector2 teamForce     = GetTeamFlockingVector();
-    CVector2 robotForce    = GetRobotRepulsionVector();
+    CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
     CVector2 obstacleForce = GetObstacleRepulsionVector();
     CVector2 sumForce      = teamWeight*teamForce + robotWeight*robotForce + obstacleWeight*obstacleForce;
 
@@ -1570,44 +1591,20 @@ CVector2 CFollower::GetTeamFlockingVector() {
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetRobotRepulsionVector() {
+CVector2 CFollower::GetRobotRepulsionVector(std::vector<Message>& msgs) {
     CVector2 resVec = CVector2();
 
-    std::vector<Message> repulseMsgs;
-
-    /* Add team messages with equal or greater hop count */
-    // if(hopCountToLeader < 255) {
-    //     UInt8 minCount = hopCountToLeader - 1;
-
-    //     for(size_t i = 0; i < teamMsgs.size(); i++) {
-    //         if(teamMsgs[i].hops[teamID].count > minCount)
-    //             repulseMsgs.push_back(teamMsgs[i]);
-    //     }
-    // } else {
-    //     repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
-    // }
-    
-    if( !leaderMsg.Empty() )
-        repulseMsgs.push_back(leaderMsg);
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(teamMsgs), std::end(teamMsgs));
-
-    /* Add other messages */
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
-
-    for(size_t i = 0; i < repulseMsgs.size(); i++) {
+    for(size_t i = 0; i < msgs.size(); i++) {
         /* Calculate LJ */
-        Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(repulseMsgs[i].direction.Length());
+        Real fLJ = m_sTeamFlockingParams.GeneralizedLennardJonesRepulsion(msgs[i].direction.Length());
         /* Sum to accumulator */
         resVec += CVector2(fLJ,
-                           repulseMsgs[i].direction.Angle());
+                           msgs[i].direction.Angle());
     }
 
     /* Calculate the average vector */
-    if( !repulseMsgs.empty() )
-        resVec /= repulseMsgs.size();
+    if( !msgs.empty() )
+        resVec /= msgs.size();
 
     /* Limit the length of the vector to the max speed */
     if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
@@ -1668,9 +1665,17 @@ CVector2 CFollower::GetObstacleRepulsionVector() {
 /****************************************/
 
 void CFollower::Travel() {
+
+    /* Add robots to repel from */
+    std::vector<Message> repulseMsgs;
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
+
     /* Calculate overall force applied to the robot */
     CVector2 travelForce   = GetChainTravelVector();
-    CVector2 robotForce    = GetRobotRepulsionVector();
+    CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
     CVector2 obstacleForce = GetObstacleRepulsionVector();
 
     CVector2 sumForce      = teamWeight * travelForce + 0.3 * robotForce + 0.5 * obstacleWeight*obstacleForce;
@@ -1792,11 +1797,20 @@ CVector2 CFollower::GetChainTravelVector() {
 
 void CFollower::AdjustPosition() {
 
+    // TODO Make connector so that its adjacent connectors are too far. If too far, stop.
+
+    /* Add robots to repel from */
+    std::vector<Message> repulseMsgs;
+    // repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+    // repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
+
     /* Calculate overall force applied to the robot */
     CVector2 adjustForce   = GetAdjustVector();
-    CVector2 robotForce    = GetRobotRepulsionVector();
+    CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = 0.5 * adjustForce + 0.1 * robotWeight * robotForce + 0.1 * obstacleWeight * obstacleForce;
+    CVector2 sumForce      = 1 * adjustForce + 20 * robotForce + 15 * obstacleForce;
 
     /* Set Wheel Speed */
     if(sumForce.Length() > 1.0f)
@@ -1828,14 +1842,14 @@ CVector2 CFollower::GetAdjustVector() {
         // For each entry in hopsDict
         for(const auto& hop : hopsDict) {
 
-            // Loop copy of connectionMsg
+            // Loop robots to check
             for(const auto& msg : otherMsgs) {
                 UInt8 teamToCheck = hop.first;
                 UInt8 myHopCount = hop.second.count;
 
                 if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
 
-                    /* Tail connector */
+                    /* Tail connector for this team */
 
                     if(msg.teamID == teamToCheck) {
                         resVec += msg.direction;
@@ -1844,18 +1858,24 @@ CVector2 CFollower::GetAdjustVector() {
                     }
                 } else if(msg.state == RobotState::CONNECTOR) {
 
-                    /* Other connector */
+                    /* Not tail connector for this team */
+
+                    bool foundRobot = false;
 
                     for(const auto& otherHop : msg.hops) {
                         UInt8 otherHopCount = otherHop.second.count;
 
-                        // If it has a lower hop count than itself, add it to the list of messages to average
-                        if(otherHopCount == myHopCount - 1) {
+                        // If it has one lower hop count than itself, add it to the list of messages to average
+                        if(otherHop.first == teamToCheck && otherHopCount == myHopCount - 1) {
                             resVec += msg.direction;
                             count++;
+                            foundRobot = true;
                             break;
                         }
                     }
+
+                    if(foundRobot)
+                        break;
                 }
             }
         }
