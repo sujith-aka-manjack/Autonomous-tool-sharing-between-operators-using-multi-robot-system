@@ -26,7 +26,10 @@ public:
 
 private:
 
-   std::vector<CVector2> m_cWaypointPos;
+   TConfigurationNode config;
+   std::vector<std::string> m_vecEntityID;
+
+   std::vector<CVector2> m_vecWaypointPos;
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
    std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
@@ -39,6 +42,12 @@ private:
    /* Frame Grabbing */
    bool m_bFrameGrabbing;
    UInt32 m_unCameraIndex;
+
+   /* Init robots */
+   void InitRobots();
+
+   /* Init tasks */
+   void InitTasks();
 
    /* Distribute a leader-robot team */
    void PlaceCluster(const CVector2& c_center,

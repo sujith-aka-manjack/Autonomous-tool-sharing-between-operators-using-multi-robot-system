@@ -251,16 +251,18 @@ var onAllFilesLoaded = function () {
         //     // window.wsp.send('step')
         //   })
         // )
-        // .append($("<div/>")
-        //   .addClass('button')
-        //   .addClass('icon-reset')
-        //   .attr('id', 'reset_button')
-        //   .attr("title", "Reset experiment")
-        //   .prop("title", "Reset experiment")//for IE
-        //   .click(function () {
-        //     window.wsp.sendPacked({ command: 'reset' })
-        //   })
-        // )
+        .append($("<div/>")
+          .addClass('button')
+          .addClass('icon-reset')
+          .attr('id', 'reset_button')
+          .attr("title", "Reset experiment")
+          .prop("title", "Reset experiment")//for IE
+          .click(function () {
+            window.wsp.sendPacked({ command: 'pause' })
+            window.wsp.sendPacked({ command: 'reset' })
+            location.reload(); // Reload web client
+          })
+        )
         // /* Divider */
         // .append($("<div/>")
         //   .addClass('toolbar_divider')

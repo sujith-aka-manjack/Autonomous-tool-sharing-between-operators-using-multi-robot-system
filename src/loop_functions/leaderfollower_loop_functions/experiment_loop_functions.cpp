@@ -44,6 +44,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
     
     std::cout << "Init experiment loop function" << std::endl;
 
+    config = t_node;
+
     try {
         /*
         * Parse the configuration file
@@ -60,203 +62,9 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
         GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
 
-        /*
-        * Distribute leaders and robots
-        */
+        InitRobots();
+        InitTasks();
 
-        std::cout << "[LOG] Adding robots..." << std::endl;
-
-        /* ID counts */
-        UInt32 unNextLeaderId = 1;
-        UInt32 unNextRobotId = 1;
-        /* Get the teams node */
-        TConfigurationNode& et_tree = GetNode(t_node, "teams");
-        /* Go through the nodes (teams) */
-        TConfigurationNodeIterator itDistr;
-        for(itDistr = itDistr.begin(&et_tree);
-            itDistr != itDistr.end();
-            ++itDistr) {
-            
-            /* Get current node (team/custom_team) */
-            TConfigurationNode& tDistr = *itDistr;
-
-            /* Number of leaders to place */
-            UInt32 unLeaders = 0;
-
-            /* Number of robots to place */
-            UInt32 unRobots;
-
-            if(itDistr->Value() == "team") {
-                /* Distribution center */
-                CVector2 cCenter;
-                GetNodeAttribute(tDistr, "center", cCenter);
-                GetNodeAttribute(tDistr, "leader_num", unLeaders);
-                GetNodeAttribute(tDistr, "robot_num", unRobots);
-                /* Density of the robots */
-                Real fDensity;
-                GetNodeAttribute(tDistr, "density", fDensity);
-                /* Place robots */
-                PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
-
-                /* Get the waypoints node */
-                std::queue<CVector2> waypoints; // Queue to provide to the robot
-                /* Go through the nodes (waypoints) */
-                TConfigurationNodeIterator itWaypt;
-                for(itWaypt = itWaypt.begin(&tDistr);
-                    itWaypt != itWaypt.end();
-                    ++itWaypt) {
-
-                    /* Get current node (waypoint) */
-                    TConfigurationNode& tWaypt = *itWaypt;
-                    /* Coordinate of waypoint */
-                    CVector2 coord;
-                    GetNodeAttribute(tWaypt, "coord", coord);
-                    m_cWaypointPos.push_back(coord);
-                    waypoints.push(coord);
-                }
-
-                /* Get the newly created leader */
-                std::ostringstream cEPId;
-                cEPId.str("");
-                cEPId << "L" << unNextLeaderId;
-                CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
-                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
-                /* Set list of waypoints to leader */
-                cController.SetWaypoints(waypoints);
-
-                /* Update robot count */
-                unNextLeaderId += unLeaders;
-                unNextRobotId += unRobots;
-            }
-            else if(itDistr->Value() == "custom_team") {
-                
-                /* Get the robots node */
-                TConfigurationNode& er_tree = GetNode(tDistr, "robots");
-                /* Go through the nodes (robots) */
-                TConfigurationNodeIterator itRobot;
-
-                for(itRobot = itRobot.begin(&er_tree);
-                    itRobot != itRobot.end();
-                    ++itRobot) {
-
-                    /* Get current node (robot) */
-                    TConfigurationNode& tRobot = *itRobot;
-                    /* Distribution center */
-                    CVector2 cCenter;
-                    GetNodeAttribute(tRobot, "position", cCenter);
-                    std::string str_type;
-                    GetNodeAttribute(tRobot, "type", str_type);
-
-                    PlaceCustomPosition(cCenter, str_type, unNextLeaderId, unNextRobotId);
-
-                    if(str_type == "leader")
-                        unLeaders++;
-                    else if(str_type == "follower")
-                        unNextRobotId++;
-                }
-
-                /* Get the waypoints node */
-                std::queue<CVector2> waypoints; // Queue to provide to the robot
-                TConfigurationNode& ew_tree = GetNode(tDistr, "waypoints");
-                /* Go through the nodes (waypoints) */
-                TConfigurationNodeIterator itWaypt;
-                for(itWaypt = itWaypt.begin(&ew_tree);
-                    itWaypt != itWaypt.end();
-                    ++itWaypt) {
-
-                    /* Get current node (waypoint) */
-                    TConfigurationNode& tWaypt = *itWaypt;
-                    /* Coordinate of waypoint */
-                    CVector2 coord;
-                    GetNodeAttribute(tWaypt, "coord", coord);
-                    m_cWaypointPos.push_back(coord);
-                    waypoints.push(coord);
-                }
-
-                /* Get the newly created leader */
-                std::ostringstream cEPId;
-                cEPId.str("");
-                cEPId << "L" << unNextLeaderId;
-                CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
-                CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
-                /* Set list of waypoints to leader */
-                cController.SetWaypoints(waypoints);
-
-                /* Update robot count */
-                unNextLeaderId += unLeaders;
-            } 
-        }
-
-        std::cout << "[LOG] Added robots" << std::endl;
-
-        /*
-        * Initialize tasks
-        */
-
-        std::cout << "[LOG] Adding tasks..." << std::endl;
-
-        /* ID counts */
-        UInt32 unNextTaskId = 1;
-        /* Get the teams node */
-        TConfigurationNode& ts_tree = GetNode(t_node, "tasks");
-        /* Go through the nodes (tasks) */
-        for(itDistr = itDistr.begin(&ts_tree);
-            itDistr != itDistr.end();
-            ++itDistr) {
-
-            // /* Get current node (task) */
-            // TConfigurationNode& tDistr = *itDistr;
-            // /* Task center */
-            // CVector2 cCenter;
-            // GetNodeAttribute(tDistr, "position", cCenter);
-            // /* Task radius */
-            // Real fRadius;
-            // GetNodeAttribute(tDistr, "radius", fRadius);
-            // /* Task demand */
-            // UInt32 unDemand;
-            // GetNodeAttribute(tDistr, "task_demand", unDemand);
-            // /* Minimum robot constraint */
-            // UInt32 unMinRobotNum;
-            // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
-            // /* Maximum robot constraint */
-            // UInt32 unMaxRobotNum;
-            // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
-            
-            // /* Place Tasks */
-            // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-
-            // /* Update task count */
-            // unNextTaskId++;
-
-            /* Get current node (task) */
-            TConfigurationNode& tDistr = *itDistr;
-            /* Task center */
-            CVector2 cCenter;
-            GetNodeAttribute(tDistr, "position", cCenter);
-            /* Task width */
-            Real fWidth;
-            GetNodeAttribute(tDistr, "width", fWidth);
-            /* Task height */
-            Real fHeight;
-            GetNodeAttribute(tDistr, "height", fHeight);
-            /* Task demand */
-            UInt32 unDemand;
-            GetNodeAttribute(tDistr, "task_demand", unDemand);
-            /* Minimum robot constraint */
-            UInt32 unMinRobotNum;
-            GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
-            /* Maximum robot constraint */
-            UInt32 unMaxRobotNum;
-            GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
-            
-            /* Place Tasks */
-            PlaceRectangleTask(cCenter, fWidth, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-
-            /* Update task count */
-            unNextTaskId++;
-        }
-
-        std::cout << "[LOG] Added tasks" << std::endl;
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
@@ -267,14 +75,24 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CExperimentLoopFunctions::Reset() {
+    std::cout << "RESET called" << std::endl;
+    
+    /* Delete existing robot and task entities from the simulation */
+    for(const auto& id : m_vecEntityID) {
+        RemoveEntity(id);
+    }
 
+    m_vecEntityID.clear();
+
+    InitRobots();
+    InitTasks();
 }
 
 /****************************************/
 /****************************************/
 
 void CExperimentLoopFunctions::Destroy() {
-
+    std::cout << "DESTROY called" << std::endl;
 }
 
 /****************************************/
@@ -286,8 +104,8 @@ CColor CExperimentLoopFunctions::GetFloorColor(const CVector2& c_position_on_pla
     //         return CColor::ORANGE;
     //     }
     // }
-    // for(UInt32 i = 0; i < m_cWaypointPos.size(); ++i) {
-    //     if((c_position_on_plane - m_cWaypointPos[i]).SquareLength() < 0.01) {
+    // for(UInt32 i = 0; i < m_vecWaypointPos.size(); ++i) {
+    //     if((c_position_on_plane - m_vecWaypointPos[i]).SquareLength() < 0.01) {
     //         return CColor::GRAY70;
     //     }
     // }
@@ -627,6 +445,217 @@ void CExperimentLoopFunctions::PostStep() {
 /****************************************/
 /****************************************/
 
+void CExperimentLoopFunctions::InitRobots() {
+    /*
+    * Distribute leaders and robots
+    */
+
+    std::cout << "[LOG] Adding robots..." << std::endl;
+
+    /* ID counts */
+    UInt32 unNextLeaderId = 1;
+    UInt32 unNextRobotId = 1;
+    /* Get the teams node */
+    TConfigurationNode& et_tree = GetNode(config, "teams");
+    /* Go through the nodes (teams) */
+    TConfigurationNodeIterator itDistr;
+
+    for(itDistr = itDistr.begin(&et_tree);
+        itDistr != itDistr.end();
+        ++itDistr) {
+        
+        /* Get current node (team/custom_team) */
+        TConfigurationNode& tDistr = *itDistr;
+
+        /* Number of leaders to place */
+        UInt32 unLeaders = 0;
+
+        /* Number of robots to place */
+        UInt32 unRobots;
+
+        if(itDistr->Value() == "team") {
+            /* Distribution center */
+            CVector2 cCenter;
+            GetNodeAttribute(tDistr, "center", cCenter);
+            GetNodeAttribute(tDistr, "leader_num", unLeaders);
+            GetNodeAttribute(tDistr, "robot_num", unRobots);
+            /* Density of the robots */
+            Real fDensity;
+            GetNodeAttribute(tDistr, "density", fDensity);
+            /* Place robots */
+            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
+
+            /* Get the waypoints node */
+            std::queue<CVector2> waypoints; // Queue to provide to the robot
+            /* Go through the nodes (waypoints) */
+            TConfigurationNodeIterator itWaypt;
+            for(itWaypt = itWaypt.begin(&tDistr);
+                itWaypt != itWaypt.end();
+                ++itWaypt) {
+
+                /* Get current node (waypoint) */
+                TConfigurationNode& tWaypt = *itWaypt;
+                /* Coordinate of waypoint */
+                CVector2 coord;
+                GetNodeAttribute(tWaypt, "coord", coord);
+                m_vecWaypointPos.push_back(coord);
+                waypoints.push(coord);
+            }
+
+            /* Get the newly created leader */
+            std::ostringstream cEPId;
+            cEPId.str("");
+            cEPId << "L" << unNextLeaderId;
+            CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            /* Set list of waypoints to leader */
+            cController.SetWaypoints(waypoints);
+
+            /* Update robot count */
+            unNextLeaderId += unLeaders;
+            unNextRobotId += unRobots;
+        }
+        else if(itDistr->Value() == "custom_team") {
+            
+            /* Get the robots node */
+            TConfigurationNode& er_tree = GetNode(tDistr, "robots");
+            /* Go through the nodes (robots) */
+            TConfigurationNodeIterator itRobot;
+
+            for(itRobot = itRobot.begin(&er_tree);
+                itRobot != itRobot.end();
+                ++itRobot) {
+
+                /* Get current node (robot) */
+                TConfigurationNode& tRobot = *itRobot;
+                /* Distribution center */
+                CVector2 cCenter;
+                GetNodeAttribute(tRobot, "position", cCenter);
+                std::string str_type;
+                GetNodeAttribute(tRobot, "type", str_type);
+
+                PlaceCustomPosition(cCenter, str_type, unNextLeaderId, unNextRobotId);
+
+                if(str_type == "leader")
+                    unLeaders++;
+                else if(str_type == "follower")
+                    unNextRobotId++;
+            }
+
+            /* Get the waypoints node */
+            std::queue<CVector2> waypoints; // Queue to provide to the robot
+            TConfigurationNode& ew_tree = GetNode(tDistr, "waypoints");
+            /* Go through the nodes (waypoints) */
+            TConfigurationNodeIterator itWaypt;
+            for(itWaypt = itWaypt.begin(&ew_tree);
+                itWaypt != itWaypt.end();
+                ++itWaypt) {
+
+                /* Get current node (waypoint) */
+                TConfigurationNode& tWaypt = *itWaypt;
+                /* Coordinate of waypoint */
+                CVector2 coord;
+                GetNodeAttribute(tWaypt, "coord", coord);
+                m_vecWaypointPos.push_back(coord);
+                waypoints.push(coord);
+            }
+
+            /* Get the newly created leader */
+            std::ostringstream cEPId;
+            cEPId.str("");
+            cEPId << "L" << unNextLeaderId;
+            CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            /* Set list of waypoints to leader */
+            cController.SetWaypoints(waypoints);
+
+            /* Update robot count */
+            unNextLeaderId += unLeaders;
+        } 
+    }
+
+    std::cout << "[LOG] Added robots" << std::endl;
+
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::InitTasks() {
+    /*
+    * Initialize tasks
+    */
+
+    std::cout << "[LOG] Adding tasks..." << std::endl;
+
+    /* ID counts */
+    UInt32 unNextTaskId = 1;
+    /* Get the teams node */
+    TConfigurationNode& ts_tree = GetNode(config, "tasks");
+    /* Go through the nodes (tasks) */
+    TConfigurationNodeIterator itDistr;
+    for(itDistr = itDistr.begin(&ts_tree);
+        itDistr != itDistr.end();
+        ++itDistr) {
+
+        // /* Get current node (task) */
+        // TConfigurationNode& tDistr = *itDistr;
+        // /* Task center */
+        // CVector2 cCenter;
+        // GetNodeAttribute(tDistr, "position", cCenter);
+        // /* Task radius */
+        // Real fRadius;
+        // GetNodeAttribute(tDistr, "radius", fRadius);
+        // /* Task demand */
+        // UInt32 unDemand;
+        // GetNodeAttribute(tDistr, "task_demand", unDemand);
+        // /* Minimum robot constraint */
+        // UInt32 unMinRobotNum;
+        // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+        // /* Maximum robot constraint */
+        // UInt32 unMaxRobotNum;
+        // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+        
+        // /* Place Tasks */
+        // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+
+        // /* Update task count */
+        // unNextTaskId++;
+
+        /* Get current node (task) */
+        TConfigurationNode& tDistr = *itDistr;
+        /* Task center */
+        CVector2 cCenter;
+        GetNodeAttribute(tDistr, "position", cCenter);
+        /* Task width */
+        Real fWidth;
+        GetNodeAttribute(tDistr, "width", fWidth);
+        /* Task height */
+        Real fHeight;
+        GetNodeAttribute(tDistr, "height", fHeight);
+        /* Task demand */
+        UInt32 unDemand;
+        GetNodeAttribute(tDistr, "task_demand", unDemand);
+        /* Minimum robot constraint */
+        UInt32 unMinRobotNum;
+        GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+        /* Maximum robot constraint */
+        UInt32 unMaxRobotNum;
+        GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+        
+        /* Place Tasks */
+        PlaceRectangleTask(cCenter, fWidth, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+
+        /* Update task count */
+        unNextTaskId++;
+    }
+
+    std::cout << "[LOG] Added tasks" << std::endl;
+}
+
+/****************************************/
+/****************************************/
+
 void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                             UInt32 un_leaders,
                                             UInt32 un_robots,
@@ -660,6 +689,8 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                            EP_RAB_DATA_SIZE,
                                            "");
             AddEntity(*pcEPL);
+            m_vecEntityID.push_back(cEPId.str());
+
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;
@@ -692,6 +723,8 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                     EP_RAB_DATA_SIZE,
                                     "");
             AddEntity(*pcEP);
+            m_vecEntityID.push_back(cEPId.str());
+
             /* Assign initial team id */
             CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
             cController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
@@ -745,6 +778,7 @@ void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
                                            EP_RAB_DATA_SIZE,
                                            "");
             AddEntity(*pcEPL);
+            m_vecEntityID.push_back(cEPId.str());
 
             /* Try to place it in the arena */
             bool bDone;
@@ -774,6 +808,8 @@ void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
                                     EP_RAB_DATA_SIZE,
                                     "");
             AddEntity(*pcEP);
+            m_vecEntityID.push_back(cEPId.str());
+
             /* Assign initial team id */
             CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
             cController.SetTeamID(un_leader_id_start);  // Assign teamID of team leader
@@ -818,6 +854,7 @@ void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
                                       un_min_robot_num,
                                       un_max_robot_num);
         AddEntity(*pcCTS);
+        m_vecEntityID.push_back(cTSId.str());
 
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
@@ -851,6 +888,7 @@ void CExperimentLoopFunctions::PlaceRectangleTask(const CVector2& c_center,
                                       un_min_robot_num,
                                       un_max_robot_num);
         AddEntity(*pcRTS);
+        m_vecEntityID.push_back(cTSId.str());
 
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
