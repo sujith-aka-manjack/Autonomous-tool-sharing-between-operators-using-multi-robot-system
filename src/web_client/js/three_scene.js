@@ -1575,7 +1575,7 @@ function updateCommands() {
   }
 
   /* Check movement command */
-  if( keyboard.pressed("W") ) {
+  if( keyboard.pressed("up") ) {
 
     console.log("up pressed");
     let data = {
@@ -1584,7 +1584,7 @@ function updateCommands() {
                }
     commands.push(data);
 
-  } else if( keyboard.pressed("S") ) {
+  } else if( keyboard.pressed("down") ) {
 
     console.log("down pressed");
     let data = {
@@ -1593,7 +1593,7 @@ function updateCommands() {
                }
     commands.push(data);
 
-  } else if( keyboard.pressed("A") ) {
+  } else if( keyboard.pressed("left") ) {
 
     console.log("left pressed");
     let data = {
@@ -1602,7 +1602,7 @@ function updateCommands() {
                 }
     commands.push(data);
 
-  } else if( keyboard.pressed("D") ) {
+  } else if( keyboard.pressed("right") ) {
 
     console.log("right pressed");
     let data = {
