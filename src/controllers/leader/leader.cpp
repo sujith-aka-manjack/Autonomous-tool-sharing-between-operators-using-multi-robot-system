@@ -157,6 +157,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatSent = 0;
     numRobotsToSend = 0;
     numRobotsToRequest = 0;
+    numRobotsRequested = 0;
+    isSendingRobots = false;
     switchCandidate = "";
     robotToSwitch = "";
     notDecremented = true;
@@ -372,38 +374,51 @@ void CLeader::ControlStep() {
                 /* Stop if other robots are too far from itself */
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
             }
-            else if( !waypoints.empty() ) {
-                /* Check if it is near the waypoint */
-                CVector3 pos3d = m_pcPosSens->GetReading().Position;
-                CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
-                Real dist = (waypoints.front() - pos2d).Length();
-                //std::cout << "dist: " << dist << std::endl;
+            // else if( !waypoints.empty() ) {
+            //     /* Check if it is near the waypoint */
+            //     CVector3 pos3d = m_pcPosSens->GetReading().Position;
+            //     CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+            //     Real dist = (waypoints.front() - pos2d).Length();
+            //     //std::cout << "dist: " << dist << std::endl;
 
-                /* If current task is completed, move to the next one */
-                if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+            //     /* If current task is completed, move to the next one */
+            //     if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
                     
-                    //std::cout << "[LOG] Moving to next task" << std::endl;
+            //         //std::cout << "[LOG] Moving to next task" << std::endl;
 
-                    /* Calculate overall force applied to the robot */
-                    CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
-                    CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
-                    CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
+            //         /* Calculate overall force applied to the robot */
+            //         CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
+            //         CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
+            //         CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
 
-                    CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
-                    //std::cout << "waypointForce: " << waypointForce << std::endl;
-                    //std::cout << "robotForce: " << robotForce << std::endl;
-                    //std::cout << "obstacleForce: " << obstacleForce << std::endl;
-                    //std::cout << "sumForce: " << sumForce << std::endl;
+            //         CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
+            //         //std::cout << "waypointForce: " << waypointForce << std::endl;
+            //         //std::cout << "robotForce: " << robotForce << std::endl;
+            //         //std::cout << "obstacleForce: " << obstacleForce << std::endl;
+            //         //std::cout << "sumForce: " << sumForce << std::endl;
 
-                    SetWheelSpeedsFromVectorHoming(sumForce);
-                } 
-                else {
-                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-                }
-            }
+            //         SetWheelSpeedsFromVectorHoming(sumForce);
+            //     } 
+            //     else {
+            //         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            //     }
+            // }
             else {
-                //std::cout << "[LOG] No assigned tasks left" << std::endl;
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+
+                /* Send the requested number of robots to the other leader */
+                if( !isSendingRobots ) {
+
+                    if(numRobotsRequested > 0) {
+                        SetRobotsToSend(numRobotsRequested);
+                        isSendingRobots = true;
+                        numRobotsRequested = 0; // reset
+                    }
+                }
+
+                if(numRobotsToSend == 0) {
+                    isSendingRobots = false;
+                }
             }
         }
     }
@@ -919,7 +934,7 @@ void CLeader::CheckHeartBeat() {
                         //     }
                         // }
 
-                        int numRobotsRequested = beat.robot_num;
+                        numRobotsRequested = beat.robot_num;
                         std::cout << this->GetId() << ": Request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
 
                     }/*  else {

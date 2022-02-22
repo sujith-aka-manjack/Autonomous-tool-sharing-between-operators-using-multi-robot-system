@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="10000"
                 ticks_per_second="10"
-                random_seed="52296" />
+                random_seed="52292" />
   </framework>
 
   <!-- *************** -->
@@ -99,16 +99,16 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="3" center="0,-1.0" density="0.3">
+      <team leader_num="1" robot_num="5" center="0,-1.0" density="0.3">
       </team>
-      <team leader_num="1" robot_num="27" center="0,-1.5" density="0.3">
+      <team leader_num="1" robot_num="15" center="0,-1.5" density="0.3">
       </team>
     </teams>
 
     <!-- Tasks that the teams must complete -->
     <tasks>
-      <task position="-1.33, 1.33" width="0.9" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="1000" />
-      <task position="    0, 1.33" width="0.9" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="2500" />
+      <task position="    0, 0.75" width="0.9" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="1000" />
+      <task position="-1.33, 1.33" width="0.9" height="0.9" minimum_robot_num="10" maximum_robot_num="100" task_demand="1000" />
     </tasks>
   </loop_functions>
 

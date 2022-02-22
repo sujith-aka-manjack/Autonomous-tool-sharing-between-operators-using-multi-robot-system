@@ -464,6 +464,7 @@ private:
     std::vector<std::pair<size_t, RelayMsg>> rmsgToResend;
     Real lastSent;
     Real lastBeatTime;
+    bool isSendingRobots;
     size_t beatReceived, beatSent;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
     bool notDecremented;
@@ -478,6 +479,7 @@ private:
     /* Team switch variables */
     int numRobotsToSend;
     int numRobotsToRequest;
+    int numRobotsRequested;
     std::string robotToSwitch;
     UInt8 teamToJoin;
 
