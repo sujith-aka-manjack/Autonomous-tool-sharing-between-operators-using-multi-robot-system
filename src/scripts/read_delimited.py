@@ -13,7 +13,7 @@ def main():
 
     s = {}
 
-    with open('../../results/result.pb', 'rb') as f:
+    with open('../../results/arena.pb', 'rb') as f:
         buf = f.read()
         n = 0
         while n < len(buf):
@@ -26,7 +26,7 @@ def main():
             # print(read_metric)
             s[read_metric.time] = read_metric
  
-    print(s[4000].tasks[0].demand)
+    print(s[1])
 
 if __name__ == "__main__":
     main()

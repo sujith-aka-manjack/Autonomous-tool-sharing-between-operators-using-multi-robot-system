@@ -29,4 +29,6 @@ message Robot {
 message Task {
   string name = 1;
   uint64 demand = 2;
+  uint64 requiredRobots = 3;
+  uint64 currentRobots = 4;
 }

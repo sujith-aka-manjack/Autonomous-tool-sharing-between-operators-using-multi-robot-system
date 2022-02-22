@@ -388,6 +388,8 @@ void CExperimentLoopFunctions::PreStep() {
                 Task* task = tData.add_tasks();
                 task->set_name(cCTask.GetId());
                 task->set_demand(cCTask.GetDemand());
+                task->set_requiredrobots(cCTask.GetMinRobotNum());
+                task->set_currentrobots(cCTask.GetCurrentRobotNum());
             }
         }
 

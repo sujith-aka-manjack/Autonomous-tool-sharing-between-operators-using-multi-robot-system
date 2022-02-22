@@ -65,7 +65,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT RobotDefaultTypeInternal _Robot
 constexpr Task::Task(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , demand_(uint64_t{0u}){}
+  , demand_(uint64_t{0u})
+  , requiredrobots_(uint64_t{0u})
+  , currentrobots_(uint64_t{0u}){}
 struct TaskDefaultTypeInternal {
   constexpr TaskDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -125,6 +127,8 @@ const uint32_t TableStruct_time_5fstep_2eproto::offsets[] PROTOBUF_SECTION_VARIA
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::Task, name_),
   PROTOBUF_FIELD_OFFSET(::Task, demand_),
+  PROTOBUF_FIELD_OFFSET(::Task, requiredrobots_),
+  PROTOBUF_FIELD_OFFSET(::Task, currentrobots_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::TimeStep)},
@@ -151,12 +155,13 @@ const char descriptor_table_protodef_time_5fstep_2eproto[] PROTOBUF_SECTION_VARI
   "\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\">\n\005State\022\014\n\010FOLLOWE"
   "R\020\000\022\n\n\006LEADER\020\001\022\r\n\tCONNECTOR\020\002\022\014\n\010TRAVEL"
   "ER\020\003B\014\n\n_totalSentB\020\n\016_totalReceivedB\t\n\007"
-  "_action\"$\n\004Task\022\014\n\004name\030\001 \001(\t\022\016\n\006demand\030"
-  "\002 \001(\004b\006proto3"
+  "_action\"S\n\004Task\022\014\n\004name\030\001 \001(\t\022\016\n\006demand\030"
+  "\002 \001(\004\022\026\n\016requiredRobots\030\003 \001(\004\022\025\n\rcurrent"
+  "Robots\030\004 \001(\004b\006proto3"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_time_5fstep_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_time_5fstep_2eproto = {
-  false, false, 453, descriptor_table_protodef_time_5fstep_2eproto, "time_step.proto", 
+  false, false, 500, descriptor_table_protodef_time_5fstep_2eproto, "time_step.proto", 
   &descriptor_table_time_5fstep_2eproto_once, nullptr, 0, 4,
   schemas, file_default_instances, TableStruct_time_5fstep_2eproto::offsets,
   file_level_metadata_time_5fstep_2eproto, file_level_enum_descriptors_time_5fstep_2eproto, file_level_service_descriptors_time_5fstep_2eproto,
@@ -1130,7 +1135,9 @@ Task::Task(const Task& from)
     name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_name(), 
       GetArenaForAllocation());
   }
-  demand_ = from.demand_;
+  ::memcpy(&demand_, &from.demand_,
+    static_cast<size_t>(reinterpret_cast<char*>(&currentrobots_) -
+    reinterpret_cast<char*>(&demand_)) + sizeof(currentrobots_));
   // @@protoc_insertion_point(copy_constructor:Task)
 }
 
@@ -1139,7 +1146,10 @@ name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlready
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-demand_ = uint64_t{0u};
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&demand_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&currentrobots_) -
+    reinterpret_cast<char*>(&demand_)) + sizeof(currentrobots_));
 }
 
 Task::~Task() {
@@ -1171,7 +1181,9 @@ void Task::Clear() {
   (void) cached_has_bits;
 
   name_.ClearToEmpty();
-  demand_ = uint64_t{0u};
+  ::memset(&demand_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&currentrobots_) -
+      reinterpret_cast<char*>(&demand_)) + sizeof(currentrobots_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1195,6 +1207,22 @@ const char* Task::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inter
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
           demand_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 requiredRobots = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          requiredrobots_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 currentRobots = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          currentrobots_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1244,6 +1272,18 @@ uint8_t* Task::_InternalSerialize(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->_internal_demand(), target);
   }
 
+  // uint64 requiredRobots = 3;
+  if (this->_internal_requiredrobots() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(3, this->_internal_requiredrobots(), target);
+  }
+
+  // uint64 currentRobots = 4;
+  if (this->_internal_currentrobots() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(4, this->_internal_currentrobots(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -1270,6 +1310,16 @@ size_t Task::ByteSizeLong() const {
   // uint64 demand = 2;
   if (this->_internal_demand() != 0) {
     total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64SizePlusOne(this->_internal_demand());
+  }
+
+  // uint64 requiredRobots = 3;
+  if (this->_internal_requiredrobots() != 0) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64SizePlusOne(this->_internal_requiredrobots());
+  }
+
+  // uint64 currentRobots = 4;
+  if (this->_internal_currentrobots() != 0) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64SizePlusOne(this->_internal_currentrobots());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
@@ -1300,6 +1350,12 @@ void Task::MergeFrom(const Task& from) {
   if (from._internal_demand() != 0) {
     _internal_set_demand(from._internal_demand());
   }
+  if (from._internal_requiredrobots() != 0) {
+    _internal_set_requiredrobots(from._internal_requiredrobots());
+  }
+  if (from._internal_currentrobots() != 0) {
+    _internal_set_currentrobots(from._internal_currentrobots());
+  }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1324,7 +1380,12 @@ void Task::InternalSwap(Task* other) {
       &name_, lhs_arena,
       &other->name_, rhs_arena
   );
-  swap(demand_, other->demand_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Task, currentrobots_)
+      + sizeof(Task::currentrobots_)
+      - PROTOBUF_FIELD_OFFSET(Task, demand_)>(
+          reinterpret_cast<char*>(&demand_),
+          reinterpret_cast<char*>(&other->demand_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Task::GetMetadata() const {

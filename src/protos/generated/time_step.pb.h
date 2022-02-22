@@ -849,6 +849,8 @@ class Task final :
   enum : int {
     kNameFieldNumber = 1,
     kDemandFieldNumber = 2,
+    kRequiredRobotsFieldNumber = 3,
+    kCurrentRobotsFieldNumber = 4,
   };
   // string name = 1;
   void clear_name();
@@ -873,6 +875,24 @@ class Task final :
   void _internal_set_demand(uint64_t value);
   public:
 
+  // uint64 requiredRobots = 3;
+  void clear_requiredrobots();
+  uint64_t requiredrobots() const;
+  void set_requiredrobots(uint64_t value);
+  private:
+  uint64_t _internal_requiredrobots() const;
+  void _internal_set_requiredrobots(uint64_t value);
+  public:
+
+  // uint64 currentRobots = 4;
+  void clear_currentrobots();
+  uint64_t currentrobots() const;
+  void set_currentrobots(uint64_t value);
+  private:
+  uint64_t _internal_currentrobots() const;
+  void _internal_set_currentrobots(uint64_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Task)
  private:
   class _Internal;
@@ -882,6 +902,8 @@ class Task final :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
   uint64_t demand_;
+  uint64_t requiredrobots_;
+  uint64_t currentrobots_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_time_5fstep_2eproto;
 };
@@ -1423,6 +1445,46 @@ inline void Task::_internal_set_demand(uint64_t value) {
 inline void Task::set_demand(uint64_t value) {
   _internal_set_demand(value);
   // @@protoc_insertion_point(field_set:Task.demand)
+}
+
+// uint64 requiredRobots = 3;
+inline void Task::clear_requiredrobots() {
+  requiredrobots_ = uint64_t{0u};
+}
+inline uint64_t Task::_internal_requiredrobots() const {
+  return requiredrobots_;
+}
+inline uint64_t Task::requiredrobots() const {
+  // @@protoc_insertion_point(field_get:Task.requiredRobots)
+  return _internal_requiredrobots();
+}
+inline void Task::_internal_set_requiredrobots(uint64_t value) {
+  
+  requiredrobots_ = value;
+}
+inline void Task::set_requiredrobots(uint64_t value) {
+  _internal_set_requiredrobots(value);
+  // @@protoc_insertion_point(field_set:Task.requiredRobots)
+}
+
+// uint64 currentRobots = 4;
+inline void Task::clear_currentrobots() {
+  currentrobots_ = uint64_t{0u};
+}
+inline uint64_t Task::_internal_currentrobots() const {
+  return currentrobots_;
+}
+inline uint64_t Task::currentrobots() const {
+  // @@protoc_insertion_point(field_get:Task.currentRobots)
+  return _internal_currentrobots();
+}
+inline void Task::_internal_set_currentrobots(uint64_t value) {
+  
+  currentrobots_ = value;
+}
+inline void Task::set_currentrobots(uint64_t value) {
+  _internal_set_currentrobots(value);
+  // @@protoc_insertion_point(field_set:Task.currentRobots)
 }
 
 #ifdef __GNUC__
