@@ -71,10 +71,13 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     /* Left/right direction factor (local robot Y axis) */
                     SInt32 LRDirection = 0;
                     /* Calculate direction factor */
-                    if(direction == "U") ++FBDirection;
-                    if(direction == "D") --FBDirection;
-                    if(direction == "L") ++LRDirection;
-                    if(direction == "R") --LRDirection;
+                    for(std::string::size_type i = 0; i < direction.size(); i++) {
+                        if(direction[i] == 'U') ++FBDirection;
+                        if(direction[i] == 'D') --FBDirection;
+                        if(direction[i] == 'L') ++LRDirection;
+                        if(direction[i] == 'R') --LRDirection;
+                    }
+                    
                     /* Calculate direction */
                     CVector2 cDir =
                         DIRECTION_VECTOR_FACTOR *

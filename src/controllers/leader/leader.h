@@ -344,6 +344,12 @@ protected:
     void SetWheelSpeedsFromVector(const CVector2& c_heading);
 
     /*
+    * Gets a direction vector as input and transforms it into eight different wheel actuation.
+    * Used in manual control.
+    */
+    void SetWheelSpeedsFromVectorEightDirections(const CVector2& c_heading);
+
+    /*
     * Gets a direction vector as input and transforms it into wheel actuation using a PID controller.
     * Used in autonomous control.
     */

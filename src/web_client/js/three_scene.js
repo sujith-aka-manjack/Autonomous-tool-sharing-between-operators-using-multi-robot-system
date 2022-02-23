@@ -1592,54 +1592,34 @@ function updateCommands() {
     });
   }
 
+  var move_direction = '';
+
   /* Check movement command */
   if( keyboard.pressed("up") ) {
-
-    console.log("up pressed");
-    let data = {
-                command: 'move',
-                direction: 'U'  // Up
-               }
-    commands.push(data);
-
-  } else if( keyboard.pressed("down") ) {
-
-    console.log("down pressed");
-    let data = {
-                command: 'move',
-                direction: 'D'  // Down
-               }
-    commands.push(data);
-
-  } else if( keyboard.pressed("left") ) {
-
-    console.log("left pressed");
-    let data = {
-                command: 'move',
-                direction: 'L'  // Left
-                }
-    commands.push(data);
-
-  } else if( keyboard.pressed("right") ) {
-
-    console.log("right pressed");
-    let data = {
-                command: 'move',
-                direction: 'R'  // Right
-               }
-    commands.push(data);
-
-  } else {
-
-    if(window.target != '') {
-      let data = {
-                  command: 'move',
-                  direction: 'S'  // Stop
-                 }
-      commands.push(data);
-    }
-
+    move_direction += 'U';
   }
+
+  if( keyboard.pressed("down") ) {
+    move_direction += 'D';
+  }
+  
+  if( keyboard.pressed("left") ) {
+    move_direction += 'L';
+  }
+  
+  if( keyboard.pressed("right") ) {
+    move_direction += 'R';
+  }
+
+  if(move_direction) {
+    console.log(move_direction);
+  }
+
+  let data = {
+              command: 'move',
+              direction: move_direction
+             }
+  commands.push(data);
 
   packet['commands'] = commands;
   window.wsp.sendPacked(packet);
