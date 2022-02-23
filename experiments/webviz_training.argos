@@ -101,7 +101,7 @@
     <teams>
       <team leader_num="1" robot_num="5" center="0,-1.0" density="0.3">
       </team>
-      <team leader_num="1" robot_num="15" center="0,-1.5" density="0.3">
+      <team leader_num="1" robot_num="10" center="0,-1.5" density="0.3">
       </team>
     </teams>
 

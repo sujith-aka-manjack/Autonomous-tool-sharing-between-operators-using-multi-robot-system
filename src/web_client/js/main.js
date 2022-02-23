@@ -10,6 +10,13 @@
  */
 
 
+/* List of modes that the web client can take. Each mode changes what UI is displayed. */
+const Mode = Object.freeze({
+  DEBUG: 'debug',
+  INDIRECT: 'indirect',
+  DIRECT: 'direct'
+})
+
 /* Define function to run after all files are loaded */
 var onAllFilesLoaded = function () {
 
@@ -24,6 +31,9 @@ var onAllFilesLoaded = function () {
   window.requestCommand = { command: 'request', number: 0 };
   window.sendFlag = false;
   window.sendCommand = { command: 'send', number: 0 };
+
+  /* Initial mode */
+  window.mode = Mode.DEBUG;
 
   /* Generate uuid */
   window.client_id = generateRandomUUID();
@@ -153,7 +163,21 @@ var onAllFilesLoaded = function () {
         contentId: 'contentAreaLogErr'
       });
 
-      let dropListTag = "".concat(
+      /* List of available modes */
+      let dropListMode = "".concat(
+        "<select>"
+        + "<option value='Debug'>Debug</option>"
+        + "<option value='Indirect'>Indirect</option>"
+        + "<option value='Direct'>Direct</option>"
+        + "</select>"
+      );
+
+      let confirmModeTag = "".concat(
+        "<button type='button'>Confirm</button>"
+      );
+
+      /* List of leaders */
+      let dropListLeader = "".concat(
         "<select>"
         + "<option value='Select leader'>Select leader</option>"
         + "<option value='L1'>L1</option>"
@@ -181,10 +205,12 @@ var onAllFilesLoaded = function () {
         /* Divider */
         .append($("<div/>")
           .addClass('toolbar_divider')
+          .attr('id', 'control_divider')
         )
         .append($("<div/>")
           .addClass('button')
           .addClass('icon-step')
+          .attr('id', 'step_button')
           .attr("title", "Step experiment")
           .prop("title", "Step experiment")//for IE
           .click(function () {
@@ -292,14 +318,15 @@ var onAllFilesLoaded = function () {
           })
         )
 
-        /* Divider */
+        /* Username */
         .append($("<div/>")
           .addClass('toolbar_divider')
+          .attr('id', 'name_divider')
         )
 
         .append($("<div/>")
           .addClass("toolbar_status")
-          .attr('id', 'name-label')
+          .attr('id', 'name_label')
           .html("User ID:")
         )
 
@@ -309,12 +336,52 @@ var onAllFilesLoaded = function () {
           .html(window.username)
         )
 
-        /* Divider */
+        /* Mode */
+        .append($("<div/>")
+          .addClass('toolbar_divider')
+          .attr('id', 'mode_divider')
+        )
+
+        .append($(dropListMode)
+          .attr('id', 'mode_selected')
+          .attr("title", "Select mode")
+          .prop("title", "Select mode")//for IE
+        )
+
+        .append($(confirmModeTag)
+          .attr('id','button_connect')
+          .click(function () {
+            let e_mode = document.getElementById('mode_selected');
+            let selected_mode = e_mode.options[e_mode.selectedIndex].text;
+
+            switch(selected_mode) {
+              case 'Debug':
+                console.log('Load ' + Mode.DEBUG);
+                window.mode = Mode.DEBUG;
+                break;
+              case 'Indirect':
+                console.log('Load ' + Mode.INDIRECT);
+                window.mode = Mode.INDIRECT;
+                break;
+              case 'Direct':
+                console.log('Load ' + Mode.DIRECT);
+                window.mode = Mode.DIRECT;
+                break;
+              default:
+                console.log('Unrecognised mode selected');
+            }
+
+            window.location.search = '?mode=' + window.mode;
+            
+          })
+        )
+
+        /* Leader selection */
         .append($("<div/>")
           .addClass('toolbar_divider')
         )
 
-        .append($(dropListTag)
+        .append($(dropListLeader)
           .attr('id', 'leader_selected')
           .attr("title", "Select leader")
           .prop("title", "Select leader")//for IE
@@ -452,6 +519,51 @@ var onAllFilesLoaded = function () {
       //       window.sendFlag = true;
       //     })
       //   )
+
+      /* Set current mode from url param */
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+
+      switch(urlParams.get('mode')) {
+        case 'debug':
+          window.mode = Mode.DEBUG;
+          document.getElementById('mode_selected').selectedIndex = '0';
+          break;
+        case 'indirect':
+          window.mode = Mode.INDIRECT;
+          document.getElementById('mode_selected').selectedIndex = '1';
+          break;
+        case 'direct':
+          window.mode = Mode.DIRECT;
+          document.getElementById('mode_selected').selectedIndex = '2';
+          break;
+        default:
+          console.log('Unrecognised mode passed in url: ' + urlParams.get('mode'));
+      }
+
+      console.log(window.mode);
+
+      /* Modify toolbar according to the current mode */
+      if(window.mode == Mode.INDIRECT || window.mode == Mode.DIRECT) {
+
+        let ids = [
+                    'control_divider',
+                    'step_button',
+                    'play_button',
+                    'pause_button',
+                    'ff_button',
+                    'ff_steps_input',
+                    'name_divider', 
+                    'name_label', 
+                    'username_label'
+                  ];
+
+        /* Hide toolbar components */
+        for(const id of ids) {
+          var x = document.getElementById(id);
+          x.style.display = 'none';
+        }
+      }
 
       window.experiment = {}
 

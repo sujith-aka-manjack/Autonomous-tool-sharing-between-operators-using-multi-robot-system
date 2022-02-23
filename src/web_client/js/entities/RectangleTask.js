@@ -52,22 +52,24 @@
         const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
         meshParent.add(line);
 
-        /* Amount of task completed in percentage */
-        var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
+        if(window.mode == Mode.DEBUG) {
+            /* Amount of task completed in percentage */
+            var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
 
-        this.sprite = new THREE.TextSprite({
-            alignment: 'center',
-            color: '#000000',
-            fontFamily: '"Times New Roman", Times, serif',
-            fontSize: 8,
-            text: [
-                task_completed + "%",
-            ].join('\n'),
-        });
+            this.sprite = new THREE.TextSprite({
+                alignment: 'center',
+                color: '#000000',
+                fontFamily: '"Times New Roman", Times, serif',
+                fontSize: 8,
+                text: [
+                    task_completed + "%",
+                ].join('\n'),
+            });
 
-        this.sprite.position.z = 13;
+            this.sprite.position.z = 13;
 
-        meshParent.add(this.sprite);
+            meshParent.add(this.sprite);
+        }
 
         /* Update mesh parent */
         meshParent.position.x = entity.position.x * scale;
@@ -99,12 +101,14 @@
 
         if(this.mesh) {
 
-            /* Update task demand */
-            var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
+            if(window.mode == Mode.DEBUG) {
+                /* Update task demand */
+                var task_completed = Math.floor((1 - entity.task.demand / entity.task.init_demand) * 100);
 
-            this.sprite.text = [
-                task_completed + "%",
-            ].join('\n');
+                this.sprite.text = [
+                    task_completed + "%",
+                ].join('\n');
+            }
 
             /* Update color of task */
             var color = null;

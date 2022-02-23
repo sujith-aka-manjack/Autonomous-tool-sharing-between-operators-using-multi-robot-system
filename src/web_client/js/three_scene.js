@@ -641,6 +641,7 @@ function initSceneWithScale(_scale) {
   const sendContainer = new ThreeMeshUI.Block({
     // ref: 'container',
     padding: 0.025,
+    height: 120,
     fontFamily: '/fonts/Roboto-msdf.json',
     fontTexture: '/fonts/Roboto-msdf.png',
     fontColor: new THREE.Color(0xffffff),
@@ -843,43 +844,48 @@ function initSceneWithScale(_scale) {
   });
   sendContainer.add(sendConfirmContainer);
 
-  const sendRequestButton = new ThreeMeshUI.Block({
-    width: 100,
-    height: 40,
-    margin: 5,
-    justifyContent: 'center',
-    alignContent: 'center',
-    fontSize: 20,
-    borderRadius: 15,
-    borderOpacity: 1,
-    // backgroundOpacity: 1,
-  });
+  /* Only add request button if the current mode is NOT direct */
+  if(window.mode != Mode.DIRECT) {
 
-  sendRequestButton.add(
-    new ThreeMeshUI.Text({
-      content: "Request",
-      // fontColor: new THREE.Color( 1, 1, 1 ),
-    }),
-  );
-
-  sendRequestButton.setupState({
-    state: "selected",
-    attributes: selectedAttributes,
-    onSet: ()=> {
-      console.log("Request Robots Selected");
-      if(window.robotCount > 0) {
-        window.requestFlag = true;
-        window.requestCommand['number'] = window.robotCount;
+    /* Request button */
+    const sendRequestButton = new ThreeMeshUI.Block({
+      width: 100,
+      height: 40,
+      margin: 5,
+      justifyContent: 'center',
+      alignContent: 'center',
+      fontSize: 20,
+      borderRadius: 15,
+      borderOpacity: 1,
+      // backgroundOpacity: 1,
+    });
+  
+    sendRequestButton.add(
+      new ThreeMeshUI.Text({
+        content: "Request",
+        // fontColor: new THREE.Color( 1, 1, 1 ),
+      }),
+    );
+  
+    sendRequestButton.setupState({
+      state: "selected",
+      attributes: selectedAttributes,
+      onSet: ()=> {
+        console.log("Request Robots Selected");
+        if(window.robotCount > 0) {
+          window.requestFlag = true;
+          window.requestCommand['number'] = window.robotCount;
+        }
       }
-    }
-  });
-  sendRequestButton.setupState( hoveredStateAttributes );
-  sendRequestButton.setupState( idleStateAttributes );
+    });
+    sendRequestButton.setupState( hoveredStateAttributes );
+    sendRequestButton.setupState( idleStateAttributes );
+  
+    sendConfirmContainer.add(sendRequestButton);
+    objsToTest.push(sendRequestButton);
+  }
 
-  sendConfirmContainer.add(sendRequestButton);
-  objsToTest.push(sendRequestButton);
-
-
+  /* Send button */
   const sendConfirmButton = new ThreeMeshUI.Block({
     width: 80,
     height: 40,
@@ -891,6 +897,13 @@ function initSceneWithScale(_scale) {
     borderOpacity: 1,
     // backgroundOpacity: 1,
   });
+
+  /* If mode if direct, make the send button larger */
+  if(window.mode == Mode.DIRECT) {
+    sendConfirmButton.set({
+      height: 80,
+    });
+  }
 
   sendConfirmButton.add(
     new ThreeMeshUI.Text({
@@ -1529,6 +1542,11 @@ function raycast() {
 function updateCommands() {
 
   window.keyboard.update();
+
+  /* Auto-start experiment (except debug) */
+  if(window.mode != Mode.DEBUG && experiment.status != 'Playing') {
+    window.wsp.sendPacked({ command: 'play' });
+  }
 
   /* Build packet to send */
   var packet = {
