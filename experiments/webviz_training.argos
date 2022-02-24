@@ -107,8 +107,8 @@
 
     <!-- Tasks that the teams must complete -->
     <tasks>
-      <task position="    0, 0.75" width="0.9" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="1000" />
-      <task position="-1.33, 1.33" width="0.9" height="0.9" minimum_robot_num="10" maximum_robot_num="100" task_demand="1000" />
+      <task position="    0, 0.75" width="0.9" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" />
+      <task position="-1.33, 1.33" width="0.9" height="0.9" minimum_robot_num="10" maximum_robot_num="100" task_demand="500" />
     </tasks>
   </loop_functions>
 

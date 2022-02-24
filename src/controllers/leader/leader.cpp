@@ -148,6 +148,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Initialization */
     currentState = RobotState::LEADER;
+    inputStart = false;
+    inputStop = false;
     shareToTeam = "";
     initStepTimer = 0;
     acceptID = "";
@@ -480,9 +482,6 @@ void CLeader::ControlStep() {
     /*--------------*/
     m_pcRABAct->SetData(cbyte_msg);
 
-    /* Reset leader signal */
-    inputStart = false;
-    inputStop = false;
 }
 
 /****************************************/
@@ -1208,11 +1207,13 @@ void CLeader::PrintName() {
 void CLeader::Callback_Start(void* data) {
     lastControllableAction = "start";
     m_bSignal = true;
+    inputStart = false;
 }
 
 void CLeader::Callback_Stop(void* data) {
     lastControllableAction = "stop";
     m_bSignal = false;
+    inputStop = false;
 }
 
 void CLeader::Callback_Message(void* data) {

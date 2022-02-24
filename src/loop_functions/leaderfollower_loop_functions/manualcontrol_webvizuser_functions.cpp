@@ -84,9 +84,6 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                         (CVector2(FBDirection, 0.0f) +
                         CVector2(0.0f, LRDirection));
 
-                    /* Tell that e-puck that it is selected */
-                    cController.Select();
-
                     /* Set direction */
                     cController.SetControlVector(cDir);
 
