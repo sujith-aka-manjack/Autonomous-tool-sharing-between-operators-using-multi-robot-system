@@ -1543,11 +1543,6 @@ function updateCommands() {
 
   window.keyboard.update();
 
-  /* Auto-start experiment (except debug) */
-  if(window.mode != Mode.DEBUG && experiment.status != 'Playing') {
-    window.wsp.sendPacked({ command: 'play' });
-  }
-
   /* Build packet to send */
   var packet = {
                 client: window.client_id,

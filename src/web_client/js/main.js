@@ -549,7 +549,6 @@ var onAllFilesLoaded = function () {
         let ids = [
                     'control_divider',
                     'step_button',
-                    'play_button',
                     'pause_button',
                     'ff_button',
                     'ff_steps_input',
