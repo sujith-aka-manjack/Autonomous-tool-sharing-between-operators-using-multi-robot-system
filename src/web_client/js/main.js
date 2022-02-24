@@ -563,6 +563,13 @@ var onAllFilesLoaded = function () {
           var x = document.getElementById(id);
           x.style.display = 'none';
         }
+
+        /* Hide error log */
+        for(panel of w2ui['log_layout'].panels) {
+          if(panel.title == 'LogErr') {
+            panel.hidden = true;
+          }
+        }
       }
 
       window.experiment = {}
