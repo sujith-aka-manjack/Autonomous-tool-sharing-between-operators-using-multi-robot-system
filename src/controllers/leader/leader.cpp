@@ -150,6 +150,10 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
     inputStart = false;
     inputStop = false;
+    currentTaskDemand = 0;
+    currentInitTaskDemand = 0;
+    numOtherTaskRequire = 0;
+    numOtherFollower = -1;
     shareToTeam = "";
     initStepTimer = 0;
     acceptID = "";
@@ -525,10 +529,13 @@ void CLeader::SetControlVector(const CVector2& c_control) {
 /****************************************/
 
 void CLeader::SetSignal(const bool b_signal) {
-    if(b_signal && !m_bSignal)
+    if(b_signal) {
         inputStart = true;
-    else if(!b_signal && m_bSignal)
+        inputStop = false;
+    } else {
         inputStop = true;
+        inputStart = false;
+    }
 }
 
 /****************************************/
@@ -635,7 +642,7 @@ void CLeader::SetFollowerCount(const UInt32 un_count) {
 /****************************************/
 /****************************************/
 
-UInt32 CLeader::GetOtherFollowerCount() {
+SInt32 CLeader::GetOtherFollowerCount() {
     return numOtherFollower;
 }
 

@@ -693,6 +693,10 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
 
+            /* Assign initial number of followers */
+            CLeader& clController = dynamic_cast<CLeader&>(pcEPL->GetControllableEntity().GetController());
+            clController.SetFollowerCount(un_robots);
+
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;
@@ -728,8 +732,8 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             m_vecEntityID.push_back(cEPId.str());
 
             /* Assign initial team id */
-            CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
-            cController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
+            CFollower& cfController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
+            cfController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;

@@ -1724,7 +1724,7 @@ function render() {
           }
         }
 
-        if(num_other_followers == 0) {
+        if(num_other_followers < 0) {
           window.numOtherFollowers.set({
             content: "-",
           });

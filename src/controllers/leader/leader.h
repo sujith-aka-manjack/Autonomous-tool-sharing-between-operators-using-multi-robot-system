@@ -255,8 +255,9 @@ public:
 
     /*
     * Get the current number of followers in the other leader's team.
+    * negative value means there is no info of other leader's follower count.
     */
-    virtual UInt32 GetOtherFollowerCount();
+    virtual SInt32 GetOtherFollowerCount();
 
     /*
     * Get team ID.
@@ -476,7 +477,7 @@ private:
     bool notDecremented;
 
     // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)
-    UInt8 numOtherFollower;
+    SInt8 numOtherFollower;
     UInt8 numOtherTaskRequire;
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
