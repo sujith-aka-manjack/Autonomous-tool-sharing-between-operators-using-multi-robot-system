@@ -440,6 +440,7 @@ void CExperimentLoopFunctions::PostStep() {
 
     if(total_demand == 0) {
         CSimulator::GetInstance().Terminate();
+        std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
     }
 }

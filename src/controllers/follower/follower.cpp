@@ -361,7 +361,7 @@ bool CFollower::IsWorking() {
 void CFollower::ControlStep() {
 
     std::string id = this->GetId();
-    std::cout << "\n---------- " << id << " ----------" << std::endl;
+    // std::cout << "\n---------- " << id << " ----------" << std::endl;
 
     initStepTimer++;
 
@@ -421,8 +421,8 @@ void CFollower::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
 
-    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
-    std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
+    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    // std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */

@@ -267,7 +267,7 @@ void CLeader::Reset() {
 
 void CLeader::ControlStep() {
 
-    std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
+    // std::cout << "\n---------- " << this->GetId() << " ----------" << std::endl;
 
     initStepTimer++;
     // std::cout << "TIME: " << initStepTimer << std::endl;
@@ -319,8 +319,8 @@ void CLeader::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
     
-    std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
-    std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
+    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    // std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -553,7 +553,7 @@ void CLeader::SetRobotsToRequest(const UInt32 un_robots) {
 
 void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
-    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to send" << std::endl;
+    std::cout << "[" << this->GetId() << "] Requested " << un_robots << " robots" << std::endl;
 
     if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
         numRobotsToSend = currentFollowerCount;
@@ -941,7 +941,7 @@ void CLeader::CheckHeartBeat() {
                         // }
 
                         numRobotsRequested = beat.robot_num;
-                        std::cout << this->GetId() << ": Request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
+                        std::cout << "[" << this->GetId() << "] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
 
                     }/*  else {
                         numRobotsToSend = 0;
@@ -1249,7 +1249,7 @@ void CLeader::Callback_Message(void* data) {
     if(numRobotsToRequest > 0) {
         beat.type = 'R';
         beat.robot_num = numRobotsToRequest;
-        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+        // std::cout << "[" << this->GetId() << "] Requested for " << beat.robot_num << " robots" << std::endl;
         numRobotsToRequest = 0;
     }
 
@@ -1291,15 +1291,15 @@ void CLeader::Callback_Exchange(void* data) {
     lastControllableAction = "exchange";
 
     if( !switchCandidate.empty() ) {
+        
+        robotToSwitch = switchCandidate;
+
         /* Signal a follower to switch to the other team */
         if(notDecremented) {
             numRobotsToSend--;
             notDecremented = false;
+            std::cout << "[" << this->GetId() << "] Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
         }
-
-        robotToSwitch = switchCandidate;
-
-        std::cout << this->GetId() << ": Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
 
     } else {
         std::cerr << "[" << this->GetId() << "] switchCandidate is empty" << std::endl;

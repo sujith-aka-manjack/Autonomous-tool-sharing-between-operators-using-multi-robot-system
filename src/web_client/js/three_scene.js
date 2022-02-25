@@ -434,7 +434,7 @@ function initSceneWithScale(_scale) {
     height: 10,
     margin: 0,
     padding: 0,
-    backgroundColor: new THREE.Color( 0, 1, 0 ),
+    backgroundColor: new THREE.Color( 0, 0.85, 0 ),
     backgroundOpacity: 0,
   });
   progressBar.add(window.progress);
@@ -1708,6 +1708,7 @@ function render() {
           window.progress.set({
             width: 0.001,
             backgroundOpacity: 0,
+            backgroundColor: new THREE.Color( 0, 0.85, 0 ),
           });
         } else {
           let num_progress = 1 - num_task_demand / num_init_task_demand;
@@ -1721,6 +1722,12 @@ function render() {
               width: num_progress * window.progressBarWidth,
               backgroundOpacity: 1,
             });
+
+            if(Math.floor(num_progress.toString() * 100) == 100) {
+              window.progress.set({
+                backgroundColor: new THREE.Color( 0, 1, 0 ),
+              });
+            }
           }
         }
 
