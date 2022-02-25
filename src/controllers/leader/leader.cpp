@@ -1131,7 +1131,8 @@ void CLeader::SetWheelSpeedsFromVectorEightDirections(const CVector2& c_heading)
     Real fBaseAngularWheelSpeed = Min<Real>(fHeadingLength, m_sWheelTurningParams.MaxSpeed);
 
     /* Wheel speeds based on current turning state */
-    Real fLeftWheelSpeed, fRightWheelSpeed;
+    Real fLeftWheelSpeed = 0;
+    Real fRightWheelSpeed = 0;
 
     if(c_heading.GetX() > 0) {
         if(c_heading.GetY() > 0) {
@@ -1163,9 +1164,6 @@ void CLeader::SetWheelSpeedsFromVectorEightDirections(const CVector2& c_heading)
             fLeftWheelSpeed  = fBaseAngularWheelSpeed;
             fRightWheelSpeed = -fBaseAngularWheelSpeed;
         }
-    } else {
-        fLeftWheelSpeed  = 0;
-        fRightWheelSpeed = 0;
     }
 
     /* Finally, set the wheel speeds */
