@@ -1,5 +1,9 @@
 # Based on https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
+# Launch this script from the project root directory
+# $ cd argos-sct
+# $ python src/scripts/launch_experiments.py
+
 try:
     import tkinter as tk                # python 3
     from tkinter import font as tkfont  # python 3
@@ -66,7 +70,13 @@ class ExperimentApp(tk.Tk):
     def show_frame(self, page_name):
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
+        frame.show_page()
         frame.tkraise()
+
+    def copy_link(self, label):
+        print('copied link')
+        pc.copy(self.simulation_link)
+        label['text'] = 'Copied!'
 
     def start(self, scenario):
         print('start pressed')
@@ -116,6 +126,9 @@ class StartPage(tk.Frame):
                                 command=lambda: controller.show_frame("PageOne"))
         button_next.pack(side="right")
 
+    def show_page(self):
+        pass
+
 
 class PageOne(tk.Frame):
 
@@ -133,21 +146,31 @@ class PageOne(tk.Frame):
         label_step1 = tk.Label(center_frame, text="1. Press the Start button to begin the experiment.", font=controller.body_font)
         label_step1.pack(padx=10)
 
-        button_start = tk.Button(center_frame, text="Start",
+        button_start = tk.Button(center_frame, 
+                                 text="Start",
+                                 fg="green",
+                                 font='sans 16 bold',
                                  command=lambda: controller.start(SCENARIO_TRAINING))
         button_start.pack()
 
         label_step2 = tk.Label(center_frame, text="2. Open a browser and access: {}".format(controller.simulation_link), font=controller.body_font)
-        label_step2.pack(padx=10, pady=(10,0))
+        label_step2.pack(padx=10, pady=(30,0))
+
+        label_copy_status = tk.Label(center_frame, text="", font=controller.body_font)
+        self.label_copy_status = label_copy_status
 
         button_copy_link = tk.Button(center_frame, text="Copy Link",
-                                     command=lambda: pc.copy(controller.simulation_link))
+                                     command=lambda: controller.copy_link(label_copy_status))
         button_copy_link.pack()
+        label_copy_status.pack()
 
         label_step3 = tk.Label(center_frame, text="3. Press the Stop button when finished.", font=controller.body_font)
         label_step3.pack(padx=10, pady=(10,0))
 
-        button_stop = tk.Button(center_frame, text="Stop",
+        button_stop = tk.Button(center_frame,
+                                text="Stop",
+                                fg="red",
+                                font='sans 16 bold',
                                 command=lambda: controller.stop())
         button_stop.pack()
 
@@ -161,6 +184,9 @@ class PageOne(tk.Frame):
                                 command=lambda: controller.show_frame("StartPage"))
         button_next.pack(side="right")
         button_back.pack(side="left")
+
+    def show_page(self):
+        self.label_copy_status['text'] = ""
 
 
 class EndPage(tk.Frame):
@@ -185,6 +211,9 @@ class EndPage(tk.Frame):
                            command=lambda: controller.show_frame("PageOne"))
         button_quit.pack(side="right")
         button_back.pack(side="left")
+
+    def show_page(self):
+        pass
 
 
 if __name__ == "__main__":
