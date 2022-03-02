@@ -9,10 +9,9 @@ import signal
 ARGOS = '/usr/bin/argos3'
 
 class Worker(object):
-    def __init__(self, scenario):
+    def __init__(self):
         self._is_alive  = multiprocessing.Value(ctypes.c_bool, True)
-        self.scenario   = scenario
-        self.simulation = None
+        self.process = None
 
     def get_is_alive(self):
         with self._is_alive.get_lock():
@@ -23,26 +22,42 @@ class Worker(object):
     is_alive = property(get_is_alive, set_is_alive)
 
     def run(self):
-        self.simulation = subprocess.Popen([ARGOS, '-c', self.scenario])
-        print("{}".format(self.scenario))
-
         while True:
             if not self.is_alive:
-                self.simulation.send_signal(signal.SIGINT)
+                self.process.send_signal(signal.SIGINT)
                 return
-            time.sleep(1)
+            time.sleep(0.1)
+
+
+class SimulationWorker(Worker):
+    def __init__(self, scenario):
+        super().__init__()
+        self.scenario   = scenario
+    
+    def run(self):
+        print("starting simulation: {}".format(self.scenario))
+        self.process = subprocess.Popen([ARGOS, '-c', self.scenario])
+        super().run()
+
+
+class WebClientWorker(Worker):
+    def run(self):
+        print("starting webclient")
+        self.process = subprocess.Popen(['python', '-m', 'http.server', '8000'], cwd='src/web_client')
+        super().run()
+
 
 class Process(object):
-    def __init__(self, scenario):
+    def __init__(self):
         self.worker   = None
         self.process  = None
-        self.scenario = scenario
+
     def __delete__(self):
         self.stop()
 
-    def start(self):
+    def start(self, worker):
         self.stop()
-        self.worker  = Worker(self.scenario)
+        self.worker = worker
         self.process = multiprocessing.Process(target=self.worker.run)
         self.process.start()
 
@@ -52,6 +67,21 @@ class Process(object):
             self.process.join()
             self.worker  = None
             self.process = None
+
     def get_is_alive(self):
         return bool(self.worker and self.process)
     is_alive = property(get_is_alive)
+
+
+class SimulationProcess(Process):
+    def __init__(self, scenario):
+        super().__init__()
+        self.scenario = scenario
+
+    def start(self):
+        super().start(SimulationWorker(self.scenario))
+
+
+class WebClientProcess(Process):
+    def start(self):
+        super().start(WebClientWorker())

@@ -7,43 +7,16 @@ except ImportError:
     import Tkinter as tk     # python 2
     import tkFont as tkfont  # python 2
 
-import os
-import multiprocessing
-import signal
-import sys
-import time
 import socket
 import pyperclip as pc
 
-from worker import Process
+from worker import SimulationProcess, WebClientProcess
 
 # Path to ARGoS binary
 ARGOS = '/usr/bin/argos3'
 
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
-
-
-# def kill_procs():
-#     for proc in reversed(running_procs):
-#         try:
-#             # proc.terminate()
-#             proc.send_signal(signal.SIGINT)
-#             proc.wait()
-#         except:
-#             print("Error: {0}".format(sys.exc_info()[0]))
-#         time.sleep(2)
-
-
-# def sig_handler(sig, frame):
-#     """ Terminate all child processes when we get a SIGINT """
-#     if sig == signal.SIGINT:
-#         # kill_procs()
-#         print("Shutting down...")
-#         sys.exit(0)
-
-# signal.signal(signal.SIGINT, sig_handler)   
-
 
 class ExperimentApp(tk.Tk):
 
@@ -69,6 +42,7 @@ class ExperimentApp(tk.Tk):
 
         # Currently running simulation scenario
         self.proc_simulation = None
+        self.proc_webclient  = None
 
         # Create each page
         page_names = [StartPage, PageOne, EndPage]
@@ -97,22 +71,19 @@ class ExperimentApp(tk.Tk):
     def start(self, scenario):
         print('start pressed')
         self.stop()
-        self.proc_simulation = Process(scenario)
+
+        self.proc_simulation = SimulationProcess(scenario)
         self.proc_simulation.start()
+        self.proc_webclient = WebClientProcess()
+        self.proc_webclient.start()
 
     def stop(self):
-        # for proc in reversed(running_procs):
-        #     try:
-        #         # proc.terminate()
-        #         # proc.send_signal(signal.SIGINT)
-        #         # proc.wait()
-        #         proc.stop()
-        #     except:
-        #         print("Error: {0}".format(sys.exc_info()[0]))
         print('stop called')
-        if not self.proc_simulation:
-            return
-        self.proc_simulation.stop()
+        if self.proc_simulation:
+            self.proc_simulation.stop()
+
+        if self.proc_webclient:
+            self.proc_webclient.stop()
 
     def quit(self):
         print('quit pressed')
