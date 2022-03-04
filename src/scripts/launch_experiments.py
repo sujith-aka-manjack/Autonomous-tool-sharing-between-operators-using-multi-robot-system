@@ -27,6 +27,10 @@ class ExperimentApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
+        # Window title
+        self.title('Robot Swarm Simulation')
+
+        # Define the fonts to use
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
         self.body_font = tkfont.Font(family='Helvetica', size=12, weight="normal", slant="roman")
 
@@ -49,7 +53,7 @@ class ExperimentApp(tk.Tk):
         self.proc_webclient  = None
 
         # Create each page
-        page_names = [StartPage, PageOne, EndPage]
+        page_names = [StartPage, PageTraining, EndPage]
         self.frames = {}
 
         for F in page_names:
@@ -123,27 +127,27 @@ class StartPage(tk.Frame):
         bottom_frame.pack(side="bottom", pady=10)
 
         button_next = tk.Button(bottom_frame, text="Next",
-                                command=lambda: controller.show_frame("PageOne"))
+                                command=lambda: controller.show_frame("PageTraining"))
         button_next.pack(side="right")
 
     def show_page(self):
         pass
 
 
-class PageOne(tk.Frame):
+class PageTraining(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        label_title = tk.Label(self, text="Experiment 1", font=controller.title_font)
+        label_title = tk.Label(self, text="Training", font=controller.title_font)
         label_title.pack(side="top", fill="x", pady=10)
 
         # Center Frame
         center_frame = tk.Frame(self)
         center_frame.pack(pady=10)
 
-        label_step1 = tk.Label(center_frame, text="1. Press the Start button to begin the experiment.", font=controller.body_font)
+        label_step1 = tk.Label(center_frame, text="1. Press the Start button to begin the simulation", font=controller.body_font)
         label_step1.pack(padx=10)
 
         button_start = tk.Button(center_frame, 
@@ -164,7 +168,7 @@ class PageOne(tk.Frame):
         button_copy_link.pack()
         label_copy_status.pack()
 
-        label_step3 = tk.Label(center_frame, text="3. Press the Stop button when finished.", font=controller.body_font)
+        label_step3 = tk.Label(center_frame, text="3. Press the Stop button to finish this simulation", font=controller.body_font)
         label_step3.pack(padx=10, pady=(10,0))
 
         button_stop = tk.Button(center_frame,
@@ -208,7 +212,7 @@ class EndPage(tk.Frame):
         button_quit = tk.Button(bottom_frame, text="Quit",
                            command=lambda: controller.quit())
         button_back = tk.Button(bottom_frame, text="Back",
-                           command=lambda: controller.show_frame("PageOne"))
+                           command=lambda: controller.show_frame("PageTraining"))
         button_quit.pack(side="right")
         button_back.pack(side="left")
 
