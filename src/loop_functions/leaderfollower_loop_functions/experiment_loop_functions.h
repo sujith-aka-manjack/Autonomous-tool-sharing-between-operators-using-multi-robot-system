@@ -32,6 +32,7 @@ private:
    std::vector<CVector2> m_vecWaypointPos;
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
+   bool m_bTaskExists;
    std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
 
    /* Output file */

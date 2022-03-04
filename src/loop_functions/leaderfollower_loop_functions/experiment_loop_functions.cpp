@@ -34,7 +34,8 @@ static const UInt32      MAX_ROBOT_TRIALS = 20;
 
 CExperimentLoopFunctions::CExperimentLoopFunctions() :
     m_pcFloor(NULL),
-    m_pcRNG(NULL) {
+    m_pcRNG(NULL),
+    m_bTaskExists(false) {
 }
 
 /****************************************/
@@ -127,17 +128,11 @@ void CExperimentLoopFunctions::PreStep() {
 
     /* Add existing task id to the map */
     CSpace::TMapPerType* m_cCTasks;
-    bool taskExists;
-    try {
+
+    if(m_bTaskExists) {
         // m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
         m_cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
-        taskExists = true;
-    } catch(CARGoSException& ex) {
-        std::cout << "No circle task found in argos file (PreStep)" << std::endl;
-        taskExists = false;
-    }
 
-    if(taskExists) {
         for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
             itTask != m_cCTasks->end();
             ++itTask) {
@@ -167,7 +162,7 @@ void CExperimentLoopFunctions::PreStep() {
         bool leaderAtTask = false;
 
         /* Give the leader its next task info if it is within the task range */        
-        if(taskExists) {
+        if(m_bTaskExists) {
 
             for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
                 itTask != m_cCTasks->end();
@@ -236,7 +231,7 @@ void CExperimentLoopFunctions::PreStep() {
                 cLeaderId << "L" << unTeamId;
                 CVector2 cLeaderPos = leaderPos[cLeaderId.str()];
 
-                if(taskExists) {
+                if(m_bTaskExists) {
 
                     for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
                         itTask != m_cCTasks->end();
@@ -294,7 +289,7 @@ void CExperimentLoopFunctions::PreStep() {
     }
 
     /* Update task demands */
-    if(taskExists) {
+    if(m_bTaskExists) {
 
         for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
             itTask != m_cCTasks->end();
@@ -376,7 +371,7 @@ void CExperimentLoopFunctions::PreStep() {
             robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
         }
 
-        if(taskExists) {
+        if(m_bTaskExists) {
 
             /* Output task info */
             for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
@@ -416,17 +411,11 @@ void CExperimentLoopFunctions::PostStep() {
 
     /* Add existing task id to the map */
     CSpace::TMapPerType* m_cCTasks;
-    bool taskExists;
-    try {
+
+    if(m_bTaskExists) {
         // m_cCTasks = &GetSpace().GetEntitiesByType("circle_task");
         m_cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
-        taskExists = true;
-    } catch(CARGoSException& ex) {
-        std::cout << "No circle task found in argos file (PreStep)" << std::endl;
-        taskExists = false;
-    }
 
-    if(taskExists) {
         for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
             itTask != m_cCTasks->end();
             ++itTask) {
@@ -438,7 +427,7 @@ void CExperimentLoopFunctions::PostStep() {
         }
     }
 
-    if(total_demand == 0) {
+    if(m_bTaskExists && total_demand == 0) {
         CSimulator::GetInstance().Terminate();
         std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
@@ -600,6 +589,8 @@ void CExperimentLoopFunctions::InitTasks() {
     for(itDistr = itDistr.begin(&ts_tree);
         itDistr != itDistr.end();
         ++itDistr) {
+
+        m_bTaskExists = true;
 
         // /* Get current node (task) */
         // TConfigurationNode& tDistr = *itDistr;
