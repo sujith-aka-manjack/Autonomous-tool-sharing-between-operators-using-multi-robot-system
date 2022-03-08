@@ -277,9 +277,9 @@ protected:
     virtual void AdjustPosition();
 
     /*
-    * Get a vector to adjust its position in the chain.
+    * Get a vector that attracts itself to other robots.
     */
-    virtual CVector2 GetAdjustVector();
+    virtual CVector2 GetConnectorAttractVector();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
