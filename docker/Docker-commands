@@ -1,0 +1,140 @@
+apt-get update
+apt-get install -y git
+apt-get install -y dpkg
+apt-get install -y wget
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1oO2lb2LuLq4IrZmNMiJurWTotHp_pDye' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1oO2lb2LuLq4IrZmNMiJurWTotHp_pDye" -O argos3_simulator.deb && rm -rf /tmp/cookies.txt
+apt-get install -y gcc g++ cmake freeglut3-dev qt5-default libxi-dev libxmu-dev libfreeimage-dev libfreeimageplus-dev liblua5.3-dev lua5.3
+
+# common
+apt-get update && apt-get install -y \
+build-essential \
+dpkg \
+git \
+pkg-config \
+&& apt-get clean \
+&& rm -r /var/lib/apt/lists/*
+
+# argos
+apt-get update && apt-get install -y \
+wget \
+cmake \
+freeglut3-dev \
+qt5-default \
+libxi-dev \
+libxmu-dev \
+libfreeimage-dev \
+libfreeimageplus-dev \
+liblua5.3-dev \
+lua5.3 \
+&& apt-get clean \
+&& rm -r /var/lib/apt/lists/*
+
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1oO2lb2LuLq4IrZmNMiJurWTotHp_pDye' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1oO2lb2LuLq4IrZmNMiJurWTotHp_pDye" -O argos3_simulator.deb && rm -rf /tmp/cookies.txt
+
+apt-get update && apt-get install -y sudo
+adduser --disabled-password --gecos '' docker
+adduser docker sudo
+echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+docker
+sudo dpkg -i argos3-package.deb
+sudo chmod -R ugo+rw /home/docker
+root
+
+# Install editting tool
+sudo apt-get install -y nano
+
+# Install Protobuf
+apt-get update && apt-get install -y \
+autoconf \
+automake \
+libtool \
+curl \
+unzip
+
+wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protobuf-cpp-3.19.4.tar.gz
+tar xzf protobuf-cpp-3.19.4.tar.gz
+cd protobuf-cpp-3.19.4/
+./configure
+make -j$(nproc)
+make install
+ldconfig
+
+# Install yaml
+apt-get update && apt-get install -y libyaml-cpp-dev
+
+# Install boost for uuid
+
+# Install Webviz (My version)
+apt-get update && apt-get install -y \
+zlib1g-dev \
+libssl-dev
+
+git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/argos3-webviz &&\
+cd /home/docker/argos3-webviz &&\
+mkdir build &&\
+cd build &&\
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
+make &&\
+make install
+
+# Install plugins for Webviz
+apt-get install -y nlohmann-json3-dev
+git clone https://gitlab.com/genki_miyauchi/argos-sct-plugins.git /home/docker/argos-sct-plugins &&\
+cd /home/docker/argos-sct-plugins &&\
+mkdir build &&\
+cd build &&\
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
+make &&\
+make install
+
+# Install argos-sct
+
+git clone https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
+cd /home/docker/argos-sct &&\
+mkdir build &&\
+cd build &&\
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
+make &&\
+make install &&\
+
+# Install python
+apt-get install python3 pip
+
+RUN wget --no-check-certificate https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz \
+&& tar -xf Python-3.9.5.tgz \
+&& cd Python-3.9.5 \
+&& ./configure --enable-optimizations\
+&& make \
+&& make install
+
+pip3 install --upgrade pip && pip3 install --no-cache-dir
+pip3 install \
+numpy \
+protobuf \
+pyyaml \
+pandas \
+
+apt-get autoremove -y
+
+# Delete unnecessary files from github OR create a new branch that the Docker image accesses
+
+# To redirect ports
+docker run -it -p 8000:8000 -p 3000:3000 genki15/ubuntu-argos
+
+# To open new terminal
+docker exec -it cool_rhodes bash
+
+
+### TESTING
+
+export ARGOS_PLUGIN_PATH=/home/docker/argos-sct/build/utility
+
+# argos examples
+git clone https://github.com/ilpincy/argos3-examples.git /home/docker/argos3-examples &&\
+cd /home/docker/argos3-examples &&\
+mkdir build &&\
+cd build &&\
+cmake -DCMAKE_BUILD_TYPE=Release .. &&\
+make
+
+argos3 -c experiments/diffusion_1.argos
