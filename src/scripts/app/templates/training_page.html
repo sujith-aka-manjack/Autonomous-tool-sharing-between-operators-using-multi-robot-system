@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <!-- utf-8 -->
+    <meta charset="utf-8">
+  <!-- Responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  </head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type=text/javascript>
+          $(function() {
+            $('a#start').on('click', function(e) {
+              e.preventDefault()
+              $.getJSON('/background_process_start',
+                  function(data) {
+                //do nothing
+              });
+              return false;
+            });
+          });
+          $(function() {
+            $('a#stop').on('click', function(e) {
+              e.preventDefault()
+              $.getJSON('/background_process_stop',
+                  function(data) {
+                //do nothing
+              });
+              return false;
+            });
+          });
+  </script>
+  <body class="text-center">
+  <h2>Training</h2>
+  <p>1. Press the Start button to begin the simulation.</p>
+  <form>
+      <a href=# id=start><button class='btn btn-default'>Start</button></a>
+  </form>
+  <p>2. Access the simulation from below.</p>
+  <a href="http://0.0.0.0:8000" target="_blank">Connect to Simulation</a>
+  <p>3. Press the Stop button to finish the simulation.</p>
+  <form>
+      <a href=# id=stop><button class='btn btn-default'>Stop</button></a>
+  </form>
+  <!-- Button to jump to /startpage -->
+  <form action="/startpage" method="get">
+    <input type="submit" value='Back'>
+  </form>
+  <!-- Button to jump to /endpage -->
+  <form action="/endpage" method="get">
+    <input type="submit" value='Next'>
+  </form>
+    </body>
+
+</html>
