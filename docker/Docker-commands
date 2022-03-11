@@ -118,11 +118,20 @@ apt-get autoremove -y
 
 # Delete unnecessary files from github OR create a new branch that the Docker image accesses
 
+# Make directory to save experiment results
+mkdir /home/docker/argos-sct/results
+
 # To redirect ports
-docker run -it -p 8000:8000 -p 3000:3000 genki15/ubuntu-argos
+docker run --name argos -it -p 8000:8000 -p 3000:3000 -v /home/docker/argos-sct/results genki15/ubuntu-argos
 
 # To open new terminal
-docker exec -it cool_rhodes bash
+docker exec -it argos bash
+
+docker exec -d -w /home/docker/argos-sct/src/web_client argos python3 -m http.server 8000
+
+# To export data to local machine
+docker volume create testvol
+docker run --rm --volumes-from cool_rhodes -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /home/docker/argos-sct/results
 
 
 ### TESTING
