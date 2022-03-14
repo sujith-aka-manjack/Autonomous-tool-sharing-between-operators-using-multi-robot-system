@@ -30,9 +30,6 @@ add_subdirectory(controllers)
 # Descend into the loop_functions directory
 add_subdirectory(loop_functions)
 
-# Custom entities
-add_subdirectory(plugins)
-
 # Protos directory
 add_subdirectory(protos)
 

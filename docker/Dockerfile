@@ -34,7 +34,7 @@ RUN adduser --disabled-password --gecos '' docker
 RUN adduser docker sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 USER docker
-RUN sudo dpkg -i argos3_simulator.deb
+RUN sudo dpkg -i argos3_simulator.deb && sudo rm -rf argos3_simulator.deb
 RUN sudo chmod -R ugo+rw /home/docker
 USER root
 
@@ -57,7 +57,10 @@ RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/p
     ./configure && \
     make -j$(nproc) && \
     make install && \
-    ldconfig
+    ldconfig && \
+    cd / && \
+    rm protobuf-cpp-3.19.4.tar.gz && \
+    rm -rf protobuf-3.19.4
 
 # Install yaml
 RUN apt-get update && apt-get install -y libyaml-cpp-dev
@@ -67,6 +70,7 @@ RUN apt-get install -y nlohmann-json3-dev
 
 RUN git clone https://gitlab.com/genki_miyauchi/argos-sct-plugins.git /home/docker/argos-sct-plugins && \
     cd /home/docker/argos-sct-plugins && \
+    rm -rf .git && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
@@ -80,6 +84,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/argos3-webviz &&\
     cd /home/docker/argos3-webviz && \
+    rm -rf .git && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
@@ -87,21 +92,36 @@ RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/a
     make install
 
 # Install argos-sct
-RUN git clone https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
+RUN git clone -b development https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
     cd /home/docker/argos-sct && \
     mkdir results && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
     make && \
-    make install
+    make install && \
+    cd .. && \
+    rm -rf \
+    .git \
+    .vscode \
+    docker \
+    experiments/test \
+    experiments/*5000* \
+    src/controllers/example* \
+    src/controllers/static_connector
 
 # Install Python3
 RUN apt-get install -y python3 pip
-RUN pip3 install --upgrade pip && pip3 --no-cache-dir
-RUN pip3 install \
-    numpy \
-    protobuf \
-    pyyaml \
-    pandas \
+RUN pip3 install --upgrade pip && pip3 install --no-cache-dir \
+    # numpy \
+    # protobuf \
+    # pyyaml \
+    # pandas \
     Flask
+
+RUN apt-get autoremove -y &&\
+    apt-get clean &&\
+    rm -rf /usr/local/src/*
+
+# WORKDIR /home/docker/argos-sct
+# ENTRYPOINT [ "python3", "src/scripts/app/app.py" ]
