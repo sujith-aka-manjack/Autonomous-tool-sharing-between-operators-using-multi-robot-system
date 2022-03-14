@@ -43,7 +43,7 @@ class SimulationWorker(Worker):
 class WebClientWorker(Worker):
     def run(self):
         print("starting webclient")
-        self.process = subprocess.Popen(['python', '-m', 'http.server', '8000'], cwd='src/web_client')
+        self.process = subprocess.Popen(['python3', '-m', 'http.server', '8000'], cwd='src/web_client')
         super().run()
 
 
