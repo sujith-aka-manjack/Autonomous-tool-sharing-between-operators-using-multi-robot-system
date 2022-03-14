@@ -122,17 +122,19 @@ apt-get autoremove -y
 mkdir /home/docker/argos-sct/results
 
 # To redirect ports
-docker run --name argos -it -p 8000:8000 -p 3000:3000 -v /home/docker/argos-sct/results genki15/ubuntu-argos
+docker run --name argos -it -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results genki15/argos-sct
 
 # To open new terminal
 docker exec -it argos bash
 
-docker exec -d -w /home/docker/argos-sct/src/web_client argos python3 -m http.server 8000
+docker exec -d -w /home/docker/argos-sct argos python3 src/scripts/app/app.py
 
 # To export data to local machine
 docker volume create testvol
 docker run --rm --volumes-from cool_rhodes -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /home/docker/argos-sct/results
 
+# To build an image from a Dockerfile
+docker build --no-cache .
 
 ### TESTING
 

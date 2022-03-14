@@ -103,4 +103,5 @@ RUN pip3 install \
     numpy \
     protobuf \
     pyyaml \
-    pandas
+    pandas \
+    Flask
