@@ -70,12 +70,13 @@ RUN apt-get install -y nlohmann-json3-dev
 
 RUN git clone https://gitlab.com/genki_miyauchi/argos-sct-plugins.git /home/docker/argos-sct-plugins && \
     cd /home/docker/argos-sct-plugins && \
-    rm -rf .git && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
     make && \
-    make install
+    make install && \
+    cd ../.. && \
+    rm -rf argos-sct-plugins
 
 # Install Webviz
 RUN apt-get update && apt-get install -y \
@@ -84,12 +85,13 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/argos3-webviz &&\
     cd /home/docker/argos3-webviz && \
-    rm -rf .git && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
     make && \
-    make install
+    make install && \
+    cd ../.. && \
+    rm -rf argos3-webviz
 
 # Install argos-sct
 RUN git clone -b development https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
@@ -99,7 +101,6 @@ RUN git clone -b development https://gitlab.com/genki_miyauchi/argos-sct.git /ho
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ../src &&\
     make && \
-    make install && \
     cd .. && \
     rm -rf \
     .git \
@@ -107,16 +108,16 @@ RUN git clone -b development https://gitlab.com/genki_miyauchi/argos-sct.git /ho
     docker \
     experiments/test \
     experiments/*5000* \
-    src/controllers/example* \
-    src/controllers/static_connector
+    src/controllers \
+    src/loop_functions \
+    src/protos \
+    src/utility \
+    src/scripts
 
 # Install Python3
 RUN apt-get install -y python3 pip
-RUN pip3 install --upgrade pip && pip3 install --no-cache-dir \
-    # numpy \
-    # protobuf \
-    # pyyaml \
-    # pandas \
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir \
     Flask
 
 RUN apt-get autoremove -y &&\
