@@ -254,7 +254,7 @@ void CLeader::Reset() {
 
     /* Initialize the msg contents to 255 (Reserved for "no event has happened") */
     m_pcRABAct->ClearData();
-    cbyte_msg = CByteArray(MESSAGE_BYTE_SIZE, 255);
+    cbyte_msg = CByteArray(Message::messageByteSize, 255);
     m_pcRABAct->SetData(cbyte_msg);
 
     /* Reset the incoming public events */

@@ -103,6 +103,8 @@
       </team>
       <team leader_num="1" robot_num="10" center="0,-1.5" density="0.3">
       </team>
+      <!-- <team leader_num="1" robot_num="0" center="1.8, 1.8" density="0.3">
+      </team> -->
     </teams>
 
     <!-- Tasks that the teams must complete -->

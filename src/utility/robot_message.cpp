@@ -3,6 +3,26 @@
 /****************************************/
 /****************************************/
 
+UInt32 Message::teamCount;
+UInt32 Message::messageByteSize;
+
+/****************************************/
+/****************************************/
+
+void Message::SetTeamCount(size_t num_team) {
+    teamCount = num_team;
+
+    /*
+    * size = fixed data + number of array messages + team count * (HopMsg + ConnectionMsg + TeamsNearby + RelayMsg) + Connections + End;
+    */
+
+    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 10) + 60 + 1;
+    std::cout << int(messageByteSize) << std::endl;
+}
+
+/****************************************/
+/****************************************/
+
 Message::Message() {
 
 }
@@ -56,7 +76,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         
         hops[tmpTeamID] = hop;
     }
-    index += (2 - msg_num) * 4; // TEMP: Currently assuming only two teams
+    index += (teamCount - msg_num) * 4;
 
     /* Connection Message */
     msg_num = packet.Data[index++];
@@ -88,7 +108,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
 
         cmsg.push_back(conMsg);
     }
-    index += (2 - msg_num) * 6; // TEMP: Currently assuming only two teams
+    index += (teamCount - msg_num) * 6;
     
     /* Shared Message */
     std::string robotID;
@@ -118,7 +138,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
     for(size_t j = 0; j < msg_num; j++) {
         nearbyTeams.push_back(packet.Data[index++]);
     }
-    index += (2 - msg_num) * 1; // TEMP: Currently assuming only two teams
+    index += (teamCount - msg_num) * 1;
 
     /* Relay Message */
     msg_num = packet.Data[index++];
@@ -159,7 +179,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
 
         rmsg.push_back(relayMsg);
     }
-    index += (2 - msg_num) * 10; // TEMP: Currently assuming only two teams
+    index += (teamCount - msg_num) * 10;
 
     /* Connections */
     while(packet.Data[index] != 255) {    // Check if data exists
@@ -185,7 +205,7 @@ Message::~Message() {
 
 CByteArray Message::GetCByteArray() {
 
-    CByteArray arr = CByteArray(MESSAGE_BYTE_SIZE, 255);
+    CByteArray arr = CByteArray(Message::messageByteSize, 255);
     size_t index = 0;
 
     /* Sender State */
@@ -223,7 +243,7 @@ CByteArray Message::GetCByteArray() {
         }
     }
     // Skip if not all bytes are used
-    index += (2 - hops.size()) * 4; // TEMP: Currently assuming only two teams
+    index += (teamCount - hops.size()) * 4;
 
     /* Connection Message */
     arr[index++] = cmsg.size(); // Set the number of ConnectionMsg
@@ -236,7 +256,7 @@ CByteArray Message::GetCByteArray() {
         arr[index++] = conMsg.toTeam;
     }
     // Skip if not all bytes are used
-    index += (2 - cmsg.size()) * 6; // TEMP: Currently assuming only two teams
+    index += (teamCount - cmsg.size()) * 6;
 
     /* Shared Message */
     if( !shareToLeader.empty() ) {
@@ -259,7 +279,7 @@ CByteArray Message::GetCByteArray() {
         arr[index++] = id;
     }
     // Skip if not all bytes are used
-    index += (2 - nearbyTeams.size()) * 1; // TEMP: Currently assuming only two teams
+    index += (teamCount - nearbyTeams.size()) * 1;
 
     /* Relay Message */
     arr[index++] = rmsg.size(); // Set the number of RelayMsg
@@ -281,7 +301,7 @@ CByteArray Message::GetCByteArray() {
         arr[index++] = relayMsg.robot_num;
     }
     // Skip if not all bytes are used
-    index += (2 - rmsg.size()) * 10; // TEMP: Currently assuming only two teams
+    index += (teamCount - rmsg.size()) * 10;
 
     /* Connections */
     for(size_t i = 0; i < connections.size(); i++) {

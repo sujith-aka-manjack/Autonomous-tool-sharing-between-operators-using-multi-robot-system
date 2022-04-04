@@ -23,7 +23,7 @@
 static const Real        EP_RADIUS        = 0.035f;
 static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
 static const Real        EP_RAB_RANGE     = 0.8f;
-static const Real        EP_RAB_DATA_SIZE = MESSAGE_BYTE_SIZE;
+// static const Real        EP_RAB_DATA_SIZE = Message::messageByteSize;
 static const std::string HL_CONTROLLER    = "el";
 static const std::string EP_CONTROLLER    = "ef";
 static const UInt32      MAX_PLACE_TRIALS = 20;
@@ -451,6 +451,17 @@ void CExperimentLoopFunctions::InitRobots() {
     TConfigurationNode& et_tree = GetNode(config, "teams");
     /* Go through the nodes (teams) */
     TConfigurationNodeIterator itDistr;
+    /* Number of teams */
+    size_t unTeamCount = 0;
+
+    /* Set the number of teams in the experiment */
+    for(itDistr = itDistr.begin(&et_tree);
+        itDistr != itDistr.end();
+        ++itDistr) {
+
+        unTeamCount++;
+    }
+    Message::SetTeamCount(unTeamCount);
 
     for(itDistr = itDistr.begin(&et_tree);
         itDistr != itDistr.end();
@@ -680,7 +691,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                            CVector3(),
                                            CQuaternion(),
                                            EP_RAB_RANGE,
-                                           EP_RAB_DATA_SIZE,
+                                           Message::messageByteSize,
                                            "");
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
@@ -718,7 +729,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                     CVector3(),
                                     CQuaternion(),
                                     EP_RAB_RANGE,
-                                    EP_RAB_DATA_SIZE,
+                                    Message::messageByteSize,
                                     "");
             AddEntity(*pcEP);
             m_vecEntityID.push_back(cEPId.str());
@@ -773,7 +784,7 @@ void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
                                            CVector3(),
                                            CQuaternion(),
                                            EP_RAB_RANGE,
-                                           EP_RAB_DATA_SIZE,
+                                           Message::messageByteSize,
                                            "");
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
@@ -803,7 +814,7 @@ void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
                                     CVector3(),
                                     CQuaternion(),
                                     EP_RAB_RANGE,
-                                    EP_RAB_DATA_SIZE,
+                                    Message::messageByteSize,
                                     "");
             AddEntity(*pcEP);
             m_vecEntityID.push_back(cEPId.str());

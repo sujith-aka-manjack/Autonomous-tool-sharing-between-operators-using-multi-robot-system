@@ -67,7 +67,7 @@ struct RelayMsg {
     UInt8 robot_num = 0; // Used in a request-robot message. The number of robots the leader is requesting.
 };
 
-static const UInt32 MESSAGE_BYTE_SIZE = 119;
+// static const UInt32 MESSAGE_BYTE_SIZE = 119;
 
 /* 
 * Structure to store incoming data received from other robots 
@@ -128,6 +128,12 @@ static const UInt32 MESSAGE_BYTE_SIZE = 119;
 class Message {
 
     public:
+
+        /* Static members */
+        static UInt32 teamCount;
+        static UInt32 messageByteSize;
+
+        static void SetTeamCount(size_t num_team);
 
         /* Class constructor */
         Message();
