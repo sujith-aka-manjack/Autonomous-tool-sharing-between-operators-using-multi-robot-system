@@ -2,12 +2,13 @@
 # - https://www.yukiyukiponsu.work/entry/python-Flask-btn-page-move
 # - https://stackoverflow.com/a/49334973
 
-from flask import Flask,render_template
+from flask import Flask, render_template, request
 import socket
 from worker import SimulationProcess, WebClientProcess
 
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
+SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
 
 # Local machine IP address
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -40,6 +41,12 @@ def trainingpage():
     return render_template("training_page.html")
 
 
+# Access to "/trainingpage": redirect to training_page.html
+@app.route("/testmultioppage", methods=["GET"])
+def testmultioppage():
+    return render_template("test-multi-op_page.html")
+
+
 # Access to "/endpage": redirect to end_page.html
 @app.route("/endpage", methods=["GET"])
 def endpage():
@@ -47,11 +54,20 @@ def endpage():
 
 
 # Background process: Start the simulation
-@app.route('/background_process_start')
+@app.route('/background_process_start', methods=['POST'])
 def background_process_start():
-    print ("Start")
+    scenario = request.get_data().decode('UTF-8')
+    print ("Start '{}'".format(scenario))
+
     global proc_simulation, proc_webclient
-    proc_simulation = SimulationProcess(SCENARIO_TRAINING)
+
+    if(scenario == 'training'):
+        proc_simulation = SimulationProcess(SCENARIO_TRAINING)
+    elif(scenario == 'test-multi-op'):
+        proc_simulation = SimulationProcess(SCENARIO_TESTMULTIOP)
+    else:
+        print('No scenario provided.')
+
     proc_simulation.start()
     proc_webclient = WebClientProcess()
     proc_webclient.start()

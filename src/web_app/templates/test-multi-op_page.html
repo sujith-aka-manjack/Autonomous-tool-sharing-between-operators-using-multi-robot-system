@@ -17,7 +17,7 @@
               $.ajax({ 
                   url: '/background_process_start', 
                   type: 'POST', 
-                  data: 'training'
+                  data: 'test-multi-op'
               })
               document.getElementById('prev-signal').innerHTML = 'START';
               document.getElementById('prev-signal').style.color = 'green';
@@ -43,7 +43,7 @@
 
     <div class="container">
       <div class="row p-4 bg-light">
-        <h1>Training</h1>
+        <h1>Test Multiple Operators (3+)</h1>
         <p>Previous signal: <b id="prev-signal" style="color:red;">STOP</b></p>
       </div>
 
@@ -56,7 +56,9 @@
 
       <div class="row p-4 bg-light">
         <p>2. Access the simulation from the link below.</p>
-        <a class="btn btn-link" href="http://0.0.0.0:8000" target="_blank">Connect to Simulation</a>
+        <form>
+          <a class="btn btn-link" href="http://0.0.0.0:8000" target="_blank">Connect to Simulation</a>
+        </form>
       </div>
 
       <div class="row p-4">
@@ -69,13 +71,13 @@
       <!-- Button to jump to /startpage -->
       <div class="row p-4 bg-light justify-content-center">
         <div class="col-4">
-          <form action="/startpage" method="get">
+          <form action="/trainingpage" method="get">
             <input class="btn btn-outline-secondary" type="submit" value='Back'>
           </form>
         </div>
         <!-- Button to jump to /endpage -->
         <div class="col-4">
-          <form action="/testmultioppage" method="get">
+          <form action="/endpage" method="get">
             <input class="btn btn-outline-secondary" type="submit" value='Next'>
           </form>
         </div>
