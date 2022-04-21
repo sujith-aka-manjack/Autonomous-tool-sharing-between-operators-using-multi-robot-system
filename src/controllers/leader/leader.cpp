@@ -148,7 +148,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
 
     /* Initialization */
     currentState = RobotState::LEADER;
-    inputStart = false;
+    inputStart = true; // Make leader always send start signal for now
     inputStop = false;
     currentTaskDemand = 0;
     currentInitTaskDemand = 0;
@@ -169,6 +169,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     robotToSwitch = "";
     notDecremented = true;
     robotsNeeded = 0;
+    requestSent = false;
     // requestReceived = false;
 
     // TEMP: hard coded team to join (Assuming two teams)
@@ -380,51 +381,53 @@ void CLeader::ControlStep() {
                 /* Stop if other robots are too far from itself */
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
             }
-            // else if( !waypoints.empty() ) {
-            //     /* Check if it is near the waypoint */
-            //     CVector3 pos3d = m_pcPosSens->GetReading().Position;
-            //     CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
-            //     Real dist = (waypoints.front() - pos2d).Length();
-            //     //std::cout << "dist: " << dist << std::endl;
+            else if( !waypoints.empty() ) {
+                /* Check if it is near the waypoint */
+                CVector3 pos3d = m_pcPosSens->GetReading().Position;
+                CVector2 pos2d = CVector2(pos3d.GetX(), pos3d.GetY());
+                Real dist = (waypoints.front() - pos2d).Length();
+                //std::cout << "dist: " << dist << std::endl;
 
-            //     /* If current task is completed, move to the next one */
-            //     if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
+                /* If current task is completed, move to the next one */
+                if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
                     
-            //         //std::cout << "[LOG] Moving to next task" << std::endl;
+                    //std::cout << "[LOG] Moving to next task" << std::endl;
 
-            //         /* Calculate overall force applied to the robot */
-            //         CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
-            //         CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
-            //         CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
+                    /* Calculate overall force applied to the robot */
+                    CVector2 waypointForce = VectorToWaypoint();           // Attraction to waypoint
+                    CVector2 robotForce    = GetRobotRepulsionVector();    // Repulsion from other robots
+                    CVector2 obstacleForce = GetObstacleRepulsionVector(); // Repulsion from obstacles
 
-            //         CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
-            //         //std::cout << "waypointForce: " << waypointForce << std::endl;
-            //         //std::cout << "robotForce: " << robotForce << std::endl;
-            //         //std::cout << "obstacleForce: " << obstacleForce << std::endl;
-            //         //std::cout << "sumForce: " << sumForce << std::endl;
+                    CVector2 sumForce      = waypointForce + robotForce + obstacleForce;
+                    //std::cout << "waypointForce: " << waypointForce << std::endl;
+                    //std::cout << "robotForce: " << robotForce << std::endl;
+                    //std::cout << "obstacleForce: " << obstacleForce << std::endl;
+                    //std::cout << "sumForce: " << sumForce << std::endl;
 
-            //         SetWheelSpeedsFromVectorHoming(sumForce);
-            //     } 
-            //     else {
-            //         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            //     }
-            // }
+                    SetWheelSpeedsFromVectorHoming(sumForce);
+                } 
+                else {
+                    m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+                }
+            }
             else {
                 m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
+                // FOR TRAINING
+
                 /* Send the requested number of robots to the other leader */
-                if( !isSendingRobots ) {
+                // if( !isSendingRobots ) {
 
-                    if(numRobotsRequested > 0) {
-                        SetRobotsToSend(numRobotsRequested);
-                        isSendingRobots = true;
-                        numRobotsRequested = 0; // reset
-                    }
-                }
+                //     if(numRobotsRequested > 0) {
+                //         SetRobotsToSend(numRobotsRequested);
+                //         isSendingRobots = true;
+                //         numRobotsRequested = 0; // reset
+                //     }
+                // }
 
-                if(numRobotsToSend == 0) {
-                    isSendingRobots = false;
-                }
+                // if(numRobotsToSend == 0) {
+                //     isSendingRobots = false;
+                // }
             }
         }
     }
@@ -543,7 +546,7 @@ void CLeader::SetSignal(const bool b_signal) {
 
 void CLeader::SetRobotsToRequest(const UInt32 un_robots) {
 
-    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to request" << std::endl;
+    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to request from user" << std::endl;
 
     numRobotsToRequest = un_robots;
 }
@@ -553,7 +556,7 @@ void CLeader::SetRobotsToRequest(const UInt32 un_robots) {
 
 void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
-    std::cout << "[" << this->GetId() << "] Requested " << un_robots << " robots" << std::endl;
+    std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to send from user" << std::endl;
 
     if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
         numRobotsToSend = currentFollowerCount;
@@ -749,7 +752,7 @@ void CLeader::Update() {
     if( !m_bSelected ) {
 
         /* Simulated user signal */
-        bool signal = m_bSignal;
+        // bool signal = m_bSignal;
 
         if( !waypoints.empty() ) {
 
@@ -762,17 +765,18 @@ void CLeader::Update() {
 
                 /* Check if task is completed */
                 if(currentTaskDemand == 0) {
-                    signal = false;
+                    // signal = false;
                     waypoints.pop(); // Delete waypoint from queue
-                } else
-                    signal = true;
+                    // requestSent = false; // Set to false since it has finished the task.
+                }/*  else
+                    signal = true; */
             }
         }
 
-        if(signal && !m_bSignal)
-            inputStart = true;
-        else if(!signal && m_bSignal)
-            inputStop = true;   
+        // if(signal && !m_bSignal)
+        //     inputStart = true;
+        // else if(!signal && m_bSignal)
+        //     inputStop = true;   
     }
 }
 
@@ -943,10 +947,12 @@ void CLeader::CheckHeartBeat() {
                         numRobotsRequested = beat.robot_num;
                         std::cout << "[" << this->GetId() << "] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
 
-                    }/*  else {
-                        numRobotsToSend = 0;
-                        numPreviousRequest = 0;
-                    } */
+                        // DEBUG
+                        numRobotsToSend = numRobotsRequested;
+
+                    } else if(beat.type == 'A') {
+                        std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
+                    }
 
                     switchCandidate = ""; // Reset candidate follower to switch
                 } 
@@ -1246,11 +1252,29 @@ void CLeader::Callback_Message(void* data) {
     //     }
     // }
 
+    
+    // DEBUG
+    if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
+        beat.type = 'R';
+        beat.robot_num = robotsNeeded - currentFollowerCount;
+        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+        requestSent = true;
+    }
+
+    /* User Signal */
     if(numRobotsToRequest > 0) {
         beat.type = 'R';
         beat.robot_num = numRobotsToRequest;
         // std::cout << "[" << this->GetId() << "] Requested for " << beat.robot_num << " robots" << std::endl;
         numRobotsToRequest = 0;
+    }
+
+    /* Acknowledge message */
+    // std::cout << this->GetId() << " requested: " << numRobotsRequested << ", to send: " << numRobotsToSend << std::endl;
+    if(numRobotsRequested == numRobotsToSend + 1 && numRobotsToSend > 0) {
+        beat.type = 'A';
+        beat.robot_num = numRobotsToSend + 1;
+        std::cout << this->GetId() << ": Send acknowledgement message" << std::endl;
     }
 
     rmsgToResend.push_back({sendDuration,beat});

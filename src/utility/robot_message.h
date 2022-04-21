@@ -64,7 +64,7 @@ struct RelayMsg {
     std::string firstFollower; // First follower that received this message from a non-team robot
     UInt8 follower_num; // Used in a heart-beat message. The number of followers the leader has.
     UInt8 task_min_num = 0; // Used in a heart-beat message. The minimum number of robots required to perform the task that the leader is on.
-    UInt8 robot_num = 0; // Used in a request-robot message. The number of robots the leader is requesting.
+    UInt8 robot_num = 0; // Used in request-robot and acknowledge message. The number of robots the leader is requesting or sending.
 };
 
 // static const UInt32 MESSAGE_BYTE_SIZE = 119;

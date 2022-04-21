@@ -489,6 +489,7 @@ private:
     int numRobotsRequested;
     std::string robotToSwitch;
     UInt8 teamToJoin;
+    bool requestSent;
 
     /* Flag to indicate trigerring of uncontrollable events */
     bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;

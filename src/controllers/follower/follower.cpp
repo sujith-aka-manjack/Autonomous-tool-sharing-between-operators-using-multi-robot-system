@@ -448,9 +448,9 @@ void CFollower::ControlStep() {
                 if(msg.second.from == "L1")
                     relaying = true;
             }
-            // if(relaying)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else
+            if(relaying)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else
                 m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             // m_pcLEDs->SetAllColors(CColor::GREEN);
@@ -484,9 +484,9 @@ void CFollower::ControlStep() {
             }
             // if(requesting)
             //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else if(sending)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            // else
+            if(sending)
+                m_pcLEDs->SetAllColors(CColor::YELLOW);
+            else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
             // m_pcLEDs->SetAllColors(CColor::BLUE);
@@ -1844,12 +1844,14 @@ CVector2 CFollower::GetConnectorAttractVector() {
         // For each entry in hopsDict
         for(const auto& hop : hopsDict) {
 
+            UInt8 teamToCheck = hop.first;
+            UInt8 myHopCount = hop.second.count;
+            std::string robotToCheck = hop.second.ID;
+
             bool onlyLeader = false;
 
             // Loop robots to check
             for(const auto& msg : otherMsgs) {
-                UInt8 teamToCheck = hop.first;
-                UInt8 myHopCount = hop.second.count;
 
                 if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
 
@@ -1881,20 +1883,25 @@ CVector2 CFollower::GetConnectorAttractVector() {
 
                     /* For the team that it is NOT a tail connector for */
 
-                    for(const auto& otherHop : msg.hops) {
-                        UInt8 otherHopCount = otherHop.second.count;
-
-                        /* Find the shortest vector to the team */
-                        if(otherHop.first == teamToCheck && otherHopCount == myHopCount - 1) {
-                            
-                            Real dist = msg.direction.Length();
-
-                            if( !closestTeamVec.count(teamToCheck) || dist < closestTeamVec[teamToCheck].Length()) {
-                                closestTeamVec[teamToCheck] = msg.direction;
-                                break;
-                            }
-                        }
+                    // Is this connector my adjacent connector? If yes, record vector to it
+                    if(msg.ID == robotToCheck) {
+                        closestTeamVec[teamToCheck] = msg.direction;
                     }
+
+                    // for(const auto& otherHop : msg.hops) {
+                    //     UInt8 otherHopCount = otherHop.second.count;
+
+                    //     /* Find the shortest vector to the team */
+                    //     if(otherHop.first == teamToCheck && otherHopCount == myHopCount - 1) {
+                            
+                    //         Real dist = msg.direction.Length();
+
+                    //         if( !closestTeamVec.count(teamToCheck) || dist < closestTeamVec[teamToCheck].Length()) {
+                    //             closestTeamVec[teamToCheck] = msg.direction;
+                    //             break;
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
