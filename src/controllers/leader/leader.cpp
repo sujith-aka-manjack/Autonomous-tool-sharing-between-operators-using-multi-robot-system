@@ -772,7 +772,7 @@ void CLeader::Update() {
                 if(currentTaskDemand == 0) {
                     // signal = false;
                     waypoints.pop(); // Delete waypoint from queue
-                    // requestSent = false; // Set to false since it has finished the task.
+                    requestSent = false; // Set to false since it has finished the task.
                 }/*  else
                     signal = true; */
             }
@@ -950,14 +950,16 @@ void CLeader::CheckHeartBeat() {
                         // }
 
                         numRobotsRequested = beat.robot_num;
-                        std::cout << "[" << this->GetId() << "] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
+                        // std::cout << "{" << this->GetId() << "} [REQUEST] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
+                        std::cout << "{" << this->GetId() << "}[REQUEST] Received request to send " << numRobotsRequested << " robots" << std::endl;
 
                         // DEBUG
                         numRobotsToSend = numRobotsRequested + 1;
                         numRobotsRemainingToSend = numRobotsToSend;
 
                     } else if(beat.type == 'A') {
-                        std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
+                        // std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
+                        std::cout << "{" << this->GetId() << "}[SEND] " << beat.robot_num << " robots are heading this way!" << std::endl;
                     }
 
                     switchCandidate = ""; // Reset candidate follower to switch
@@ -1263,7 +1265,7 @@ void CLeader::Callback_Message(void* data) {
     if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
         beat.type = 'R';
         beat.robot_num = robotsNeeded - currentFollowerCount;
-        std::cout << this->GetId() << ": Sending request for " << beat.robot_num << " robots" << std::endl;
+        std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num << " robots..." << std::endl;
         requestSent = true;
     }
 
@@ -1271,6 +1273,7 @@ void CLeader::Callback_Message(void* data) {
     if(numRobotsToRequest > 0) {
         beat.type = 'R';
         beat.robot_num = numRobotsToRequest;
+        std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num << " robots..." << std::endl;
         // std::cout << "[" << this->GetId() << "] Requested for " << beat.robot_num << " robots" << std::endl;
         numRobotsToRequest = 0;
     }
@@ -1281,7 +1284,7 @@ void CLeader::Callback_Message(void* data) {
     if(!acknowledgeSent && numRobotsToSend > 0) {
         beat.type = 'A';
         beat.robot_num = numRobotsToSend;
-        std::cout << this->GetId() << ": Send acknowledgement message to send " << numRobotsToSend << " robots" << std::endl;
+        std::cout << "{" << this->GetId() << "}[SEND] Sent " << numRobotsToSend << " robots!" << std::endl;
         acknowledgeSent = true;
     } else if(numRobotsRemainingToSend == 0) {
         numRobotsToSend = 0;

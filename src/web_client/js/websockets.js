@@ -199,9 +199,38 @@
           var log_ = [], logerr_ = [];
           for (let i = 0; i < data.messages.length; i++) {
             if (data.messages[i].log_type == 'LOG') {
-              log_.unshift("<div class='log'><pre><span class='b'>[t=" +
-                data.messages[i].step + "]</span> " +
-                data.messages[i].log_message + "</pre></div>");
+
+              var text_color = 'rgb(0,0,0)';
+              var robot_id = '';
+              var message_type = '';
+              var message_content = data.messages[i].log_message;
+
+              /* Parse message */
+              // Check if first character is {
+              if(data.messages[i].log_message.charAt(0) == '{') {
+
+                /* Get robot id */
+                message_content = data.messages[i].log_message.split('}')[1];
+                robot_id = data.messages[i].log_message.split('}')[0].split('{')[1];
+                console.log(robot_id);
+
+                /* Get message type */
+                message_type = data.messages[i].log_message.split('}')[1].split(']')[0].split('[')[1];
+                console.log(message_type);
+
+                if(message_type == 'REQUEST') {
+                  text_color = 'rgb(255,0,0)';
+                } else if(message_type == 'SEND') {
+                  text_color = 'rgb(0,128,0)';
+                }
+              }
+
+              if(robot_id == '' || robot_id == window.target) {
+                log_.unshift("<div class='log'><pre><span class='b'>[t=" +
+                  data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                  message_content + "</span></pre></div>");
+              }
+              
             } else {
               logerr_.unshift("<div class='log'><pre><span class='b'>[t=" +
                 data.messages[i].step + "]</span> " +
