@@ -162,14 +162,16 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatReceived = 0;
     beatSent = 0;
     numRobotsToSend = 0;
+    numRobotsRemainingToSend = 0;
     numRobotsToRequest = 0;
     numRobotsRequested = 0;
     isSendingRobots = false;
     switchCandidate = "";
     robotToSwitch = "";
-    notDecremented = true;
+    decremented = false;
     robotsNeeded = 0;
     requestSent = false;
+    acknowledgeSent = false;
     // requestReceived = false;
 
     // TEMP: hard coded team to join (Assuming two teams)
@@ -560,8 +562,10 @@ void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
     if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
         numRobotsToSend = currentFollowerCount;
+        numRobotsRemainingToSend = numRobotsToSend;
     } else {
         numRobotsToSend = un_robots;
+        numRobotsRemainingToSend = numRobotsToSend;
     }
 }
 
@@ -745,6 +749,7 @@ void CLeader::Update() {
     /* remaining number of robots                                */
     if(numRobotsToSend > 0 && currentFollowerCount == 0) {
         numRobotsToSend = 0;
+        numRobotsRemainingToSend = 0;
     }
 
     /* Only for simulated users */
@@ -926,7 +931,7 @@ void CLeader::CheckHeartBeat() {
                     else
                         receivedRelay = true;
 
-                    notDecremented = true;
+                    decremented = false;
 
                     /* Store message info from other leader */
                     numOtherFollower = beat.follower_num;
@@ -948,7 +953,8 @@ void CLeader::CheckHeartBeat() {
                         std::cout << "[" << this->GetId() << "] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
 
                         // DEBUG
-                        numRobotsToSend = numRobotsRequested;
+                        numRobotsToSend = numRobotsRequested + 1;
+                        numRobotsRemainingToSend = numRobotsToSend;
 
                     } else if(beat.type == 'A') {
                         std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
@@ -1271,11 +1277,17 @@ void CLeader::Callback_Message(void* data) {
 
     /* Acknowledge message */
     // std::cout << this->GetId() << " requested: " << numRobotsRequested << ", to send: " << numRobotsToSend << std::endl;
-    if(numRobotsRequested == numRobotsToSend + 1 && numRobotsToSend > 0) {
+    // if(numRobotsRequested == numRobotsToSend && numRobotsToSend > 0) {
+    if(!acknowledgeSent && numRobotsToSend > 0) {
         beat.type = 'A';
-        beat.robot_num = numRobotsToSend + 1;
-        std::cout << this->GetId() << ": Send acknowledgement message" << std::endl;
+        beat.robot_num = numRobotsToSend;
+        std::cout << this->GetId() << ": Send acknowledgement message to send " << numRobotsToSend << " robots" << std::endl;
+        acknowledgeSent = true;
+    } else if(numRobotsRemainingToSend == 0) {
+        numRobotsToSend = 0;
+        acknowledgeSent = false;
     }
+    // std::cout << this->GetId() << " remaining to send " << numRobotsRemainingToSend << std::endl;
 
     rmsgToResend.push_back({sendDuration,beat});
     lastSent = initStepTimer;
@@ -1319,9 +1331,9 @@ void CLeader::Callback_Exchange(void* data) {
         robotToSwitch = switchCandidate;
 
         /* Signal a follower to switch to the other team */
-        if(notDecremented) {
-            numRobotsToSend--;
-            notDecremented = false;
+        if(!decremented) {
+            numRobotsRemainingToSend--;
+            decremented = true;
             std::cout << "[" << this->GetId() << "] Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
         }
 
@@ -1367,7 +1379,7 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 }
 
 unsigned char CLeader::Check_InputExchange(void* data) {
-    bool exchangeRobot = (numRobotsToSend > 0 && !switchCandidate.empty());
+    bool exchangeRobot = (numRobotsRemainingToSend > 0 && !switchCandidate.empty());
 
     if(exchangeRobot) {
         // std::cout << "Event: " << 1 << " - inputExchange" << std::endl;

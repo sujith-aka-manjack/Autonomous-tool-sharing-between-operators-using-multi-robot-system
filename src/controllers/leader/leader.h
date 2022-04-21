@@ -474,7 +474,7 @@ private:
     bool isSendingRobots;
     size_t beatReceived, beatSent;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
-    bool notDecremented;
+    bool decremented;
 
     // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)
     SInt8 numOtherFollower;
@@ -485,11 +485,13 @@ private:
 
     /* Team switch variables */
     int numRobotsToSend;
+    int numRobotsRemainingToSend;
     int numRobotsToRequest;
     int numRobotsRequested;
     std::string robotToSwitch;
     UInt8 teamToJoin;
     bool requestSent;
+    bool acknowledgeSent;
 
     /* Flag to indicate trigerring of uncontrollable events */
     bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;
