@@ -32,6 +32,9 @@ static const std::string EP_CONTROLLER    = "ef";
 static const UInt32      MAX_PLACE_TRIALS = 20;
 static const UInt32      MAX_ROBOT_TRIALS = 20;
 
+static const std::string BINARY_FILENAME   = "log_data.pb";
+static const std::string COMMAND_FILENAME  = "commands.csv";
+
 /****************************************/
 /****************************************/
 
@@ -509,11 +512,11 @@ void CExperimentLoopFunctions::InitLogging() {
 
     /* Set output file names */
     oss.str("");
-    oss << m_strDirPath << "log_data.pb";
+    oss << m_strDirPath << BINARY_FILENAME;
     m_strBinaryFilePath = oss.str();
 
     oss.str("");
-    oss << m_strDirPath << "commands.csv";
+    oss << m_strDirPath << COMMAND_FILENAME;
     m_strCommandFilePath = oss.str();
 
     // std::cout << m_strBinaryFilePath << std::endl;

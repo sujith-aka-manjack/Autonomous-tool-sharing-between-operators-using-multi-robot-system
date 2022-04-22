@@ -13,8 +13,14 @@ CManualControlWebvizUserFunctions::CManualControlWebvizUserFunctions() {
         &CSimulator::GetInstance().GetLoopFunctions());
 
     m_bLogging = m_pcExperimentLoopFunctions->IsLogging();
-    if(m_bLogging)
+    if(m_bLogging) {
         m_strCommandFilePath = m_pcExperimentLoopFunctions->GetCommandFilePath();
+
+        /* Write to file */
+        m_cOutput.open(m_strCommandFilePath.c_str(), std::ios_base::app);
+        m_cOutput << "TIME,USER,ROBOT,COMMAND,VALUE"; // Header
+        m_cOutput.close();
+    }
 
     RegisterWebvizUserFunction<CManualControlWebvizUserFunctions, CEPuckLeaderEntity>(
         &CManualControlWebvizUserFunctions::sendLeaderData);
@@ -41,6 +47,9 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
     std::string username = c_json_command["username"];
     std::string target = c_json_command["robot"];
     nlohmann::json commands = c_json_command["commands"];
+
+    /* Current timestep */
+    UInt32 timestep = m_pcExperimentLoopFunctions->GetSpace().GetSimulationClock();
 
     /* Store the client's id and username if its the first time receiving it */
     if(m_pcClientPointerToId[str_ip].id == "") {
@@ -92,6 +101,20 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     cController.SetControlVector(cDir);
 
                     break;
+                }
+            }
+
+            if(m_bLogging && timestep > 0) {
+
+                /* Log info if move command has changed */
+                if(m_pcLastClientMoveCommands.find(username) == m_pcLastClientMoveCommands.end() ||
+                   m_pcLastClientMoveCommands[username] != direction) {
+
+                    m_cOutput.open(m_strCommandFilePath.c_str(), std::ios_base::app);
+                    m_cOutput << "\n" << (int)timestep << "," << username << "," << target << ",move," <<  direction;
+                    m_cOutput.close();
+
+                    m_pcLastClientMoveCommands[username] = direction;
                 }
             }
         }
@@ -146,8 +169,13 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     cController.SetRobotsToRequest(num_robot);
                     break;
                 }
-            } 
+            }
 
+            if(m_bLogging && timestep > 0) {
+                m_cOutput.open(m_strCommandFilePath.c_str(), std::ios_base::app);
+                m_cOutput << "\n" << (int)timestep << "," << username << "," << target << ",request," <<  num_robot;
+                m_cOutput.close();
+            }
         }
         else if(c_data["command"] == "send") {
 
@@ -171,7 +199,13 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     cController.SetRobotsToSend(num_robot);
                     break;
                 }
-            } 
+            }
+
+            if(m_bLogging && timestep > 0) {
+                m_cOutput.open(m_strCommandFilePath.c_str(), std::ios_base::app);
+                m_cOutput << "\n" << (int)timestep << "," << username << "," << target << ",send," <<  num_robot;
+                m_cOutput.close();
+            }
         }
         else if(c_data["command"] == "select_leader") {
 
