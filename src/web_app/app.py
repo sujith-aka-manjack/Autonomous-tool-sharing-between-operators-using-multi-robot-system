@@ -9,6 +9,7 @@ from worker import SimulationProcess, WebClientProcess
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
 SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
+SCENARIO_TRIAL1 = "experiments/test/test_user_study.argos"
 
 # Local machine IP address
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -62,7 +63,7 @@ def background_process_start():
     global proc_simulation, proc_webclient
 
     if(scenario == 'training'):
-        proc_simulation = SimulationProcess(SCENARIO_TRAINING)
+        proc_simulation = SimulationProcess(SCENARIO_TRIAL1)
     elif(scenario == 'test-multi-op'):
         proc_simulation = SimulationProcess(SCENARIO_TESTMULTIOP)
     else:

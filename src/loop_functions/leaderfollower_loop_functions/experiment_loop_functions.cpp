@@ -12,10 +12,13 @@
 
 #include <utility/robot_message.h>
 
+#include <filesystem>
 #include <fstream>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/delimited_message_util.h>
 #include <protos/generated/time_step.pb.h>
+
+namespace fs = std::filesystem;
 
 /****************************************/
 /****************************************/
@@ -58,10 +61,13 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */
         GetNodeAttributeOrDefault(tChainFormation, "logging", m_bLogging, false);
-        GetNodeAttributeOrDefault(tChainFormation, "out_path", m_strOutput, std::string("results/experiment.yaml"));
+        GetNodeAttributeOrDefault(tChainFormation, "out_path", m_strOutput, std::string("results/default/"));
         /* Set the frame grabbing settings */
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
         GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
+
+        if(m_bLogging)
+            InitLogging();
 
         InitRobots();
         InitTasks();
@@ -389,7 +395,7 @@ void CExperimentLoopFunctions::PreStep() {
         }
 
         /* Write to file */
-        m_cOutput.open(m_strOutput.c_str(), std::ios::app | std::ios::binary);
+        m_cOutput.open(m_strBinaryFilePath.c_str(), std::ios::app | std::ios::binary);
         google::protobuf::util::SerializeDelimitedToOstream(tData, &m_cOutput);
         m_cOutput.close();
     }
@@ -432,6 +438,94 @@ void CExperimentLoopFunctions::PostStep() {
         std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
     }
+}
+
+/****************************************/
+/****************************************/
+
+bool CExperimentLoopFunctions::IsLogging() {
+    return m_bLogging;
+}
+
+/****************************************/
+/****************************************/
+
+void CExperimentLoopFunctions::InitLogging() {
+    
+    // TODO
+        // Get list of directories in passed dir path
+        // Keep looping while number exists
+        // Determine dir name for this experiment
+        // Store dir name
+    std::string dir_name = m_strOutput;
+
+    /* Get the experiment directory name */
+    if(dir_name[dir_name.size() - 1] == '/') {
+        dir_name.pop_back(); // If last char is /, drop it
+    }
+
+    std::stringstream ss(dir_name);
+    std::string segment;
+    std::vector<std::string> dir_path;
+
+    while(std::getline(ss, segment, '/')) {
+        dir_path.push_back(segment);
+    }
+    dir_name = dir_path[dir_path.size() - 1];
+
+    /* Get the parent directory name */
+    dir_path.pop_back();
+    std::ostringstream oss;
+    oss.str("");
+    for(auto& segment : dir_path) {
+        oss << segment << "/";
+    }
+    std::string dir_parent_name = oss.str();
+    
+    /* Loop directory to see what experiment number to append to dir_name */
+    std::vector<std::string> r;
+    for(auto& p : fs::recursive_directory_iterator(dir_parent_name))
+        if (p.is_directory()) {
+            if(p.path().string().find(dir_name) != std::string::npos)
+                r.push_back(p.path().string());
+        }
+
+    /* Append experiment number */
+    if(r.size() < 10) {
+        dir_name.append("_00");
+    } else if(r.size() < 100) {
+        dir_name.append("_0");
+    } else {
+        dir_name.append("_");
+    }
+    dir_name.append(std::to_string(r.size() + 1));
+
+    /* Create directory */
+    oss.str("");
+    oss << dir_parent_name << dir_name << "/";
+    m_strDirPath = oss.str();
+    fs::create_directory(m_strDirPath);
+    std::cout << "Created " << m_strDirPath << std::endl;
+
+    /* Set output file names */
+    oss.str("");
+    oss << m_strDirPath << "log_data.pb";
+    m_strBinaryFilePath = oss.str();
+
+    oss.str("");
+    oss << m_strDirPath << "commands.csv";
+    m_strCommandFilePath = oss.str();
+
+    // std::cout << m_strBinaryFilePath << std::endl;
+    // std::cout << m_strCommandFilePath << std::endl;
+
+}
+
+/****************************************/
+/****************************************/
+
+std::string CExperimentLoopFunctions::GetCommandFilePath() {
+    return m_strCommandFilePath;
 }
 
 /****************************************/

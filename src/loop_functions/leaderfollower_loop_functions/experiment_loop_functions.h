@@ -23,6 +23,8 @@ public:
    virtual CColor GetFloorColor(const CVector2& c_position_on_plane);
    virtual void PreStep();
    virtual void PostStep();
+   virtual bool IsLogging();
+   virtual std::string GetCommandFilePath();
 
 private:
 
@@ -38,11 +40,17 @@ private:
    /* Output file */
    bool m_bLogging;
    std::string m_strOutput;
+   std::string m_strDirPath;
+   std::string m_strBinaryFilePath;
+   std::string m_strCommandFilePath;
    std::fstream m_cOutput;
 
    /* Frame Grabbing */
    bool m_bFrameGrabbing;
    UInt32 m_unCameraIndex;
+
+   /* Init logging */
+   void InitLogging();
 
    /* Init robots */
    void InitRobots();

@@ -12,6 +12,10 @@ CManualControlWebvizUserFunctions::CManualControlWebvizUserFunctions() {
     m_pcExperimentLoopFunctions = static_cast<CExperimentLoopFunctions *>(
         &CSimulator::GetInstance().GetLoopFunctions());
 
+    m_bLogging = m_pcExperimentLoopFunctions->IsLogging();
+    if(m_bLogging)
+        m_strCommandFilePath = m_pcExperimentLoopFunctions->GetCommandFilePath();
+
     RegisterWebvizUserFunction<CManualControlWebvizUserFunctions, CEPuckLeaderEntity>(
         &CManualControlWebvizUserFunctions::sendLeaderData);
 

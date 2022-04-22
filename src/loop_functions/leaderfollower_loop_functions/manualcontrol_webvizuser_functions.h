@@ -15,6 +15,7 @@
 #include <controllers/follower/follower.h>
 
 #include <iostream>
+#include <fstream>
 
 using namespace argos;
 
@@ -56,6 +57,9 @@ class CManualControlWebvizUserFunctions : public CWebvizUserFunctions {
          * Key is the robot ID. Value is client ID.
          */
         std::map<std::string, ClientData> m_pcClientRobotConnections;
+
+        bool m_bLogging;
+        std::string m_strCommandFilePath;
 };
 
 #endif
