@@ -42,6 +42,7 @@ private:
    std::string m_strOutput;
    std::string m_strDirPath;
    std::string m_strBinaryFilePath;
+   std::string m_strSummaryFilePath;
    std::string m_strCommandFilePath;
    std::fstream m_cOutput;
 

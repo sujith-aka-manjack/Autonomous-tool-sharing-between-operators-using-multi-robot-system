@@ -60,7 +60,7 @@ class SimData:
 
 def main():
 
-    path = '../../results/result.pb'
+    path = '../../results/user_study_scenario1_order1/user_study_scenario1_order1_001/log_data.pb'
     s = SimData(path)
 
     print(s.totalTime)
@@ -68,7 +68,7 @@ def main():
     print(s.numWorkers)
     print(s.numTasks)
     print(s.totalDemand)
-
+    # print(s.data)
 
 if __name__ == "__main__":
     main()

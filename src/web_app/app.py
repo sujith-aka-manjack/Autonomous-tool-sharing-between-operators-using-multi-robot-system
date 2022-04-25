@@ -9,7 +9,9 @@ from worker import SimulationProcess, WebClientProcess
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
 SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
-SCENARIO_TRIAL1 = "experiments/test/test_user_study.argos"
+SCENARIO_TESTTRIAL = "experiments/test/test_user_study.argos"
+SCENARIO_TRIAL1 = "experiments/user_study_scenario1_order2.argos"
+SCENARIO_TRIAL2 = "experiments/user_study_scenario2.argos"
 
 # Local machine IP address
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -33,6 +33,7 @@ static const UInt32      MAX_PLACE_TRIALS = 20;
 static const UInt32      MAX_ROBOT_TRIALS = 20;
 
 static const std::string BINARY_FILENAME   = "log_data.pb";
+static const std::string SUMMARY_FILENAME  = "summary.csv";
 static const std::string COMMAND_FILENAME  = "commands.csv";
 
 /****************************************/
@@ -455,11 +456,10 @@ bool CExperimentLoopFunctions::IsLogging() {
 
 void CExperimentLoopFunctions::InitLogging() {
     
-    // TODO
-        // Get list of directories in passed dir path
-        // Keep looping while number exists
-        // Determine dir name for this experiment
-        // Store dir name
+    /* 
+    * Create new directory to store the logs
+    */ 
+
     std::string dir_name = m_strOutput;
 
     /* Get the experiment directory name */
@@ -486,28 +486,37 @@ void CExperimentLoopFunctions::InitLogging() {
     std::string dir_parent_name = oss.str();
     
     /* Loop directory to see what experiment number to append to dir_name */
-    std::vector<std::string> r;
-    for(auto& p : fs::recursive_directory_iterator(dir_parent_name))
-        if (p.is_directory()) {
-            if(p.path().string().find(dir_name) != std::string::npos)
-                r.push_back(p.path().string());
-        }
-
-    /* Append experiment number */
-    if(r.size() < 10) {
-        dir_name.append("_00");
-    } else if(r.size() < 100) {
-        dir_name.append("_0");
-    } else {
-        dir_name.append("_");
-    }
-    dir_name.append(std::to_string(r.size() + 1));
-
-    /* Create directory */
     oss.str("");
     oss << dir_parent_name << dir_name << "/";
     m_strDirPath = oss.str();
-    fs::create_directory(m_strDirPath);
+    std::vector<std::string> r;
+
+    if(fs::exists(m_strDirPath)) {
+        for(auto& p : fs::recursive_directory_iterator(m_strDirPath)) {
+            if (p.is_directory()) {
+                if(p.path().string().find(dir_name) != std::string::npos)
+                    r.push_back(p.path().string()); // Count
+            }
+        }
+    }
+    
+    std::string new_dir_name = dir_name;
+
+    /* Append experiment number */
+    if(r.size() < 10) {
+        new_dir_name.append("_00");
+    } else if(r.size() < 100) {
+        new_dir_name.append("_0");
+    } else {
+        new_dir_name.append("_");
+    }
+    new_dir_name.append(std::to_string(r.size() + 1));
+
+    /* Create directory */
+    oss.str("");
+    oss << dir_parent_name << dir_name << "/" << new_dir_name << "/";
+    m_strDirPath = oss.str();
+    fs::create_directories(m_strDirPath);
     std::cout << "Created " << m_strDirPath << std::endl;
 
     /* Set output file names */
@@ -516,11 +525,26 @@ void CExperimentLoopFunctions::InitLogging() {
     m_strBinaryFilePath = oss.str();
 
     oss.str("");
+    oss << m_strDirPath << SUMMARY_FILENAME;
+    m_strSummaryFilePath = oss.str();
+
+    oss.str("");
     oss << m_strDirPath << COMMAND_FILENAME;
     m_strCommandFilePath = oss.str();
 
     // std::cout << m_strBinaryFilePath << std::endl;
     // std::cout << m_strCommandFilePath << std::endl;
+
+    /* 
+    * Log experiment summary data
+    */
+
+    /* Write to file */
+    m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+    m_cOutput << "SCENARIO_NAME," << new_dir_name << "\n";
+    m_cOutput << "SEED," << (int)CSimulator::GetInstance().GetRandomSeed() << "\n";
+    m_cOutput << "MAX_SIMULATION_CLOCK," << (int)CSimulator::GetInstance().GetMaxSimulationClock() << "\n";
+    m_cOutput.close();
 
 }
 
@@ -550,6 +574,8 @@ void CExperimentLoopFunctions::InitRobots() {
     TConfigurationNodeIterator itDistr;
     /* Number of teams */
     size_t unTeamCount = 0;
+    size_t unTotalLeaders = 0;
+    size_t unTotalWorkers = 0;
 
     /* Set the number of teams in the experiment */
     for(itDistr = itDistr.begin(&et_tree);
@@ -584,6 +610,9 @@ void CExperimentLoopFunctions::InitRobots() {
             GetNodeAttribute(tDistr, "density", fDensity);
             /* Place robots */
             PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
+
+            unTotalLeaders += unLeaders;
+            unTotalWorkers += unRobots;
 
             /* Get the waypoints node */
             std::queue<CVector2> waypoints; // Queue to provide to the robot
@@ -671,8 +700,20 @@ void CExperimentLoopFunctions::InitRobots() {
 
             /* Update robot count */
             unNextLeaderId += unLeaders;
+
+            // TODO: record the number of leader and worker robots
         } 
     }
+
+    if(m_bLogging) {
+        /* Write to file */
+        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+        m_cOutput << "TOTAL_LEADERS," << (int)unTotalLeaders << "\n";
+        m_cOutput << "TOTAL_WORKERS," << (int)unTotalWorkers << "\n";
+        m_cOutput << "TOTAL_ROBOTS," << (int)(unTotalLeaders + unTotalWorkers) << "\n";
+        m_cOutput.close();
+    }
+
 
     std::cout << "[LOG] Added robots" << std::endl;
 
@@ -690,6 +731,9 @@ void CExperimentLoopFunctions::InitTasks() {
 
     /* ID counts */
     UInt32 unNextTaskId = 1;
+    /* Meta data */
+    size_t unTotalTasks = 0;
+    UInt32 unTaskDemand = 0; 
     /* Get the teams node */
     TConfigurationNode& ts_tree = GetNode(config, "tasks");
     /* Go through the nodes (tasks) */
@@ -750,6 +794,17 @@ void CExperimentLoopFunctions::InitTasks() {
 
         /* Update task count */
         unNextTaskId++;
+
+        unTotalTasks++;
+        unTaskDemand += unDemand;
+    }
+
+    if(m_bLogging) {
+        /* Write to file */
+        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+        m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
+        m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
+        m_cOutput.close();
     }
 
     std::cout << "[LOG] Added tasks" << std::endl;
