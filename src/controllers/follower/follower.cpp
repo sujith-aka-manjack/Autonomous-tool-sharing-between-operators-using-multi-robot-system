@@ -1810,7 +1810,7 @@ void CFollower::AdjustPosition() {
     CVector2 attractForce  = GetConnectorAttractVector();
     CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
     CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = 1 * attractForce + 40 * robotForce + 15 * obstacleForce;
+    CVector2 sumForce      = 2 * attractForce + 40 * robotForce + 15 * obstacleForce;
 
     /* Set Wheel Speed */
     if(sumForce.Length() > 1.0f)
