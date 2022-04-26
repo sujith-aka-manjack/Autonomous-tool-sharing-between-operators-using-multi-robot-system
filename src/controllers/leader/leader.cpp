@@ -141,7 +141,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
     }
-    std::cout << m_strSCTPath << std::endl;
+    // std::cout << m_strSCTPath << std::endl;
 
     /* Get team ID from leader ID */
     teamID = stoi(GetId().substr(1));

@@ -42,7 +42,8 @@ static const std::string COMMAND_FILENAME  = "commands.csv";
 CExperimentLoopFunctions::CExperimentLoopFunctions() :
     m_pcFloor(NULL),
     m_pcRNG(NULL),
-    m_bTaskExists(false) {
+    m_bTaskExists(false),
+    m_bTaskComplete(true) {
 }
 
 /****************************************/
@@ -103,6 +104,23 @@ void CExperimentLoopFunctions::Reset() {
 /****************************************/
 
 void CExperimentLoopFunctions::Destroy() {
+    int final_time = GetSpace().GetSimulationClock();
+    std::cout << "[LOG] Final Timestep: " << final_time << std::endl;
+    
+    if(m_bLogging) {
+        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+        m_cOutput << "\n";
+        m_cOutput << "FINISH_TIME," << final_time << "\n";
+        if(m_bTaskComplete) {
+            m_cOutput << "TASK_STATUS,FINISHED" << "\n";
+            std::cout << "[LOG] Task Status: FINISHED" << std::endl;
+        } else {
+            m_cOutput << "TASK_STATUS,UNFINISHED" << "\n";
+            std::cout << "[LOG] Task Status: UNFINISHED" << std::endl;
+        }
+        m_cOutput.close();
+    }
+    
     std::cout << "DESTROY called" << std::endl;
 }
 
@@ -437,10 +455,12 @@ void CExperimentLoopFunctions::PostStep() {
         }
     }
 
+    /* Terminate simulation when all tasks are complete */
     if(m_bTaskExists && total_demand == 0) {
-        CSimulator::GetInstance().Terminate();
+        m_bTaskComplete = true;
         std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
+        CSimulator::GetInstance().Terminate();
     }
 }
 
@@ -503,9 +523,9 @@ void CExperimentLoopFunctions::InitLogging() {
     std::string new_dir_name = dir_name;
 
     /* Append experiment number */
-    if(r.size() < 10) {
+    if(r.size() < 9) {
         new_dir_name.append("_00");
-    } else if(r.size() < 100) {
+    } else if(r.size() < 99) {
         new_dir_name.append("_0");
     } else {
         new_dir_name.append("_");
@@ -743,6 +763,7 @@ void CExperimentLoopFunctions::InitTasks() {
         ++itDistr) {
 
         m_bTaskExists = true;
+        m_bTaskComplete = false;
 
         // /* Get current node (task) */
         // TConfigurationNode& tDistr = *itDistr;

@@ -17,7 +17,7 @@ void Message::SetTeamCount(size_t num_team) {
     */
 
     messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 10) + 60 + 1;
-    std::cout << int(messageByteSize) << std::endl;
+    // std::cout << int(messageByteSize) << std::endl;
 }
 
 /****************************************/

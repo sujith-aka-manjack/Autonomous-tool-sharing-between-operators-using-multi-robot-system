@@ -16,16 +16,19 @@ cd $PROJECT_DIR
 #     done
 # done
 
-CONFIG=user_study_scenario1
+CONFIG=user_study
 SCENARIO_DIR=$PROJECT_DIR/experiments
 
 cd $PROJECT_DIR
 
-for order in 1 2
+for scenario in 1 2
 do
-    for i in {1..3}
+    for order in 1 #2
     do
-        echo $i
-        argos3 -c $SCENARIO_DIR/${CONFIG}_order${order}.argos
+        for i in {1..10}
+        do
+            echo $i
+            argos3 -c $SCENARIO_DIR/${CONFIG}_scenario${scenario}_order${order}.argos
+        done
     done
 done

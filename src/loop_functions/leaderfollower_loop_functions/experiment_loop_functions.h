@@ -35,6 +35,7 @@ private:
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
    bool m_bTaskExists;
+   bool m_bTaskComplete;
    std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
 
    /* Output file */
