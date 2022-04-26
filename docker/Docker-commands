@@ -124,6 +124,10 @@ mkdir /home/docker/argos-sct/results
 # To redirect ports
 docker run --name argos -it -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results genki15/argos-sct
 
+# Complete starup command
+docker run --name argos -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results genki15/argos-sct -w /home/docker/argos-sct python3 src/web_app/app.py
+docker run --name argos-test -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results -w /home/docker/argos-sct argos-test python3 src/web_app/app.py
+
 # To open new terminal
 docker exec -it argos bash
 

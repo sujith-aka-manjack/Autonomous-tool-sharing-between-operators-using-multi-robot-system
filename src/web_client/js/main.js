@@ -554,6 +554,7 @@ var onAllFilesLoaded = function () {
                     'pause_button',
                     'ff_button',
                     'ff_steps_input',
+                    'reset_button',
                     'name_divider', 
                     'name_label', 
                     'username_label'

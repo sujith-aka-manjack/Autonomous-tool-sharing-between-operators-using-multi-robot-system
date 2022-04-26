@@ -94,7 +94,7 @@ RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/a
     rm -rf argos3-webviz
 
 # Install argos-sct
-RUN git clone -b development https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
+RUN git clone -b test-user-study https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
     cd /home/docker/argos-sct && \
     mkdir results && \
     mkdir build && \
