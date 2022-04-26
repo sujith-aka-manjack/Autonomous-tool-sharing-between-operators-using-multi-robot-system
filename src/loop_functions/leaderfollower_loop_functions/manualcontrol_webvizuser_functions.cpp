@@ -136,10 +136,10 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     
                     /* Tell the e-puck to send a task signal */
                     if(signal == "start") {
-                        std::cout << "[LOG]: (" << cController.GetId() << ") sending START task signal" << std::endl;
+                        std::cout << "[LOG] (" << cController.GetId() << ") sending START task signal" << std::endl;
                         cController.SetSignal(true);
                     } else if(signal == "stop") {
-                        std::cout << "[LOG]: (" << cController.GetId() << ") sending STOP task signal" << std::endl;
+                        std::cout << "[LOG] (" << cController.GetId() << ") sending STOP task signal" << std::endl;
                         cController.SetSignal(false);
                     }
 
@@ -236,7 +236,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
 
                             if(cController.GetId() == target) {
                                 cController.SetUsername(username);
-                                std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                                std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
                                 break;
                             }
                         }
@@ -274,7 +274,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     }
 
                     value = ClientData();
-                    std::cout << "[LOG]: (" << key << ") released" << std::endl;
+                    std::cout << "[LOG] (" << key << ") released" << std::endl;
                 }
             }
 
@@ -302,7 +302,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     newClient.username = username;
                     m_pcClientRobotConnections[target] = newClient;
 
-                    std::cout << "[LOG]: (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                    std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
                 }
             }
         }
@@ -388,7 +388,7 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendFollowerData(CEPuckE
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
-    std::cout << "Adding client " << str_id << std::endl;
+    std::cout << "[LOG] Adding client " << str_id << std::endl;
 
     /* Create entry for connected client */
     m_pcClientPointerToId[str_id] = ClientData();
@@ -398,7 +398,7 @@ void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
-    std::cout << "Disconnected " << str_id << std::endl;
+    std::cout << "[LOG] Disconnected " << str_id << std::endl;
 
     /* Release any robots that were selected by this client */
     for(auto& [key, value] : m_pcClientRobotConnections) {

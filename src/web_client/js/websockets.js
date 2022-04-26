@@ -195,7 +195,10 @@
           animate();
         }
       } else if (data.type == "log") {
-        if (data.messages) {
+        if (data.messages && data.timestamp > window.logLatestTime) {
+          console.log(data);
+          window.logLatestTime = data.timestamp;
+
           var log_ = [], logerr_ = [];
           for (let i = 0; i < data.messages.length; i++) {
             if (data.messages[i].log_type == 'LOG') {
@@ -212,11 +215,9 @@
                 /* Get robot id */
                 message_content = data.messages[i].log_message.split('}')[1];
                 robot_id = data.messages[i].log_message.split('}')[0].split('{')[1];
-                console.log(robot_id);
 
                 /* Get message type */
                 message_type = data.messages[i].log_message.split('}')[1].split(']')[0].split('[')[1];
-                console.log(message_type);
 
                 if(message_type == 'REQUEST') {
                   text_color = 'rgb(255,0,0)';
@@ -225,10 +226,36 @@
                 }
               }
 
-              if(robot_id == '' || robot_id == window.target) {
+              if(window.mode == Mode.DEBUG) {
+
+                /* In DEBUG mode */
+
                 log_.unshift("<div class='log'><pre><span class='b'>[t=" +
                   data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
                   message_content + "</span></pre></div>");
+
+              } else {
+
+                /* Not in DEBUG mode */
+
+                if(data.messages[i].log_message.startsWith('[LOG]') || window.target == '') {
+
+                  /* Print all [LOG] and leader messages */
+
+                  log_.unshift("<div class='log'><pre><span class='b'>[t=" +
+                    data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                    message_content + "</span></pre></div>");
+
+                } else {
+
+                  /* Print messages from the specific leader that the user is controlling */
+
+                  if(robot_id == window.target && window.target != '') {
+                    log_.unshift("<div class='log'><pre><span class='b'>[t=" +
+                      data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                      message_content + "</span></pre></div>");
+                  }
+                }
               }
               
             } else {

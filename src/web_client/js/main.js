@@ -44,6 +44,8 @@ var onAllFilesLoaded = function () {
   window.targetChanged = false;
   window.connected = false; // Connected to a robot
 
+  window.logLatestTime = 0; // The latest time a log message was received
+
   /* On Jquery load */
   $(function () {
     /* main panel-layout of the page */
