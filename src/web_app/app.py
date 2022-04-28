@@ -6,6 +6,9 @@ from flask import Flask, render_template, request
 import socket
 from worker import SimulationProcess, WebClientProcess
 
+import os
+import os.path
+
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
 SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
@@ -18,6 +21,13 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 ip_addr = s.getsockname()[0]
 simulation_link = "{}:8000".format(ip_addr)
+
+# Store IP address
+if(not os.path.isdir('results')):
+    os.mkdir('results')
+f = open('results/ip_address.txt', 'w')
+f.write(ip_addr)
+f.close()
 
 # Currently running simulation scenario
 proc_simulation = None
