@@ -107,19 +107,19 @@ void CExperimentLoopFunctions::Destroy() {
     int final_time = GetSpace().GetSimulationClock();
     std::cout << "[LOG] Final Timestep: " << final_time << std::endl;
     
-    if(m_bLogging) {
-        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-        m_cOutput << "\n";
-        m_cOutput << "FINISH_TIME," << final_time << "\n";
-        if(m_bTaskComplete) {
-            m_cOutput << "TASK_STATUS,FINISHED" << "\n";
-            std::cout << "[LOG] Task Status: FINISHED" << std::endl;
-        } else {
-            m_cOutput << "TASK_STATUS,UNFINISHED" << "\n";
-            std::cout << "[LOG] Task Status: UNFINISHED" << std::endl;
-        }
-        m_cOutput.close();
-    }
+    // if(m_bLogging) {
+    //     m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+    //     m_cOutput << "\n";
+    //     m_cOutput << "FINISH_TIME," << final_time << "\n";
+    //     if(m_bTaskComplete) {
+    //         m_cOutput << "TASK_STATUS,FINISHED" << "\n";
+    //         std::cout << "[LOG] Task Status: FINISHED" << std::endl;
+    //     } else {
+    //         m_cOutput << "TASK_STATUS,UNFINISHED" << "\n";
+    //         std::cout << "[LOG] Task Status: UNFINISHED" << std::endl;
+    //     }
+    //     m_cOutput.close();
+    // }
     
     std::cout << "DESTROY called" << std::endl;
 }
@@ -457,7 +457,14 @@ void CExperimentLoopFunctions::PostStep() {
 
     /* Terminate simulation when all tasks are complete */
     if(m_bTaskExists && total_demand == 0) {
-        m_bTaskComplete = true;
+        int final_time = GetSpace().GetSimulationClock();
+        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+        m_cOutput << "\n";
+        m_cOutput << "FINISH_TIME," << final_time << "\n";
+        m_cOutput << "TASK_STATUS,FINISHED" << "\n";
+        m_cOutput.close();
+        std::cout << "[LOG] Task Status: FINISHED" << std::endl;
+        std::cout << "[LOG] Time Taken: " << final_time << std::endl;
         std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
         CSimulator::GetInstance().Terminate();
