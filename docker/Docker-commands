@@ -118,7 +118,7 @@ apt-get autoremove -y
 
 # Delete unnecessary files from github OR create a new branch that the Docker image accesses
 
-# Make directory to save experiment results
+# Make directory to save experiment results (No need to do this inside docker container if using the web_app)
 mkdir /home/docker/argos-sct/results
 
 # To redirect ports
@@ -126,7 +126,7 @@ docker run --name argos -it -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/dock
 
 # Complete starup command
 docker run --name argos -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results genki15/argos-sct -w /home/docker/argos-sct python3 src/web_app/app.py
-docker run --name argos-test -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/docker/argos-sct/results -w /home/docker/argos-sct argos-test python3 src/web_app/app.py
+docker run --name argos-test -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v $(pwd)/backup:/home/docker/argos-sct/results -w /home/docker/argos-sct argos-test python3 src/web_app/app.py
 
 # To open new terminal
 docker exec -it argos bash
@@ -135,10 +135,10 @@ docker exec -d -w /home/docker/argos-sct argos python3 src/scripts/app/app.py
 
 # To export data to local machine
 docker volume create testvol
-docker run --rm --volumes-from cool_rhodes -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /home/docker/argos-sct/results
+docker run --rm --volumes-from argos -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /home/docker/argos-sct/results
 
 # To build an image from a Dockerfile
-docker build --no-cache .
+docker build -t argos . --no-cache
 
 ### TESTING
 

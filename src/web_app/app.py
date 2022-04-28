@@ -23,11 +23,11 @@ ip_addr = s.getsockname()[0]
 simulation_link = "{}:8000".format(ip_addr)
 
 # Store IP address
-if(not os.path.isdir('results')):
-    os.mkdir('results')
-f = open('results/ip_address.txt', 'w')
-f.write(ip_addr)
-f.close()
+# if(not os.path.isdir('results')):
+#     os.mkdir('results')
+# f = open('results/ip_address.txt', 'w')
+# f.write(ip_addr)
+# f.close()
 
 # Currently running simulation scenario
 proc_simulation = None
