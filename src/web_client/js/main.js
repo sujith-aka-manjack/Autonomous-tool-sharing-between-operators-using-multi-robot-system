@@ -596,7 +596,7 @@ loadJS("/js/libs/websocket-as-promised.js", true); /* basic websockets */
 loadJS("/js/libs/robust-websocket.js", true); /* auto Reconnect */
 
 /* Load Three.js code */
-loadJS("/js/libs/three.min.js", true);
+// loadJS("/js/libs/three.min.js", true);
 loadJS("/js/libs/OrbitControls.js", true);
 
 loadJS("/js/libs/CSS2DRenderer.js", true);
@@ -609,7 +609,7 @@ loadJS("/js/libs/three.text-texture.js", true);
 loadJS("/js/libs/three.text-sprite.js", true);
 
 // From https://www.npmjs.com/package/three-mesh-ui
-loadJS("/js/libs/three-mesh-ui.js", true);
+// loadJS("/js/libs/three-mesh-ui.js", true);
 
 /* Load fabric code */
 loadJS("/js/libs/fabric.min.js", true);

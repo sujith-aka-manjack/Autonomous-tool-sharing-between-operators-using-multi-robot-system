@@ -215,7 +215,7 @@ function initSceneWithScale(_scale) {
     fontColor: new THREE.Color(0xffffff),
     fontSupersampling: true,
     backgroundOpacity: 0,
-    alignContent: 'left',
+    alignItems: 'start',
   });
   mainContainer.position.set( -window.threejs_panel.width() / 2 + 180, window.threejs_panel.height() / 2 - 110, 0 );
   sceneOrtho.add(mainContainer);
@@ -223,6 +223,8 @@ function initSceneWithScale(_scale) {
   /* User Block */
 
   const userContainer = new ThreeMeshUI.Block({
+    width: 350,
+    height: 115,
     margin: 5,
     padding: 5,
     contentDirection: "row",
@@ -267,9 +269,9 @@ function initSceneWithScale(_scale) {
     /* User Info Block */
 
   const userInfoContainer = new ThreeMeshUI.Block({
-    margin: 2,
+    margin: 4,
     contentDirection: "column",
-    alignContent: 'left',
+    alignItems: 'start',
     backgroundOpacity: 0,
     borderOpacity: 0,
     borderWidth: 1,
@@ -282,17 +284,19 @@ function initSceneWithScale(_scale) {
   const userTopContainer = new ThreeMeshUI.Block({
     contentDirection: "row",
     backgroundOpacity: 0,
-    fontSize: 24,
+    fontSize: 28,
   });
   userInfoContainer.add(userTopContainer);
 
       /* User Name Block */
 
   const userNameContainer = new ThreeMeshUI.Block({
-    width: 80,
+    width: 95,
     height: 40,
+    margin: 2,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
+    textAlign: 'left',
     backgroundOpacity: 0,
     borderRadius: 0,
   });
@@ -316,7 +320,7 @@ function initSceneWithScale(_scale) {
     width: 160,
     height: 20,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0,
     borderRadius: 0,
   });
@@ -336,7 +340,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     contentDirection: "row",
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 28,
     backgroundOpacity: 0,
   });
@@ -354,7 +358,7 @@ function initSceneWithScale(_scale) {
     width: 70,
     height: 40,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 36,
     backgroundOpacity: 0,
   });
@@ -366,7 +370,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     // margin: 10,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 32,
     backgroundOpacity: 0,
   });
@@ -382,7 +386,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     // margin: 10,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 36,
     backgroundOpacity: 0,
   });
@@ -394,7 +398,7 @@ function initSceneWithScale(_scale) {
   const userTaskContainer = new ThreeMeshUI.Block({
     // margin: 10,
     contentDirection: "row",
-    // alignContent: 'left',
+    // alignItems: 'start',
     backgroundOpacity: 0,
   });
   userInfoContainer.add(userTaskContainer);
@@ -407,9 +411,9 @@ function initSceneWithScale(_scale) {
   const userProgressBarContainer = new ThreeMeshUI.Block({
     width: window.progressBarWidth,
     height: 20,
-    // margin: 10,
+    margin: 2,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0,
   });
   userTaskContainer.add(userProgressBarContainer);
@@ -420,7 +424,7 @@ function initSceneWithScale(_scale) {
     margin: 0,
 		padding: 0,
 		justifyContent: 'center',
-		alignContent: 'left',
+		alignItems: 'start',
     backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
     backgroundOpacity: 1,
     borderWidth: 0,
@@ -446,7 +450,8 @@ function initSceneWithScale(_scale) {
     height: 30,
     // margin: 10,
     justifyContent: 'center',
-    alignContent: 'right',
+    alignItems: 'end',
+    textAlign: 'right',
     backgroundOpacity: 0,
     fontSize: 20,
   });
@@ -517,7 +522,7 @@ function initSceneWithScale(_scale) {
   const otherUserInfoContainer = new ThreeMeshUI.Block({
     margin: 2,
     contentDirection: "column",
-    alignContent: 'left',
+    alignItems: 'start',
     backgroundOpacity: 0,
     borderOpacity: 0,
     borderWidth: 1,
@@ -540,7 +545,7 @@ function initSceneWithScale(_scale) {
     width: 80,
     height: 40,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0,
     borderRadius: 0,
   });
@@ -564,7 +569,7 @@ function initSceneWithScale(_scale) {
     width: 160,
     height: 20,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0,
     borderRadius: 0,
   });
@@ -584,7 +589,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     contentDirection: "row",
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 28,
     backgroundOpacity: 0,
   });
@@ -602,7 +607,7 @@ function initSceneWithScale(_scale) {
     width: 70,
     height: 40,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 28,
     backgroundOpacity: 0,
   });
@@ -613,7 +618,7 @@ function initSceneWithScale(_scale) {
     width: 15,
     height: 40,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 28,
     backgroundOpacity: 0,
   });
@@ -628,7 +633,7 @@ function initSceneWithScale(_scale) {
     width: 70,
     height: 40,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 28,
     backgroundOpacity: 0,
   });
@@ -647,7 +652,7 @@ function initSceneWithScale(_scale) {
     fontColor: new THREE.Color(0xffffff),
     fontSupersampling: true,
     contentDirection: "row",
-    // alignContent: 'left',
+    // alignItems: 'start',
     backgroundOpacity: 0.9,
     borderRadius: [0, 0, 0, 30],
 		borderWidth: 4,
@@ -676,7 +681,7 @@ function initSceneWithScale(_scale) {
     height: 20,
     margin: 0,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0,
     // borderRadius: [0, 50, 0, 50],
     borderWidth: 1,
@@ -699,7 +704,7 @@ function initSceneWithScale(_scale) {
     width: 70,
     height: 60,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 36,
     backgroundOpacity: 0,
     borderOpacity: 1,
@@ -721,7 +726,7 @@ function initSceneWithScale(_scale) {
 
   const sendToggleContainer = new ThreeMeshUI.Block({
     margin: 0,
-    alignContent: 'right',
+    alignItems: 'end',
     backgroundOpacity: 0.1,
     borderRadius: 0,
     borderWidth: 1,
@@ -757,7 +762,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     margin: 5,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 32,
     borderRadius: 20,
     borderOpacity: 1,
@@ -778,7 +783,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     margin: 5,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 36,
     borderRadius: 20,
     borderOpacity: 1,
@@ -835,7 +840,7 @@ function initSceneWithScale(_scale) {
 
   const sendConfirmContainer = new ThreeMeshUI.Block({
     margin: 10,
-    alignContent: 'center',
+    alignItems: 'center',
     backgroundOpacity: 0.1,
     borderRadius: 0,
     borderWidth: 1,
@@ -853,7 +858,7 @@ function initSceneWithScale(_scale) {
       height: 40,
       margin: 5,
       justifyContent: 'center',
-      alignContent: 'center',
+      alignItems: 'center',
       fontSize: 20,
       borderRadius: 15,
       borderOpacity: 1,
@@ -891,7 +896,7 @@ function initSceneWithScale(_scale) {
     height: 40,
     margin: 5,
     justifyContent: 'center',
-    alignContent: 'center',
+    alignItems: 'center',
     fontSize: 20,
     borderRadius: 15,
     borderOpacity: 1,
@@ -940,7 +945,7 @@ function initSceneWithScale(_scale) {
   //   backgroundOpacity: 0.1,
   //   borderWidth: 1,
   //   borderOpacity: 0,
-  //   alignContent: 'left',
+  //   alignItems: 'start',
   // });
   // signalContainer.position.set( window.threejs_panel.width() / 2 - 180, window.threejs_panel.height() / 2 - 110, 0 );
   // sceneOrtho.add(signalContainer);
@@ -950,7 +955,7 @@ function initSceneWithScale(_scale) {
   //   height: 20,
   //   margin: 5,
   //   justifyContent: 'center',
-  //   alignContent: 'center',
+  //   alignItems: 'center',
   //   backgroundOpacity: 0,
   //   borderOpacity: 1,
   //   borderRadius: 1,
@@ -971,7 +976,7 @@ function initSceneWithScale(_scale) {
   //   height: 20,
   //   margin: 10,
   //   justifyContent: 'center',
-  //   alignContent: 'center',
+  //   alignItems: 'center',
   //   backgroundOpacity: 0,
   //   borderWidth: 2,
   // });
@@ -983,7 +988,7 @@ function initSceneWithScale(_scale) {
   //   // margin: 5,
   //   padding: 0,
   //   justifyContent: 'center',
-  //   alignContent: 'left',
+  //   alignItems: 'start',
   //   backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
   //   backgroundOpacity: 1,
   //   borderOpacity: 1,
@@ -998,7 +1003,7 @@ function initSceneWithScale(_scale) {
   //   height: 60,
   //   margin: 5,
   //   justifyContent: 'center',
-  //   alignContent: 'center',
+  //   alignItems: 'center',
   //   fontSize: 24,
   //   borderOpacity: 1,
   //   borderWidth: 1,

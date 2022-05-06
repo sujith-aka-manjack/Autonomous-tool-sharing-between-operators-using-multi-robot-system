@@ -26,7 +26,7 @@
       </actuators>
       <sensors>
         <proximity implementation="default" show_rays="false" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="false" />
         <positioning implementation="default" />
       </sensors>
       <params>
@@ -60,7 +60,7 @@
         <proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium"
                            medium="rab"
-                           show_rays="true"/> 
+                           show_rays="false"/> 
       </sensors>
       <params>
         <wheel_turning hard_turn_angle_threshold="90"
@@ -112,7 +112,7 @@
 
     <!-- Tasks that the teams must complete -->
     <tasks>
-      <task position="1.5, 2.25" width="1" height="0.9" minimum_robot_num="10" maximum_robot_num="100" task_demand="500" />
+      <task position="1.5, 2.25" width="1" height="0.9" minimum_robot_num="8" maximum_robot_num="100" task_demand="500" />
       <!-- <task position="1.5, 0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
       <!-- <task position="1.5, -0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
       <task position="1.5, -2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
