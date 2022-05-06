@@ -1262,12 +1262,15 @@ void CLeader::Callback_Message(void* data) {
 
     
     // DEBUG
-    if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
-        beat.type = 'R';
-        beat.robot_num = robotsNeeded - currentFollowerCount;
-        std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num << " robots..." << std::endl;
-        requestSent = true;
+    if( !m_bSelected ) {
+        if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
+            beat.type = 'R';
+            beat.robot_num = robotsNeeded - currentFollowerCount;
+            std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num << " robots..." << std::endl;
+            requestSent = true;
+        }
     }
+    
 
     /* User Signal */
     if(numRobotsToRequest > 0) {
