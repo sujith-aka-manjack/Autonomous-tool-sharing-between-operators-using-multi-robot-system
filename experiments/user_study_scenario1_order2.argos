@@ -44,7 +44,8 @@
                        exponent="2" />
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
-        <timeout send_message="4" />
+        <timeout send_message="4"
+                 send_robot_delay="50" />
         <SCT path="src/SCT_models/leader_exchange.yaml" />
       </params>
     </leader_controller>
@@ -220,10 +221,10 @@
         Default: false
         
       -->
-    <!-- <webviz>
+    <webviz>
       <user_functions library="build/loop_functions/leaderfollower_loop_functions/libleaderfollower_loop_functions" 
                       label="manualcontrol_webvizuser_functions" />
-    </webviz> -->
+    </webviz>
 
     <!-- <qt-opengl autoplay="false">
 

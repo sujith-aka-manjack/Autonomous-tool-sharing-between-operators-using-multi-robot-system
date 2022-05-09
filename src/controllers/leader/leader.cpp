@@ -135,6 +135,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "team_distance"), "separation_threshold", separationThres);
         /* Minimum duration the accept message will be sent for */
         GetNodeAttribute(GetNode(t_node, "timeout"), "send_message", sendDuration);
+        /* Time to wait between sending each robot */
+        GetNodeAttribute(GetNode(t_node, "timeout"), "send_robot_delay", sendRobotDelay);
         /* SCT Model */
         GetNodeAttribute(GetNode(t_node, "SCT"), "path", m_strSCTPath);
     }
@@ -146,6 +148,9 @@ void CLeader::Init(TConfigurationNode& t_node) {
     /* Get team ID from leader ID */
     teamID = stoi(GetId().substr(1));
 
+    float timeInSeconds = sendRobotDelay / 10.0;
+    sendRobotDelay = (size_t)ceil(timeInSeconds) * 10;
+
     /* Initialization */
     currentState = RobotState::LEADER;
     inputStart = true; // Make leader always send start signal for now
@@ -156,6 +161,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     numOtherFollower = -1;
     shareToTeam = "";
     initStepTimer = 0;
+    robotLastSentTime = 0;
     acceptID = "";
     lastSent = -1;
     lastBeatTime = 0;
@@ -1334,13 +1340,15 @@ void CLeader::Callback_Exchange(void* data) {
 
     if( !switchCandidate.empty() ) {
         
-        robotToSwitch = switchCandidate;
-
         /* Signal a follower to switch to the other team */
         if(!decremented) {
-            numRobotsRemainingToSend--;
-            decremented = true;
-            std::cout << "[" << this->GetId() << "] Send " << robotToSwitch << " to team " << teamToJoin << std::endl; 
+            if(initStepTimer - robotLastSentTime > sendRobotDelay) {
+                robotToSwitch = switchCandidate;
+                numRobotsRemainingToSend--;
+                decremented = true;
+                robotLastSentTime = initStepTimer;
+                std::cout << "[" << this->GetId() << "] Send " << robotToSwitch << " to team " << teamToJoin << std::endl;
+            }
         }
 
     } else {

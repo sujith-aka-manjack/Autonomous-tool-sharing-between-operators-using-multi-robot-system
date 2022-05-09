@@ -483,6 +483,9 @@ private:
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;
 
+    /* Timer to count the number of messages to send before sending the next robot */
+    size_t robotLastSentTime;
+
     /* Team switch variables */
     int numRobotsToSend;
     int numRobotsRemainingToSend;
@@ -498,8 +501,6 @@ private:
 
     std::string acceptID;
 
-    // bool requestReceived; // request to send robots
-
     /*
     * The following variables are used as parameters for the
     * algorithm. You can set their value in the <parameters> section
@@ -513,6 +514,7 @@ private:
     Real separationThres;
 
     size_t sendDuration;
+    size_t sendRobotDelay;
 
     /* SCT yaml path */
     std::string m_strSCTPath;
