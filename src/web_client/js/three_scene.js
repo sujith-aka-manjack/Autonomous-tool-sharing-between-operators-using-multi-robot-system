@@ -420,7 +420,7 @@ function initSceneWithScale(_scale) {
 
   const progressBar = new ThreeMeshUI.Block({
 		width: window.progressBarWidth,
-		height: 10,
+		height: 15,
     margin: 0,
 		padding: 0,
 		justifyContent: 'center',
@@ -428,14 +428,14 @@ function initSceneWithScale(_scale) {
     backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
     backgroundOpacity: 1,
     borderWidth: 0,
-    borderRadius: 5,
+    borderRadius: 10,
 	});
   userProgressBarContainer.add(progressBar);
 
   /* Progress bar foreground */
   window.progress = new ThreeMeshUI.Block({
     width: 0.001,
-    height: 10,
+    height: 15,
     margin: 0,
     padding: 0,
     backgroundColor: new THREE.Color( 0, 0.85, 0 ),

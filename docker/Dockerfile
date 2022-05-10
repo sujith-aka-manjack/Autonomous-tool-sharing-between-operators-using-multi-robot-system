@@ -65,6 +65,12 @@ RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/p
 # Install yaml
 RUN apt-get update && apt-get install -y libyaml-cpp-dev
 
+# Install Python3
+RUN apt-get install -y python3 pip
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir \
+    Flask
+
 # Install plugins for ARGoS
 RUN apt-get install -y nlohmann-json3-dev
 
@@ -94,6 +100,7 @@ RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/a
     rm -rf argos3-webviz
 
 # Install argos-sct
+ADD "https://gitlab.com/api/v4/projects/25559649/repository/branches/test-user-study" latest_info
 RUN git clone -b test-user-study https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
     cd /home/docker/argos-sct && \
     mkdir results && \
@@ -113,12 +120,6 @@ RUN git clone -b test-user-study https://gitlab.com/genki_miyauchi/argos-sct.git
     src/protos \
     src/utility \
     src/scripts
-
-# Install Python3
-RUN apt-get install -y python3 pip
-RUN pip3 install --upgrade pip && \
-    pip3 install --no-cache-dir \
-    Flask
 
 RUN apt-get autoremove -y &&\
     apt-get clean &&\
