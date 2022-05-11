@@ -45,7 +45,7 @@
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
         <timeout send_message="4"
-                 send_robot_delay="50" />
+                 send_robot_delay="30" />
         <SCT path="src/SCT_models/leader_exchange.yaml" />
       </params>
     </leader_controller>
