@@ -136,10 +136,10 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     
                     /* Tell the e-puck to send a task signal */
                     if(signal == "start") {
-                        std::cout << "[LOG] (" << cController.GetId() << ") sending START task signal" << std::endl;
+                        std::cout << "[INFO] (" << cController.GetId() << ") sending START task signal" << std::endl;
                         cController.SetSignal(true);
                     } else if(signal == "stop") {
-                        std::cout << "[LOG] (" << cController.GetId() << ") sending STOP task signal" << std::endl;
+                        std::cout << "[INFO] (" << cController.GetId() << ") sending STOP task signal" << std::endl;
                         cController.SetSignal(false);
                     }
 
@@ -245,7 +245,7 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     continue;
                 } 
                 else if(clientInControl.id != "") { 
-                    std::cout << "[ERR]: (" << target << ") is already being controlled by " 
+                    std::cout << "[INFO]: (" << target << ") is already being controlled by " 
                             << clientInControl.username << " (" << clientInControl.id << ")" << std::endl;
                     continue;
                 }

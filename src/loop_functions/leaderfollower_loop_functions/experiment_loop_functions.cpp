@@ -122,6 +122,8 @@ void CExperimentLoopFunctions::Destroy() {
     // }
     
     std::cout << "DESTROY called" << std::endl;
+    CSimulator::GetInstance().Terminate();
+
 }
 
 /****************************************/
@@ -467,7 +469,7 @@ void CExperimentLoopFunctions::PostStep() {
         std::cout << "[LOG] Time Taken: " << final_time << std::endl;
         std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
-        CSimulator::GetInstance().Terminate();
+        this->Destroy();
     }
 }
 
