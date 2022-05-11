@@ -368,12 +368,16 @@ void CLeader::ControlStep() {
     }
 
     /* Set LED */
-    if(m_bSignal)
-        m_pcLEDs->SetAllColors(CColor::WHITE);
-    else {
-        // m_pcLEDs->SetAllColors(teamColor[teamID]);
+    // if(m_bSignal)
+    //     m_pcLEDs->SetAllColors(CColor::WHITE);
+    // else {
+    //     // m_pcLEDs->SetAllColors(teamColor[teamID]);
+    //     m_pcLEDs->SetAllColors(CColor::RED);
+    // }
+    if(m_bSelected)
         m_pcLEDs->SetAllColors(CColor::RED);
-    }
+    else
+        m_pcLEDs->SetAllColors(CColor::BLACK);
 
     /* Set Motion */
     if(initStepTimer > 4) {
@@ -960,8 +964,10 @@ void CLeader::CheckHeartBeat() {
                         std::cout << "{" << this->GetId() << "}[REQUEST] Received request to send " << numRobotsRequested << " robots" << std::endl;
 
                         // DEBUG
-                        numRobotsToSend = numRobotsRequested + 1;
-                        numRobotsRemainingToSend = numRobotsToSend;
+                        if( !m_bSelected ) {
+                            numRobotsToSend = numRobotsRequested + 1;
+                            numRobotsRemainingToSend = numRobotsToSend;
+                        }
 
                     } else if(beat.type == 'A') {
                         // std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
@@ -1276,7 +1282,6 @@ void CLeader::Callback_Message(void* data) {
             requestSent = true;
         }
     }
-    
 
     /* User Signal */
     if(numRobotsToRequest > 0) {

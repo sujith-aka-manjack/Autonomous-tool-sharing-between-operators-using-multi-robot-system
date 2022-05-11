@@ -448,10 +448,10 @@ void CFollower::ControlStep() {
                 if(msg.second.from == "L1")
                     relaying = true;
             }
-            if(relaying)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
-            else
-                m_pcLEDs->SetAllColors(teamColor[teamID]);
+            // if(relaying)
+            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
+            // else
+            m_pcLEDs->SetAllColors(teamColor[teamID]);
 
             // m_pcLEDs->SetAllColors(CColor::GREEN);
 
@@ -485,7 +485,7 @@ void CFollower::ControlStep() {
             // if(requesting)
             //     m_pcLEDs->SetAllColors(CColor::YELLOW);
             if(sending)
-                m_pcLEDs->SetAllColors(CColor::YELLOW);
+                m_pcLEDs->SetAllColors(CColor::WHITE);
             else
                 m_pcLEDs->SetAllColors(CColor::CYAN);
 
