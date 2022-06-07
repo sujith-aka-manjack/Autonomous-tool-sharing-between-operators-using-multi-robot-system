@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <title>Robot Swarm Experiment: Training</title>
+    <title>Robot Swarm Experiment: Trial 2</title>
   </head>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type=text/javascript>
@@ -18,7 +18,7 @@
               $.ajax({ 
                   url: '/background_process_start', 
                   type: 'POST', 
-                  data: 'training'
+                  data: 'trial2'
               })
               document.getElementById('prev-signal').innerHTML = 'START';
               document.getElementById('prev-signal').style.color = 'green';
@@ -38,6 +38,21 @@
               return false;
             });
           });
+          // Connect to simulation
+          $(function() {
+            $('a#connect').on('click', function(e) {
+              var link = 'http://0.0.0.0:8000/?mode={{mode}}';
+              var ip_addr = document.getElementById('InputIP').value;
+
+              // if form is not empty, connect to simulation running in a specific address
+              if(ip_addr) {
+                link = 'http://'+ip_addr+':8000/?mode={{mode}}';
+              }
+
+              window.open(link, '_blank');
+              return false;
+            });
+          });
   </script>
   <body class="text-center">
     <!-- Bootstrap Bundle with Popper -->
@@ -45,7 +60,7 @@
 
     <div class="container">
       <div class="row p-4 bg-light">
-        <h1>Training</h1>
+        <h1>Trial 2</h1>
         <p>Previous signal: <b id="prev-signal" style="color:red;">STOP</b></p>
       </div>
 
@@ -58,8 +73,17 @@
 
       <div class="row p-4 bg-light">
         <p>2. Access the simulation from the link below.</p>
+        <div class="row justify-content-md-center">
+          <div class="col col-lg-3">
+            <div class="form-group">
+              <!-- <label for="InputIP">Optional Setting</label> -->
+              <input type="text" class="form-control" id="InputIP" aria-describedby="ipHelp" placeholder="(Optional) Enter IP address">
+              <small id="ipHelp" class="form-text text-muted">Use this when connecting to a simulation running on a different computer.</small>
+            </div>
+          </div>
+        </div>
         <form>
-          <a class="btn btn-link" href="http://0.0.0.0:8000" target="_blank">Connect to Simulation</a>
+          <a class="btn btn-link" href="#" id="connect" target="_blank">Connect to Simulation</a>
         </form>
       </div>
 
@@ -70,16 +94,16 @@
         </form>
       </div>
 
-      <!-- Button to jump to /startpage -->
+      <!-- Button to jump to /trainingpage -->
       <div class="row p-4 bg-light justify-content-center">
         <div class="col-4">
-          <form action="/startpage" method="get">
+          <form action="/trial1page" method="get">
             <input class="btn btn-outline-secondary" type="submit" value='Back'>
           </form>
         </div>
-        <!-- Button to jump to /endpage -->
+        <!-- Button to jump to /trial2page -->
         <div class="col-4">
-          <form action="/trial1page" method="get">
+          <form action="/endpage" method="get">
             <input class="btn btn-outline-secondary" type="submit" value='Next'>
           </form>
         </div>

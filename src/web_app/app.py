@@ -8,13 +8,15 @@ from worker import SimulationProcess, WebClientProcess
 
 import os
 import os.path
+import argparse
 
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
-SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
-SCENARIO_TESTTRIAL = "experiments/test/test_user_study.argos"
 SCENARIO_TRIAL1 = "experiments/user_study_scenario1_order1.argos"
 SCENARIO_TRIAL2 = "experiments/user_study_scenario2_order2.argos"
+
+SCENARIO_TESTMULTIOP = "experiments/webviz_multi-op.argos"
+SCENARIO_TESTTRIAL = "experiments/test/test_user_study.argos"
 
 # Local machine IP address
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -32,6 +34,9 @@ simulation_link = "{}:8000".format(ip_addr)
 # Currently running simulation scenario
 proc_simulation = None
 proc_webclient  = None
+
+mode = None
+order = None
 
 app = Flask(__name__)
 
@@ -51,13 +56,25 @@ def startpage():
 # Access to "/trainingpage": redirect to training_page.html
 @app.route("/trainingpage", methods=["GET"])
 def trainingpage():
-    return render_template("training_page.html")
+    return render_template("training_page.html", mode=mode)
 
 
-# Access to "/trainingpage": redirect to training_page.html
-@app.route("/testmultioppage", methods=["GET"])
-def testmultioppage():
-    return render_template("test-multi-op_page.html")
+# Access to "/trial1page": redirect to trial1_page.html
+@app.route("/trial1page", methods=["GET"])
+def trial1page():
+    return render_template("trial1_page.html", mode=mode)
+
+
+# Access to "/trial2page": redirect to trial2_page.html
+@app.route("/trial2page", methods=["GET"])
+def trial2page():
+    return render_template("trial2_page.html", mode=mode)
+
+
+# # Access to "/trainingpage": redirect to training_page.html
+# @app.route("/testmultioppage", methods=["GET"])
+# def testmultioppage():
+#     return render_template("test-multi-op_page.html")
 
 
 # Access to "/endpage": redirect to end_page.html
@@ -75,7 +92,11 @@ def background_process_start():
     global proc_simulation, proc_webclient
 
     if(scenario == 'training'):
+        proc_simulation = SimulationProcess(SCENARIO_TRAINING)        
+    elif(scenario == 'trial1'):
         proc_simulation = SimulationProcess(SCENARIO_TRIAL1)
+    elif(scenario == 'trial2'):
+        proc_simulation = SimulationProcess(SCENARIO_TRIAL2)
     elif(scenario == 'test-multi-op'):
         proc_simulation = SimulationProcess(SCENARIO_TESTMULTIOP)
     else:
@@ -100,4 +121,25 @@ def background_process_stop():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate experiment files for ARGoS simulations.')
+
+    parser.add_argument('-m', '--mode', type=str,
+                        choices=['indirect', 'direct', 'debug'],
+                        help='The communication mode to use in the simulation (choose "indirect" for default capability).',
+                        default='indirect')
+
+    parser.add_argument('-o', '--order', type=int,
+                        choices=range(1, 3),
+                        help='The order in which the tasks will be presented.',
+                        default=1)
+    
+    args = parser.parse_args()
+    mode = args.mode
+    order = args.order
+
+    print('------------------')
+    print('Mode\t: {}'.format(mode))
+    print('Order\t: {}'.format(order))
+    print('------------------')
+
     app.run(debug=False, host='0.0.0.0')
