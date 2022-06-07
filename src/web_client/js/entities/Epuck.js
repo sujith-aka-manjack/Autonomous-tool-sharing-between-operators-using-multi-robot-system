@@ -195,12 +195,12 @@ class Epuck {
               }
             }
           }
-    
-          /* Hide all the previous lines */
-          /* 14 are the number of objects in meshParent before rays (-1 children.length if label is added) */
-          for (let i = 14 + entity.rays.length; i < this.mesh.children.length - 1; i++) {
-            this.mesh.children[i].geometry.setDrawRange(0, 0);
-          }
+        }
+
+        /* Hide all the previous lines */
+        /* 14 are the number of objects in meshParent before rays (-1 children.length if label is added) */
+        for (let i = 14 + entity.rays.length; i < this.mesh.children.length - 1; i++) {
+          this.mesh.children[i].geometry.setDrawRange(0, 0);
         }
       }
     }
