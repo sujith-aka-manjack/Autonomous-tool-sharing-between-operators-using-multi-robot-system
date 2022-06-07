@@ -45,7 +45,8 @@
                        exponent="2" />
         <team_distance min_leader_robot_distance="75"
                        separation_threshold="50" />
-        <timeout send_message="4" />
+        <timeout send_message="4"
+                 send_robot_delay="0" />
         <SCT path="src/SCT_models/leader_exchange.yaml" />
       </params>
     </leader_controller>
@@ -93,29 +94,29 @@
     <!-- Output file name -->
     <output logging="false"
             out_path="results/template.pb" 
-            frame_grabbing="false" 
+            frame_grabbing="true" 
             camera_index="0" />
 
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="5" center="-0.6,-0.4.0" density="0.3">
-        <!-- <waypoint coord="-1.5,-0.4" /> 
+      <team leader_num="1" robot_num="15" center="-0.6,-0.4.0" density="0.3">
+        <waypoint coord="-1.5,-0.4" /> 
         <waypoint coord="-1.5,-1.7" />
         <waypoint coord="-1.4,-0.5" />
         <waypoint coord="-1.5,1.7" />
         <waypoint coord="-1.5,-0.6" /> 
         <waypoint coord="-0.5,-0.5" /> 
         <waypoint coord="-0.5,0.5" /> 
-        <waypoint coord="0.6,1.6" />  -->
+        <waypoint coord="0.6,1.4" /> 
       </team>
-      <team leader_num="1" robot_num="5" center="-0.4,-0.6.0" density="0.3">
-        <!-- <waypoint coord="-0.5,-1.5" />
+      <team leader_num="1" robot_num="15" center="-0.4,-0.6.0" density="0.3">
+        <waypoint coord="-0.5,-1.5" />
         <waypoint coord="1.7,-1.5" />
         <waypoint coord="-0.5,-1.5" />
         <waypoint coord="-0.5,-0.5" />
         <waypoint coord="1.5,-0.5" />
-        <waypoint coord="1.5,1.7" /> -->
+        <waypoint coord="1.5,1.7" />
       </team>
     </teams>
 
@@ -128,12 +129,12 @@
       <task position="1.5,-1.5" radius="0.45" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
       <task position="1.5,1.5" radius="0.45" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" /> -->
 
-      <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="15" maximum_robot_num="100" task_demand="5000" />
+      <task position="-1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="50" />
+      <task position="-1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="50" />
+      <task position="0.5,1.5" width="1.0" height="1.0" minimum_robot_num="19" maximum_robot_num="100" task_demand="50" />
 
-      <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="5000" />
-      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="7500" />
+      <task position="1.5,-1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="50" />
+      <task position="1.5,1.5" width="1.0" height="1.0" minimum_robot_num="1" maximum_robot_num="100" task_demand="0" />
     </tasks>
   </loop_functions>
 
