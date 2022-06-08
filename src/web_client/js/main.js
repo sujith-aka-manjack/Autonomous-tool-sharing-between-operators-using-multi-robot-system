@@ -351,7 +351,7 @@ var onAllFilesLoaded = function () {
         )
 
         .append($(confirmModeTag)
-          .attr('id','button_connect')
+          .attr('id','button_mode_select')
           .click(function () {
             let e_mode = document.getElementById('mode_selected');
             let selected_mode = e_mode.options[e_mode.selectedIndex].text;
@@ -548,6 +548,7 @@ var onAllFilesLoaded = function () {
       /* Modify toolbar according to the current mode */
       if(window.mode == Mode.INDIRECT || window.mode == Mode.DIRECT) {
 
+        /* Id of the components to hide */
         let ids = [
                     'control_divider',
                     'step_button',
@@ -557,7 +558,10 @@ var onAllFilesLoaded = function () {
                     'reset_button',
                     'name_divider', 
                     'name_label', 
-                    'username_label'
+                    'username_label',
+                    'mode_divider',
+                    'mode_selected',
+                    'button_mode_select'
                   ];
 
         /* Hide toolbar components */
