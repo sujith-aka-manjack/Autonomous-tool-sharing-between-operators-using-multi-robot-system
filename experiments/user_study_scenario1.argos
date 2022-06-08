@@ -92,7 +92,7 @@
 
     <!-- Output path -->
     <output logging="true"
-            out_path="results/user_study_scenario1_order1/"
+            out_path="results/user_study_scenario1/"
             frame_grabbing="false" 
             camera_index="0" />
 
