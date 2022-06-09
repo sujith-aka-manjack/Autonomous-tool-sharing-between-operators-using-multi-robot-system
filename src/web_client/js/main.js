@@ -592,7 +592,9 @@ var onAllFilesLoaded = function () {
                     'username_label',
                     'mode_divider',
                     'mode_selected',
-                    'button_mode_select'
+                    'button_mode_select',
+                    'leader_selected',
+                    'button_connect'
                   ];
 
         /* Hide toolbar components */
