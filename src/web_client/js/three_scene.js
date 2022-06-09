@@ -1559,7 +1559,9 @@ function updateCommands() {
   /* Check connect command (select_leader) */
   if( window.connectFlag ) {
     commands.push(window.connectCommand);
-    window.connectFlag = false;
+    if( window.connected ) {
+      window.connectFlag = false;
+    }
   }
 
   /* Check if task signal is toggelled (start/stop) */
@@ -1837,7 +1839,9 @@ function render() {
   if(window.connected) {
     renderer.render(scene, cameraRobot);
     menuRenderer.render(scene, cameraRobot);
-  } else {
+  } else if (window.targetChanged) {
+    console.log('waiting to connect...');
+  } else if ( window.mode == Mode.DEBUG ) {
     renderer.render(scene, camera);
     menuRenderer.render(scene, camera);
   }

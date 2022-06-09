@@ -544,10 +544,37 @@ var onAllFilesLoaded = function () {
           document.getElementById('mode_selected').selectedIndex = '2';
           break;
         default:
-          console.log('Unrecognised mode passed in url: ' + urlParams.get('mode'));
+          console.log('Unrecognized mode passed in url: ' + urlParams.get('m'));
       }
-
+        
       console.log(window.mode);
+
+      /* Set robot to connect from url param */
+      if(urlParams.get('l')) {
+        var robot_found = false;
+        switch(urlParams.get('l')) {
+          case '1':
+            window.target = 'L1';
+            robot_found = true;
+            break;
+          case '2':
+            window.target = 'L2';
+            robot_found = true;
+            break;
+          default:
+            console.log('Unrecognized robot passed in url: ' + urlParams.get('l'));
+        }
+
+        if(robot_found) {
+          window.targetChanged = true;
+          window.taskFlag = true;
+          window.taskCommand = { command: 'task', signal: 'start' };
+          window.connectFlag = true;
+          window.connectCommand = { command: 'select_leader' };
+        }
+      }
+    
+      console.log(urlParams.get('l'));
 
       /* Modify toolbar according to the current mode */
       if(window.mode == Mode.INDIRECT || window.mode == Mode.DIRECT) {

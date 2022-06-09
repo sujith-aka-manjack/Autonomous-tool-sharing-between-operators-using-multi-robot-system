@@ -223,25 +223,26 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
             if(m_pcClientRobotConnections.count(target)) {
                 ClientData clientInControl = m_pcClientRobotConnections[target];
                 if(clientInControl.id == client) {
-                    if(username != "") {
-                        /* Update username */
-                        CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
-                        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-                            it != m_cEPuckLeaders.end();
-                            ++it) {
+                    // if(username != "") {
+                    //     /* Update username */
+                    //     CSpace::TMapPerType& m_cEPuckLeaders = m_pcExperimentLoopFunctions->GetSpace().GetEntitiesByType("e-puck_leader");
+                    //     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+                    //         it != m_cEPuckLeaders.end();
+                    //         ++it) {
 
-                            /* Get handle to e-puck_leader entity and controller */
-                            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-                            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+                    //         /* Get handle to e-puck_leader entity and controller */
+                    //         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+                    //         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-                            if(cController.GetId() == target) {
-                                cController.SetUsername(username);
-                                std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
-                                break;
-                            }
-                        }
-                        m_pcClientRobotConnections[target].username = username;
-                    }
+                    //         if(cController.GetId() == target) {
+                    //             cController.SetUsername(username);
+                    //             std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                    //             break;
+                    //         }
+                    //     }
+                    //     m_pcClientRobotConnections[target].username = username;
+                    // }
+                    // std::cout << "[LOG] (" << target << ") is already controlled by " << clientInControl.username << std::endl;
                     continue;
                 } 
                 else if(clientInControl.id != "") { 
@@ -265,16 +266,15 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
                         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-                        if(cController.GetId() == key) {
+                        if(cController.GetId() == key && key != target) {
                             cController.Deselect();
                             cController.SetUsername("");
                             cController.SetSignal(false);
+                            value = ClientData();
+                            std::cout << "[LOG] (" << key << ") released by " << username << "..." << std::endl;
                             break;
                         }
-                    }
-
-                    value = ClientData();
-                    std::cout << "[LOG] (" << key << ") released" << std::endl;
+                    }                    
                 }
             }
 
@@ -302,7 +302,8 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     newClient.username = username;
                     m_pcClientRobotConnections[target] = newClient;
 
-                    std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                    // std::cout << "[LOG] (" << target << ") connected to " << username << " (" << client << ")" << std::endl;
+                    std::cout << "[LOG] (" << target << ") connected to " << username << "..." << std::endl;
                 }
             }
         }
