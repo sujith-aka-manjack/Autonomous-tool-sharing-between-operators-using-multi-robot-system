@@ -41,12 +41,12 @@
           // Connect to simulation
           $(function() {
             $('a#connect').on('click', function(e) {
-              var link = 'http://0.0.0.0:8000/?mode={{mode}}';
+              var link = 'http://0.0.0.0:8000?m={{mode}}';
               var ip_addr = document.getElementById('InputIP').value;
 
               // if form is not empty, connect to simulation running in a specific address
               if(ip_addr) {
-                link = 'http://'+ip_addr+':8000/?mode={{mode}}';
+                link = 'http://'+ip_addr+':8000?m={{mode}}';
               }
 
               window.open(link, '_blank');

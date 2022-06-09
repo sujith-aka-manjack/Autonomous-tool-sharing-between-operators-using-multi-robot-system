@@ -221,7 +221,7 @@ pre {
     margin-left: 12px;
 }
 
-#button_connect {
+#button_mode_select, #button_connect {
     background-color: #edca5f;
     border: none;
     border-radius: 8px;

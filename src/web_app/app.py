@@ -36,7 +36,7 @@ proc_simulation = None
 proc_webclient  = None
 
 mode = None
-order = None
+# order = None
 
 app = Flask(__name__)
 
@@ -128,18 +128,24 @@ if __name__ == "__main__":
                         help='The communication mode to use in the simulation (choose "indirect" for default capability).',
                         default='indirect')
 
-    parser.add_argument('-o', '--order', type=int,
-                        choices=range(1, 3),
-                        help='The order in which the tasks will be presented.',
-                        default=1)
+    # parser.add_argument('-o', '--order', type=int,
+    #                     choices=range(1, 3),
+    #                     help='The order in which the tasks will be presented.',
+    #                     default=1)
     
     args = parser.parse_args()
-    mode = args.mode
-    order = args.order
+    if args.mode == 'indirect':
+        mode = 'ind'
+    elif args.mode == 'direct':
+        mode = 'dir'
+    else:
+        mode = args.mode
+        
+    # order = args.order
 
     print('------------------')
     print('Mode\t: {}'.format(mode))
-    print('Order\t: {}'.format(order))
+    # print('Order\t: {}'.format(order))
     print('------------------')
 
     app.run(debug=False, host='0.0.0.0')

@@ -38,6 +38,14 @@
               return false;
             });
           });
+          // Connect to simulation
+          $(function() {
+            $('a#connect').on('click', function(e) {
+              var link = 'http://0.0.0.0:8000?m={{mode}}';
+              window.open(link, '_blank');
+              return false;
+            });
+          });
   </script>
   <body class="text-center">
     <!-- Bootstrap Bundle with Popper -->
@@ -59,7 +67,7 @@
       <div class="row p-4 bg-light">
         <p>2. Access the simulation from the link below.</p>
         <form>
-          <a class="btn btn-link" href="http://0.0.0.0:8000" target="_blank">Connect to Simulation</a>
+          <a class="btn btn-link" href="#" id="connect" target="_blank">Connect to Simulation</a>
         </form>
       </div>
 

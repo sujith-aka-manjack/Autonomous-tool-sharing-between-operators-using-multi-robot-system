@@ -355,25 +355,29 @@ var onAllFilesLoaded = function () {
           .click(function () {
             let e_mode = document.getElementById('mode_selected');
             let selected_mode = e_mode.options[e_mode.selectedIndex].text;
+            var mode_param;
 
             switch(selected_mode) {
               case 'Debug':
                 console.log('Load ' + Mode.DEBUG);
                 window.mode = Mode.DEBUG;
+                mode_param = window.mode;
                 break;
               case 'Indirect':
                 console.log('Load ' + Mode.INDIRECT);
                 window.mode = Mode.INDIRECT;
+                mode_param = 'ind';
                 break;
               case 'Direct':
                 console.log('Load ' + Mode.DIRECT);
                 window.mode = Mode.DIRECT;
+                mode_param = 'dir';
                 break;
               default:
                 console.log('Unrecognised mode selected');
             }
 
-            window.location.search = '?mode=' + window.mode;
+            window.location.search = '?m=' + mode_param;
             
           })
         )
@@ -526,16 +530,16 @@ var onAllFilesLoaded = function () {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
 
-      switch(urlParams.get('mode')) {
+      switch(urlParams.get('m')) {
         case 'debug':
           window.mode = Mode.DEBUG;
           document.getElementById('mode_selected').selectedIndex = '0';
           break;
-        case 'indirect':
+        case 'ind':
           window.mode = Mode.INDIRECT;
           document.getElementById('mode_selected').selectedIndex = '1';
           break;
-        case 'direct':
+        case 'dir':
           window.mode = Mode.DIRECT;
           document.getElementById('mode_selected').selectedIndex = '2';
           break;
