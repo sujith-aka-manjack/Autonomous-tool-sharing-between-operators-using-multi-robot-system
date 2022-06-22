@@ -2,7 +2,7 @@
 # - https://www.yukiyukiponsu.work/entry/python-Flask-btn-page-move
 # - https://stackoverflow.com/a/49334973
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for
 import socket
 from worker import SimulationProcess, WebClientProcess
 
@@ -38,40 +38,57 @@ proc_webclient  = None
 # Simulation mode
 mode = None
 
-# User ID
-unique_id = None
-
 app = Flask(__name__)
 
+# Based on https://testdriven.io/blog/flask-sessions/
+#
+# Details on the Secret Key: https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY
+# NOTE: The secret key is used to cryptographically-sign the cookies used for storing
+#       the session data.
+# Command to generate a key:
+#     $ python -c 'import secrets; print(secrets.token_hex())'
+app.secret_key = '455f3bcd02702ffca86e711f6e176b5983326372b6f04fa5ea66a97bdb3b9e95'
 
 # Access to "/": redirect to start_page.html
 @app.route("/")
-def hello():
-    return render_template("start_page.html")
+def default():
+    return redirect(url_for('startpage'))
 
 
 # Access to "/startpage": redirect to start_page.html
 @app.route("/startpage", methods=["GET"])
 def startpage():
-    return render_template("start_page.html", unique_id=unique_id)
+    if 'username' in session:
+        return render_template("start_page.html", unique_id=session['username'])
+    else:
+        return render_template("start_page.html")
 
 
 # Access to "/trainingpage": redirect to training_page.html
 @app.route("/trainingpage", methods=["GET"])
 def trainingpage():
-    return render_template("training_page.html", mode=mode, unique_id=unique_id)
+    if 'username' in session:
+        return render_template("training_page.html", mode=mode, unique_id=session['username'])
+    else:
+        return redirect(url_for('startpage'))
 
 
 # Access to "/trial1page": redirect to trial1_page.html
 @app.route("/trial1page", methods=["GET"])
 def trial1page():
-    return render_template("trial1_page.html", mode=mode, unique_id=unique_id)
+    if 'username' in session:
+        return render_template("trial1_page.html", mode=mode, unique_id=session['username'])
+    else:
+        return redirect(url_for('startpage'))
 
 
 # Access to "/trial2page": redirect to trial2_page.html
 @app.route("/trial2page", methods=["GET"])
 def trial2page():
-    return render_template("trial2_page.html", mode=mode, unique_id=unique_id)
+    if 'username' in session:
+        return render_template("trial2_page.html", mode=mode, unique_id=session['username'])
+    else:
+        return redirect(url_for('startpage'))
 
 
 # # Access to "/trainingpage": redirect to training_page.html
@@ -83,7 +100,17 @@ def trial2page():
 # Access to "/endpage": redirect to end_page.html
 @app.route("/endpage", methods=["GET"])
 def endpage():
-    return render_template("end_page.html")
+    if 'username' in session:
+        return render_template("end_page.html")
+    else:
+        return redirect(url_for('startpage'))
+
+
+# Clear the username stored in the session object
+@app.route('/delete')
+def delete_username():
+    session.pop('username', default=None)
+    return redirect(url_for('startpage'))
 
 
 # Background process: Start the simulation
@@ -126,10 +153,8 @@ def background_process_stop():
 # Background process: Record the user's ID
 @app.route('/background_process_record_id', methods=['POST'])
 def background_process_record_id():
-    received_id = request.get_data().decode('UTF-8')
-    print ("received id: {}".format(received_id))
-    global unique_id
-    unique_id = received_id
+    session['username'] = request.get_data().decode('UTF-8')
+    print ("Received id: {}".format(session['username']))
     return ("nothing")
 
 

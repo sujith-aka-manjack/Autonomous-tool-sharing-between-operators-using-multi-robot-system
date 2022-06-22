@@ -14,7 +14,7 @@
           // Load user's existing unique ID
           $(document).ready(function(){
             console.log("Existing ID: {{unique_id}}");
-            if("{{unique_id}}" !== "None") {
+            if("{{unique_id}}" !== "") {
               document.getElementById('myCurrentID').innerHTML = "{{unique_id}}";
             }
           });
@@ -61,7 +61,7 @@
           </div>
         </div>
         <form class="text-center" style="margin-top:0.5cm;">
-          <a href="#" id="InputID" class="btn btn-outline-secondary" >Confirm my unique ID</a>
+          <a href="#" id="InputID" class="btn btn-primary" >Confirm my unique ID</a>
         </form>
         <div class="text-center" style="margin-top:0.5cm;">        
           <p style="font-family:'Courier New'; font-size:20px"><b>My unique ID:</b> <span id="myCurrentID">empty</span></p>
