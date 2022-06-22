@@ -59,19 +59,19 @@ def startpage():
 # Access to "/trainingpage": redirect to training_page.html
 @app.route("/trainingpage", methods=["GET"])
 def trainingpage():
-    return render_template("training_page.html", mode=mode)
+    return render_template("training_page.html", mode=mode, unique_id=unique_id)
 
 
 # Access to "/trial1page": redirect to trial1_page.html
 @app.route("/trial1page", methods=["GET"])
 def trial1page():
-    return render_template("trial1_page.html", mode=mode)
+    return render_template("trial1_page.html", mode=mode, unique_id=unique_id)
 
 
 # Access to "/trial2page": redirect to trial2_page.html
 @app.route("/trial2page", methods=["GET"])
 def trial2page():
-    return render_template("trial2_page.html", mode=mode)
+    return render_template("trial2_page.html", mode=mode, unique_id=unique_id)
 
 
 # # Access to "/trainingpage": redirect to training_page.html

@@ -547,7 +547,7 @@ var onAllFilesLoaded = function () {
           console.log('Unrecognized mode passed in url: ' + urlParams.get('m'));
       }
         
-      console.log(window.mode);
+      console.log("Mode: " + window.mode);
 
       /* Set robot to connect from url param */
       if(urlParams.get('l')) {
@@ -573,8 +573,15 @@ var onAllFilesLoaded = function () {
           window.connectCommand = { command: 'select_leader' };
         }
       }
-    
-      console.log(urlParams.get('l'));
+
+      /* Set user ID from url param */
+      if(urlParams.get('id')) {
+        window.username = urlParams.get('id');
+        let e_status = document.getElementById('username_label');
+        e_status.textContent = window.username;
+      }
+
+      console.log("Username: " + window.username);
 
       /* Modify toolbar according to the current mode */
       if(window.mode == Mode.INDIRECT || window.mode == Mode.DIRECT) {

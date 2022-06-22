@@ -23,12 +23,14 @@
             $('a#InputID').on('click', function(e) {
               e.preventDefault()
               const unique_id = document.getElementById('InputID').value;
-              $.ajax({ 
-                  url: '/background_process_record_id', 
-                  type: 'POST', 
-                  data: unique_id
-              })
-              document.getElementById('myCurrentID').innerHTML = unique_id;
+              if(unique_id) {
+                $.ajax({ 
+                    url: '/background_process_record_id', 
+                    type: 'POST', 
+                    data: unique_id
+                })
+                document.getElementById('myCurrentID').innerHTML = unique_id;
+              }
               return false;
             });
           });

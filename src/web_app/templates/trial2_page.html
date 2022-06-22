@@ -49,6 +49,11 @@
                 link = 'http://'+ip_addr+':8000?m={{mode}}&l=2';
               }
 
+              // if user has an id, send the id to the simulation
+              if("{{unique_id}}" !== "None") {
+                link += "&id={{unique_id}}"
+              }
+
               window.open(link, '_blank');
               return false;
             });
