@@ -393,6 +393,9 @@ void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
 
     /* Create entry for connected client */
     m_pcClientPointerToId[str_id] = ClientData();
+
+    std::cout << "[LOG] " << m_pcClientPointerToId.size() << std::endl;
+
 }
 
 /****************************************/

@@ -4,11 +4,13 @@
 
 from flask import Flask, render_template, request, session, redirect, url_for
 import socket
+from websocket import create_connection
 from worker import SimulationProcess, WebClientProcess
 
 import os
 import os.path
 import argparse
+import logging
 
 # Scenarios
 SCENARIO_TRAINING = "experiments/webviz_training.argos"
@@ -48,6 +50,13 @@ app = Flask(__name__)
 # Command to generate a key:
 #     $ python -c 'import secrets; print(secrets.token_hex())'
 app.secret_key = '455f3bcd02702ffca86e711f6e176b5983326372b6f04fa5ea66a97bdb3b9e95'
+
+# Disable web access logging in terminal
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+# app.logger.disabled = True
+# log.disabled = True
+
 
 # Access to "/": redirect to start_page.html
 @app.route("/")
@@ -156,6 +165,19 @@ def background_process_record_id():
     session['username'] = request.get_data().decode('UTF-8')
     print ("Received id: {}".format(session['username']))
     return ("nothing")
+
+
+# Check if the local simulation is running
+@app.route('/connection_status', methods=['GET'])
+def connect_to_server():
+    try:
+        ws = create_connection("ws://0.0.0.0:3000")
+        ws.recv()
+        ws.close()
+        return "running"
+    except ConnectionRefusedError as error:
+        # print("Could not connect to local simulation")
+        return "terminated"
 
 
 if __name__ == "__main__":

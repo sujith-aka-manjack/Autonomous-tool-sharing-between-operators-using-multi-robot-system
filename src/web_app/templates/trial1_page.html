@@ -10,34 +10,8 @@
     <title>Robot Swarm Experiment: Trial 1</title>
   </head>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="{{url_for('static', filename='js/control-simulation.js')}}"></script>
   <script type=text/javascript>
-          // Call simulation to START
-          $(function() {
-            $('a#start').on('click', function(e) {
-              e.preventDefault()
-              $.ajax({ 
-                  url: '/background_process_start', 
-                  type: 'POST', 
-                  data: 'trial1'
-              })
-              document.getElementById('prev-signal').innerHTML = 'START';
-              document.getElementById('prev-signal').style.color = 'green';
-              return false;
-            });
-          });
-          // Call simulation to STOP
-          $(function() {
-            $('a#stop').on('click', function(e) {
-              e.preventDefault()
-              $.getJSON('/background_process_stop',
-                  function(data) {
-                //do nothing
-              });
-              document.getElementById('prev-signal').innerHTML = 'STOP';
-              document.getElementById('prev-signal').style.color = 'red';
-              return false;
-            });
-          });
           // Connect to simulation
           $(function() {
             $('a#connect').on('click', function(e) {
@@ -66,7 +40,7 @@
     <div class="container">
       <div class="row p-4 bg-light">
         <h1>Trial 1</h1>
-        <p>Previous signal: <b id="prev-signal" style="color:red;">STOP</b></p>
+        <p>Local simulation: <b id="simulationState" style="color:black;">UNKNOWN</b></p>
       </div>
 
       <div class="row p-4">
