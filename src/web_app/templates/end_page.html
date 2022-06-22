@@ -24,13 +24,20 @@
         <p>Thank you for participating in this user study!</p>
       </div>
 
-      <!-- Button to jump to /trainingpage -->
       <div class="row p-4 bg-light justify-content-center">
-        <div class="col-4">
+        <!-- Button to jump to /trial2page -->
+        <div class="col-1">
           <form action="/trial2page" method="get">
-            <input class="btn btn-outline-secondary" type="submit" value='Back'>
+            <input class="btn btn-outline-secondary" type="submit" value='&larr; Back'>
           </form>
         </div>
+        <!-- Button to jump to /trainingpage -->
+        <div class="col-1">
+          <form action="/startpage" method="get">
+            <input class="btn btn-outline-secondary" type="submit" value='&uarr; Return to welcome page'>
+          </form>
+        </div>
+        <p style="margin-top:0.5cm;">5 of 5</p>
       </div>
     </div>
   </body>

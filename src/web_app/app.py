@@ -35,8 +35,11 @@ simulation_link = "{}:8000".format(ip_addr)
 proc_simulation = None
 proc_webclient  = None
 
+# Simulation mode
 mode = None
-# order = None
+
+# User ID
+unique_id = None
 
 app = Flask(__name__)
 
@@ -50,7 +53,7 @@ def hello():
 # Access to "/startpage": redirect to start_page.html
 @app.route("/startpage", methods=["GET"])
 def startpage():
-    return render_template("start_page.html")
+    return render_template("start_page.html", unique_id=unique_id)
 
 
 # Access to "/trainingpage": redirect to training_page.html
@@ -117,6 +120,16 @@ def background_process_stop():
         proc_simulation.stop()
     if proc_webclient:
         proc_webclient.stop()
+    return ("nothing")
+
+
+# Background process: Record the user's ID
+@app.route('/background_process_record_id', methods=['POST'])
+def background_process_record_id():
+    received_id = request.get_data().decode('UTF-8')
+    print ("received id: {}".format(received_id))
+    global unique_id
+    unique_id = received_id
     return ("nothing")
 
 

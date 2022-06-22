@@ -42,7 +42,7 @@
           $(function() {
             $('a#connect').on('click', function(e) {
               var link = 'http://0.0.0.0:8000?m={{mode}}&l=1';
-              var ip_addr = document.getElementById('InputIP').value;
+              const ip_addr = document.getElementById('InputIP').value;
 
               // if form is not empty, connect to simulation running in a specific address
               if(ip_addr) {
@@ -94,17 +94,20 @@
         </form>
       </div>
 
-      <!-- Button to jump to /trainingpage -->
       <div class="row p-4 bg-light justify-content-center">
-        <div class="col-4">
+        <!-- Button to jump to /trainingpage -->
+        <div class="col-2">
           <form action="/trainingpage" method="get">
-            <input class="btn btn-outline-secondary" type="submit" value='Back'>
+            <input class="btn btn-outline-secondary" type="submit" value='&larr; Back'>
           </form>
         </div>
+        <div class="col-2">
+          <p">3 of 5</p>
+        </div>
         <!-- Button to jump to /trial2page -->
-        <div class="col-4">
+        <div class="col-2">
           <form action="/trial2page" method="get">
-            <input class="btn btn-outline-secondary" type="submit" value='Next'>
+            <input class="btn btn-outline-secondary" type="submit" value='Next &rarr;'>
           </form>
         </div>
       </div>
