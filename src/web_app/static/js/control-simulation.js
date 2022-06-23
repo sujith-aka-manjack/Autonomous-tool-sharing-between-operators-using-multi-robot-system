@@ -1,16 +1,12 @@
 // Call simulation to START
-$(function() {
-    $('a#start').on('click', function(e) {
-      e.preventDefault()
-      $.ajax({ 
-          url: '/background_process_start', 
-          type: 'POST', 
-          data: 'training'
-      })
-      return false;
-    });
-});
-  
+function start_simulation(scenario) {
+    $.ajax({ 
+        url: '/background_process_start', 
+        type: 'POST', 
+        data: scenario
+    })
+}
+
 // Call simulation to STOP
 $(function() {
     $('a#stop').on('click', function(e) {

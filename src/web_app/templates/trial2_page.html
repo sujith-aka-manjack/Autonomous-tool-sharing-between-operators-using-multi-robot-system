@@ -12,6 +12,17 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script src="{{url_for('static', filename='js/control-simulation.js')}}"></script>
   <script type=text/javascript>
+          // Start simulation
+          $(function() {
+            // Specify the scenario to run
+            scenario = 'trial2';
+            $('a#start').on('click', function(e) {
+              e.preventDefault();
+              start_simulation(scenario);
+            });
+            return false;
+          });
+
           // Connect to simulation
           $(function() {
             $('a#connect').on('click', function(e) {
