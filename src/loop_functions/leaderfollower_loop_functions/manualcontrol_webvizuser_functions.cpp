@@ -389,12 +389,12 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendFollowerData(CEPuckE
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
-    std::cout << "[LOG] Adding client " << str_id << std::endl;
+    // std::cout << "[LOG] Adding client " << str_id << std::endl;
 
     /* Create entry for connected client */
     m_pcClientPointerToId[str_id] = ClientData();
 
-    std::cout << "[LOG] " << m_pcClientPointerToId.size() << std::endl;
+    // std::cout << "[LOG] " << m_pcClientPointerToId.size() << std::endl;
 
 }
 
@@ -402,7 +402,7 @@ void CManualControlWebvizUserFunctions::ClientConnected(std::string str_id) {
 /****************************************/
 
 void CManualControlWebvizUserFunctions::ClientDisconnected(std::string str_id) {
-    std::cout << "[LOG] Disconnected " << str_id << std::endl;
+    // std::cout << "[LOG] Disconnected " << str_id << std::endl;
 
     /* Release any robots that were selected by this client */
     for(auto& [key, value] : m_pcClientRobotConnections) {
