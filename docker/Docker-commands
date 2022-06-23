@@ -140,6 +140,8 @@ docker run --rm --volumes-from argos -v $(pwd):/backup ubuntu tar cvf /backup/ba
 docker build -t genki15/argos-sct .
 docker push genki15/argos-sct
 
+docker pull genki15/argos-sct
+
 ### TESTING
 
 export ARGOS_PLUGIN_PATH=/home/docker/argos-sct/build/utility
