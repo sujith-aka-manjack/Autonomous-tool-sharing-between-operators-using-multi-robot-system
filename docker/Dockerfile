@@ -69,11 +69,13 @@ RUN apt-get update && apt-get install -y libyaml-cpp-dev
 RUN apt-get install -y python3 pip
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir \
-    Flask
+    Flask \
+    websocket-client
 
 # Install plugins for ARGoS
 RUN apt-get install -y nlohmann-json3-dev
 
+ADD "https://gitlab.com/api/v4/projects/34344095/repository/branches/main" latest_info
 RUN git clone https://gitlab.com/genki_miyauchi/argos-sct-plugins.git /home/docker/argos-sct-plugins && \
     cd /home/docker/argos-sct-plugins && \
     mkdir build && \
@@ -89,6 +91,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libssl-dev
 
+ADD "https://gitlab.com/api/v4/projects/31175600/repository/branches/master" latest_info
 RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/argos3-webviz &&\
     cd /home/docker/argos3-webviz && \
     mkdir build && \
