@@ -36,25 +36,6 @@ class EpuckLeader {
     /* Add all parts to a parent mesh */
     meshParent.add(epuck_leader);
 
-    /* Add username label */
-    this.sprite = new THREE.TextSprite({
-      alignment: 'center',
-      color: '#000000',
-      strokeColor: '#ff0000',
-      backgroundColor: 'rgba(100,100,100,0.2)',
-      fontWeight: 'bold',
-      fontFamily: '"Times New Roman", Times, serif',
-      fontSize: 2,
-      padding: 0.2,
-      text: [
-          entity.id,
-      ].join('\n'),
-    });
-
-    this.sprite.position.z = 10;
-
-    meshParent.add(this.sprite);
-
     /* Direction indicator */
     const dir_geometry = new THREE.CylinderGeometry( 0, 0.3, 1.5, 6 );
     dir_geometry.translate(0, 0, 86 * UNIT_SCALE + 0.4);
@@ -104,6 +85,25 @@ class EpuckLeader {
     // }
 
     if(window.mode == Mode.DEBUG) {
+      /* Add username label */
+      this.sprite = new THREE.TextSprite({
+        alignment: 'center',
+        color: '#000000',
+        strokeColor: '#ff0000',
+        backgroundColor: 'rgba(100,100,100,0.2)',
+        fontWeight: 'bold',
+        fontFamily: '"Times New Roman", Times, serif',
+        fontSize: 2,
+        padding: 0.2,
+        text: [
+            entity.id,
+        ].join('\n'),
+      });
+
+      this.sprite.position.z = 10;
+
+      meshParent.add(this.sprite);
+
       /* Add Intersection Points */
       var pointsGeom = new THREE.BufferGeometry();
       pointsGeom.setAttribute('position', new THREE.BufferAttribute(
@@ -159,19 +159,19 @@ class EpuckLeader {
         entity.orientation.z,
         entity.orientation.w));
 
-      /* Update username label */
-      if(entity.user_data.username != "") {
-        this.sprite.backgroundColor = 'rgba(200,200,0,0.4)';
-      } else {
-        this.sprite.backgroundColor = 'rgba(100,100,100,0.2)';
-      }
-
       if (entity.leds) {
         /* Update LED colors */
-        this.mesh.children[4].material.color.setHex(entity.leds[0]);
+        this.mesh.children[3].material.color.setHex(entity.leds[0]);
       }
 
       if(window.mode == Mode.DEBUG) {
+        /* Update username label */
+        if(entity.user_data.username != "") {
+          this.sprite.backgroundColor = 'rgba(200,200,0,0.4)';
+        } else {
+          this.sprite.backgroundColor = 'rgba(100,100,100,0.2)';
+        }
+
         var pointMesh = this.mesh.children[14];
 
         if (entity.points.length > 0) {

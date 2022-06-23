@@ -59,6 +59,25 @@ class Epuck {
     meshParent.add(led);
 
     if(window.mode == Mode.DEBUG) {
+      /* Add username label */
+      this.sprite = new THREE.TextSprite({
+        alignment: 'center',
+        color: '#000000',
+        strokeColor: '#ff0000',
+        backgroundColor: 'rgba(100,100,100,0.2)',
+        fontWeight: 'bold',
+        fontFamily: '"Times New Roman", Times, serif',
+        fontSize: 1,
+        padding: 0.2,
+        text: [
+            entity.id,
+        ].join('\n'),
+      });
+
+      this.sprite.position.z = 4;
+
+      meshParent.add(this.sprite);
+
       /* Add Intersection Points */
       var pointsGeom = new THREE.BufferGeometry();
       pointsGeom.setAttribute('position', new THREE.BufferAttribute(
@@ -84,25 +103,6 @@ class Epuck {
         meshParent.add(line);
         that.lines.push(line);
       }
-
-      /* Add username label */
-      this.sprite = new THREE.TextSprite({
-        alignment: 'center',
-        color: '#000000',
-        strokeColor: '#ff0000',
-        backgroundColor: 'rgba(100,100,100,0.2)',
-        fontWeight: 'bold',
-        fontFamily: '"Times New Roman", Times, serif',
-        fontSize: 1,
-        padding: 0.2,
-        text: [
-            entity.id,
-        ].join('\n'),
-      });
-
-      this.sprite.position.z = 4;
-
-      meshParent.add(this.sprite);
     }
 
     /* Update mesh parent */
@@ -143,7 +143,7 @@ class Epuck {
         /* Show connections for connectors only */
         if(entity.user_data.state == 'C') {
           
-          var pointMesh = this.mesh.children[13];
+          var pointMesh = this.mesh.children[14];
 
           if (entity.points.length > 0) {
             var points = pointMesh.geometry.getAttribute('position').array
@@ -199,7 +199,7 @@ class Epuck {
 
         /* Hide all the previous lines */
         /* 14 are the number of objects in meshParent before rays (-1 children.length if label is added) */
-        for (let i = 14 + entity.rays.length; i < this.mesh.children.length - 1; i++) {
+        for (let i = 15 + entity.rays.length; i < this.mesh.children.length - 1; i++) {
           this.mesh.children[i].geometry.setDrawRange(0, 0);
         }
       }
