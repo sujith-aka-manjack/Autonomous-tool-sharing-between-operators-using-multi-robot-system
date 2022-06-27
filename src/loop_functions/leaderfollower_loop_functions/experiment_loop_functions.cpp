@@ -212,9 +212,13 @@ void CExperimentLoopFunctions::PreStep() {
 
                 /* If there is a task with the given task position AND leader is within the task range, return task demand */
                 if(cCTask.InArea(cPos)) {
-                    cController.SetTaskDemand(cCTask.GetDemand());
+                    UInt32 demand = cCTask.GetDemand();
+                    cController.SetTaskDemand(demand);
                     cController.SetInitTaskDemand(cCTask.GetInitDemand());
-                    cController.SetMinimumCount(cCTask.GetMinRobotNum());
+                    if(demand > 0) 
+                        cController.SetMinimumCount(cCTask.GetMinRobotNum());
+                    else
+                        cController.SetMinimumCount(0);
                     leaderAtTask = true;
                     break;
                 }
