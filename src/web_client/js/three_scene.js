@@ -875,6 +875,26 @@ function initSceneWithScale(_scale) {
       }),
     );
   
+    const hoveredStateRequestAttributes = {
+      state: "hovered",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x33cc33 ),
+        backgroundOpacity: 1,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+  
+    const idleStateRequestAttributes = {
+      state: "idle",
+      attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x009900 ),
+        backgroundOpacity: 0.8,
+        fontColor: new THREE.Color( 0xffffff )
+      },
+    };
+
     sendRequestButton.setupState({
       state: "selected",
       attributes: selectedAttributes,
@@ -886,8 +906,8 @@ function initSceneWithScale(_scale) {
         }
       }
     });
-    sendRequestButton.setupState( hoveredStateAttributes );
-    sendRequestButton.setupState( idleStateAttributes );
+    sendRequestButton.setupState( hoveredStateRequestAttributes );
+    sendRequestButton.setupState( idleStateRequestAttributes );
   
     sendConfirmContainer.add(sendRequestButton);
     objsToTest.push(sendRequestButton);
@@ -920,6 +940,26 @@ function initSceneWithScale(_scale) {
     }),
   );
 
+  const hoveredStateSendAttributes = {
+    state: "hovered",
+    attributes: {
+      offset: 0.035,
+      backgroundColor: new THREE.Color( 0xcccc33 ),
+      backgroundOpacity: 1,
+      fontColor: new THREE.Color( 0xffffff )
+    },
+  };
+
+  const idleStateSendAttributes = {
+    state: "idle",
+    attributes: {
+      offset: 0.035,
+      backgroundColor: new THREE.Color( 0x999900 ),
+      backgroundOpacity: 0.8,
+      fontColor: new THREE.Color( 0xffffff )
+    },
+  };
+
   sendConfirmButton.setupState({
     state: "selected",
     attributes: selectedAttributes,
@@ -931,8 +971,8 @@ function initSceneWithScale(_scale) {
       }
     }
   });
-  sendConfirmButton.setupState( hoveredStateAttributes );
-  sendConfirmButton.setupState( idleStateAttributes );
+  sendConfirmButton.setupState( hoveredStateSendAttributes );
+  sendConfirmButton.setupState( idleStateSendAttributes );
 
   sendConfirmContainer.add(sendConfirmButton);
   objsToTest.push(sendConfirmButton);
