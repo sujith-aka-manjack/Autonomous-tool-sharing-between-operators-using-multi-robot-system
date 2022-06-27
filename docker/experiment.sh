@@ -4,7 +4,10 @@
 # 
 # 1) To run the docker container with the ARGoS simulation:
 #
-#   $ ./experiment.sh run 
+#   $ ./experiment.sh run <condition> <order>
+#
+#    where 'condition' = { direct | indirect | debug },
+#          'order' = { 1 | 2 }
 #
 # 2) To compress the result data:
 #
