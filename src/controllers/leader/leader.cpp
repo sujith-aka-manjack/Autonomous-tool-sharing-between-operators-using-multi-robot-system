@@ -965,7 +965,7 @@ void CLeader::CheckHeartBeat() {
 
                         // DEBUG
                         if( !m_bSelected ) {
-                            numRobotsToSend = numRobotsRequested + 1;
+                            numRobotsToSend = numRobotsRequested;
                             numRobotsRemainingToSend = numRobotsToSend;
                         }
 
