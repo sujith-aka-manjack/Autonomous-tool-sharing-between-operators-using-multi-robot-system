@@ -13,14 +13,14 @@
   <script type="text/javascript">
           // Load user's existing unique ID
           $(document).ready(function(){
-            console.log("Existing ID: {{unique_id}}");
-            if("{{unique_id}}" !== "") {
-              document.getElementById('myCurrentID').innerHTML = "{{unique_id}}";
+            console.log("Existing ID: {{session.username}}");
+            if("{{session.username}}" !== "") {
+              document.getElementById('myCurrentID').innerHTML = "{{session.username}}";
             }
           });
           // Record the user's unique ID
           $(function() {
-            $('a#InputID').on('click', function(e) {
+            $('a#button-input-ID').on('click', function(e) {
               e.preventDefault()
               const unique_id = document.getElementById('InputID').value;
               if(unique_id) {
@@ -61,7 +61,7 @@
           </div>
         </div>
         <form class="text-center" style="margin-top:0.5cm;">
-          <a href="#" id="InputID" class="btn btn-primary" >Confirm my unique ID</a>
+          <a href="#" id="button-input-ID" class="btn btn-primary" >Confirm my unique ID</a>
         </form>
         <div class="text-center" style="margin-top:0.5cm;">        
           <p style="font-family:'Courier New'; font-size:20px"><b>My unique ID:</b> <span id="myCurrentID">empty</span></p>

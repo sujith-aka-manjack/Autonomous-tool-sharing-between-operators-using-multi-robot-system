@@ -35,11 +35,36 @@
               }
               
               // if user has an id, send the id to the simulation
-              if("{{unique_id}}" !== "None") {
-                link += "&id={{unique_id}}"
+              if("{{session.username}}" !== "None") {
+                link += "&id={{session.username}}"
               }
 
               window.open(link, '_blank');
+              return false;
+            });
+          });
+
+          // Load user's existing IP address to another computer
+          $(document).ready(function(){
+            console.log("Existing host IP: {{session.host_ip}}");
+            if("{{session.host_ip}}" !== "") {
+              document.getElementById('InputIP').value = "{{session.host_ip}}";
+            }
+          });
+
+          // Record the user's IP address to another computer
+          $(function() {
+            $('a#connect').on('click', function(e) {
+              e.preventDefault()
+              const host_ip = document.getElementById('InputIP').value;
+              if(host_ip) {
+                $.ajax({ 
+                    url: '/background_process_record_host_ip', 
+                    type: 'POST', 
+                    data: host_ip
+                })
+                // document.getElementById('myCurrentID').innerHTML = host_ip;
+              }
               return false;
             });
           });

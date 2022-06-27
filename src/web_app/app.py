@@ -68,7 +68,7 @@ def default():
 @app.route("/startpage", methods=["GET"])
 def startpage():
     if 'username' in session:
-        return render_template("start_page.html", unique_id=session['username'])
+        return render_template("start_page.html", session=session)
     else:
         return render_template("start_page.html")
 
@@ -77,7 +77,7 @@ def startpage():
 @app.route("/trainingpage", methods=["GET"])
 def trainingpage():
     if 'username' in session:
-        return render_template("training_page.html", mode=mode, unique_id=session['username'])
+        return render_template("training_page.html", mode=mode, session=session)
     else:
         return redirect(url_for('startpage'))
 
@@ -86,7 +86,7 @@ def trainingpage():
 @app.route("/trial1page", methods=["GET"])
 def trial1page():
     if 'username' in session:
-        return render_template("trial1_page.html", mode=mode, unique_id=session['username'])
+        return render_template("trial1_page.html", mode=mode, session=session)
     else:
         return redirect(url_for('startpage'))
 
@@ -95,7 +95,7 @@ def trial1page():
 @app.route("/trial2page", methods=["GET"])
 def trial2page():
     if 'username' in session:
-        return render_template("trial2_page.html", mode=mode, unique_id=session['username'])
+        return render_template("trial2_page.html", mode=mode, session=session)
     else:
         return redirect(url_for('startpage'))
 
@@ -119,6 +119,7 @@ def endpage():
 @app.route('/delete')
 def delete_username():
     session.pop('username', default=None)
+    session.pop('host_ip', default=None)
     return redirect(url_for('startpage'))
 
 
@@ -164,6 +165,14 @@ def background_process_stop():
 def background_process_record_id():
     session['username'] = request.get_data().decode('UTF-8')
     print ("Received id: {}".format(session['username']))
+    return ("nothing")
+
+
+# Background process: Record the host IP address
+@app.route('/background_process_record_host_ip', methods=['POST'])
+def background_process_record_host_ip():
+    session['host_ip'] = request.get_data().decode('UTF-8')
+    print ("Received host_ip: {}".format(session['host_ip']))
     return ("nothing")
 
 

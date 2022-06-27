@@ -28,8 +28,8 @@
             $('a#connect').on('click', function(e) {
               var link = 'http://0.0.0.0:8000?m={{mode}}&l=1';
               // if user has an id, send the id to the simulation
-              if("{{unique_id}}" !== "None") {
-                link += "&id={{unique_id}}"
+              if("{{session.username}}" !== "None") {
+                link += "&id={{session.username}}"
               }
               window.open(link, '_blank');
               return false;
