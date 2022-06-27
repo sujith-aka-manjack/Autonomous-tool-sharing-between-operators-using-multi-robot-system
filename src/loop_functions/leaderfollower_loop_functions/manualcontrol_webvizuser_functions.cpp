@@ -87,8 +87,14 @@ void CManualControlWebvizUserFunctions::HandleCommandFromClient(const std::strin
                     for(std::string::size_type i = 0; i < direction.size(); i++) {
                         if(direction[i] == 'U') ++FBDirection;
                         if(direction[i] == 'D') --FBDirection;
-                        if(direction[i] == 'L') ++LRDirection;
-                        if(direction[i] == 'R') --LRDirection;
+                        if(FBDirection < 0) {
+                            /* Invert LR direction when moving backwards */
+                            if(direction[i] == 'L') --LRDirection;
+                            if(direction[i] == 'R') ++LRDirection;
+                        } else {
+                            if(direction[i] == 'L') ++LRDirection;
+                            if(direction[i] == 'R') --LRDirection;
+                        }
                     }
                     
                     /* Calculate direction */
