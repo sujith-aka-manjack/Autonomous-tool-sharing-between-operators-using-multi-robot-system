@@ -1597,19 +1597,19 @@ function updateCommands() {
   var move_direction = '';
 
   /* Check movement command */
-  if( keyboard.pressed("up") ) {
+  if( keyboard.pressed("up") || keyboard.pressed("W") ) {
     move_direction += 'U';
   }
 
-  if( keyboard.pressed("down") ) {
+  if( keyboard.pressed("down") || keyboard.pressed("S") ) {
     move_direction += 'D';
   }
   
-  if( keyboard.pressed("left") ) {
+  if( keyboard.pressed("left") || keyboard.pressed("A") ) {
     move_direction += 'L';
   }
   
-  if( keyboard.pressed("right") ) {
+  if( keyboard.pressed("right") || keyboard.pressed("D") ) {
     move_direction += 'R';
   }
 
