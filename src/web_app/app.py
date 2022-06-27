@@ -39,6 +39,8 @@ proc_webclient  = None
 
 # Simulation mode
 mode = None
+# Trial order (1: no excchange -> exchange, 2: exchange -> no exchange)
+order = None
 
 app = Flask(__name__)
 
@@ -86,7 +88,7 @@ def trainingpage():
 @app.route("/trial1page", methods=["GET"])
 def trial1page():
     if 'username' in session:
-        return render_template("trial1_page.html", mode=mode, session=session)
+        return render_template("trial1_page.html", mode=mode, order=order, session=session)
     else:
         return redirect(url_for('startpage'))
 
@@ -95,7 +97,7 @@ def trial1page():
 @app.route("/trial2page", methods=["GET"])
 def trial2page():
     if 'username' in session:
-        return render_template("trial2_page.html", mode=mode, session=session)
+        return render_template("trial2_page.html", mode=mode, order=order, session=session)
     else:
         return redirect(url_for('startpage'))
 
@@ -197,10 +199,10 @@ if __name__ == "__main__":
                         help='The communication mode to use in the simulation (choose "indirect" for default capability).',
                         default='indirect')
 
-    # parser.add_argument('-o', '--order', type=int,
-    #                     choices=range(1, 3),
-    #                     help='The order in which the tasks will be presented.',
-    #                     default=1)
+    parser.add_argument('-o', '--order', type=int,
+                        choices=range(1, 3),
+                        help='The order in which the tasks will be presented.',
+                        default=1)
     
     args = parser.parse_args()
     if args.mode == 'indirect':
@@ -210,11 +212,22 @@ if __name__ == "__main__":
     else:
         mode = args.mode
         
-    # order = args.order
+    order = args.order
 
     print('------------------')
-    print('Mode\t: {}'.format(mode))
-    # print('Order\t: {}'.format(order))
+    if mode == 'ind':
+        print('Mode\t: indirect')
+    elif mode == 'dir':
+        print('Mode\t: direct')
+    else:
+        print('Mode\t: unrecognized')
+
+    if order == 1:
+        print('Order\t: [0,1]')
+    elif order == 2:
+        print('Order\t: [1,0]')
+    else:
+        print('Order\t: unrecognized')
     print('------------------')
 
     app.run(debug=False, host='0.0.0.0')

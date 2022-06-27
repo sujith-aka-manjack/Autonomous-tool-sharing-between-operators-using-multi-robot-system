@@ -4,7 +4,7 @@
 # 
 # 1) To run the docker container with the ARGoS simulation:
 #
-#   $ ./experiment.sh run
+#   $ ./experiment.sh run 
 #
 # 2) To compress the result data:
 #
@@ -12,14 +12,17 @@
 #
 
 mode=$1
+condition=$2
+order=$3
 
-echo "Mode: $mode"
+echo "Mode : $mode"
+echo "Order: $order"
 
 if [ $mode = "run" ]
 then
     echo "Starting docker container..."
     cd ~/Documents/hsi-experiment
-    docker run --name argos -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v $(pwd)/results:/home/docker/argos-sct/results -w /home/docker/argos-sct genki15/argos-sct python3 src/web_app/app.py
+    docker run --name argos -it -p 3000:3000 -p 8000:8000 -p 5000:5000 -v $(pwd)/results:/home/docker/argos-sct/results -w /home/docker/argos-sct genki15/argos-sct python3 src/web_app/app.py -m $condition -o $order
 elif [ $mode = "compress" ]
 then
     echo "Compressing experiment data..."

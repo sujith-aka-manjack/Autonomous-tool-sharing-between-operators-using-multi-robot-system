@@ -549,6 +549,19 @@ var onAllFilesLoaded = function () {
         
       console.log("Mode: " + window.mode);
 
+      switch(urlParams.get('rs')) {
+        case '0':
+          window.request_send_visible = false;
+          console.log(window.request_send_visible);
+          break;
+        case '1':
+          window.request_send_visible = true;
+          console.log(window.request_send_visible);
+          break;
+        default:
+          console.log('Unrecognized request-send signal passed in url: ' + urlParams.get('rs'))
+      }
+
       /* Set robot to connect from url param */
       if(urlParams.get('l')) {
         var robot_found = false;

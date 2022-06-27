@@ -26,17 +26,22 @@
           // Connect to simulation
           $(function() {
             $('a#connect').on('click', function(e) {
-              var link = 'http://0.0.0.0:8000?m={{mode}}&l=1';
+              // feature to request & send is turned OFF by default
+              var request_and_send = 0;
+              // turn ON request & send if order = 2
+              if('{{order}}' == '2') request_and_send = 1;
+
+              var link = 'http://0.0.0.0:8000?m={{mode}}&rs='+request_and_send+'&l=1';
               const ip_addr = document.getElementById('InputIP').value;
 
               // if form is not empty, connect to simulation running in a specific address
               if(ip_addr) {
-                link = 'http://'+ip_addr+':8000?m={{mode}}&l=2';
+                link = 'http://'+ip_addr+':8000?m={{mode}}&rs='+request_and_send+'&l=2';
               }
               
               // if user has an id, send the id to the simulation
-              if("{{session.username}}" !== "None") {
-                link += "&id={{session.username}}"
+              if('{{session.username}}' !== 'None') {
+                link += '&id={{session.username}}'
               }
 
               window.open(link, '_blank');

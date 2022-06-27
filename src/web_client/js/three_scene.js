@@ -643,7 +643,7 @@ function initSceneWithScale(_scale) {
   
   /* Send Robot Block */
 
-  const sendContainer = new ThreeMeshUI.Block({
+  window.sendContainer = new ThreeMeshUI.Block({
     // ref: 'container',
     padding: 0.025,
     height: 120,
@@ -658,8 +658,11 @@ function initSceneWithScale(_scale) {
 		borderWidth: 4,
 		borderOpacity: 1,
   });
-  sendContainer.position.set( window.threejs_panel.width() / 2 - 155, window.threejs_panel.height() / 2 - 76, 0 );
-  sceneOrtho.add(sendContainer);
+  window.sendContainer.position.set( window.threejs_panel.width() / 2 - 155, window.threejs_panel.height() / 2 - 76, 0 );
+  sceneOrtho.add(window.sendContainer);
+
+  // Set visibility setting
+  window.sendContainer.visible = window.request_send_visible;
 
     /* Control Block */
 
@@ -672,7 +675,7 @@ function initSceneWithScale(_scale) {
 		// borderColor: new THREE.Color( 0, 0.5, 1 ),
 		borderOpacity: 0,
   });
-  sendContainer.add(sendNumberContainer);
+  window.sendContainer.add(sendNumberContainer);
 
   /* Label Block */
 
@@ -733,7 +736,7 @@ function initSceneWithScale(_scale) {
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
     borderOpacity: 0,
   });
-  sendContainer.add(sendToggleContainer);
+  window.sendContainer.add(sendToggleContainer);
 
   const hoveredStateAttributes = {
     state: "hovered",
@@ -847,7 +850,7 @@ function initSceneWithScale(_scale) {
     // borderColor: new THREE.Color( 0, 0.5, 1 ),
     borderOpacity: 0,
   });
-  sendContainer.add(sendConfirmContainer);
+  window.sendContainer.add(sendConfirmContainer);
 
   /* Only add request button if the current mode is NOT direct */
   if(window.mode != Mode.DIRECT) {
