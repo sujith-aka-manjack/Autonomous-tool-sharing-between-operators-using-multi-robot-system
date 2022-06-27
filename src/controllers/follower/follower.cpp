@@ -482,14 +482,11 @@ void CFollower::ControlStep() {
                 // if(msg.second.type == 'R')
                 //     requesting = true;
             }
-            // if(requesting)
-            //     m_pcLEDs->SetAllColors(CColor::YELLOW);
-            if(sending)
-                m_pcLEDs->SetAllColors(CColor::WHITE);
-            else
-                m_pcLEDs->SetAllColors(CColor::CYAN);
-
-            // m_pcLEDs->SetAllColors(CColor::BLUE);
+            // if(sending)
+            //     m_pcLEDs->SetAllColors(CColor::WHITE);
+            // else
+            //     m_pcLEDs->SetAllColors(CColor::CYAN);
+            m_pcLEDs->SetAllColors(CColor::CYAN);
 
             /* Leader task signal */
             // Skip to next part
@@ -514,7 +511,14 @@ void CFollower::ControlStep() {
         }
         case RobotState::TRAVELER: {
             // std::cout << "State: TRAVELER" << std::endl;
-            m_pcLEDs->SetAllColors(CColor::YELLOW);
+
+            // m_pcLEDs->SetAllColors(CColor::YELLOW);
+
+            if((int)initStepTimer / 10 % 2 == 1) {
+                m_pcLEDs->SetAllColors(CColor::MAGENTA);
+            } else {
+                m_pcLEDs->SetAllColors(CColor::BLACK);
+            }
 
             /* Leader signal */
             // Skip to next part
