@@ -60,7 +60,7 @@ class SimData:
 
 def main():
 
-    path = '../../results/user_study_scenario1_order1/user_study_scenario1_order1_001/log_data.pb'
+    path = '/home/genki/GIT/argos-sct/results/results_2022-06-24_16-11/user_study_scenario1/user_study_scenario1_001/log_data.pb'
     s = SimData(path)
 
     print(s.totalTime)

@@ -30,7 +30,7 @@ elif [ $mode = "compress" ]
 then
     echo "Compressing experiment data..."
     cd ~/Documents/hsi-experiment
-    filename=$(date +"results_%Y-%m-%d_%H:%M")
+    filename=$(date +"results_%Y-%m-%d_%H-%M")
     zip -r ./$filename.zip results/*
     mv results $filename
 else

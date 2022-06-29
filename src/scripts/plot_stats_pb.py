@@ -213,6 +213,7 @@ def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out
     plt.savefig(out_filename, bbox_inches='tight')
     plt.close()
 
+
 def main(argv):
     stats = load_stats(argv)
 
@@ -261,16 +262,16 @@ def main(argv):
         print('Average Time: No trials succeeded')
 
     # Plot overall stats
-    scenario_name = dirPath.split('/')[-1]
-    plot_filename = '{0}/{1}/overall_robot-states.pdf'.format(OUTPUT_DIR, scenario_name)
-    plot_overall_robot_states(stats,
-                              title='Average number of robots in each team',
-                              x_label='Time (seconds)',
-                              y_label='Number of robots',
-                              out_filename=plot_filename)
+    # scenario_name = dirPath.split('/')[-1]
+    # plot_filename = '{0}/{1}/overall_robot-states.pdf'.format(OUTPUT_DIR, scenario_name)
+    # plot_overall_robot_states(stats,
+    #                           title='Average number of robots in each team',
+    #                           x_label='Time (seconds)',
+    #                           y_label='Number of robots',
+    #                           out_filename=plot_filename)
 
 
 if __name__ == "__main__":
     
-    dirPath = "/home/genki/GIT/argos-sct/results/user_study_scenario1_order2"
+    dirPath = "/home/genki/GIT/argos-sct/results/results_2022-06-24_16-11/user_study_scenario1"
     main(dirPath)

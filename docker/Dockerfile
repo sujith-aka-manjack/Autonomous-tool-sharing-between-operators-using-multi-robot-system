@@ -129,4 +129,4 @@ RUN apt-get autoremove -y &&\
     rm -rf /usr/local/src/*
 
 # WORKDIR /home/docker/argos-sct
-# ENTRYPOINT [ "python3", "src/scripts/app/app.py" ]
+# ENTRYPOINT [ "python3", "src/scripts/app/app.py -m indirect -o 1" ]
