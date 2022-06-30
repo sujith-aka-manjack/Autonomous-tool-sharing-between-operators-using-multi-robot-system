@@ -113,18 +113,18 @@
 
     <!-- Tasks that the teams must complete -->
     <tasks>
-      <task position="1.5, 2.25" width="1" height="0.9" minimum_robot_num="8" maximum_robot_num="100" task_demand="500" />
+      <task position="1.5, 2.25" width_x="1" width_y="1" height="0.5" minimum_robot_num="8" maximum_robot_num="100" task_demand="500" />
       <!-- <task position="1.5, 0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
       <!-- <task position="1.5, -0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
-      <task position="1.5, -2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
-      <task position="0, 2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
+      <task position="1.5, -2.25" width_x="1" width_y="1" height="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
+      <task position="0, 2.25" width_x="1" width_y="1" height="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
       <!-- <task position="0, 0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
-      <task position="0, -0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" />
+      <task position="0, -0.75" width_x="1" width_y="1" height="0.5" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" />
       <!-- <task position="0, -2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" /> -->
       <!-- <task position="-1.5, 2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" /> -->
-      <task position="-1.5, 0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" />
+      <task position="-1.5, 0.75" width_x="1" width_y="1" height="0.5" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" />
       <!-- <task position="-1.5, -0.75" width="1" height="0.9" minimum_robot_num=" 1" maximum_robot_num="100" task_demand="500" /> -->
-      <task position="-1.5, -2.25" width="1" height="0.9" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
+      <task position="-1.5, -2.25" width_x="1" width_y="1" height="0.5" minimum_robot_num="1" maximum_robot_num="100" task_demand="500" />
     </tasks>
   </loop_functions>
 

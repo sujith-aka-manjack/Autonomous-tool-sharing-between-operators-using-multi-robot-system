@@ -807,11 +807,10 @@ void CExperimentLoopFunctions::InitTasks() {
         /* Task center */
         CVector2 cCenter;
         GetNodeAttribute(tDistr, "position", cCenter);
-        /* Task width */
-        Real fWidth;
-        GetNodeAttribute(tDistr, "width", fWidth);
-        /* Task height */
-        Real fHeight;
+        /* Task dimensions */
+        Real fWidthX, fWidthY, fHeight;
+        GetNodeAttribute(tDistr, "width_x", fWidthX);
+        GetNodeAttribute(tDistr, "width_y", fWidthY);
         GetNodeAttribute(tDistr, "height", fHeight);
         /* Task demand */
         UInt32 unDemand;
@@ -824,7 +823,7 @@ void CExperimentLoopFunctions::InitTasks() {
         GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
         
         /* Place Tasks */
-        PlaceRectangleTask(cCenter, fWidth, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+        PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
 
         /* Update task count */
         unNextTaskId++;
@@ -1060,7 +1059,8 @@ void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
 /****************************************/
 
 void CExperimentLoopFunctions::PlaceRectangleTask(const CVector2& c_center,
-                                         Real f_width,
+                                         Real f_width_x,
+                                         Real f_width_y,
                                          Real f_height,
                                          UInt32 un_demand,
                                          UInt32 un_min_robot_num,
@@ -1077,7 +1077,8 @@ void CExperimentLoopFunctions::PlaceRectangleTask(const CVector2& c_center,
         /* Create the task and add it to ARGoS space */
         pcRTS = new CRectangleTaskEntity(cTSId.str(),
                                       c_center,
-                                      f_width,
+                                      f_width_x,
+                                      f_width_y,
                                       f_height,
                                       un_demand,
                                       un_min_robot_num,

@@ -83,7 +83,8 @@ private:
 
    /* Place a task */
    void PlaceRectangleTask(const CVector2& c_center,
-                  Real f_width,
+                  Real f_width_x,
+                  Real f_width_y,
                   Real f_height,
                   UInt32 un_demand,
                   UInt32 un_min_robot_num,

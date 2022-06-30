@@ -14,11 +14,11 @@
         var geometry = new THREE.BoxBufferGeometry(
             entity.scale.x * scale,
             entity.scale.y * scale,
-            10
+            entity.scale.z * scale,
         );
 
         /* Bring above ground */
-        geometry.translate(0, 0, 4.9);
+        geometry.translate(0, 0, entity.scale.z * scale / 2 - 0.1);
 
         var demand = entity.task.demand;
 
@@ -66,7 +66,7 @@
                 ].join('\n'),
             });
 
-            this.sprite.position.z = 13;
+            this.sprite.position.z = entity.scale.z * scale + 4;
 
             meshParent.add(this.sprite);
         }
