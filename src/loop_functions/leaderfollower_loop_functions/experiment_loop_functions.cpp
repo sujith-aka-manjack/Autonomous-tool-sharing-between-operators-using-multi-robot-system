@@ -807,14 +807,26 @@ void CExperimentLoopFunctions::InitTasks() {
         /* Task center */
         CVector2 cCenter;
         GetNodeAttribute(tDistr, "position", cCenter);
+
         /* Task dimensions */
         Real fWidthX, fWidthY, fHeight;
-        GetNodeAttribute(tDistr, "width_x", fWidthX);
-        GetNodeAttribute(tDistr, "width_y", fWidthY);
-        GetNodeAttribute(tDistr, "height", fHeight);
         /* Task demand */
         UInt32 unDemand;
-        GetNodeAttribute(tDistr, "task_demand", unDemand);
+
+        bool param_exists = false;
+
+        try {
+            GetNodeAttribute(tDistr, "width_x", fWidthX);
+            GetNodeAttribute(tDistr, "width_y", fWidthY);
+            GetNodeAttribute(tDistr, "height", fHeight);
+            GetNodeAttribute(tDistr, "task_demand", unDemand);
+            param_exists = true;
+        }
+        catch(CARGoSException& ex) {
+            std::cout << "[LOG] Task parameter missing. Using presets according to min robot size {1,3,6,9,12}." << std::endl;
+            // THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
+        }
+
         /* Minimum robot constraint */
         UInt32 unMinRobotNum;
         GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
@@ -823,7 +835,30 @@ void CExperimentLoopFunctions::InitTasks() {
         GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
         
         /* Place Tasks */
-        PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+        if(param_exists) {
+            PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+        } else {
+            switch (unMinRobotNum) {
+                case 1:
+                    PlaceRectangleTask(cCenter, 0.4, 0.4, 0.2, 200, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+                    break;
+                case 3:
+                    PlaceRectangleTask(cCenter, 0.5, 0.5, 0.25, 300, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+                    break;
+                case 6:
+                    PlaceRectangleTask(cCenter, 0.6, 0.6, 0.3, 400, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+                    break;
+                case 9:
+                    PlaceRectangleTask(cCenter, 0.8, 0.8, 0.35, 500, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+                    break;
+                case 12:
+                    PlaceRectangleTask(cCenter, 1.0, 1.0, 0.4, 600, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+                    break;
+                default:
+                    std::cout << "[LOG] Could not place task." << std::endl;
+                    break;
+            }
+        }
 
         /* Update task count */
         unNextTaskId++;
