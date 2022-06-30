@@ -38,6 +38,19 @@ private:
    bool m_bTaskComplete;
    std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
 
+   CRange<Real> cArenaSideX[4] = {
+                                    CRange<Real>(0.5f, 1.45f), // TEMPORARY: hard coded arena size
+                                    CRange<Real>(0.5f, 1.45f),
+                                    CRange<Real>(-1.45f, -0.5f),
+                                    CRange<Real>(-1.45f, -0.5f),
+                                 };
+   CRange<Real> cArenaSideY[4] = {
+                                    CRange<Real>(-1.45f, -0.5f), // TEMPORARY: hard coded arena size
+                                    CRange<Real>(0.5f, 1.45f),
+                                    CRange<Real>(-1.45f, -0.5f),
+                                    CRange<Real>(0.5f, 1.45f),
+                                 };
+
    /* Output file */
    bool m_bLogging;
    std::string m_strOutput;

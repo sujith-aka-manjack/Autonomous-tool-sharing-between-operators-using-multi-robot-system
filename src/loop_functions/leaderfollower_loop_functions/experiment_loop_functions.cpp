@@ -755,6 +755,129 @@ void CExperimentLoopFunctions::InitRobots() {
 /****************************************/
 /****************************************/
 
+// void CExperimentLoopFunctions::InitTasks() {
+//     /*
+//     * Initialize tasks
+//     */
+
+//     std::cout << "[LOG] Adding tasks..." << std::endl;
+
+//     /* ID counts */
+//     UInt32 unNextTaskId = 1;
+//     /* Meta data */
+//     size_t unTotalTasks = 0;
+//     UInt32 unTaskDemand = 0; 
+//     /* Get the teams node */
+//     TConfigurationNode& ts_tree = GetNode(config, "tasks");
+//     /* Go through the nodes (tasks) */
+//     TConfigurationNodeIterator itDistr;
+//     for(itDistr = itDistr.begin(&ts_tree);
+//         itDistr != itDistr.end();
+//         ++itDistr) {
+
+//         m_bTaskExists = true;
+//         m_bTaskComplete = false;
+
+//         // /* Get current node (task) */
+//         // TConfigurationNode& tDistr = *itDistr;
+//         // /* Task center */
+//         // CVector2 cCenter;
+//         // GetNodeAttribute(tDistr, "position", cCenter);
+//         // /* Task radius */
+//         // Real fRadius;
+//         // GetNodeAttribute(tDistr, "radius", fRadius);
+//         // /* Task demand */
+//         // UInt32 unDemand;
+//         // GetNodeAttribute(tDistr, "task_demand", unDemand);
+//         // /* Minimum robot constraint */
+//         // UInt32 unMinRobotNum;
+//         // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+//         // /* Maximum robot constraint */
+//         // UInt32 unMaxRobotNum;
+//         // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+        
+//         // /* Place Tasks */
+//         // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+
+//         // /* Update task count */
+//         // unNextTaskId++;
+
+//         /* Get current node (task) */
+//         TConfigurationNode& tDistr = *itDistr;
+//         /* Task center */
+//         CVector2 cCenter;
+//         GetNodeAttribute(tDistr, "position", cCenter);
+
+//         /* Task dimensions */
+//         Real fWidthX, fWidthY, fHeight;
+//         /* Task demand */
+//         UInt32 unDemand;
+
+//         bool param_exists = false;
+
+//         try {
+//             GetNodeAttribute(tDistr, "width_x", fWidthX);
+//             GetNodeAttribute(tDistr, "width_y", fWidthY);
+//             GetNodeAttribute(tDistr, "height", fHeight);
+//             GetNodeAttribute(tDistr, "task_demand", unDemand);
+//             param_exists = true;
+//         }
+//         catch(CARGoSException& ex) {
+//             std::cout << "[LOG] Task parameter missing. Using presets according to min robot size {1,3,6,9,12}." << std::endl;
+//             // THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
+//         }
+
+//         /* Minimum robot constraint */
+//         UInt32 unMinRobotNum;
+//         GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+//         /* Maximum robot constraint */
+//         UInt32 unMaxRobotNum;
+//         GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+        
+//         /* Place Tasks */
+//         if(param_exists) {
+//             PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//         } else {
+//             switch (unMinRobotNum) {
+//                 case 1:
+//                     PlaceRectangleTask(cCenter, 0.4, 0.4, 0.2, 200, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     break;
+//                 case 3:
+//                     PlaceRectangleTask(cCenter, 0.5, 0.5, 0.25, 300, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     break;
+//                 case 6:
+//                     PlaceRectangleTask(cCenter, 0.6, 0.6, 0.3, 400, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     break;
+//                 case 9:
+//                     PlaceRectangleTask(cCenter, 0.8, 0.8, 0.35, 500, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     break;
+//                 case 12:
+//                     PlaceRectangleTask(cCenter, 1.0, 1.0, 0.4, 600, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     break;
+//                 default:
+//                     std::cout << "[LOG] Could not place task." << std::endl;
+//                     break;
+//             }
+//         }
+
+//         /* Update task count */
+//         unNextTaskId++;
+
+//         unTotalTasks++;
+//         unTaskDemand += unDemand;
+//     }
+
+//     if(m_bLogging) {
+//         /* Write to file */
+//         m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+//         m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
+//         m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
+//         m_cOutput.close();
+//     }
+
+//     std::cout << "[LOG] Added tasks" << std::endl;
+// }
+
 void CExperimentLoopFunctions::InitTasks() {
     /*
     * Initialize tasks
@@ -765,100 +888,74 @@ void CExperimentLoopFunctions::InitTasks() {
     /* ID counts */
     UInt32 unNextTaskId = 1;
     /* Meta data */
-    size_t unTotalTasks = 0;
+    UInt32 unInitTasks = 4;
+    UInt32 unTotalTasks = 0;
     UInt32 unTaskDemand = 0; 
-    /* Get the teams node */
-    TConfigurationNode& ts_tree = GetNode(config, "tasks");
-    /* Go through the nodes (tasks) */
-    TConfigurationNodeIterator itDistr;
-    for(itDistr = itDistr.begin(&ts_tree);
-        itDistr != itDistr.end();
-        ++itDistr) {
 
-        m_bTaskExists = true;
-        m_bTaskComplete = false;
+    m_bTaskExists = true;
+    m_bTaskComplete = false;
 
-        // /* Get current node (task) */
-        // TConfigurationNode& tDistr = *itDistr;
-        // /* Task center */
-        // CVector2 cCenter;
-        // GetNodeAttribute(tDistr, "position", cCenter);
-        // /* Task radius */
-        // Real fRadius;
-        // GetNodeAttribute(tDistr, "radius", fRadius);
-        // /* Task demand */
-        // UInt32 unDemand;
-        // GetNodeAttribute(tDistr, "task_demand", unDemand);
-        // /* Minimum robot constraint */
-        // UInt32 unMinRobotNum;
-        // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
-        // /* Maximum robot constraint */
-        // UInt32 unMaxRobotNum;
-        // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
-        
-        // /* Place Tasks */
-        // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+    // TODO: Check if task exists at all in argos file
 
-        // /* Update task count */
-        // unNextTaskId++;
+    for(UInt32 i = 0; i < unInitTasks; ++i) {
 
-        /* Get current node (task) */
-        TConfigurationNode& tDistr = *itDistr;
-        /* Task center */
-        CVector2 cCenter;
-        GetNodeAttribute(tDistr, "position", cCenter);
+        // Pick random number {0-11 so 12 items}
+        CRange<UInt32> cIntRange = CRange<UInt32>(0,12);
+        UInt32 unChosen = m_pcRNG->Uniform(cIntRange);
+
+        // Set params according to num
+        // dimensions (length, height)
+        // demand
+        // min robot
 
         /* Task dimensions */
         Real fWidthX, fWidthY, fHeight;
         /* Task demand */
         UInt32 unDemand;
-
-        bool param_exists = false;
-
-        try {
-            GetNodeAttribute(tDistr, "width_x", fWidthX);
-            GetNodeAttribute(tDistr, "width_y", fWidthY);
-            GetNodeAttribute(tDistr, "height", fHeight);
-            GetNodeAttribute(tDistr, "task_demand", unDemand);
-            param_exists = true;
-        }
-        catch(CARGoSException& ex) {
-            std::cout << "[LOG] Task parameter missing. Using presets according to min robot size {1,3,6,9,12}." << std::endl;
-            // THROW_ARGOSEXCEPTION_NESTED("Error initializing loop functions!", ex);
-        }
-
-        /* Minimum robot constraint */
+        /* Min and Max robot constraint */
         UInt32 unMinRobotNum;
-        GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
-        /* Maximum robot constraint */
-        UInt32 unMaxRobotNum;
-        GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
-        
-        /* Place Tasks */
-        if(param_exists) {
-            PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+        UInt32 unMaxRobotNum = 100;
+
+        if(unChosen == 0 || unChosen == 1 || unChosen == 2) {
+            fWidthX = fWidthY = 0.4;
+            fHeight = 0.2;
+            unDemand = 200;
+            unMinRobotNum = 1;
+        } else if (unChosen == 3 || unChosen == 4 || unChosen == 5) {
+            fWidthX = fWidthY = 0.5;
+            fHeight = 0.25;
+            unDemand = 300;
+            unMinRobotNum = 3;
+        } else if (unChosen == 6 || unChosen == 7) {
+            fWidthX = fWidthY = 0.6;
+            fHeight = 0.3;
+            unDemand = 400;
+            unMinRobotNum = 6;
+        } else if (unChosen == 8 || unChosen == 9) {
+            fWidthX = fWidthY = 0.8;
+            fHeight = 0.35;
+            unDemand = 500;
+            unMinRobotNum = 9;
         } else {
-            switch (unMinRobotNum) {
-                case 1:
-                    PlaceRectangleTask(cCenter, 0.4, 0.4, 0.2, 200, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                    break;
-                case 3:
-                    PlaceRectangleTask(cCenter, 0.5, 0.5, 0.25, 300, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                    break;
-                case 6:
-                    PlaceRectangleTask(cCenter, 0.6, 0.6, 0.3, 400, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                    break;
-                case 9:
-                    PlaceRectangleTask(cCenter, 0.8, 0.8, 0.35, 500, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                    break;
-                case 12:
-                    PlaceRectangleTask(cCenter, 1.0, 1.0, 0.4, 600, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                    break;
-                default:
-                    std::cout << "[LOG] Could not place task." << std::endl;
-                    break;
-            }
+            fWidthX = fWidthY = 1.0;
+            fHeight = 0.4;
+            unDemand = 600;
+            unMinRobotNum = 12;
         }
+
+        // std::cout << "robot needed: " << unMinRobotNum << std::endl;
+
+        // Pick random position (CVector2)
+
+        CVector2 cCenter = CVector2(m_pcRNG->Uniform(cArenaSideX[i]),  
+                                    m_pcRNG->Uniform(cArenaSideY[i]));
+
+        // std::cout << "random pos (" << cCenter.GetX() << ", " << cCenter.GetY() << ")" << std::endl;
+
+        // PlaceTask
+        PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+
+        // Add 4 points of task (dict: x1, x2, y1, y2) to vec
 
         /* Update task count */
         unNextTaskId++;
@@ -869,10 +966,10 @@ void CExperimentLoopFunctions::InitTasks() {
 
     if(m_bLogging) {
         /* Write to file */
-        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-        m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
-        m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
-        m_cOutput.close();
+        // m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+        // m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
+        // m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
+        // m_cOutput.close();
     }
 
     std::cout << "[LOG] Added tasks" << std::endl;
