@@ -254,10 +254,10 @@ void CManualControlQTUserFunctions::DrawInWorld() {
 
          // std::cout << cTask.GetWidth() << " " << cTask.GetHeight() << std::endl;
 
-         std::vector<CVector2> points = { CVector2(-0.5*cTask.GetWidth(),0.5*cTask.GetHeight()),
-                                             CVector2(0.5*cTask.GetWidth(),0.5*cTask.GetHeight()),
-                                             CVector2(0.5*cTask.GetWidth(),-0.5*cTask.GetHeight()),
-                                             CVector2(-0.5*cTask.GetWidth(),-0.5*cTask.GetHeight())};
+         std::vector<CVector2> points = { CVector2(-0.5*cTask.GetWidthX(),0.5*cTask.GetWidthY()),
+                                          CVector2(0.5*cTask.GetWidthX(),0.5*cTask.GetWidthY()),
+                                          CVector2(0.5*cTask.GetWidthX(),-0.5*cTask.GetWidthY()),
+                                          CVector2(-0.5*cTask.GetWidthX(),-0.5*cTask.GetWidthY())};
 
          // for(const auto& pt : points) {
          //    std::cout << pt << std::endl;
@@ -281,7 +281,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
             //          CColor(128U, 255U, 128U, 255U),
             //          true,
             //          40U);
-            std::vector<CVector2> points = {CVector2(-0.5,0.5),CVector2(0.5,0.5),CVector2(0.5,-0.5),CVector2(-0.5,-0.5)};
+            // std::vector<CVector2> points = {CVector2(-0.5,0.5),CVector2(0.5,0.5),CVector2(0.5,-0.5),CVector2(-0.5,-0.5)};
             DrawPolygon(CVector3(pos.GetX(), pos.GetY(), 0.001),
                         CQuaternion(),
                         points,

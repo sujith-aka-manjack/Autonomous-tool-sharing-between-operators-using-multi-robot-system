@@ -86,18 +86,14 @@
     }
 
     update(entity) {
-        if (entity.is_movable) {
-            try {
-                this.mesh.position.x = entity.position.x * this.scale;
-                this.mesh.position.y = entity.position.y * this.scale;
+        this.mesh.position.x = entity.position.x * this.scale;
+        this.mesh.position.y = entity.position.y * this.scale;
 
-                this.mesh.rotation.setFromQuaternion(new THREE.Quaternion(
-                    entity.orientation.x,
-                    entity.orientation.y,
-                    entity.orientation.z,
-                    entity.orientation.w));
-            } catch (ignored) { }
-        }
+        this.mesh.rotation.setFromQuaternion(new THREE.Quaternion(
+            entity.orientation.x,
+            entity.orientation.y,
+            entity.orientation.z,
+            entity.orientation.w));
 
         if(this.mesh) {
 
