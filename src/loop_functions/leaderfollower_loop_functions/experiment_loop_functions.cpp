@@ -334,112 +334,96 @@ void CExperimentLoopFunctions::PreStep() {
 
             UInt32 currentDemand = cCTask.GetDemand();
 
+            if(currentDemand == 0)
+                continue; // Skip completed tasks
+
             /* Check if there is enough robots working on the task */
             if(taskWithRobot[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
-                if(currentDemand < taskWithRobot[cCTask.GetId()]) {
+                if(currentDemand == 1) {
                     cCTask.SetDemand(0);
-                    // m_vecTaskPos.erase(cCTask.GetId()); // delete entry from existing tasks
 
                     /* Move task out of arena */
-                    // Move task position to 1000,1000
-                    CVector2 new_pos = CVector2(1000,1000);
-                    cCTask.SetPosition(new_pos);
+                    cCTask.SetPosition(CVector2(1000,1000));
+                    std::map<std::string, Real> task_pos;
+                    // Specify any coordinate outside of arena to ignore it
+                    task_pos["x1"] = 1000;
+                    task_pos["x2"] = 1000;
+                    task_pos["y1"] = 1000;
+                    task_pos["y2"] = 1000;
+                    m_vecTaskPos[stoi(cCTask.GetId().substr(5))] = task_pos;
+
+                    // std::cout << "Hiding " << cCTask.GetId() << std::endl;
 
                     /* Place new task in the arena */
-                    // task placed = false
-                    // while task placed = false
-                        // for 10 times
-                            // pick center
-                                // Check if overlap
-                                    // if ok, break
-                                    // set task placed = true
+                    /* Check if there are still tasks left to place */
+                    if(unTotalTasks < unNextTaskId - 1) {
+                        /* Next task id */
+                        unTotalTasks++;
+                        std::ostringstream task_id;
+                        task_id.str("");
+                        task_id << "task_" << unTotalTasks;
+                        // std::cout << "Next " << task_id.str() << std::endl;
 
-                    
+                        CEntity& entity = GetSpace().GetEntity(task_id.str());
+                        CRectangleTaskEntity& cNextTask = dynamic_cast<CRectangleTaskEntity&>(entity);
 
-                    // bool bTaskPlaced = false;
-                    // while( !bTaskPlaced ) {
-                    //     CRange<UInt32> cIntRange = CRange<UInt32>(0,12);
-                    //     UInt32 unChosen = m_pcRNG->Uniform(cIntRange);
+                        /* Get task dimensions */
+                        Real fWidthX = cNextTask.GetWidthX();
+                        Real fWidthY = cNextTask.GetWidthY();
 
-                    //     /* Task dimensions */
-                    //     Real fWidthX, fWidthY, fHeight;
-                    //     /* Task demand */
-                    //     UInt32 unDemand;
-                    //     /* Min and Max robot constraint */
-                    //     UInt32 unMinRobotNum;
-                    //     UInt32 unMaxRobotNum = 100;
+                        for(UInt32 i = 0; i < 100; ++i) {
 
-                    //     if(unChosen == 0 || unChosen == 1 || unChosen == 2) {
-                    //         fWidthX = fWidthY = 0.4;
-                    //         fHeight = 0.2;
-                    //         unDemand = 200;
-                    //         unMinRobotNum = 1;
-                    //     } else if (unChosen == 3 || unChosen == 4 || unChosen == 5) {
-                    //         fWidthX = fWidthY = 0.5;
-                    //         fHeight = 0.25;
-                    //         unDemand = 300;
-                    //         unMinRobotNum = 3;
-                    //     } else if (unChosen == 6 || unChosen == 7) {
-                    //         fWidthX = fWidthY = 0.6;
-                    //         fHeight = 0.3;
-                    //         unDemand = 400;
-                    //         unMinRobotNum = 6;
-                    //     } else if (unChosen == 8 || unChosen == 9) {
-                    //         fWidthX = fWidthY = 0.8;
-                    //         fHeight = 0.35;
-                    //         unDemand = 500;
-                    //         unMinRobotNum = 9;
-                    //     } else {
-                    //         fWidthX = fWidthY = 1.0;
-                    //         fHeight = 0.4;
-                    //         unDemand = 600;
-                    //         unMinRobotNum = 12;
-                    //     }
+                            /* Get a random position */
+                            CVector2 cCenter = CVector2(m_pcRNG->Uniform(cArenaSideX),  
+                                                        m_pcRNG->Uniform(cArenaSideY));
+                            Real x1 = cCenter.GetX() - fWidthX/2;
+                            Real x2 = cCenter.GetX() + fWidthX/2;
+                            Real y1 = cCenter.GetY() + fWidthY/2;
+                            Real y2 = cCenter.GetY() - fWidthY/2;
 
-                    //     // Try to place the task max 10 times
-                    //     for(UInt32 i = 0; i < 10; ++i) {
-                    //         CVector2 cCenter = CVector2(m_pcRNG->Uniform(cArenaSideX),  
-                    //                                     m_pcRNG->Uniform(cArenaSideY));
+                            // std::cout << "New pos " << x1 << ", " << x2 << ", " << y1 << ", " << y2 << std::endl; 
 
-                    //         bool bInvalidTaskPos = false;
-                    //         for(auto& task_pos : m_vecTaskPos) {
-                    //             if(cCenter.GetX() - fWidthX/2 >= task_pos.second["x1"] &&
-                    //                cCenter.GetX() + fWidthX/2 <= task_pos.second["x2"] &&
-                    //                cCenter.GetY() - fWidthY/2 >= task_pos.second["y1"] &&
-                    //                cCenter.GetY() + fWidthY/2 <= task_pos.second["y2"]) {
+                            /* Check whether the chosen position will result in an overlap with existing tasks */
+                            bool bInvalidTaskPos = false;
+                            for(auto& task_pos : m_vecTaskPos) {
 
-                    //                 bInvalidTaskPos = true;
-                    //             }
-                    //         }
+                                if(task_pos.second["x1"] > 500)
+                                    continue; // Skip tasks outside of arena
 
-                    //         if(bInvalidTaskPos) {
-                    //             continue;
-                    //         } else {
-                    //             // PlaceTask
-                    //             PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
-                                
-                    //             std::map<std::string, Real> task_pos;
-                    //             task_pos["x1"] = cCenter.GetX() - fWidthX/2;
-                    //             task_pos["x2"] = cCenter.GetX() + fWidthX/2;
-                    //             task_pos["y1"] = cCenter.GetY() - fWidthY/2;
-                    //             task_pos["y2"] = cCenter.GetY() + fWidthY/2;
+                                // std::cout << "pos " << task_pos.second["x1"] << ", " << task_pos.second["x2"] << ", " << task_pos.second["y1"] << ", " << task_pos.second["y2"] << std::endl;
 
-                    //             std::ostringstream task_id;
-                    //             task_id.str("task_");
-                    //             task_id << unNextTaskId;
-                    //             m_vecTaskPos[task_id.str()] = task_pos;
+                                /* Adapted from https://stackoverflow.com/a/306332 */
+                                if(x1 < task_pos.second["x2"] && x2 > task_pos.second["x1"] &&
+                                   y1 > task_pos.second["y2"] && y2 < task_pos.second["y1"])
+                                {
+                                    bInvalidTaskPos = true;
+                                }
+                            }
 
-                    //             /* Update task count */
-                    //             unNextTaskId++;
+                            if(bInvalidTaskPos) {
+                                /* Position is invalid. Try again */
+                                // std::cout << "Position is invalid (" << i << "). Trying again..." << std::endl;
+                                continue;
+                            } else {
+                                /* Position is valid. Place task at the chosen position */
+                                // std::cout << "Position is valid (" << cCenter.GetX() << ", " << cCenter.GetY() << ")! Placing task." << std::endl;
 
-                    //             unTotalTasks++;
-                    //             unTaskDemand += unDemand;
+                                cNextTask.SetPosition(CVector2(cCenter.GetX(),cCenter.GetY()));
 
-                    //             bTaskPlaced = true;
-                    //             break;
-                    //         }
-                    //     }
-                    // }
+                                std::map<std::string, Real> task_pos;
+                                task_pos["x1"] = x1;
+                                task_pos["x2"] = x2;
+                                task_pos["y1"] = y1;
+                                task_pos["y2"] = y2;
+
+                                m_vecTaskPos[unTotalTasks] = task_pos;
+
+                                // unTaskDemand += unDemand;
+
+                                break;
+                            }
+                        }
+                    }
                 } else {
                     // cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
                     cCTask.SetDemand(currentDemand - 1);
@@ -991,7 +975,7 @@ void CExperimentLoopFunctions::InitTasks() {
     unNextTaskId = 1;
     /* Meta data */
     UInt32 unHiddenTasks = 20;
-    UInt32 unInitTasks = 4;
+    UInt32 unInitTasks = 3;
     unTotalTasks = 0;
     unTaskDemand = 0; 
 
@@ -1000,7 +984,7 @@ void CExperimentLoopFunctions::InitTasks() {
 
     // TODO: Check if task exists at all in argos file
 
-    for(UInt32 i = 0; i < unHiddenTasks; ++i) {
+    for(UInt32 i = 1; i <= unHiddenTasks; ++i) {
 
         // Pick random number {0-11 so 12 items}
         CRange<UInt32> cIntRange = CRange<UInt32>(0,12);
@@ -1047,7 +1031,7 @@ void CExperimentLoopFunctions::InitTasks() {
         }
 
         CVector2 cCenter = CVector2();
-        if(i < unInitTasks) {
+        if(i <= unInitTasks) {
             // Pick random position (CVector2)
             cCenter = CVector2(m_pcRNG->Uniform(cArenaSideSplitX[i]),  
                                m_pcRNG->Uniform(cArenaSideSplitY[i]));
@@ -1064,13 +1048,10 @@ void CExperimentLoopFunctions::InitTasks() {
         std::map<std::string, Real> task_pos;
         task_pos["x1"] = cCenter.GetX() - fWidthX/2;
         task_pos["x2"] = cCenter.GetX() + fWidthX/2;
-        task_pos["y1"] = cCenter.GetY() - fWidthY/2;
-        task_pos["y2"] = cCenter.GetY() + fWidthY/2;
+        task_pos["y1"] = cCenter.GetY() + fWidthY/2;
+        task_pos["y2"] = cCenter.GetY() - fWidthY/2;
 
-        std::ostringstream task_id;
-        task_id.str("task_");
-        task_id << unNextTaskId;
-        m_vecTaskPos[task_id.str()] = task_pos;
+        m_vecTaskPos[unNextTaskId] = task_pos;
 
         /* Update task count */
         unNextTaskId++;

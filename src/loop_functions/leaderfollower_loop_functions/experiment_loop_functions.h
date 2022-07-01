@@ -40,7 +40,7 @@ private:
    UInt32 unTotalTasks;
    UInt32 unTaskDemand;
    // std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
-   std::map<std::string, std::map<std::string, Real>> m_vecTaskPos;
+   std::map<UInt32, std::map<std::string, Real>> m_vecTaskPos;
 
    CRange<Real> cArenaSideSplitX[4] = {
                                        CRange<Real>(0.5f, 1.45f), // TEMPORARY: hard coded arena size
