@@ -344,7 +344,7 @@ void CExperimentLoopFunctions::PreStep() {
 
                     /* Add points scored */
                     m_unPointsObtained += cCTask.GetMinRobotNum();
-                    std::cout << "[LOG] Scored " << (int)m_unPointsObtained << " !" << std::endl;
+                    std::cout << "Scored " << (int)m_unPointsObtained << " !" << std::endl;
 
                     /* Move task out of arena */
                     cCTask.SetPosition(CVector2(1000,1000));

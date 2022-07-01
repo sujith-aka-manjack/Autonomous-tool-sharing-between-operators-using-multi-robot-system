@@ -977,138 +977,30 @@ function initSceneWithScale(_scale) {
   sendConfirmContainer.add(sendConfirmButton);
   objsToTest.push(sendConfirmButton);
 
-  /* Task signal Block */
+  /* Current points obtained*/
+  const pointsContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 100,
+    width: 230,
+    fontSize: 24,
+    fontFamily: '/fonts/Roboto-msdf.json',
+    fontTexture: '/fonts/Roboto-msdf.png',
+    fontColor: new THREE.Color(0xffff00),
+    fontSupersampling: true,
+    justifyContent: 'center',
+    textAlign: 'left',
+    backgroundOpacity: 0,
+    borderWidth: 0,
+    borderOpacity: 0,
+  });
+  pointsContainer.position.set( 0, window.threejs_panel.height() / 2 - 26, 0 );
+  sceneOrtho.add(pointsContainer);
 
-  // const signalContainer = new ThreeMeshUI.Block({
-  //   padding: 0.025,
-  //   fontFamily: '/fonts/Roboto-msdf.json',
-  //   fontTexture: '/fonts/Roboto-msdf.png',
-  //   fontColor: new THREE.Color(0xffffff),
-  //   fontSupersampling: true,
-  //   backgroundOpacity: 0.1,
-  //   borderWidth: 1,
-  //   borderOpacity: 0,
-  //   alignItems: 'start',
-  // });
-  // signalContainer.position.set( window.threejs_panel.width() / 2 - 180, window.threejs_panel.height() / 2 - 110, 0 );
-  // sceneOrtho.add(signalContainer);
-
-  // const signalLabelContainer = new ThreeMeshUI.Block({
-  //   width: 100,
-  //   height: 20,
-  //   margin: 5,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   backgroundOpacity: 0,
-  //   borderOpacity: 1,
-  //   borderRadius: 1,
-  // });
-  // signalContainer.add(signalLabelContainer);
-
-  // signalLabelContainer.add(
-  //   new ThreeMeshUI.Text({
-  //     content: "Task Signal",
-  //     fontSize: 16,
-  //   }),
-  // );
-
-  // // window.signalStateIndicatorWidth = 150;
-    
-  // const signalStateContainer = new ThreeMeshUI.Block({
-  //   width: 20,
-  //   height: 20,
-  //   margin: 10,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   backgroundOpacity: 0,
-  //   borderWidth: 2,
-  // });
-  // signalContainer.add(signalStateContainer);
-
-  // window.signalIndicator = new ThreeMeshUI.Block({
-  //   width: 20,
-  //   height: 20,
-  //   // margin: 5,
-  //   padding: 0,
-  //   justifyContent: 'center',
-  //   alignItems: 'start',
-  //   backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
-  //   backgroundOpacity: 1,
-  //   borderOpacity: 1,
-  //   borderRadius: 10,
-  // });
-  // signalStateContainer.add(window.signalIndicator);
-
-  //     /* Signal Button */
-
-  // window.signalButton = new ThreeMeshUI.Block({
-  //   width: 100,
-  //   height: 60,
-  //   margin: 5,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   fontSize: 24,
-  //   borderOpacity: 1,
-  //   borderWidth: 1,
-  //   borderRadius: 20,
-  //   // backgroundOpacity: 1,
-  // })
-
-  // window.signalButtonText = new ThreeMeshUI.Text({
-  //   content: "-",
-  //   // fontColor: new THREE.Color( 1, 1, 1 ),
-  // });
-
-  // window.signalButton.add(window.signalButtonText);
-
-  // window.hoveredSignalStateAttributes = {
-  //   state: "hovered",
-  //   attributes: {
-  //     offset: 0.035,
-  //     backgroundColor: new THREE.Color( 0x999999 ),
-  //     backgroundOpacity: 1,
-  //     fontColor: new THREE.Color( 0xffffff )
-  //   },
-  // };
-
-  // window.idleSignalStateAttributes = {
-  //   state: "idle",
-  //   attributes: {
-  //     offset: 0.035,
-  //     backgroundColor: new THREE.Color( 0x666666 ),
-  //     backgroundOpacity: 0.3,
-  //     fontColor: new THREE.Color( 0xffffff )
-  //   },
-  // };
-
-  // window.selectedSignalAttributes = {
-  //   offset: 0.02,
-  //   backgroundColor: new THREE.Color( 0x777777 ),
-  //   fontColor: new THREE.Color( 0x222222 )
-  // };
-
-  // window.signalButton.setupState({
-  //   state: "selected",
-  //   attributes: selectedSignalAttributes,
-  //   onSet: ()=> {
-  //     console.log("Task Signal Selected");
-          
-  //     if(window.taskCommand['signal'] == 'stop') {
-  //       window.taskCommand['signal'] = 'start';
-  //     } else if(window.taskCommand['signal'] == 'start') {
-  //       window.taskCommand['signal'] = 'stop';  
-  //     }
-
-  //     window.taskFlag = true;
-  //   }
-  // });
-  // window.signalButton.setupState( window.hoveredSignalStateAttributes );
-  // window.signalButton.setupState( window.idleSignalStateAttributes );
-
-  // signalContainer.add(window.signalButton);
-  // objsToTest.push(window.signalButton);
-
-  /***************************/
+  window.pointsText = new ThreeMeshUI.Text({
+    // fontColor: new THREE.Color( 0, 0, 0 ),
+    content: "Points Scored: 0",
+  });
+  pointsContainer.add(window.pointsText);
 
 }
 
@@ -1726,6 +1618,12 @@ function render() {
 
     /* Update HUD values */
     if(window.target != '') {
+
+      /* Uodate points obtained */
+      window.pointsText.set({
+        content: "Points Scored: " + window.pointsObtained
+      });
+
       if(sceneEntities.hasOwnProperty(window.target)) {
 
         let num_followers = sceneEntities[window.target].entity.user_data.num_followers;
