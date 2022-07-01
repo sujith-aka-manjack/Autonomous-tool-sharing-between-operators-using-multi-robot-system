@@ -20,7 +20,8 @@ constexpr TimeStep::TimeStep(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : robots_()
   , tasks_()
-  , time_(uint64_t{0u}){}
+  , time_(uint64_t{0u})
+  , points_(uint64_t{0u}){}
 struct TimeStepDefaultTypeInternal {
   constexpr TimeStepDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -82,7 +83,7 @@ static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptor
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_time_5fstep_2eproto = nullptr;
 
 const uint32_t TableStruct_time_5fstep_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::TimeStep, _has_bits_),
   PROTOBUF_FIELD_OFFSET(::TimeStep, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -91,6 +92,11 @@ const uint32_t TableStruct_time_5fstep_2eproto::offsets[] PROTOBUF_SECTION_VARIA
   PROTOBUF_FIELD_OFFSET(::TimeStep, time_),
   PROTOBUF_FIELD_OFFSET(::TimeStep, robots_),
   PROTOBUF_FIELD_OFFSET(::TimeStep, tasks_),
+  PROTOBUF_FIELD_OFFSET(::TimeStep, points_),
+  ~0u,
+  ~0u,
+  ~0u,
+  0,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Robot_Position, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -131,10 +137,10 @@ const uint32_t TableStruct_time_5fstep_2eproto::offsets[] PROTOBUF_SECTION_VARIA
   PROTOBUF_FIELD_OFFSET(::Task, currentrobots_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(::TimeStep)},
-  { 9, -1, -1, sizeof(::Robot_Position)},
-  { 17, 30, -1, sizeof(::Robot)},
-  { 37, -1, -1, sizeof(::Task)},
+  { 0, 10, -1, sizeof(::TimeStep)},
+  { 14, -1, -1, sizeof(::Robot_Position)},
+  { 22, 35, -1, sizeof(::Robot)},
+  { 42, -1, -1, sizeof(::Task)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -145,23 +151,24 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_time_5fstep_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\017time_step.proto\"F\n\010TimeStep\022\014\n\004time\030\001 "
+  "\n\017time_step.proto\"f\n\010TimeStep\022\014\n\004time\030\001 "
   "\001(\004\022\026\n\006robots\030\002 \003(\0132\006.Robot\022\024\n\005tasks\030\003 \003"
-  "(\0132\005.Task\"\273\002\n\005Robot\022\014\n\004name\030\001 \001(\t\022\016\n\006tea"
-  "mID\030\002 \001(\004\022\033\n\005state\030\003 \001(\0162\014.Robot.State\022!"
-  "\n\010position\030\004 \001(\0132\017.Robot.Position\022\026\n\ttot"
-  "alSent\030\005 \001(\004H\000\210\001\001\022\032\n\rtotalReceived\030\006 \001(\004"
-  "H\001\210\001\001\022\023\n\006action\030\007 \001(\tH\002\210\001\001\032 \n\010Position\022\t"
-  "\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\">\n\005State\022\014\n\010FOLLOWE"
-  "R\020\000\022\n\n\006LEADER\020\001\022\r\n\tCONNECTOR\020\002\022\014\n\010TRAVEL"
-  "ER\020\003B\014\n\n_totalSentB\020\n\016_totalReceivedB\t\n\007"
-  "_action\"S\n\004Task\022\014\n\004name\030\001 \001(\t\022\016\n\006demand\030"
-  "\002 \001(\004\022\026\n\016requiredRobots\030\003 \001(\004\022\025\n\rcurrent"
-  "Robots\030\004 \001(\004b\006proto3"
+  "(\0132\005.Task\022\023\n\006points\030\004 \001(\004H\000\210\001\001B\t\n\007_point"
+  "s\"\273\002\n\005Robot\022\014\n\004name\030\001 \001(\t\022\016\n\006teamID\030\002 \001("
+  "\004\022\033\n\005state\030\003 \001(\0162\014.Robot.State\022!\n\010positi"
+  "on\030\004 \001(\0132\017.Robot.Position\022\026\n\ttotalSent\030\005"
+  " \001(\004H\000\210\001\001\022\032\n\rtotalReceived\030\006 \001(\004H\001\210\001\001\022\023\n"
+  "\006action\030\007 \001(\tH\002\210\001\001\032 \n\010Position\022\t\n\001x\030\001 \001("
+  "\001\022\t\n\001y\030\002 \001(\001\">\n\005State\022\014\n\010FOLLOWER\020\000\022\n\n\006L"
+  "EADER\020\001\022\r\n\tCONNECTOR\020\002\022\014\n\010TRAVELER\020\003B\014\n\n"
+  "_totalSentB\020\n\016_totalReceivedB\t\n\007_action\""
+  "S\n\004Task\022\014\n\004name\030\001 \001(\t\022\016\n\006demand\030\002 \001(\004\022\026\n"
+  "\016requiredRobots\030\003 \001(\004\022\025\n\rcurrentRobots\030\004"
+  " \001(\004b\006proto3"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_time_5fstep_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_time_5fstep_2eproto = {
-  false, false, 500, descriptor_table_protodef_time_5fstep_2eproto, "time_step.proto", 
+  false, false, 532, descriptor_table_protodef_time_5fstep_2eproto, "time_step.proto", 
   &descriptor_table_time_5fstep_2eproto_once, nullptr, 0, 4,
   schemas, file_default_instances, TableStruct_time_5fstep_2eproto::offsets,
   file_level_metadata_time_5fstep_2eproto, file_level_enum_descriptors_time_5fstep_2eproto, file_level_service_descriptors_time_5fstep_2eproto,
@@ -202,6 +209,10 @@ constexpr int Robot::State_ARRAYSIZE;
 
 class TimeStep::_Internal {
  public:
+  using HasBits = decltype(std::declval<TimeStep>()._has_bits_);
+  static void set_has_points(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
 };
 
 TimeStep::TimeStep(::PROTOBUF_NAMESPACE_ID::Arena* arena,
@@ -217,15 +228,21 @@ TimeStep::TimeStep(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 TimeStep::TimeStep(const TimeStep& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _has_bits_(from._has_bits_),
       robots_(from.robots_),
       tasks_(from.tasks_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  time_ = from.time_;
+  ::memcpy(&time_, &from.time_,
+    static_cast<size_t>(reinterpret_cast<char*>(&points_) -
+    reinterpret_cast<char*>(&time_)) + sizeof(points_));
   // @@protoc_insertion_point(copy_constructor:TimeStep)
 }
 
 inline void TimeStep::SharedCtor() {
-time_ = uint64_t{0u};
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&time_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&points_) -
+    reinterpret_cast<char*>(&time_)) + sizeof(points_));
 }
 
 TimeStep::~TimeStep() {
@@ -258,11 +275,14 @@ void TimeStep::Clear() {
   robots_.Clear();
   tasks_.Clear();
   time_ = uint64_t{0u};
+  points_ = uint64_t{0u};
+  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* TimeStep::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -301,6 +321,15 @@ const char* TimeStep::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
         } else
           goto handle_unusual;
         continue;
+      // optional uint64 points = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          _Internal::set_has_points(&has_bits);
+          points_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -317,6 +346,7 @@ const char* TimeStep::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
     CHK_(ptr != nullptr);
   }  // while
 message_done:
+  _has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
@@ -350,6 +380,12 @@ uint8_t* TimeStep::_InternalSerialize(
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(3, this->_internal_tasks(i), target, stream);
+  }
+
+  // optional uint64 points = 4;
+  if (_internal_has_points()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(4, this->_internal_points(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -387,6 +423,12 @@ size_t TimeStep::ByteSizeLong() const {
     total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64SizePlusOne(this->_internal_time());
   }
 
+  // optional uint64 points = 4;
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64SizePlusOne(this->_internal_points());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
 }
 
@@ -414,6 +456,9 @@ void TimeStep::MergeFrom(const TimeStep& from) {
   if (from._internal_time() != 0) {
     _internal_set_time(from._internal_time());
   }
+  if (from._internal_has_points()) {
+    _internal_set_points(from._internal_points());
+  }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -431,9 +476,15 @@ bool TimeStep::IsInitialized() const {
 void TimeStep::InternalSwap(TimeStep* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
   robots_.InternalSwap(&other->robots_);
   tasks_.InternalSwap(&other->tasks_);
-  swap(time_, other->time_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(TimeStep, points_)
+      + sizeof(TimeStep::points_)
+      - PROTOBUF_FIELD_OFFSET(TimeStep, time_)>(
+          reinterpret_cast<char*>(&time_),
+          reinterpret_cast<char*>(&other->time_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata TimeStep::GetMetadata() const {

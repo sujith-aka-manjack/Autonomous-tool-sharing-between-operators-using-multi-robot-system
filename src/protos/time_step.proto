@@ -4,6 +4,7 @@ message TimeStep {
   uint64 time = 1;
   repeated Robot robots = 2;
   repeated Task tasks = 3;
+  optional uint64 points = 4;
 }
 
 message Robot {

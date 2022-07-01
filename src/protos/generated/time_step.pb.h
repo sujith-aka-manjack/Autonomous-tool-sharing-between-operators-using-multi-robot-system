@@ -227,6 +227,7 @@ class TimeStep final :
     kRobotsFieldNumber = 2,
     kTasksFieldNumber = 3,
     kTimeFieldNumber = 1,
+    kPointsFieldNumber = 4,
   };
   // repeated .Robot robots = 2;
   int robots_size() const;
@@ -273,6 +274,19 @@ class TimeStep final :
   void _internal_set_time(uint64_t value);
   public:
 
+  // optional uint64 points = 4;
+  bool has_points() const;
+  private:
+  bool _internal_has_points() const;
+  public:
+  void clear_points();
+  uint64_t points() const;
+  void set_points(uint64_t value);
+  private:
+  uint64_t _internal_points() const;
+  void _internal_set_points(uint64_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:TimeStep)
  private:
   class _Internal;
@@ -280,10 +294,12 @@ class TimeStep final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Robot > robots_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Task > tasks_;
   uint64_t time_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  uint64_t points_;
   friend struct ::TableStruct_time_5fstep_2eproto;
 };
 // -------------------------------------------------------------------
@@ -1016,6 +1032,34 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Task >&
 TimeStep::tasks() const {
   // @@protoc_insertion_point(field_list:TimeStep.tasks)
   return tasks_;
+}
+
+// optional uint64 points = 4;
+inline bool TimeStep::_internal_has_points() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool TimeStep::has_points() const {
+  return _internal_has_points();
+}
+inline void TimeStep::clear_points() {
+  points_ = uint64_t{0u};
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline uint64_t TimeStep::_internal_points() const {
+  return points_;
+}
+inline uint64_t TimeStep::points() const {
+  // @@protoc_insertion_point(field_get:TimeStep.points)
+  return _internal_points();
+}
+inline void TimeStep::_internal_set_points(uint64_t value) {
+  _has_bits_[0] |= 0x00000001u;
+  points_ = value;
+}
+inline void TimeStep::set_points(uint64_t value) {
+  _internal_set_points(value);
+  // @@protoc_insertion_point(field_set:TimeStep.points)
 }
 
 // -------------------------------------------------------------------

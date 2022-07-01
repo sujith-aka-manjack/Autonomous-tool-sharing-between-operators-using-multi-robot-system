@@ -445,6 +445,7 @@ void CExperimentLoopFunctions::PreStep() {
         /* Create new node for this timestep */
         TimeStep tData;
         tData.set_time(GetSpace().GetSimulationClock());
+        tData.set_points(m_unPointsObtained);
 
         /* Output leader info */
         for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
@@ -503,11 +504,14 @@ void CExperimentLoopFunctions::PreStep() {
 
                 CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
-                Task* task = tData.add_tasks();
-                task->set_name(cCTask.GetId());
-                task->set_demand(cCTask.GetDemand());
-                task->set_requiredrobots(cCTask.GetMinRobotNum());
-                task->set_currentrobots(cCTask.GetCurrentRobotNum());
+                /* Log tasks that are inside the arena */
+                if(cCTask.GetPosition().GetX() < 500) {
+                    Task* task = tData.add_tasks();
+                    task->set_name(cCTask.GetId());
+                    task->set_demand(cCTask.GetDemand());
+                    task->set_requiredrobots(cCTask.GetMinRobotNum());
+                    task->set_currentrobots(cCTask.GetCurrentRobotNum());
+                }
             }
         }
 
