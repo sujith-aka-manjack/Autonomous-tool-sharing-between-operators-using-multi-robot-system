@@ -39,6 +39,7 @@ private:
    UInt32 unNextTaskId;
    UInt32 unTotalTasks;
    UInt32 unTaskDemand;
+   UInt32 unPointsObtained;
    // std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
    std::map<UInt32, std::map<std::string, Real>> m_vecTaskPos;
 

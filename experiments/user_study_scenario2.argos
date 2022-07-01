@@ -99,12 +99,12 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="10" center="-1.25, 2.5" density="0.3">
+      <team leader_num="1" robot_num="10" center="0.15,0.15" density="0.3">
         <!-- <waypoint coord="1.5, 2.25" />
         <waypoint coord="1.5, 0.75" />
         <waypoint coord="1.5, -2.25" /> -->
       </team>
-      <team leader_num="1" robot_num="10" center="-1.75, 2" density="0.3">
+      <team leader_num="1" robot_num="10" center="-0.15,-0.15" density="0.3">
         <!-- <waypoint coord="-1.5, -0.75" />
         <waypoint coord="0, -0.75" />
         <waypoint coord="0, -2.25" /> -->
@@ -131,23 +131,23 @@
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->
-  <arena size="6, 7.5, 1" center="0,0,0.5">
+  <arena size="6, 6, 1" center="0,0,0.5">
 
     <floor id="floor"
            source="loop_functions"
            pixels_per_meter="50" />
 
-    <box id="wall_west" size="4.9,0.1,0.5" movable="false">
-      <body position="0,3.25,0" orientation="0,0,0" />
+    <box id="wall_west" size="3.9,0.1,0.5" movable="false">
+      <body position="0,2,0" orientation="0,0,0" />
     </box>
-    <box id="wall_east" size="4.9,0.1,0.5" movable="false">
-      <body position="0,-3.25,0" orientation="0,0,0" />
+    <box id="wall_east" size="3.9,0.1,0.5" movable="false">
+      <body position="0,-2,0" orientation="0,0,0" />
     </box>
-    <box id="wall_north" size="0.1,6.6,0.5" movable="false">
-      <body position="2.5,0,0" orientation="0,0,0" />
+    <box id="wall_north" size="0.1,4.1,0.5" movable="false">
+      <body position="2,0,0" orientation="0,0,0" />
     </box>
-    <box id="wall_south" size="0.1,6.6,0.5" movable="false">
-      <body position="-2.5,0,0" orientation="0,0,0" />
+    <box id="wall_south" size="0.1,4.1,0.5" movable="false">
+      <body position="-2,0,0" orientation="0,0,0" />
     </box>
 
   </arena>

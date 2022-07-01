@@ -342,11 +342,14 @@ void CExperimentLoopFunctions::PreStep() {
                 if(currentDemand == 1) {
                     cCTask.SetDemand(0);
 
+                    /* Add points scored */
+                    unPointsObtained += cCTask.GetMinRobotNum();
+                    std::cout << "[LOG] Scored " << (int)unPointsObtained << " !" << std::endl;
+
                     /* Move task out of arena */
                     cCTask.SetPosition(CVector2(1000,1000));
                     std::map<std::string, Real> task_pos;
-                    // Specify any coordinate outside of arena to ignore it
-                    task_pos["x1"] = 1000;
+                    task_pos["x1"] = 1000;  // Specify any coordinate outside of arena to ignore it
                     task_pos["x2"] = 1000;
                     task_pos["y1"] = 1000;
                     task_pos["y2"] = 1000;
@@ -548,16 +551,19 @@ void CExperimentLoopFunctions::PostStep() {
     }
 
     /* Terminate simulation when all tasks are complete */
-    if(m_bTaskExists && total_demand == 0) {
+    // if(m_bTaskExists && total_demand == 0) {
+    if(GetSpace().GetSimulationClock() == 6000) {
         int final_time = GetSpace().GetSimulationClock();
         m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
         m_cOutput << "\n";
         m_cOutput << "FINISH_TIME," << final_time << "\n";
-        m_cOutput << "TASK_STATUS,FINISHED" << "\n";
+        m_cOutput << "POINTS SCORED," << int(unPointsObtained) << "\n";
+        // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
         m_cOutput.close();
-        std::cout << "[LOG] Task Status: FINISHED" << std::endl;
-        std::cout << "[LOG] Time Taken: " << final_time << std::endl;
-        std::cout << "[LOG] All tasks completed" << std::endl;
+        std::cout << "[LOG] Reached time limit!" << std::endl;
+        // std::cout << "[LOG] Task Status: FINISHED" << std::endl;
+        std::cout << "[LOG] Mission time: " << final_time << std::endl;
+        // std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
         this->Destroy();
     }
@@ -978,6 +984,7 @@ void CExperimentLoopFunctions::InitTasks() {
     UInt32 unInitTasks = 3;
     unTotalTasks = 0;
     unTaskDemand = 0; 
+    unPointsObtained = 0;
 
     m_bTaskExists = true;
     m_bTaskComplete = false;
