@@ -331,6 +331,9 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
         }
     }
 
+    /* Send current points obtained */
+    outJson["points"] = (int)m_pcExperimentLoopFunctions->GetCurrentPoints();
+
     return outJson;
 }
 

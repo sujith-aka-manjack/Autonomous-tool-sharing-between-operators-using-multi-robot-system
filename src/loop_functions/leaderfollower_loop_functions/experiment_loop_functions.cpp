@@ -343,8 +343,8 @@ void CExperimentLoopFunctions::PreStep() {
                     cCTask.SetDemand(0);
 
                     /* Add points scored */
-                    unPointsObtained += cCTask.GetMinRobotNum();
-                    std::cout << "[LOG] Scored " << (int)unPointsObtained << " !" << std::endl;
+                    m_unPointsObtained += cCTask.GetMinRobotNum();
+                    std::cout << "[LOG] Scored " << (int)m_unPointsObtained << " !" << std::endl;
 
                     /* Move task out of arena */
                     cCTask.SetPosition(CVector2(1000,1000));
@@ -359,12 +359,12 @@ void CExperimentLoopFunctions::PreStep() {
 
                     /* Place new task in the arena */
                     /* Check if there are still tasks left to place */
-                    if(unTotalTasks < unNextTaskId - 1) {
+                    if(m_unTotalTasks < m_unNextTaskId - 1) {
                         /* Next task id */
-                        unTotalTasks++;
+                        m_unTotalTasks++;
                         std::ostringstream task_id;
                         task_id.str("");
-                        task_id << "task_" << unTotalTasks;
+                        task_id << "task_" << m_unTotalTasks;
                         // std::cout << "Next " << task_id.str() << std::endl;
 
                         CEntity& entity = GetSpace().GetEntity(task_id.str());
@@ -419,9 +419,9 @@ void CExperimentLoopFunctions::PreStep() {
                                 task_pos["y1"] = y1;
                                 task_pos["y2"] = y2;
 
-                                m_vecTaskPos[unTotalTasks] = task_pos;
+                                m_vecTaskPos[m_unTotalTasks] = task_pos;
 
-                                // unTaskDemand += unDemand;
+                                // m_unTaskDemand += unDemand;
 
                                 break;
                             }
@@ -487,7 +487,7 @@ void CExperimentLoopFunctions::PreStep() {
                     robot->set_state(Robot_State_TRAVELER);
                     break;
                 default:
-                    std::cerr << "Tried to log unknown state " << int(cController.GetRobotState()) << std::endl;
+                    std::cerr << "Tried to log unknown state " << (int)cController.GetRobotState() << std::endl;
                     break;
             }
             robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
@@ -557,7 +557,7 @@ void CExperimentLoopFunctions::PostStep() {
         m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
         m_cOutput << "\n";
         m_cOutput << "FINISH_TIME," << final_time << "\n";
-        m_cOutput << "POINTS SCORED," << int(unPointsObtained) << "\n";
+        m_cOutput << "POINTS SCORED," << (int)m_unPointsObtained << "\n";
         // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
         m_cOutput.close();
         std::cout << "[LOG] Reached time limit!" << std::endl;
@@ -678,6 +678,13 @@ void CExperimentLoopFunctions::InitLogging() {
 
 std::string CExperimentLoopFunctions::GetCommandFilePath() {
     return m_strCommandFilePath;
+}
+
+/****************************************/
+/****************************************/
+
+UInt32 CExperimentLoopFunctions::GetCurrentPoints() {
+    return m_unPointsObtained;
 }
 
 /****************************************/
@@ -855,10 +862,10 @@ void CExperimentLoopFunctions::InitRobots() {
 //     std::cout << "[LOG] Adding tasks..." << std::endl;
 
 //     /* ID counts */
-//     UInt32 unNextTaskId = 1;
+//     UInt32 m_unNextTaskId = 1;
 //     /* Meta data */
-//     size_t unTotalTasks = 0;
-//     UInt32 unTaskDemand = 0; 
+//     size_t m_unTotalTasks = 0;
+//     UInt32 m_unTaskDemand = 0; 
 //     /* Get the teams node */
 //     TConfigurationNode& ts_tree = GetNode(config, "tasks");
 //     /* Go through the nodes (tasks) */
@@ -889,10 +896,10 @@ void CExperimentLoopFunctions::InitRobots() {
 //         // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
         
 //         // /* Place Tasks */
-//         // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//         // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 
 //         // /* Update task count */
-//         // unNextTaskId++;
+//         // m_unNextTaskId++;
 
 //         /* Get current node (task) */
 //         TConfigurationNode& tDistr = *itDistr;
@@ -928,23 +935,23 @@ void CExperimentLoopFunctions::InitRobots() {
         
 //         /* Place Tasks */
 //         if(param_exists) {
-//             PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//             PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //         } else {
 //             switch (unMinRobotNum) {
 //                 case 1:
-//                     PlaceRectangleTask(cCenter, 0.4, 0.4, 0.2, 200, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     PlaceRectangleTask(cCenter, 0.4, 0.4, 0.2, 200, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //                     break;
 //                 case 3:
-//                     PlaceRectangleTask(cCenter, 0.5, 0.5, 0.25, 300, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     PlaceRectangleTask(cCenter, 0.5, 0.5, 0.25, 300, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //                     break;
 //                 case 6:
-//                     PlaceRectangleTask(cCenter, 0.6, 0.6, 0.3, 400, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     PlaceRectangleTask(cCenter, 0.6, 0.6, 0.3, 400, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //                     break;
 //                 case 9:
-//                     PlaceRectangleTask(cCenter, 0.8, 0.8, 0.35, 500, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     PlaceRectangleTask(cCenter, 0.8, 0.8, 0.35, 500, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //                     break;
 //                 case 12:
-//                     PlaceRectangleTask(cCenter, 1.0, 1.0, 0.4, 600, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+//                     PlaceRectangleTask(cCenter, 1.0, 1.0, 0.4, 600, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 //                     break;
 //                 default:
 //                     std::cout << "[LOG] Could not place task." << std::endl;
@@ -953,17 +960,17 @@ void CExperimentLoopFunctions::InitRobots() {
 //         }
 
 //         /* Update task count */
-//         unNextTaskId++;
+//         m_unNextTaskId++;
 
-//         unTotalTasks++;
-//         unTaskDemand += unDemand;
+//         m_unTotalTasks++;
+//         m_unTaskDemand += unDemand;
 //     }
 
 //     if(m_bLogging) {
 //         /* Write to file */
 //         m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-//         m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
-//         m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
+//         m_cOutput << "TOTAL_TASKS," << (int)m_unTotalTasks << "\n";
+//         m_cOutput << "TASK_DEMAND," << (int)m_unTaskDemand << "\n";
 //         m_cOutput.close();
 //     }
 
@@ -978,13 +985,13 @@ void CExperimentLoopFunctions::InitTasks() {
     std::cout << "[LOG] Adding tasks..." << std::endl;
 
     /* ID counts */
-    unNextTaskId = 1;
+    m_unNextTaskId = 1;
     /* Meta data */
     UInt32 unHiddenTasks = 20;
     UInt32 unInitTasks = 3;
-    unTotalTasks = 0;
-    unTaskDemand = 0; 
-    unPointsObtained = 0;
+    m_unTotalTasks = 0;
+    m_unTaskDemand = 0; 
+    m_unPointsObtained = 0;
 
     m_bTaskExists = true;
     m_bTaskComplete = false;
@@ -1042,15 +1049,15 @@ void CExperimentLoopFunctions::InitTasks() {
             // Pick random position (CVector2)
             cCenter = CVector2(m_pcRNG->Uniform(cArenaSideSplitX[i]),  
                                m_pcRNG->Uniform(cArenaSideSplitY[i]));
-            unTotalTasks++;
-            unTaskDemand += unDemand;
+            m_unTotalTasks++;
+            m_unTaskDemand += unDemand;
         } else {
             // Place it out of sight
             cCenter = CVector2(1000, 1000);
         }
 
         // PlaceTask
-        PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, unNextTaskId);
+        PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 
         std::map<std::string, Real> task_pos;
         task_pos["x1"] = cCenter.GetX() - fWidthX/2;
@@ -1058,17 +1065,17 @@ void CExperimentLoopFunctions::InitTasks() {
         task_pos["y1"] = cCenter.GetY() + fWidthY/2;
         task_pos["y2"] = cCenter.GetY() - fWidthY/2;
 
-        m_vecTaskPos[unNextTaskId] = task_pos;
+        m_vecTaskPos[m_unNextTaskId] = task_pos;
 
         /* Update task count */
-        unNextTaskId++;
+        m_unNextTaskId++;
     }
 
     if(m_bLogging) {
         /* Write to file */
         // m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-        // m_cOutput << "TOTAL_TASKS," << (int)unTotalTasks << "\n";
-        // m_cOutput << "TASK_DEMAND," << (int)unTaskDemand << "\n";
+        // m_cOutput << "TOTAL_TASKS," << (int)m_unTotalTasks << "\n";
+        // m_cOutput << "TASK_DEMAND," << (int)m_unTaskDemand << "\n";
         // m_cOutput.close();
     }
 

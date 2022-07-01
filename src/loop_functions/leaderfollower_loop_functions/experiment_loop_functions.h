@@ -25,6 +25,7 @@ public:
    virtual void PostStep();
    virtual bool IsLogging();
    virtual std::string GetCommandFilePath();
+   virtual UInt32 GetCurrentPoints();
 
 private:
 
@@ -36,10 +37,10 @@ private:
    CRandom::CRNG* m_pcRNG;
    bool m_bTaskExists;
    bool m_bTaskComplete;
-   UInt32 unNextTaskId;
-   UInt32 unTotalTasks;
-   UInt32 unTaskDemand;
-   UInt32 unPointsObtained;
+   UInt32 m_unNextTaskId;
+   UInt32 m_unTotalTasks;
+   UInt32 m_unTaskDemand;
+   UInt32 m_unPointsObtained;
    // std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
    std::map<UInt32, std::map<std::string, Real>> m_vecTaskPos;
 

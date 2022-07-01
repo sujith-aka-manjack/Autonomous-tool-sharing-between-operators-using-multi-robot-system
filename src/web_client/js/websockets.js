@@ -182,6 +182,10 @@
           // }
         }
 
+        /* Current points obtained */
+        window.pointsObtained = data.user_data.points;
+        console.log(window.pointsObtained);
+
         if (!window.isInitialized) {
           window.isInitialized = true;
 
