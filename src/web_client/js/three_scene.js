@@ -217,20 +217,20 @@ function initSceneWithScale(_scale) {
     backgroundOpacity: 0,
     alignItems: 'start',
   });
-  mainContainer.position.set( -window.threejs_panel.width() / 2 + 180, window.threejs_panel.height() / 2 - 110, 0 );
+  mainContainer.position.set( -window.threejs_panel.width() / 2 + 165, window.threejs_panel.height() / 2 - 110, 0 );
   sceneOrtho.add(mainContainer);
 
   /* User Block */
 
   const userContainer = new ThreeMeshUI.Block({
-    width: 350,
-    height: 115,
+    width: 300,
+    height: 97,
     margin: 5,
     padding: 5,
     contentDirection: "row",
-    backgroundOpacity: 0.9,
+    backgroundOpacity: 0.8,
     borderRadius: [0, 0, 50, 0],
-		borderWidth: 4,
+		borderWidth: 3,
 		borderOpacity: 1,
   });
   mainContainer.add(userContainer);
@@ -241,7 +241,8 @@ function initSceneWithScale(_scale) {
     margin: 2,
     padding: 0,
     borderRadius: 0,
-    borderWidth: 3,
+    borderWidth: 1,
+    borderOpacity: 1,
     backgroundOpacity: 1,
     backgroundColor: new THREE.Color( 0.9, 0.9, 0.9 ),
   });
@@ -317,7 +318,7 @@ function initSceneWithScale(_scale) {
   userTopContainer.add(userFollowerContainer);
 
   const userFollowerLabelContainer = new ThreeMeshUI.Block({
-    width: 160,
+    width: 100,
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -328,7 +329,7 @@ function initSceneWithScale(_scale) {
 
   userFollowerLabelContainer.add(
 		new ThreeMeshUI.Text({
-      content: "Follower / Require ",
+      content: "Follower",
       fontSize: 16,
 		}),
   );
@@ -336,23 +337,23 @@ function initSceneWithScale(_scale) {
       /* User Follower Count Block */
 
   const userFollowerCountContainer = new ThreeMeshUI.Block({
-    width: 160,
-    height: 40,
+    width: 100,
+    height: 45,
     contentDirection: "row",
     justifyContent: 'center',
     alignItems: 'center',
-    fontSize: 28,
     backgroundOpacity: 0,
   });
   userFollowerContainer.add(userFollowerCountContainer);
 
   window.numFollowers = new ThreeMeshUI.Text({
+    fontSize: 40,
     content: "-",
   });
 
-  window.numTaskRequire = new ThreeMeshUI.Text({
-    content: "-",
-  });
+  // window.numTaskRequire = new ThreeMeshUI.Text({
+  //   content: "-",
+  // });
 
   const userFollowerCount = new ThreeMeshUI.Block({
     width: 70,
@@ -365,33 +366,33 @@ function initSceneWithScale(_scale) {
   userFollowerCountContainer.add(userFollowerCount);
   userFollowerCount.add(window.numFollowers);
 
-  const userFollowerSlashLabel = new ThreeMeshUI.Block({
-    width: 15,
-    height: 40,
-    // margin: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 32,
-    backgroundOpacity: 0,
-  });
-  userFollowerCountContainer.add(userFollowerSlashLabel);
-  userFollowerSlashLabel.add(
-    new ThreeMeshUI.Text({
-      content: " / ",
-		}),
-  );
+  // const userFollowerSlashLabel = new ThreeMeshUI.Block({
+  //   width: 15,
+  //   height: 40,
+  //   // margin: 10,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   fontSize: 32,
+  //   backgroundOpacity: 0,
+  // });
+  // userFollowerCountContainer.add(userFollowerSlashLabel);
+  // userFollowerSlashLabel.add(
+  //   new ThreeMeshUI.Text({
+  //     content: " / ",
+	// 	}),
+  // );
 
-  const userRequiredCount = new ThreeMeshUI.Block({
-    width: 70,
-    height: 40,
-    // margin: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 36,
-    backgroundOpacity: 0,
-  });
-  userFollowerCountContainer.add(userRequiredCount);
-  userRequiredCount.add(window.numTaskRequire);
+  // const userRequiredCount = new ThreeMeshUI.Block({
+  //   width: 70,
+  //   height: 40,
+  //   // margin: 10,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   fontSize: 36,
+  //   backgroundOpacity: 0,
+  // });
+  // userFollowerCountContainer.add(userRequiredCount);
+  // userRequiredCount.add(window.numTaskRequire);
 
     /* User Task Block */
 
@@ -403,83 +404,15 @@ function initSceneWithScale(_scale) {
   });
   userInfoContainer.add(userTaskContainer);
 
-      /* User Progress Bar Block */
-
-  /* Progress Bar background */
-  window.progressBarWidth = 150;
-      
-  const userProgressBarContainer = new ThreeMeshUI.Block({
-    width: window.progressBarWidth,
-    height: 20,
-    margin: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundOpacity: 0,
-  });
-  userTaskContainer.add(userProgressBarContainer);
-
-  const progressBar = new ThreeMeshUI.Block({
-		width: window.progressBarWidth,
-		height: 15,
-    margin: 0,
-		padding: 0,
-		justifyContent: 'center',
-		alignItems: 'start',
-    backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
-    backgroundOpacity: 1,
-    borderWidth: 0,
-    borderRadius: 10,
-	});
-  userProgressBarContainer.add(progressBar);
-
-  /* Progress bar foreground */
-  window.progress = new ThreeMeshUI.Block({
-    width: 0.001,
-    height: 15,
-    margin: 0,
-    padding: 0,
-    backgroundColor: new THREE.Color( 0, 0.85, 0 ),
-    backgroundOpacity: 0,
-  });
-  progressBar.add(window.progress);
-
-      /* User Progress Percent Block */
-
-  const userProgressPercentContainer = new ThreeMeshUI.Block({
-    width: 60,
-    height: 30,
-    // margin: 10,
-    justifyContent: 'center',
-    alignItems: 'end',
-    textAlign: 'right',
-    backgroundOpacity: 0,
-    fontSize: 20,
-  });
-  userTaskContainer.add(userProgressPercentContainer);
-
-  window.numProgress = new ThreeMeshUI.Text({
-    // fontColor: new THREE.Color( 0, 0, 0 ),
-    content: "-",
-  });
-
-  userProgressPercentContainer.add(
-
-    window.numProgress,
-
-		new ThreeMeshUI.Text({
-      content: " %",
-		}),
-  );
-
   /* Other User Block */
 
   const otherUserContainer = new ThreeMeshUI.Block({
     margin: 5,
     padding: 5,
     contentDirection: "row",
-    backgroundOpacity: 0.9,
+    backgroundOpacity: 0.8,
     borderRadius: [0, 0, 40, 0],
-		borderWidth: 4,
+		borderWidth: 3,
 		borderOpacity: 1,
   });
   mainContainer.add(otherUserContainer);
@@ -490,7 +423,8 @@ function initSceneWithScale(_scale) {
     margin: 2,
     padding: 0,
     borderRadius: 0,
-    borderWidth: 3,
+    borderWidth: 1,
+    borderOpacity: 0,
     backgroundOpacity: 1,
     backgroundColor: new THREE.Color( 0.9, 0.9, 0.9 ),
   });
@@ -566,7 +500,7 @@ function initSceneWithScale(_scale) {
   otherUserTopContainer.add(otherUserFollowerContainer);
 
   const otherUserFollowerLabelContainer = new ThreeMeshUI.Block({
-    width: 160,
+    width: 140,
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -577,7 +511,7 @@ function initSceneWithScale(_scale) {
 
   otherUserFollowerLabelContainer.add(
 		new ThreeMeshUI.Text({
-      content: "Follower / Require ",
+      content: "Follower / Task",
       fontSize: 16,
 		}),
   );
@@ -585,7 +519,7 @@ function initSceneWithScale(_scale) {
       /* Other User Follower Count Block */
 
   const otherUserFollowerCountContainer = new ThreeMeshUI.Block({
-    width: 160,
+    width: 140,
     height: 40,
     contentDirection: "row",
     justifyContent: 'center',
@@ -604,7 +538,7 @@ function initSceneWithScale(_scale) {
   });
 
   const otherUserFollowerCount = new ThreeMeshUI.Block({
-    width: 70,
+    width: 50,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -630,7 +564,7 @@ function initSceneWithScale(_scale) {
   );
 
   const otherUserRequiredCount = new ThreeMeshUI.Block({
-    width: 70,
+    width: 50,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -640,8 +574,272 @@ function initSceneWithScale(_scale) {
   otherUserFollowerCountContainer.add(otherUserRequiredCount);
   otherUserRequiredCount.add(window.numOtherTaskRequire);
 
+  /*
+  *  Task Container
+  */
   
-  /* Send Robot Block */
+  const taskContainer = new ThreeMeshUI.Block({
+    // ref: 'container',
+    padding: 0.025,
+    fontFamily: '/fonts/Roboto-msdf.json',
+    fontTexture: '/fonts/Roboto-msdf.png',
+    fontColor: new THREE.Color(0xffffff),
+    fontSupersampling: true,
+    backgroundOpacity: 0.2,
+    borderRadius: 20,
+    borderOpacity: 0,
+    alignItems: 'center',
+  });
+  taskContainer.position.set( 20, window.threejs_panel.height() / 2 - 80, 0 );
+  sceneOrtho.add(taskContainer);
+
+  /* Current points obtained*/
+  const pointsContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    margin: 10,
+    height: 30,
+    width: 120,
+    justifyContent: 'center',
+    textAlign: 'left',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  taskContainer.add(pointsContainer);
+
+  window.pointsText = new ThreeMeshUI.Text({
+    fontColor: new THREE.Color(0xffff00),
+    fontSize: 24,
+    content: "Score: 0",
+  });
+  pointsContainer.add(window.pointsText);
+
+  /* Task Status Container */
+  const taskStatusContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    // height: 100,
+    // width: 230,
+    contentDirection: 'row',
+    justifyContent: 'center',
+    textAlign: 'left',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+    alignItems: 'end',
+  });
+  taskContainer.add(taskStatusContainer);
+
+  /* Number of robots in task */
+
+  const inTaskContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    // height: 60,
+    // width: 100,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  taskStatusContainer.add(inTaskContainer);
+
+  const inTaskLabelContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 20,
+    width: 100,
+    contentDirection: 'column',
+    justifyContent: 'end',
+    textAlign: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  inTaskContainer.add(inTaskLabelContainer);
+
+  const inTaskLabel = new ThreeMeshUI.Text({
+    content: 'In Task',
+    fontSize: 20,
+  });
+  inTaskLabelContainer.add(inTaskLabel);
+
+  const inTaskNumLabelContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 50,
+    width: 100,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    textAlign: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  inTaskContainer.add(inTaskNumLabelContainer);
+
+  window.inTaskNum = new ThreeMeshUI.Text({
+    content: '-',
+    fontSize: 36,
+  });
+  inTaskNumLabelContainer.add(window.inTaskNum);
+
+  /* Slash label */
+
+  const slashContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 50,
+    width: 20,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  taskStatusContainer.add(slashContainer);
+  slashContainer.add(new ThreeMeshUI.Text({
+    fontSize: 40,
+    content: '/',
+  }));
+
+  /* Number of robots required */
+
+  const requiredContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    // height: 60,
+    // width: 100,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  taskStatusContainer.add(requiredContainer);
+
+  const requiredLabelContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 20,
+    width: 100,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    textAlign: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  requiredContainer.add(requiredLabelContainer);
+
+  const requiredLabel = new ThreeMeshUI.Text({
+    content: 'Required',
+    fontSize: 20,
+  });
+  requiredLabelContainer.add(requiredLabel);
+
+  const requiredNumLabelContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    height: 50,
+    width: 100,
+    contentDirection: 'column',
+    justifyContent: 'center',
+    textAlign: 'center',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 1,
+  });
+  requiredContainer.add(requiredNumLabelContainer);
+
+  window.requiredNum = new ThreeMeshUI.Text({
+    content: '-',
+    fontSize: 36,
+  });
+  requiredNumLabelContainer.add(window.requiredNum);
+
+  /* Progress Bar Block */
+
+  const progressContainer = new ThreeMeshUI.Block({
+    padding: 0.025,
+    // height: 100,
+    // width: 230,
+    contentDirection: 'row',
+    justifyContent: 'center',
+    textAlign: 'left',
+    backgroundOpacity: 0,
+    borderWidth: 1,
+    // borderOpacity: 0,
+    alignItems: 'start',
+  });
+  taskContainer.add(progressContainer);
+
+  /* Progress Bar background */
+  window.progressBarWidth = 150;
+      
+  const progressBarContainer = new ThreeMeshUI.Block({
+    width: window.progressBarWidth,
+    height: 20,
+    margin: 2,
+    contentDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundOpacity: 0,
+    // borderWidth: 1,
+  });
+  progressContainer.add(progressBarContainer);
+
+  const progressBar = new ThreeMeshUI.Block({
+		width: window.progressBarWidth,
+		height: 15,
+    margin: 0,
+		padding: 0,
+		justifyContent: 'center',
+		alignItems: 'start',
+    backgroundColor: new THREE.Color( 0.4, 0.4, 0.4 ),
+    backgroundOpacity: 1,
+    borderWidth: 2,
+    borderOpacity: 1,
+    borderRadius: 10,
+	});
+  progressBarContainer.add(progressBar);
+
+  /* Progress bar foreground */
+  window.progress = new ThreeMeshUI.Block({
+    width: 0.001,
+    height: 15,
+    margin: 0,
+    padding: 0,
+    backgroundColor: new THREE.Color( 0, 0.85, 0 ),
+    backgroundOpacity: 0,
+    borderOpacity: 0,
+  });
+  progressBar.add(window.progress);
+
+      /* User Progress Percent Block */
+
+  const progressPercentContainer = new ThreeMeshUI.Block({
+    width: 50,
+    height: 20,
+    margin: 2,
+    justifyContent: 'center',
+    alignItems: 'end',
+    textAlign: 'right',
+    backgroundOpacity: 0,
+    fontSize: 20,
+  });
+  progressContainer.add(progressPercentContainer);
+  // progressBarContainer.add(requiredContainer);
+
+  window.numProgress = new ThreeMeshUI.Text({
+    content: "-",
+  });
+
+  progressPercentContainer.add(
+
+    window.numProgress,
+
+		new ThreeMeshUI.Text({
+      content: " %",
+		}),
+  );
+
+  /* 
+  *  Send Robot Block 
+  */
 
   window.sendContainer = new ThreeMeshUI.Block({
     // ref: 'container',
@@ -653,9 +851,9 @@ function initSceneWithScale(_scale) {
     fontSupersampling: true,
     contentDirection: "row",
     // alignItems: 'start',
-    backgroundOpacity: 0.9,
+    backgroundOpacity: 0.8,
     borderRadius: [0, 0, 0, 30],
-		borderWidth: 4,
+		borderWidth: 3,
 		borderOpacity: 1,
   });
   window.sendContainer.position.set( window.threejs_panel.width() / 2 - 155, window.threejs_panel.height() / 2 - 76, 0 );
@@ -976,31 +1174,6 @@ function initSceneWithScale(_scale) {
 
   sendConfirmContainer.add(sendConfirmButton);
   objsToTest.push(sendConfirmButton);
-
-  /* Current points obtained*/
-  const pointsContainer = new ThreeMeshUI.Block({
-    padding: 0.025,
-    height: 100,
-    width: 230,
-    fontSize: 24,
-    fontFamily: '/fonts/Roboto-msdf.json',
-    fontTexture: '/fonts/Roboto-msdf.png',
-    fontColor: new THREE.Color(0xffff00),
-    fontSupersampling: true,
-    justifyContent: 'center',
-    textAlign: 'left',
-    backgroundOpacity: 0,
-    borderWidth: 0,
-    borderOpacity: 0,
-  });
-  pointsContainer.position.set( 0, window.threejs_panel.height() / 2 - 26, 0 );
-  sceneOrtho.add(pointsContainer);
-
-  window.pointsText = new ThreeMeshUI.Text({
-    // fontColor: new THREE.Color( 0, 0, 0 ),
-    content: "Points Scored: 0",
-  });
-  pointsContainer.add(window.pointsText);
 
 }
 
@@ -1621,7 +1794,7 @@ function render() {
 
       /* Uodate points obtained */
       window.pointsText.set({
-        content: "Points Scored: " + window.pointsObtained
+        content: "Score: " + window.pointsObtained
       });
 
       if(sceneEntities.hasOwnProperty(window.target)) {
@@ -1630,8 +1803,9 @@ function render() {
 
         let taskname = sceneEntities[window.target].entity.user_data.taskname;
 
-        if(taskname != '') {
-          let num_robot_in_my_task = window.robot_per_task[taskname];
+        var num_robot_in_my_task;
+        if(taskname !== '') {
+          num_robot_in_my_task = window.robot_per_task[taskname];
           console.log("Task ID: " + taskname + ", Robots in task: " + num_robot_in_my_task);
         }
         
@@ -1646,12 +1820,30 @@ function render() {
           content: num_followers.toString(),
         });
 
-        if(num_task_require == 0) {
-          window.numTaskRequire.set({
-            content: "-",
+        if(typeof num_robot_in_my_task !== 'undefined') {
+          var font_color;
+          if(num_robot_in_my_task < num_task_require) {
+            font_color = new THREE.Color(0xffff00);
+          } else {
+            font_color = new THREE.Color(0x00ff00);
+          }
+          window.inTaskNum.set({
+            content: num_robot_in_my_task.toString(),
+            fontColor: font_color,
           });
         } else {
-          window.numTaskRequire.set({
+          window.inTaskNum.set({
+            content: '-',
+            fontColor: new THREE.Color(0xffffff),
+          });
+        }
+
+        if(num_task_require == 0) {
+          window.requiredNum.set({
+            content: '-',
+          });
+        } else {
+          window.requiredNum.set({
             content: num_task_require.toString(),
           });
         }
@@ -1714,7 +1906,7 @@ function render() {
         content: "-",
       });
 
-      window.numTaskRequire.set({
+      window.requiredNum.set({
         content: "-",
       });
 
