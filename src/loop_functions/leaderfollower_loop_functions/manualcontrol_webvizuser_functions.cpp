@@ -331,6 +331,14 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendUserData() {
         }
     }
 
+    /* Send the number of robots working on each task */
+    std::unordered_map<std::string, UInt32> robotPerTask = m_pcExperimentLoopFunctions->GetRobotPerTask();
+
+    for(const auto& [key, value] : robotPerTask) {
+        outJson["tasks"][key] = value;
+        // std::cout << "[LOG] " << key << ", " << value << std::endl;
+    }
+
     /* Send current points obtained */
     outJson["points"] = (int)m_pcExperimentLoopFunctions->GetCurrentPoints();
 
@@ -350,6 +358,9 @@ const nlohmann::json CManualControlWebvizUserFunctions::sendLeaderData(CEPuckLea
 
     /* Number of followers */
     outJson["num_followers"] = cController.GetFollowerCount();
+
+    /* Name of current task */
+    outJson["taskname"] = cController.GetTaskId();
 
     /* Minimum number of robots needed for the current task */
     outJson["num_task_require"] = cController.GetMinimumCount();

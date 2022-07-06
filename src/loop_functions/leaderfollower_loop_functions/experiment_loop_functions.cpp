@@ -154,7 +154,7 @@ void CExperimentLoopFunctions::PreStep() {
     UInt32 unFollowers2 = 0;
     UInt32 unConnectors = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
-    std::unordered_map<std::string,UInt32> taskWithRobot; // Store the number of e-pucks that have worked on each task in the previous timestep
+    m_mapRobotPerTask.clear(); // Used to store the number of e-pucks that have worked on each task in the previous timestep
 
     /* Add existing task id to the map */
     CSpace::TMapPerType* m_cCTasks;
@@ -170,7 +170,7 @@ void CExperimentLoopFunctions::PreStep() {
             /* Initialize each task with zero e-pucks working on it */
             // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
             CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-            taskWithRobot[cCTask.GetId()] = 0;
+            m_mapRobotPerTask[cCTask.GetId()] = 0;
         }
     }
 
@@ -212,6 +212,7 @@ void CExperimentLoopFunctions::PreStep() {
 
                 /* If there is a task with the given task position AND leader is within the task range, return task demand */
                 if(cCTask.InArea(cPos)) {
+                    cController.SetTaskId(cCTask.GetId());
                     UInt32 demand = cCTask.GetDemand();
                     cController.SetTaskDemand(demand);
                     cController.SetInitTaskDemand(cCTask.GetInitDemand());
@@ -227,6 +228,7 @@ void CExperimentLoopFunctions::PreStep() {
 
         /* Reset task info if the leader is not at any task */
         if( !leaderAtTask ) {
+            cController.SetTaskId("");
             cController.SetTaskDemand(0);
             cController.SetInitTaskDemand(0);
             cController.SetMinimumCount(0);
@@ -283,12 +285,12 @@ void CExperimentLoopFunctions::PreStep() {
                             // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
                             // (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
                                 
-                            //     taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                            //     m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
                             //     break;
                             // }
                             if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
                                 
-                                taskWithRobot[cCTask.GetId()]++; // Increment robot working on this task
+                                m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
                                 break;
                             }
                         }
@@ -338,7 +340,7 @@ void CExperimentLoopFunctions::PreStep() {
                 continue; // Skip completed tasks
 
             /* Check if there is enough robots working on the task */
-            if(taskWithRobot[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
+            if(m_mapRobotPerTask[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
                 if(currentDemand == 1) {
                     cCTask.SetDemand(0);
 
@@ -353,7 +355,7 @@ void CExperimentLoopFunctions::PreStep() {
                     task_pos["x2"] = 1000;
                     task_pos["y1"] = 1000;
                     task_pos["y2"] = 1000;
-                    m_vecTaskPos[stoi(cCTask.GetId().substr(5))] = task_pos;
+                    m_mapTaskPos[stoi(cCTask.GetId().substr(5))] = task_pos;
 
                     // std::cout << "Hiding " << cCTask.GetId() << std::endl;
 
@@ -388,7 +390,7 @@ void CExperimentLoopFunctions::PreStep() {
 
                             /* Check whether the chosen position will result in an overlap with existing tasks */
                             bool bInvalidTaskPos = false;
-                            for(auto& task_pos : m_vecTaskPos) {
+                            for(auto& task_pos : m_mapTaskPos) {
 
                                 if(task_pos.second["x1"] > 500)
                                     continue; // Skip tasks outside of arena
@@ -419,7 +421,7 @@ void CExperimentLoopFunctions::PreStep() {
                                 task_pos["y1"] = y1;
                                 task_pos["y2"] = y2;
 
-                                m_vecTaskPos[m_unTotalTasks] = task_pos;
+                                m_mapTaskPos[m_unTotalTasks] = task_pos;
 
                                 // m_unTaskDemand += unDemand;
 
@@ -428,12 +430,12 @@ void CExperimentLoopFunctions::PreStep() {
                         }
                     }
                 } else {
-                    // cCTask.SetDemand(currentDemand - taskWithRobot[cCTask.GetId()]);
+                    // cCTask.SetDemand(currentDemand - m_mapRobotPerTask[cCTask.GetId()]);
                     cCTask.SetDemand(currentDemand - 1);
                 }
             }
 
-            cCTask.SetCurrentRobotNum(taskWithRobot[cCTask.GetId()]);
+            cCTask.SetCurrentRobotNum(m_mapRobotPerTask[cCTask.GetId()]);
         }
     }
 
@@ -682,6 +684,13 @@ void CExperimentLoopFunctions::InitLogging() {
 
 std::string CExperimentLoopFunctions::GetCommandFilePath() {
     return m_strCommandFilePath;
+}
+
+/****************************************/
+/****************************************/
+
+std::unordered_map<std::string, UInt32> CExperimentLoopFunctions::GetRobotPerTask() {
+    return m_mapRobotPerTask;
 }
 
 /****************************************/
@@ -1069,7 +1078,7 @@ void CExperimentLoopFunctions::InitTasks() {
         task_pos["y1"] = cCenter.GetY() + fWidthY/2;
         task_pos["y2"] = cCenter.GetY() - fWidthY/2;
 
-        m_vecTaskPos[m_unNextTaskId] = task_pos;
+        m_mapTaskPos[m_unNextTaskId] = task_pos;
 
         /* Update task count */
         m_unNextTaskId++;

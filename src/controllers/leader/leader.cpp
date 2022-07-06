@@ -155,6 +155,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentState = RobotState::LEADER;
     inputStart = true; // Make leader always send start signal for now
     inputStop = false;
+    
+    currentTaskId = "";
     currentTaskDemand = 0;
     currentInitTaskDemand = 0;
     numOtherTaskRequire = 0;
@@ -591,6 +593,20 @@ CVector2 CLeader::GetNextWaypoint() {
 
 void CLeader::SetWaypoints(const std::queue<CVector2> waypts) {
     waypoints = waypts;
+}
+
+/****************************************/
+/****************************************/
+
+std::string CLeader::GetTaskId() {
+    return currentTaskId;
+}
+
+/****************************************/
+/****************************************/
+
+void CLeader::SetTaskId(const std::string str_id) {
+    currentTaskId = str_id;
 }
 
 /****************************************/

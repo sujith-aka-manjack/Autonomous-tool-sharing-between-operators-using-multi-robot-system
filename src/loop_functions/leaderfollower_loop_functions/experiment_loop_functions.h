@@ -25,6 +25,7 @@ public:
    virtual void PostStep();
    virtual bool IsLogging();
    virtual std::string GetCommandFilePath();
+   virtual std::unordered_map<std::string, UInt32> GetRobotPerTask();
    virtual UInt32 GetCurrentPoints();
 
 private:
@@ -42,7 +43,9 @@ private:
    UInt32 m_unTaskDemand;
    UInt32 m_unPointsObtained;
    // std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
-   std::map<UInt32, std::map<std::string, Real>> m_vecTaskPos;
+   std::map<UInt32, std::map<std::string, Real>> m_mapTaskPos;
+   /* Number of robots working on each task in the current timestep */
+   std::unordered_map<std::string,UInt32> m_mapRobotPerTask;
 
    CRange<Real> cArenaSideSplitX[4] = {
                                        CRange<Real>(0.5f, 1.45f), // TEMPORARY: hard coded arena size

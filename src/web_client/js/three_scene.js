@@ -1627,6 +1627,14 @@ function render() {
       if(sceneEntities.hasOwnProperty(window.target)) {
 
         let num_followers = sceneEntities[window.target].entity.user_data.num_followers;
+
+        let taskname = sceneEntities[window.target].entity.user_data.taskname;
+
+        if(taskname != '') {
+          let num_robot_in_my_task = window.robot_per_task[taskname];
+          console.log("Task ID: " + taskname + ", Robots in task: " + num_robot_in_my_task);
+        }
+        
         let num_task_require = sceneEntities[window.target].entity.user_data.num_task_require;
         let num_task_demand = sceneEntities[window.target].entity.user_data.num_task_demand;
         let num_init_task_demand = sceneEntities[window.target].entity.user_data.num_init_task_demand;

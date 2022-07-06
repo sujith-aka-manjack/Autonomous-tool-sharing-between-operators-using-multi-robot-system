@@ -129,6 +129,11 @@
           }
         }
 
+        /* Store the number of robots working on each task */
+        if(data.user_data.tasks) {
+          window.robot_per_task = data.user_data.tasks;
+        }
+
         let e_status = document.getElementById('connection-status');
 
         if(connectionExists) {
@@ -184,7 +189,7 @@
 
         /* Current points obtained */
         window.pointsObtained = data.user_data.points;
-        console.log(window.pointsObtained);
+        // console.log(window.pointsObtained);
 
         if (!window.isInitialized) {
           window.isInitialized = true;

@@ -209,6 +209,16 @@ public:
     virtual void SetWaypoints(const std::queue<CVector2> waypts);
 
     /*
+    * Get the current task's id.
+    */
+    virtual std::string GetTaskId();
+
+    /*
+    * Set the current task's id.
+    */
+    virtual void SetTaskId(const std::string str_id);
+
+    /*
     * Get the current task's demand.
     */
     virtual UInt32 GetTaskDemand();
@@ -442,6 +452,7 @@ private:
     std::queue<CVector2> waypoints;
 
     /* Task demand of the current working task */
+    std::string currentTaskId;
     UInt32 currentTaskDemand;
     UInt32 currentInitTaskDemand;
     UInt32 previousTaskDemand; // Task demand from 10 timesteps ago
