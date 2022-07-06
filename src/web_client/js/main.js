@@ -13,6 +13,7 @@
 /* List of modes that the web client can take. Each mode changes what UI is displayed. */
 const Mode = Object.freeze({
   DEBUG: 'debug',
+  NOGUI: 'nogui',
   INDIRECT: 'indirect',
   DIRECT: 'direct'
 })
@@ -169,6 +170,7 @@ var onAllFilesLoaded = function () {
       let dropListMode = "".concat(
         "<select>"
         + "<option value='Debug'>Debug</option>"
+        + "<option value='NoGUI'>NoGUI</option>"
         + "<option value='Indirect'>Indirect</option>"
         + "<option value='Direct'>Direct</option>"
         + "</select>"
@@ -363,6 +365,11 @@ var onAllFilesLoaded = function () {
                 window.mode = Mode.DEBUG;
                 mode_param = window.mode;
                 break;
+              case 'NoGUI':
+                console.log('Load ' + Mode.NOGUI);
+                window.mode = Mode.NOGUI;
+                mode_param = window.mode;
+                break;
               case 'Indirect':
                 console.log('Load ' + Mode.INDIRECT);
                 window.mode = Mode.INDIRECT;
@@ -535,13 +542,17 @@ var onAllFilesLoaded = function () {
           window.mode = Mode.DEBUG;
           document.getElementById('mode_selected').selectedIndex = '0';
           break;
+        case 'nogui':
+          window.mode = Mode.NOGUI;
+          document.getElementById('mode_selected').selectedIndex = '1';
+          break;
         case 'ind':
           window.mode = Mode.INDIRECT;
-          document.getElementById('mode_selected').selectedIndex = '1';
+          document.getElementById('mode_selected').selectedIndex = '2';
           break;
         case 'dir':
           window.mode = Mode.DIRECT;
-          document.getElementById('mode_selected').selectedIndex = '2';
+          document.getElementById('mode_selected').selectedIndex = '3';
           break;
         default:
           console.log('Unrecognized mode passed in url: ' + urlParams.get('m'));

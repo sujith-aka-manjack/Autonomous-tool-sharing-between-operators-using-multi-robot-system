@@ -1982,12 +1982,16 @@ function render() {
     menuRenderer.render(scene, cameraRobot);
   } else if (window.targetChanged) {
     console.log('waiting to connect...');
-  } else if ( window.mode == Mode.DEBUG ) {
+  } else if ( window.mode == Mode.DEBUG || window.mode == Mode.NOGUI ) {
     renderer.render(scene, camera);
     menuRenderer.render(scene, camera);
   }
 
   renderer.clearDepth();
+
+  /* Hide GUI */
+  if(window.mode == Mode.NOGUI) { cameraOrtho.position.z = -10; }
+
   renderer.render( sceneOrtho, cameraOrtho );
 
 }
