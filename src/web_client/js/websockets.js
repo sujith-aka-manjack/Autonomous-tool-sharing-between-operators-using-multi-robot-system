@@ -112,7 +112,12 @@
             break;
         }
 
-        window.experiment.counter = data.steps;
+        /* Pretty print timestep to minutes and seconds (Assumes 1 second = 10 timesteps) */
+        const time = data.steps / 10;
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        const milliseconds = time % 60 - seconds;
+        window.experiment.counter = String(minutes).padStart(2,'0') +':'+ String(seconds).padStart(2,'0') +'.'+ milliseconds.toFixed(1).substring(2);
 
         /* Check whether this client is in control of a robot */
         var connectionExists = false;
@@ -207,9 +212,17 @@
         if (data.messages && data.timestamp > window.logLatestTime) {
           console.log(data);
           window.logLatestTime = data.timestamp;
-
+          
           var log_ = [], logerr_ = [];
           for (let i = 0; i < data.messages.length; i++) {
+
+            /* Pretty print timestep to minutes and seconds (Assumes 1 second = 10 timesteps) */
+            const time = data.messages[i].step / 10;
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            const milliseconds = time % 60 - seconds;
+            const step = String(minutes).padStart(2,'0') +':'+ String(seconds).padStart(2,'0') +'.'+ milliseconds.toFixed(1).substring(2);
+
             if (data.messages[i].log_type == 'LOG') {
 
               var text_color = 'rgb(0,0,0)';
@@ -240,7 +253,7 @@
                 /* In DEBUG mode */
 
                 log_.unshift("<div class='log'><pre><span class='b'>[t=" +
-                  data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                  step + "]</span> <span style='color:" + text_color + "'>" +
                   message_content + "</span></pre></div>");
 
               } else {
@@ -252,7 +265,7 @@
                   /* Print all [LOG] and leader messages */
 
                   log_.unshift("<div class='log'><pre><span class='b'>[t=" +
-                    data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                    step + "]</span> <span style='color:" + text_color + "'>" +
                     message_content + "</span></pre></div>");
 
                 } else {
@@ -261,7 +274,7 @@
 
                   if(robot_id == window.target && window.target != '') {
                     log_.unshift("<div class='log'><pre><span class='b'>[t=" +
-                      data.messages[i].step + "]</span> <span style='color:" + text_color + "'>" +
+                      step + "]</span> <span style='color:" + text_color + "'>" +
                       message_content + "</span></pre></div>");
                   }
                 }
@@ -269,7 +282,7 @@
               
             } else {
               logerr_.unshift("<div class='log'><pre><span class='b'>[t=" +
-                data.messages[i].step + "]</span> " +
+                step + "]</span> " +
                 data.messages[i].log_message + "</pre></div>");
             }
           }
