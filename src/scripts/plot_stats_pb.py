@@ -9,7 +9,7 @@ from matplotlib.font_manager import FontProperties
 import time
 from collections import defaultdict
 
-from load_pb import SimData
+from scripts.load_data import SimData
 
 import sys
 
