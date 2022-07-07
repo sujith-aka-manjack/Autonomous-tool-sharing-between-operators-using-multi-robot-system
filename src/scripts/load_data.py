@@ -54,12 +54,16 @@ class SimData:
                 self.totalPoints = self.data[self.totalTime]['log'].points
 
                 # Number of leaders and robots
-                numLeaders = 0
+                leaderNames = []
+                teamNames = []
                 for robot in self.data[1]['log'].robots:
                     if robot.state == time_step_pb2.Robot.LEADER:
-                        numLeaders += 1
+                        leaderNames.append(robot.name)
+                        teamNames.append(robot.teamID)
 
-                self.numLeaders = numLeaders
+                self.leaders = leaderNames
+                self.teams = teamNames
+                self.numLeaders = len(self.leaders)
                 self.numWorkers = len(self.data[1]['log'].robots) - self.numLeaders
 
                 # Number of tasks that appeared in the experiment
@@ -109,6 +113,79 @@ if __name__ == "__main__":
     print('Total time: {}'.format(s.totalTime))
     print('Points: {}'.format(s.data[s.totalTime]['log'].points))
     print('Number of leaders: {}'.format(s.numLeaders))
+    for leader in s.leaders:
+        print('\t{}'.format(leader))
+    print('Teams:')
+    for team in s.teams:
+        print('\t{}'.format(team))
     print('Number of followers: {}'.format(s.numWorkers))
     print('Number of tasks: {}'.format(s.numTasks))
     print(type(s.data[s.totalTime]))
+
+    ########
+    # TEST #
+    ########
+
+    # Calculate each team's average distance traveled
+    import numpy as np
+
+    # List of leader names = []
+    teamNames = s.teams
+    # Average team position = {}
+    teamPosition = {}
+    # Total distance traveled = {}
+    distanceTraveled = {}
+    for team in s.teams:
+        distanceTraveled[team] = 0
+
+    # for each timestep
+        # for each team (loop by leader)
+            # calculate the new average x and y of both teams (leader and followers)
+            # if timestep != 1
+                # calculate the distance from the previous team average to the new team average and add it to the sum
+            # update previous team average
+
+    for time in range(1, s.totalTime+1):
+
+        print('--------\ntime: {}'.format(time))
+
+        # Add robot positions into separate arrays
+        tempTeamPosition = {}
+        for team in s.teams:
+            tempTeamPosition[team] = []
+
+        # Add robot positions according to their teams
+        for robot in s.data[time]['log'].robots:
+            for team in s.teams:
+                if robot.teamID == team:
+                    tempTeamPosition[team].append([robot.position.x, robot.position.y])
+
+        newTeamPosition = {}
+
+        # Calculate the average team positions
+        for key, value in tempTeamPosition.items():
+            newTeamPosition[key] = np.average(np.array(value), axis=0)
+            # np.round(newTeamPosition[key], decimals=2, out=newTeamPosition[key])
+            # print('team {0} new pos: {1}'.format(key, newTeamPosition[key]))
+
+        if time != 1:
+            for team in s.teams:
+                # Calculate the distance traveled from the previous timestep
+                x1 = teamPosition[team][0]
+                y1 = teamPosition[team][1]
+                x2 = newTeamPosition[team][0]
+                y2 = newTeamPosition[team][1]
+                distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+                distanceTraveled[team] += distance
+
+                # print('team {0} dist: {1}'.format(team, distanceTraveled[team]))
+
+        teamPosition = newTeamPosition
+
+
+        # if time == 200:
+        #     sys.exit(0)
+
+    print('--------\nDistance traveled')
+    for team in s.teams:
+        print('team {0} dist: {1}'.format(team, distanceTraveled[team]))
