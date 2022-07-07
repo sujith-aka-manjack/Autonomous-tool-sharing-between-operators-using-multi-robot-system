@@ -556,9 +556,9 @@ void CExperimentLoopFunctions::PostStep() {
         }
     }
 
-    /* Terminate simulation when all tasks are complete */
+    /* Terminate simulation time limit is reached */
     // if(m_bTaskExists && total_demand == 0) {
-    if(GetSpace().GetSimulationClock() == 6000) {
+    if(GetSpace().GetSimulationClock() == CSimulator::GetInstance().GetMaxSimulationClock()) {
         int final_time = GetSpace().GetSimulationClock();
         m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
         m_cOutput << "\n";
@@ -567,8 +567,8 @@ void CExperimentLoopFunctions::PostStep() {
         // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
         m_cOutput.close();
         std::cout << "[LOG] Reached time limit!" << std::endl;
-        // std::cout << "[LOG] Task Status: FINISHED" << std::endl;
-        std::cout << "[LOG] Mission time: " << final_time << std::endl;
+        std::cout << "[LOG] Score: " << (int)m_unPointsObtained << std::endl;
+        // std::cout << "[LOG] Mission time: " << final_time << std::endl;
         // std::cout << "[LOG] All tasks completed" << std::endl;
         std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
         this->Destroy();

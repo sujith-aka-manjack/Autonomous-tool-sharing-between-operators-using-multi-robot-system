@@ -1789,13 +1789,13 @@ function render() {
       }
     }
 
+    /* Uodate points obtained */
+    window.pointsText.set({
+      content: "Score: " + window.pointsObtained
+    });
+
     /* Update HUD values */
     if(window.target != '') {
-
-      /* Uodate points obtained */
-      window.pointsText.set({
-        content: "Score: " + window.pointsObtained
-      });
 
       if(sceneEntities.hasOwnProperty(window.target)) {
 
