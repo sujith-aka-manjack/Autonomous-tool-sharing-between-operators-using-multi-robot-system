@@ -513,6 +513,8 @@ void CExperimentLoopFunctions::PreStep() {
                     task->set_demand(cCTask.GetDemand());
                     task->set_requiredrobots(cCTask.GetMinRobotNum());
                     task->set_currentrobots(cCTask.GetCurrentRobotNum());
+                    task->mutable_position()->set_x(cCTask.GetPosition().GetX());
+                    task->mutable_position()->set_y(cCTask.GetPosition().GetY());
                 }
             }
         }

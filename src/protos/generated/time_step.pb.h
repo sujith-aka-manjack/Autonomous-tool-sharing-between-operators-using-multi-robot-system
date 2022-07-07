@@ -54,12 +54,12 @@ struct TableStruct_time_5fstep_2eproto {
   static const uint32_t offsets[];
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_time_5fstep_2eproto;
+class Position;
+struct PositionDefaultTypeInternal;
+extern PositionDefaultTypeInternal _Position_default_instance_;
 class Robot;
 struct RobotDefaultTypeInternal;
 extern RobotDefaultTypeInternal _Robot_default_instance_;
-class Robot_Position;
-struct Robot_PositionDefaultTypeInternal;
-extern Robot_PositionDefaultTypeInternal _Robot_Position_default_instance_;
 class Task;
 struct TaskDefaultTypeInternal;
 extern TaskDefaultTypeInternal _Task_default_instance_;
@@ -67,8 +67,8 @@ class TimeStep;
 struct TimeStepDefaultTypeInternal;
 extern TimeStepDefaultTypeInternal _TimeStep_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
+template<> ::Position* Arena::CreateMaybeMessage<::Position>(Arena*);
 template<> ::Robot* Arena::CreateMaybeMessage<::Robot>(Arena*);
-template<> ::Robot_Position* Arena::CreateMaybeMessage<::Robot_Position>(Arena*);
 template<> ::Task* Arena::CreateMaybeMessage<::Task>(Arena*);
 template<> ::TimeStep* Arena::CreateMaybeMessage<::TimeStep>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -304,24 +304,24 @@ class TimeStep final :
 };
 // -------------------------------------------------------------------
 
-class Robot_Position final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Robot.Position) */ {
+class Position final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Position) */ {
  public:
-  inline Robot_Position() : Robot_Position(nullptr) {}
-  ~Robot_Position() override;
-  explicit constexpr Robot_Position(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  inline Position() : Position(nullptr) {}
+  ~Position() override;
+  explicit constexpr Position(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
-  Robot_Position(const Robot_Position& from);
-  Robot_Position(Robot_Position&& from) noexcept
-    : Robot_Position() {
+  Position(const Position& from);
+  Position(Position&& from) noexcept
+    : Position() {
     *this = ::std::move(from);
   }
 
-  inline Robot_Position& operator=(const Robot_Position& from) {
+  inline Position& operator=(const Position& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Robot_Position& operator=(Robot_Position&& from) noexcept {
+  inline Position& operator=(Position&& from) noexcept {
     if (this == &from) return *this;
     if (GetOwningArena() == from.GetOwningArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
@@ -344,20 +344,20 @@ class Robot_Position final :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Robot_Position& default_instance() {
+  static const Position& default_instance() {
     return *internal_default_instance();
   }
-  static inline const Robot_Position* internal_default_instance() {
-    return reinterpret_cast<const Robot_Position*>(
-               &_Robot_Position_default_instance_);
+  static inline const Position* internal_default_instance() {
+    return reinterpret_cast<const Position*>(
+               &_Position_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     1;
 
-  friend void swap(Robot_Position& a, Robot_Position& b) {
+  friend void swap(Position& a, Position& b) {
     a.Swap(&b);
   }
-  inline void Swap(Robot_Position* other) {
+  inline void Swap(Position* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetOwningArena() != nullptr &&
@@ -370,7 +370,7 @@ class Robot_Position final :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Robot_Position* other) {
+  void UnsafeArenaSwap(Position* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
@@ -378,13 +378,13 @@ class Robot_Position final :
 
   // implements Message ----------------------------------------------
 
-  Robot_Position* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Robot_Position>(arena);
+  Position* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Position>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
-  void CopyFrom(const Robot_Position& from);
+  void CopyFrom(const Position& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Robot_Position& from);
+  void MergeFrom(const Position& from);
   private:
   static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
@@ -401,15 +401,15 @@ class Robot_Position final :
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Robot_Position* other);
+  void InternalSwap(Position* other);
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "Robot.Position";
+    return "Position";
   }
   protected:
-  explicit Robot_Position(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+  explicit Position(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
@@ -447,7 +447,7 @@ class Robot_Position final :
   void _internal_set_y(double value);
   public:
 
-  // @@protoc_insertion_point(class_scope:Robot.Position)
+  // @@protoc_insertion_point(class_scope:Position)
  private:
   class _Internal;
 
@@ -580,8 +580,6 @@ class Robot final :
 
   // nested types ----------------------------------------------------
 
-  typedef Robot_Position Position;
-
   typedef Robot_State State;
   static constexpr State FOLLOWER =
     Robot_State_FOLLOWER;
@@ -659,23 +657,23 @@ class Robot final :
   std::string* _internal_mutable_action();
   public:
 
-  // .Robot.Position position = 4;
+  // .Position position = 4;
   bool has_position() const;
   private:
   bool _internal_has_position() const;
   public:
   void clear_position();
-  const ::Robot_Position& position() const;
-  PROTOBUF_NODISCARD ::Robot_Position* release_position();
-  ::Robot_Position* mutable_position();
-  void set_allocated_position(::Robot_Position* position);
+  const ::Position& position() const;
+  PROTOBUF_NODISCARD ::Position* release_position();
+  ::Position* mutable_position();
+  void set_allocated_position(::Position* position);
   private:
-  const ::Robot_Position& _internal_position() const;
-  ::Robot_Position* _internal_mutable_position();
+  const ::Position& _internal_position() const;
+  ::Position* _internal_mutable_position();
   public:
   void unsafe_arena_set_allocated_position(
-      ::Robot_Position* position);
-  ::Robot_Position* unsafe_arena_release_position();
+      ::Position* position);
+  ::Position* unsafe_arena_release_position();
 
   // uint64 teamID = 2;
   void clear_teamid();
@@ -732,7 +730,7 @@ class Robot final :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr action_;
-  ::Robot_Position* position_;
+  ::Position* position_;
   uint64_t teamid_;
   uint64_t totalsent_;
   uint64_t totalreceived_;
@@ -864,6 +862,7 @@ class Task final :
 
   enum : int {
     kNameFieldNumber = 1,
+    kPositionFieldNumber = 5,
     kDemandFieldNumber = 2,
     kRequiredRobotsFieldNumber = 3,
     kCurrentRobotsFieldNumber = 4,
@@ -881,6 +880,24 @@ class Task final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
+
+  // .Position position = 5;
+  bool has_position() const;
+  private:
+  bool _internal_has_position() const;
+  public:
+  void clear_position();
+  const ::Position& position() const;
+  PROTOBUF_NODISCARD ::Position* release_position();
+  ::Position* mutable_position();
+  void set_allocated_position(::Position* position);
+  private:
+  const ::Position& _internal_position() const;
+  ::Position* _internal_mutable_position();
+  public:
+  void unsafe_arena_set_allocated_position(
+      ::Position* position);
+  ::Position* unsafe_arena_release_position();
 
   // uint64 demand = 2;
   void clear_demand();
@@ -917,6 +934,7 @@ class Task final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::Position* position_;
   uint64_t demand_;
   uint64_t requiredrobots_;
   uint64_t currentrobots_;
@@ -1064,46 +1082,46 @@ inline void TimeStep::set_points(uint64_t value) {
 
 // -------------------------------------------------------------------
 
-// Robot_Position
+// Position
 
 // double x = 1;
-inline void Robot_Position::clear_x() {
+inline void Position::clear_x() {
   x_ = 0;
 }
-inline double Robot_Position::_internal_x() const {
+inline double Position::_internal_x() const {
   return x_;
 }
-inline double Robot_Position::x() const {
-  // @@protoc_insertion_point(field_get:Robot.Position.x)
+inline double Position::x() const {
+  // @@protoc_insertion_point(field_get:Position.x)
   return _internal_x();
 }
-inline void Robot_Position::_internal_set_x(double value) {
+inline void Position::_internal_set_x(double value) {
   
   x_ = value;
 }
-inline void Robot_Position::set_x(double value) {
+inline void Position::set_x(double value) {
   _internal_set_x(value);
-  // @@protoc_insertion_point(field_set:Robot.Position.x)
+  // @@protoc_insertion_point(field_set:Position.x)
 }
 
 // double y = 2;
-inline void Robot_Position::clear_y() {
+inline void Position::clear_y() {
   y_ = 0;
 }
-inline double Robot_Position::_internal_y() const {
+inline double Position::_internal_y() const {
   return y_;
 }
-inline double Robot_Position::y() const {
-  // @@protoc_insertion_point(field_get:Robot.Position.y)
+inline double Position::y() const {
+  // @@protoc_insertion_point(field_get:Position.y)
   return _internal_y();
 }
-inline void Robot_Position::_internal_set_y(double value) {
+inline void Position::_internal_set_y(double value) {
   
   y_ = value;
 }
-inline void Robot_Position::set_y(double value) {
+inline void Position::set_y(double value) {
   _internal_set_y(value);
-  // @@protoc_insertion_point(field_set:Robot.Position.y)
+  // @@protoc_insertion_point(field_set:Position.y)
 }
 
 // -------------------------------------------------------------------
@@ -1201,7 +1219,7 @@ inline void Robot::set_state(::Robot_State value) {
   // @@protoc_insertion_point(field_set:Robot.state)
 }
 
-// .Robot.Position position = 4;
+// .Position position = 4;
 inline bool Robot::_internal_has_position() const {
   return this != internal_default_instance() && position_ != nullptr;
 }
@@ -1214,17 +1232,17 @@ inline void Robot::clear_position() {
   }
   position_ = nullptr;
 }
-inline const ::Robot_Position& Robot::_internal_position() const {
-  const ::Robot_Position* p = position_;
-  return p != nullptr ? *p : reinterpret_cast<const ::Robot_Position&>(
-      ::_Robot_Position_default_instance_);
+inline const ::Position& Robot::_internal_position() const {
+  const ::Position* p = position_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Position&>(
+      ::_Position_default_instance_);
 }
-inline const ::Robot_Position& Robot::position() const {
+inline const ::Position& Robot::position() const {
   // @@protoc_insertion_point(field_get:Robot.position)
   return _internal_position();
 }
 inline void Robot::unsafe_arena_set_allocated_position(
-    ::Robot_Position* position) {
+    ::Position* position) {
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(position_);
   }
@@ -1236,9 +1254,9 @@ inline void Robot::unsafe_arena_set_allocated_position(
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Robot.position)
 }
-inline ::Robot_Position* Robot::release_position() {
+inline ::Position* Robot::release_position() {
   
-  ::Robot_Position* temp = position_;
+  ::Position* temp = position_;
   position_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
@@ -1251,34 +1269,34 @@ inline ::Robot_Position* Robot::release_position() {
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
-inline ::Robot_Position* Robot::unsafe_arena_release_position() {
+inline ::Position* Robot::unsafe_arena_release_position() {
   // @@protoc_insertion_point(field_release:Robot.position)
   
-  ::Robot_Position* temp = position_;
+  ::Position* temp = position_;
   position_ = nullptr;
   return temp;
 }
-inline ::Robot_Position* Robot::_internal_mutable_position() {
+inline ::Position* Robot::_internal_mutable_position() {
   
   if (position_ == nullptr) {
-    auto* p = CreateMaybeMessage<::Robot_Position>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::Position>(GetArenaForAllocation());
     position_ = p;
   }
   return position_;
 }
-inline ::Robot_Position* Robot::mutable_position() {
-  ::Robot_Position* _msg = _internal_mutable_position();
+inline ::Position* Robot::mutable_position() {
+  ::Position* _msg = _internal_mutable_position();
   // @@protoc_insertion_point(field_mutable:Robot.position)
   return _msg;
 }
-inline void Robot::set_allocated_position(::Robot_Position* position) {
+inline void Robot::set_allocated_position(::Position* position) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   if (message_arena == nullptr) {
     delete position_;
   }
   if (position) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-        ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::Robot_Position>::GetOwningArena(position);
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::Position>::GetOwningArena(position);
     if (message_arena != submessage_arena) {
       position = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, position, submessage_arena);
@@ -1529,6 +1547,96 @@ inline void Task::_internal_set_currentrobots(uint64_t value) {
 inline void Task::set_currentrobots(uint64_t value) {
   _internal_set_currentrobots(value);
   // @@protoc_insertion_point(field_set:Task.currentRobots)
+}
+
+// .Position position = 5;
+inline bool Task::_internal_has_position() const {
+  return this != internal_default_instance() && position_ != nullptr;
+}
+inline bool Task::has_position() const {
+  return _internal_has_position();
+}
+inline void Task::clear_position() {
+  if (GetArenaForAllocation() == nullptr && position_ != nullptr) {
+    delete position_;
+  }
+  position_ = nullptr;
+}
+inline const ::Position& Task::_internal_position() const {
+  const ::Position* p = position_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Position&>(
+      ::_Position_default_instance_);
+}
+inline const ::Position& Task::position() const {
+  // @@protoc_insertion_point(field_get:Task.position)
+  return _internal_position();
+}
+inline void Task::unsafe_arena_set_allocated_position(
+    ::Position* position) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(position_);
+  }
+  position_ = position;
+  if (position) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Task.position)
+}
+inline ::Position* Task::release_position() {
+  
+  ::Position* temp = position_;
+  position_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Position* Task::unsafe_arena_release_position() {
+  // @@protoc_insertion_point(field_release:Task.position)
+  
+  ::Position* temp = position_;
+  position_ = nullptr;
+  return temp;
+}
+inline ::Position* Task::_internal_mutable_position() {
+  
+  if (position_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Position>(GetArenaForAllocation());
+    position_ = p;
+  }
+  return position_;
+}
+inline ::Position* Task::mutable_position() {
+  ::Position* _msg = _internal_mutable_position();
+  // @@protoc_insertion_point(field_mutable:Task.position)
+  return _msg;
+}
+inline void Task::set_allocated_position(::Position* position) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete position_;
+  }
+  if (position) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::Position>::GetOwningArena(position);
+    if (message_arena != submessage_arena) {
+      position = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, position, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  position_ = position;
+  // @@protoc_insertion_point(field_set_allocated:Task.position)
 }
 
 #ifdef __GNUC__
