@@ -26,10 +26,10 @@
           // Connect to simulation
           $(function() {
             $('a#connect').on('click', function(e) {
-              // feature to request & send is turned OFF by default
-              var request_and_send = 0;
-              // turn ON request & send if order = 2
-              if('{{order}}' == '2') request_and_send = 1;
+              // feature to request & send is turned ON by default
+              var request_and_send = 1;
+              // turn OFF request & send if order = 2
+              if('{{order}}' == '2') request_and_send = 0;
 
               var link = 'http://0.0.0.0:8000?m={{mode}}&rs='+request_and_send+'&l=1';
               const ip_addr = document.getElementById('InputIP').value;
