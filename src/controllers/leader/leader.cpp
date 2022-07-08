@@ -995,7 +995,7 @@ void CLeader::CheckHeartBeat() {
                                 numRobotsToSend = numRobotsRequested;
                             }
                             numRobotsRemainingToSend = numRobotsToSend;
-                            std::cout << "[LOG] " << numRobotsToSend << std::endl;
+                            // std::cout << "[LOG] " << numRobotsToSend << std::endl;
                         }
 
                     } else if(beat.type == 'A') {
