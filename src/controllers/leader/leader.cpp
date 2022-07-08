@@ -577,7 +577,10 @@ void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
     std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to send from user" << std::endl;
 
-    if(currentFollowerCount <= un_robots) { // If robots to send exceed current team size, send all followers
+    if(currentFollowerCount <= 1) {
+        std::cout << "{" << this->GetId() << "}[LOG] Cannot send if robots <= 1 " << std::endl;
+        return;
+    } else if(currentFollowerCount <= un_robots) { // If robots to send exceed current team size, send all followers
         numRobotsToSend = currentFollowerCount - 1;
     } else {
         numRobotsToSend = un_robots;
