@@ -126,6 +126,8 @@ docker run --name argos -it -p 3000:3000 -p 8000:8000 -p 5000:5000 -v /home/dock
 
 # Complete starup command
 docker run --name argos -d -p 3000:3000 -p 8000:8000 -p 5000:5000 -v $(pwd)/backup:/home/docker/argos-sct/results -w /home/docker/argos-sct genki15/argos-sct python3 src/web_app/app.py
+    # OR
+docker run --name argos -it --network="host" -v $(pwd)/results:/home/docker/argos-sct/results -w /home/docker/argos-sct genki15/argos-sct python3 src/web_app/app.py -m $condition -o $order
 
 # To open new terminal
 docker exec -it argos bash
