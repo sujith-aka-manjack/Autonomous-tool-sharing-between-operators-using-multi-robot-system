@@ -159,16 +159,20 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentTaskId = "";
     currentTaskDemand = 0;
     currentInitTaskDemand = 0;
+
     numOtherTaskRequire = 0;
     numOtherFollower = -1;
+
     shareToTeam = "";
     initStepTimer = 0;
     robotLastSentTime = 0;
     acceptID = "";
+
     lastSent = -1;
     lastBeatTime = 0;
     beatReceived = 0;
     beatSent = 0;
+
     numRobotsToSend = 0;
     numRobotsRemainingToSend = 0;
     numRobotsToRequest = 0;
@@ -176,6 +180,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     isSendingRobots = false;
     switchCandidate = "";
     robotToSwitch = "";
+    
     decremented = false;
     robotsNeeded = 0;
     requestSent = false;
@@ -574,11 +579,11 @@ void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
     if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
         numRobotsToSend = currentFollowerCount;
-        numRobotsRemainingToSend = numRobotsToSend;
     } else {
         numRobotsToSend = un_robots;
-        numRobotsRemainingToSend = numRobotsToSend;
     }
+
+    numRobotsRemainingToSend = numRobotsToSend;
 }
 
 /****************************************/
@@ -981,8 +986,13 @@ void CLeader::CheckHeartBeat() {
 
                         // DEBUG
                         if( !m_bSelected ) {
-                            numRobotsToSend = numRobotsRequested;
+                            if(currentFollowerCount <= numRobotsRequested) {
+                                numRobotsToSend = numRobotsRequested - 1; // Keep one follower and send the rest
+                            } else {
+                                numRobotsToSend = numRobotsRequested;
+                            }
                             numRobotsRemainingToSend = numRobotsToSend;
+                            std::cout << "[LOG] " << numRobotsToSend << std::endl;
                         }
 
                     } else if(beat.type == 'A') {
