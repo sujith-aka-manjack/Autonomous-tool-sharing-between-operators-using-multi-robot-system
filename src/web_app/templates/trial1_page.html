@@ -38,11 +38,13 @@
               console.log(ip_addr);
               console.log(('{{host_ip}}' === ip_addr));
 
-              // if host_ip is different, connect to simulation running in a specific address
-              if('{{host_ip}}' !== ip_addr) {
-                link = 'http://'+ip_addr+':8000?m={{mode}}&rs='+request_and_send+'&l=2';
+              if(ip_addr) {
+                // if host_ip is different, connect to simulation running in a specific address
+                if('{{host_ip}}' !== ip_addr) {
+                  link = 'http://'+ip_addr+':8000?m={{mode}}&rs='+request_and_send+'&l=2';
+                }
               }
-              
+
               // if user has an id, send the id to the simulation
               if('{{session.username}}' !== 'None') {
                 link += '&id={{session.username}}'
