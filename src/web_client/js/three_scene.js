@@ -1077,7 +1077,7 @@ function initSceneWithScale(_scale) {
       state: "hovered",
       attributes: {
         offset: 0.035,
-        backgroundColor: new THREE.Color( 0x33cc33 ),
+        backgroundColor: new THREE.Color( 0xcccc33 ),
         backgroundOpacity: 1,
         fontColor: new THREE.Color( 0xffffff )
       },
@@ -1087,7 +1087,7 @@ function initSceneWithScale(_scale) {
       state: "idle",
       attributes: {
         offset: 0.035,
-        backgroundColor: new THREE.Color( 0x009900 ),
+        backgroundColor: new THREE.Color( 0x999900 ),
         backgroundOpacity: 0.8,
         fontColor: new THREE.Color( 0xffffff )
       },
@@ -1142,7 +1142,7 @@ function initSceneWithScale(_scale) {
     state: "hovered",
     attributes: {
       offset: 0.035,
-      backgroundColor: new THREE.Color( 0xcccc33 ),
+      backgroundColor: new THREE.Color( 0xcc3333 ),
       backgroundOpacity: 1,
       fontColor: new THREE.Color( 0xffffff )
     },
@@ -1152,7 +1152,7 @@ function initSceneWithScale(_scale) {
     state: "idle",
     attributes: {
       offset: 0.035,
-      backgroundColor: new THREE.Color( 0x999900 ),
+      backgroundColor: new THREE.Color( 0x990000 ),
       backgroundOpacity: 0.8,
       fontColor: new THREE.Color( 0xffffff )
     },
