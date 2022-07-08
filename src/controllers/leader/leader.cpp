@@ -577,8 +577,8 @@ void CLeader::SetRobotsToSend(const UInt32 un_robots) {
 
     std::cout << "[" << this->GetId() << "] Received " << un_robots << " robots to send from user" << std::endl;
 
-    if(currentFollowerCount < un_robots) { // If robots to send exceed current team size, send all followers
-        numRobotsToSend = currentFollowerCount;
+    if(currentFollowerCount <= un_robots) { // If robots to send exceed current team size, send all followers
+        numRobotsToSend = currentFollowerCount - 1;
     } else {
         numRobotsToSend = un_robots;
     }
@@ -1324,7 +1324,7 @@ void CLeader::Callback_Message(void* data) {
     if(!acknowledgeSent && numRobotsToSend > 0) {
         beat.type = 'A';
         beat.robot_num = numRobotsToSend;
-        std::cout << "{" << this->GetId() << "}[SEND] Sent " << numRobotsToSend << " robots!" << std::endl;
+        std::cout << "{" << this->GetId() << "}[SEND] Sending " << numRobotsToSend << " robots!" << std::endl;
         acknowledgeSent = true;
     } else if(numRobotsRemainingToSend == 0) {
         numRobotsToSend = 0;
