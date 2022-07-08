@@ -1015,8 +1015,8 @@ void CExperimentLoopFunctions::InitTasks() {
 
     for(UInt32 i = 1; i <= unHiddenTasks; ++i) {
 
-        // Pick random number {0-11 so 12 items}
-        CRange<UInt32> cIntRange = CRange<UInt32>(0,12);
+        // Pick random number, [0-5) so 5 items
+        CRange<UInt32> cIntRange = CRange<UInt32>(0,5);
         UInt32 unChosen = m_pcRNG->Uniform(cIntRange);
 
         // Set params according to num
@@ -1032,22 +1032,22 @@ void CExperimentLoopFunctions::InitTasks() {
         UInt32 unMinRobotNum;
         UInt32 unMaxRobotNum = 100;
 
-        if(unChosen == 0 || unChosen == 1 || unChosen == 2) {
+        if(unChosen == 0) {
             fWidthX = fWidthY = 0.4;
             fHeight = 0.2;
             unDemand = 200;
             unMinRobotNum = 1;
-        } else if (unChosen == 3 || unChosen == 4 || unChosen == 5) {
+        } else if (unChosen == 1) {
             fWidthX = fWidthY = 0.5;
             fHeight = 0.25;
             unDemand = 300;
             unMinRobotNum = 3;
-        } else if (unChosen == 6 || unChosen == 7) {
+        } else if (unChosen == 2) {
             fWidthX = fWidthY = 0.6;
             fHeight = 0.3;
             unDemand = 400;
             unMinRobotNum = 6;
-        } else if (unChosen == 8 || unChosen == 9) {
+        } else if (unChosen == 3) {
             fWidthX = fWidthY = 0.8;
             fHeight = 0.35;
             unDemand = 500;
