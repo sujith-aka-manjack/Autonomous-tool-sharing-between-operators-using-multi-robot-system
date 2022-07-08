@@ -34,8 +34,12 @@
               var link = 'http://0.0.0.0:8000?m={{mode}}&rs='+request_and_send+'&l=1';
               const ip_addr = document.getElementById('InputIP').value;
 
-              // if form is not empty, connect to simulation running in a specific address
-              if(ip_addr) {
+              console.log('{{host_ip}}');
+              console.log(ip_addr);
+              console.log(('{{host_ip}}' === ip_addr));
+
+              // if host_ip is different, connect to simulation running in a specific address
+              if('{{host_ip}}' !== ip_addr) {
                 link = 'http://'+ip_addr+':8000?m={{mode}}&rs='+request_and_send+'&l=2';
               }
               
@@ -85,26 +89,26 @@
       </div>
 
       <div class="row p-4 text-center">
-        <p>1. <span style="color:blue">(Blue user only)</span> Press the <b>Start</b> button to begin the simulation.</p>
+        <p>1. Press the <b>Start</b> button to begin the simulation.</p>
         <form>
             <a href=# id="start" class="btn btn-outline-success">Start</a>
         </form>
       </div>
 
       <div class="row p-4 bg-light">
-        <p class="text-center">2. Access the simulation from the link below.</p>
+        <p class="text-center">2. Enter the IP address given to you in the box below.<br>Then, access the simulation from the link below.</p>
         <div class="row justify-content-md-center text-left">
-          <div class="col col-lg-5">
-            <p><span style="color:blue">(Blue user)</span>: Leave the box below empty.</p>
-            <p><span style="color:orangered">(Orange user)</span>: Enter the IP address given to you in the box below.</p>
-          </div>
+          <!-- <div class="col col-lg-5">
+            <p>access the simulation from the link below.</p>
+            <p><span style="color:orangered">(Orange user)</span>: </p>
+          </div> -->
         </div>
 
         <div class="row justify-content-md-center text-center">
           <div class="col col-lg-3">
             <div class="form-group">
               <!-- <label for="InputIP">Optional Setting</label> -->
-              <input type="text" class="form-control" id="InputIP" aria-describedby="ipHelp" placeholder="(Optional) Enter IP address">
+              <input type="text" class="form-control" id="InputIP" aria-describedby="ipHelp" placeholder="Enter IP address">
               <!-- <small id="ipHelp" class="form-text text-muted"> Use this when connecting to a simulation running on a different computer.</small> -->
             </div>
             <form>
@@ -116,7 +120,7 @@
       </div>
 
       <div class="row p-4 text-center">
-        <p>3. <span style="color:blue">(Blue user only)</span> Press the <b>Stop</b> button to finish the simulation.</p>
+        <p>3. Press the <b>Stop</b> button to finish the simulation.</p>
         <form>
             <a href=# id="stop" class="btn btn-outline-danger">Stop</a>
         </form>

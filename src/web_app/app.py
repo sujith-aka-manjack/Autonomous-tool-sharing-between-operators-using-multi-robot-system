@@ -88,7 +88,7 @@ def trainingpage():
 @app.route("/trial1page", methods=["GET"])
 def trial1page():
     if 'username' in session:
-        return render_template("trial1_page.html", mode=mode, order=order, session=session)
+        return render_template("trial1_page.html", mode=mode, order=order, session=session, host_ip=ip_addr)
     else:
         return redirect(url_for('startpage'))
 
@@ -97,7 +97,7 @@ def trial1page():
 @app.route("/trial2page", methods=["GET"])
 def trial2page():
     if 'username' in session:
-        return render_template("trial2_page.html", mode=mode, order=order, session=session)
+        return render_template("trial2_page.html", mode=mode, order=order, session=session, host_ip=ip_addr)
     else:
         return redirect(url_for('startpage'))
 
