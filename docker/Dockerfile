@@ -104,7 +104,7 @@ RUN git clone https://gitlab.com/genki_miyauchi/argos3-webviz.git /home/docker/a
 
 # Install argos-sct
 ADD "https://gitlab.com/api/v4/projects/25559649/repository/branches/test-user-study" latest_info
-RUN git clone -b test-user-study https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
+RUN git clone -b user-study-random-task https://gitlab.com/genki_miyauchi/argos-sct.git /home/docker/argos-sct &&\
     cd /home/docker/argos-sct && \
     mkdir results && \
     mkdir build && \
