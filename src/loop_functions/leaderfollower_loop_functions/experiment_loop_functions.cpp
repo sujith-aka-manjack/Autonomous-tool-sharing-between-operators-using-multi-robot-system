@@ -1032,32 +1032,36 @@ void CExperimentLoopFunctions::InitTasks() {
         UInt32 unMinRobotNum;
         UInt32 unMaxRobotNum = 100;
 
+        double factor = (300. - 50) / (12. - 1);
+
         if(unChosen == 0) {
             fWidthX = fWidthY = 0.4;
             fHeight = 0.2;
-            unDemand = 200;
             unMinRobotNum = 1;
+            // demand = 50
         } else if (unChosen == 1) {
             fWidthX = fWidthY = 0.5;
             fHeight = 0.25;
-            unDemand = 300;
             unMinRobotNum = 3;
+            // demand = 95
         } else if (unChosen == 2) {
             fWidthX = fWidthY = 0.6;
             fHeight = 0.3;
-            unDemand = 400;
             unMinRobotNum = 6;
+            // demand = 163
         } else if (unChosen == 3) {
             fWidthX = fWidthY = 0.8;
             fHeight = 0.35;
-            unDemand = 500;
             unMinRobotNum = 9;
+            // demand = 231
         } else {
             fWidthX = fWidthY = 1.0;
             fHeight = 0.4;
-            unDemand = 600;
             unMinRobotNum = 12;
+            // demand = 300
         }
+        unDemand = (UInt32)floor((unMinRobotNum * factor) + (50 - factor));
+        // std::cout << "[LOG] req: " << (int)unMinRobotNum << ", demand: " << (int)unDemand << std::endl;
 
         CVector2 cCenter = CVector2();
         if(i <= unInitTasks) {
