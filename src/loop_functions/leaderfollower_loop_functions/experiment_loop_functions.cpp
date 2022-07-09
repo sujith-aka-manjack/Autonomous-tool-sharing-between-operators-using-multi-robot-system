@@ -1002,7 +1002,7 @@ void CExperimentLoopFunctions::InitTasks() {
     /* ID counts */
     m_unNextTaskId = 1;
     /* Meta data */
-    UInt32 unHiddenTasks = 20;
+    UInt32 unHiddenTasks = 30;
     UInt32 unInitTasks = 3;
     m_unTotalTasks = 0;
     m_unTaskDemand = 0; 

@@ -598,7 +598,7 @@ function initSceneWithScale(_scale) {
     padding: 0.025,
     margin: 10,
     height: 30,
-    width: 120,
+    width: 150,
     justifyContent: 'center',
     textAlign: 'left',
     backgroundOpacity: 0,
