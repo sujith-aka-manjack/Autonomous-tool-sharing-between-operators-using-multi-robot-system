@@ -1302,13 +1302,21 @@ void CLeader::Callback_Message(void* data) {
     // }
 
     
-    // DEBUG
+    // DEBUG (Auto request)
     if( !m_bSelected ) {
         if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
             beat.type = 'R';
             beat.robot_num = robotsNeeded - currentFollowerCount;
             std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num << " robots..." << std::endl;
             requestSent = true;
+        }
+    }
+
+    // DEBUG (Auto send)
+    if( !m_bSelected ) {
+        if(currentFollowerCount > 12 && !acknowledgeSent) {
+            numRobotsToSend = currentFollowerCount - 7; // Send robots so that it has 7 followers left in team
+            numRobotsRemainingToSend = numRobotsToSend;
         }
     }
 
