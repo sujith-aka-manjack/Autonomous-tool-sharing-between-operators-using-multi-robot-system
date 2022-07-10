@@ -544,8 +544,8 @@ void CFollower::ControlStep() {
             break;
         }
         case MoveType::STOP: {
-            // m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
-            AdjustPosition();
+            m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+            // AdjustPosition();
             break;
         }
         case MoveType::TRAVEL: {
@@ -1799,133 +1799,133 @@ CVector2 CFollower::GetChainTravelVector() {
 /****************************************/
 /****************************************/
 
-void CFollower::AdjustPosition() {
+// void CFollower::AdjustPosition() {
 
-    // TODO Make connector so that its adjacent connectors are too far. If too far, stop.
+//     // TODO Make connector so that its adjacent connectors are too far. If too far, stop.
 
-    /* Add robots to repel from */
-    std::vector<Message> repulseMsgs;
-    // repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
-    // repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
-    repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
-    // repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
+//     /* Add robots to repel from */
+//     std::vector<Message> repulseMsgs;
+//     // repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+//     // repulseMsgs.insert(std::end(repulseMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+//     repulseMsgs.insert(std::end(repulseMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+//     // repulseMsgs.insert(std::end(repulseMsgs), std::begin(travelerMsgs), std::end(travelerMsgs));
 
-    /* Calculate overall force applied to the robot */
-    CVector2 attractForce  = GetConnectorAttractVector();
-    CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
-    CVector2 obstacleForce = GetObstacleRepulsionVector();
-    CVector2 sumForce      = 2 * attractForce + 40 * robotForce + 15 * obstacleForce;
+//     /* Calculate overall force applied to the robot */
+//     CVector2 attractForce  = GetConnectorAttractVector();
+//     CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
+//     CVector2 obstacleForce = GetObstacleRepulsionVector();
+//     CVector2 sumForce      = 2 * attractForce + 40 * robotForce + 15 * obstacleForce;
 
-    /* Set Wheel Speed */
-    if(sumForce.Length() > 1.0f)
-        SetWheelSpeedsFromVector(sumForce);
-    else
-        m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
+//     /* Set Wheel Speed */
+//     if(sumForce.Length() > 1.0f)
+//         SetWheelSpeedsFromVector(sumForce);
+//     else
+//         m_pcWheels->SetLinearVelocity(0.0f, 0.0f);
 
-    /* Set Wheel Speed */
-    SetWheelSpeedsFromVector(sumForce);
-}
+//     /* Set Wheel Speed */
+//     SetWheelSpeedsFromVector(sumForce);
+// }
 
 /****************************************/
 /****************************************/
 
-CVector2 CFollower::GetConnectorAttractVector() {
+// CVector2 CFollower::GetConnectorAttractVector() {
     
-    CVector2 resVec;
+//     CVector2 resVec;
 
-    /* Assumes the robot is in the connector state */
-    if(currentState == RobotState::CONNECTOR) {
+//     /* Assumes the robot is in the connector state */
+//     if(currentState == RobotState::CONNECTOR) {
 
-        // Copy other robot messages
-        std::vector<Message> otherMsgs = otherTeamMsgs;
-        otherMsgs.insert(std::end(otherMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
-        otherMsgs.insert(std::end(otherMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
+//         // Copy other robot messages
+//         std::vector<Message> otherMsgs = otherTeamMsgs;
+//         otherMsgs.insert(std::end(otherMsgs), std::begin(otherLeaderMsgs), std::end(otherLeaderMsgs));
+//         otherMsgs.insert(std::end(otherMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
 
-        size_t count = 0;
+//         size_t count = 0;
 
-        std::map<UInt8,CVector2> closestTeamVec;
+//         std::map<UInt8,CVector2> closestTeamVec;
 
-        // For each entry in hopsDict
-        for(const auto& hop : hopsDict) {
+//         // For each entry in hopsDict
+//         for(const auto& hop : hopsDict) {
 
-            UInt8 teamToCheck = hop.first;
-            UInt8 myHopCount = hop.second.count;
-            std::string robotToCheck = hop.second.ID;
+//             UInt8 teamToCheck = hop.first;
+//             UInt8 myHopCount = hop.second.count;
+//             std::string robotToCheck = hop.second.ID;
 
-            bool onlyLeader = false;
+//             bool onlyLeader = false;
 
-            // Loop robots to check
-            for(const auto& msg : otherMsgs) {
+//             // Loop robots to check
+//             for(const auto& msg : otherMsgs) {
 
-                if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
+//                 if((msg.state == RobotState::LEADER || msg.state == RobotState::FOLLOWER) && myHopCount == 1) {
 
-                    /* For the team that it is a tail connector for */
+//                     /* For the team that it is a tail connector for */
 
-                    if(msg.teamID == teamToCheck) {
+//                     if(msg.teamID == teamToCheck) {
 
-                        Real dist = msg.direction.Length();
+//                         Real dist = msg.direction.Length();
 
-                        /* Find the shortest vector to the team */
-                        if( !closestTeamVec.count(teamToCheck) ) {
-                            /* Store the distance to the team if this is the first member seen */
-                            closestTeamVec[teamToCheck] = msg.direction;
+//                         /* Find the shortest vector to the team */
+//                         if( !closestTeamVec.count(teamToCheck) ) {
+//                             /* Store the distance to the team if this is the first member seen */
+//                             closestTeamVec[teamToCheck] = msg.direction;
 
-                            if(msg.state == RobotState::LEADER) { onlyLeader = true; }
+//                             if(msg.state == RobotState::LEADER) { onlyLeader = true; }
                             
-                        } else if(onlyLeader) {
-                            /* If a leader and a follower are visible, prioritize the follower */
-                            closestTeamVec[teamToCheck] = msg.direction;
-                            onlyLeader = false;
+//                         } else if(onlyLeader) {
+//                             /* If a leader and a follower are visible, prioritize the follower */
+//                             closestTeamVec[teamToCheck] = msg.direction;
+//                             onlyLeader = false;
 
-                        } else if(dist < closestTeamVec[teamToCheck].Length() && msg.state == RobotState::FOLLOWER) {
-                            /* Update the shortest distance to the team */
-                            closestTeamVec[teamToCheck] = msg.direction;
-                            onlyLeader = false;
-                        }
-                    }
-                } else if(msg.state == RobotState::CONNECTOR) {
+//                         } else if(dist < closestTeamVec[teamToCheck].Length() && msg.state == RobotState::FOLLOWER) {
+//                             /* Update the shortest distance to the team */
+//                             closestTeamVec[teamToCheck] = msg.direction;
+//                             onlyLeader = false;
+//                         }
+//                     }
+//                 } else if(msg.state == RobotState::CONNECTOR) {
 
-                    /* For the team that it is NOT a tail connector for */
+//                     /* For the team that it is NOT a tail connector for */
 
-                    // Is this connector my adjacent connector? If yes, record vector to it
-                    if(msg.ID == robotToCheck) {
-                        closestTeamVec[teamToCheck] = msg.direction;
-                    }
+//                     // Is this connector my adjacent connector? If yes, record vector to it
+//                     if(msg.ID == robotToCheck) {
+//                         closestTeamVec[teamToCheck] = msg.direction;
+//                     }
 
-                    // for(const auto& otherHop : msg.hops) {
-                    //     UInt8 otherHopCount = otherHop.second.count;
+//                     // for(const auto& otherHop : msg.hops) {
+//                     //     UInt8 otherHopCount = otherHop.second.count;
 
-                    //     /* Find the shortest vector to the team */
-                    //     if(otherHop.first == teamToCheck && otherHopCount == myHopCount - 1) {
+//                     //     /* Find the shortest vector to the team */
+//                     //     if(otherHop.first == teamToCheck && otherHopCount == myHopCount - 1) {
                             
-                    //         Real dist = msg.direction.Length();
+//                     //         Real dist = msg.direction.Length();
 
-                    //         if( !closestTeamVec.count(teamToCheck) || dist < closestTeamVec[teamToCheck].Length()) {
-                    //             closestTeamVec[teamToCheck] = msg.direction;
-                    //             break;
-                    //         }
-                    //     }
-                    // }
-                }
-            }
-        }
+//                     //         if( !closestTeamVec.count(teamToCheck) || dist < closestTeamVec[teamToCheck].Length()) {
+//                     //             closestTeamVec[teamToCheck] = msg.direction;
+//                     //             break;
+//                     //         }
+//                     //     }
+//                     // }
+//                 }
+//             }
+//         }
 
-        for(const auto& vecEntry : closestTeamVec) {
-            resVec += vecEntry.second;
-        }
+//         for(const auto& vecEntry : closestTeamVec) {
+//             resVec += vecEntry.second;
+//         }
 
-        /* Calculate the average attraction vector */
-        resVec /= closestTeamVec.size();
+//         /* Calculate the average attraction vector */
+//         resVec /= closestTeamVec.size();
 
-        /* Limit the length of the vector to the max speed */
-        if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
-            resVec.Normalize();
-            resVec *= m_sWheelTurningParams.MaxSpeed;
-        }
-    }
+//         /* Limit the length of the vector to the max speed */
+//         if(resVec.Length() > m_sWheelTurningParams.MaxSpeed) {
+//             resVec.Normalize();
+//             resVec *= m_sWheelTurningParams.MaxSpeed;
+//         }
+//     }
 
-    return resVec;
-}
+//     return resVec;
+// }
 
 /****************************************/
 /****************************************/

@@ -274,12 +274,12 @@ protected:
     /*
     * Move wheels according to the adjacent connectors to make the chain straight.
     */
-    virtual void AdjustPosition();
+    // virtual void AdjustPosition();
 
     /*
     * Get a vector that attracts itself to other robots.
     */
-    virtual CVector2 GetConnectorAttractVector();
+    // virtual CVector2 GetConnectorAttractVector();
 
     /*
     * Gets a direction vector as input and transforms it into wheel actuation.
