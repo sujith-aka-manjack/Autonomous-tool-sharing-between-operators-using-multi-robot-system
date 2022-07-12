@@ -14,9 +14,9 @@
 
 #include <filesystem>
 #include <fstream>
-#include <google/protobuf/util/json_util.h>
-#include <google/protobuf/util/delimited_message_util.h>
-#include <protos/generated/time_step.pb.h>
+//#include <google/protobuf/util/json_util.h>
+//#include <google/protobuf/util/delimited_message_util.h>
+//#include <protos/generated/time_step.pb.h>
 
 namespace fs = std::filesystem;
 
@@ -71,8 +71,8 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
         GetNodeAttributeOrDefault(tChainFormation, "camera_index", m_unCameraIndex, (UInt32)0);
 
-        if(m_bLogging)
-            InitLogging();
+        // if(m_bLogging)
+            // InitLogging();
 
         InitRobots();
         InitTasks();
@@ -443,87 +443,87 @@ void CExperimentLoopFunctions::PreStep() {
     * Output stuff to file 
     */
 
-    if(m_bLogging) {
-        /* Create new node for this timestep */
-        TimeStep tData;
-        tData.set_time(GetSpace().GetSimulationClock());
-        tData.set_points(m_unPointsObtained);
+    // if(m_bLogging) {
+    //     /* Create new node for this timestep */
+    //     TimeStep tData;
+    //     tData.set_time(GetSpace().GetSimulationClock());
+    //     tData.set_points(m_unPointsObtained);
 
-        /* Output leader info */
-        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-            it != m_cEPuckLeaders.end();
-            ++it) {
+    //     /* Output leader info */
+    //     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+    //         it != m_cEPuckLeaders.end();
+    //         ++it) {
 
-            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+    //         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+    //         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-            Robot* robot = tData.add_robots();
-            robot->set_name(cEPuckLeader.GetId());
-            robot->set_teamid(cController.GetTeamID());
-            robot->set_state(Robot_State_LEADER);
-            robot->mutable_position()->set_x(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
-            robot->mutable_position()->set_y(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-            robot->set_totalsent((int)cController.GetTotalSent());
-            robot->set_totalreceived((int)cController.GetTotalReceived());
-            robot->set_action(cController.GetLastAction());
-        }
+    //         Robot* robot = tData.add_robots();
+    //         robot->set_name(cEPuckLeader.GetId());
+    //         robot->set_teamid(cController.GetTeamID());
+    //         robot->set_state(Robot_State_LEADER);
+    //         robot->mutable_position()->set_x(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
+    //         robot->mutable_position()->set_y(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+    //         robot->set_totalsent((int)cController.GetTotalSent());
+    //         robot->set_totalreceived((int)cController.GetTotalReceived());
+    //         robot->set_action(cController.GetLastAction());
+    //     }
 
-        /* Output follower info */
-        for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
-            itEpuck != m_cEPucks.end();
-            ++itEpuck) {
+    //     /* Output follower info */
+    //     for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
+    //         itEpuck != m_cEPucks.end();
+    //         ++itEpuck) {
 
-            CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
-            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+    //         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
+    //         CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
-            Robot* robot = tData.add_robots();
-            robot->set_name(cEPuck.GetId());
-            robot->set_teamid(cController.GetTeamID());
-            switch(cController.GetRobotState()) {
-                case RobotState::FOLLOWER:
-                    robot->set_state(Robot_State_FOLLOWER);
-                    break;
-                case RobotState::CONNECTOR:
-                    robot->set_state(Robot_State_CONNECTOR);
-                    break;
-                case RobotState::TRAVELER:
-                    robot->set_state(Robot_State_TRAVELER);
-                    break;
-                default:
-                    std::cerr << "Tried to log unknown state " << (int)cController.GetRobotState() << std::endl;
-                    break;
-            }
-            robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
-            robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-        }
+    //         Robot* robot = tData.add_robots();
+    //         robot->set_name(cEPuck.GetId());
+    //         robot->set_teamid(cController.GetTeamID());
+    //         switch(cController.GetRobotState()) {
+    //             case RobotState::FOLLOWER:
+    //                 robot->set_state(Robot_State_FOLLOWER);
+    //                 break;
+    //             case RobotState::CONNECTOR:
+    //                 robot->set_state(Robot_State_CONNECTOR);
+    //                 break;
+    //             case RobotState::TRAVELER:
+    //                 robot->set_state(Robot_State_TRAVELER);
+    //                 break;
+    //             default:
+    //                 std::cerr << "Tried to log unknown state " << (int)cController.GetRobotState() << std::endl;
+    //                 break;
+    //         }
+    //         robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
+    //         robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+    //     }
 
-        if(m_bTaskExists) {
+    //     if(m_bTaskExists) {
 
-            /* Output task info */
-            for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
-                itTask != m_cCTasks->end();
-                ++itTask) {
+    //         /* Output task info */
+    //         for(CSpace::TMapPerType::iterator itTask = m_cCTasks->begin();
+    //             itTask != m_cCTasks->end();
+    //             ++itTask) {
 
-                CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
+    //             CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
-                /* Log tasks that are inside the arena */
-                if(cCTask.GetPosition().GetX() < 500) {
-                    Task* task = tData.add_tasks();
-                    task->set_name(cCTask.GetId());
-                    task->set_demand(cCTask.GetDemand());
-                    task->set_requiredrobots(cCTask.GetMinRobotNum());
-                    task->set_currentrobots(cCTask.GetCurrentRobotNum());
-                    task->mutable_position()->set_x(cCTask.GetPosition().GetX());
-                    task->mutable_position()->set_y(cCTask.GetPosition().GetY());
-                }
-            }
-        }
+    //             /* Log tasks that are inside the arena */
+    //             if(cCTask.GetPosition().GetX() < 500) {
+    //                 Task* task = tData.add_tasks();
+    //                 task->set_name(cCTask.GetId());
+    //                 task->set_demand(cCTask.GetDemand());
+    //                 task->set_requiredrobots(cCTask.GetMinRobotNum());
+    //                 task->set_currentrobots(cCTask.GetCurrentRobotNum());
+    //                 task->mutable_position()->set_x(cCTask.GetPosition().GetX());
+    //                 task->mutable_position()->set_y(cCTask.GetPosition().GetY());
+    //             }
+    //         }
+    //     }
 
-        /* Write to file */
-        m_cOutput.open(m_strBinaryFilePath.c_str(), std::ios::app | std::ios::binary);
-        google::protobuf::util::SerializeDelimitedToOstream(tData, &m_cOutput);
-        m_cOutput.close();
-    }
+    //     /* Write to file */
+    //     m_cOutput.open(m_strBinaryFilePath.c_str(), std::ios::app | std::ios::binary);
+    //     google::protobuf::util::SerializeDelimitedToOstream(tData, &m_cOutput);
+    //     m_cOutput.close();
+    // }
 
     /* Grab frame */
     if(m_bFrameGrabbing) {
@@ -852,14 +852,14 @@ void CExperimentLoopFunctions::InitRobots() {
         } 
     }
 
-    if(m_bLogging) {
-        /* Write to file */
-        m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-        m_cOutput << "TOTAL_LEADERS," << (int)unTotalLeaders << "\n";
-        m_cOutput << "TOTAL_WORKERS," << (int)unTotalWorkers << "\n";
-        m_cOutput << "TOTAL_ROBOTS," << (int)(unTotalLeaders + unTotalWorkers) << "\n";
-        m_cOutput.close();
-    }
+    // if(m_bLogging) {
+    //     /* Write to file */
+    //     m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+    //     m_cOutput << "TOTAL_LEADERS," << (int)unTotalLeaders << "\n";
+    //     m_cOutput << "TOTAL_WORKERS," << (int)unTotalWorkers << "\n";
+    //     m_cOutput << "TOTAL_ROBOTS," << (int)(unTotalLeaders + unTotalWorkers) << "\n";
+    //     m_cOutput.close();
+    // }
 
 
     std::cout << "[LOG] Added robots" << std::endl;

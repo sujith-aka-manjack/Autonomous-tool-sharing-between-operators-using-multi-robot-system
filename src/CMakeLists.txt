@@ -31,7 +31,7 @@ add_subdirectory(controllers)
 add_subdirectory(loop_functions)
 
 # Protos directory
-add_subdirectory(protos)
+#add_subdirectory(protos)
 
 # Utility scripts
 add_subdirectory(utility)
