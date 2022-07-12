@@ -35,7 +35,7 @@ Optionally, add the above line in .bashrc to avoid setting it in every terminal.
 ```
 mkdir build
 cd build/
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release ../src
 make
 cd ..
 argos3 -c experiments/experiment_template.argos
