@@ -161,8 +161,8 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentTaskDemand = 0;
     currentInitTaskDemand = 0;
 
-    numOtherTaskRequire = 0;
-    numOtherFollower = -1;
+    numOtherTaskRequire = 0;    // might need to change
+    numOtherFollower = -1;      // might need to change
 
     shareToTeam = "";
     initStepTimer = 0;
@@ -174,10 +174,10 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatReceived = 0;
     beatSent = 0;
 
-    numRobotsToSend = 0;
-    numRobotsRemainingToSend = 0;
-    numRobotsToRequest = 0;
-    numRobotsRequested = 0;
+    numRobotsToSend[RType] = {0};            //
+    numRobotsRemainingToSend[RType] = {0};   //
+    numRobotsToRequest[RType] = {0};         //
+    numRobotsRequested[RType] = {0};       //
     isSendingRobots = false;
     switchCandidate = "";
     robotToSwitch = "";
