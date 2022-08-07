@@ -16,7 +16,7 @@
 
 #ifndef LEADER_H
 #define LEADER_H
-
+#define RType 10
 /*
  * Include some necessary headers.
  */
@@ -241,12 +241,12 @@ public:
     /*
     * Get the minimum number of robots needed for the current task.
     */ 
-    virtual UInt32 GetMinimumCount();
+    virtual UInt32* GetMinimumCount();
 
     /* 
     * Sets the minimum number of robots needed for the current task.
     */
-    virtual void SetMinimumCount(const UInt32 un_min);
+    virtual void SetMinimumCount(UInt32 un_min[]);
 
     /*
     * Get the minimum number of robots needed for the other leader's current task.
@@ -261,7 +261,7 @@ public:
     /*
     * Sets the current number of followers in the team.
     */
-    virtual void SetFollowerCount(const UInt32 un_count);
+    virtual void SetFollowerCount(const UInt32 un_count[RType]);
 
     /*
     * Get the current number of followers in the other leader's team.
@@ -457,10 +457,10 @@ private:
     UInt32 currentInitTaskDemand;
     UInt32 previousTaskDemand; // Task demand from 10 timesteps ago
 
-    int robotsNeeded; // Minimum number of robots needed to perform the current task
+    int robotsNeeded[RType]; // Minimum number of robots needed to perform the current task
 
     /* Current number of followers in the team */
-    int currentFollowerCount;
+    int currentFollowerCount[RType];
 
     /* Flag to know whether there is a neighbor */
     bool nearRobot;
@@ -488,8 +488,8 @@ private:
     bool decremented;
 
     // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)
-    SInt8 numOtherFollower;
-    UInt8 numOtherTaskRequire;
+    SInt8 numOtherFollower[RType];
+    UInt8 numOtherTaskRequire[RType];
 
     /* Timer to count the timesteps for the initial communication to occur at the beginning of the simulation */
     size_t initStepTimer;
@@ -498,10 +498,10 @@ private:
     size_t robotLastSentTime;
 
     /* Team switch variables */
-    int numRobotsToSend;
-    int numRobotsRemainingToSend;
-    int numRobotsToRequest;
-    int numRobotsRequested;
+    int numRobotsToSend[RType];
+    int numRobotsRemainingToSend[RType];
+    int numRobotsToRequest[RType];
+    int numRobotsRequested[RType];
     std::string robotToSwitch;
     UInt8 teamToJoin;
     bool requestSent;

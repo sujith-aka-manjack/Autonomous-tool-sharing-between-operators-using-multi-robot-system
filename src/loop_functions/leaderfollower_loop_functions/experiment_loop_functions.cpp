@@ -14,18 +14,21 @@
 
 #include <filesystem>
 #include <fstream>
+#include <numeric>
+#include <iostream>
 //#include <google/protobuf/util/json_util.h>
 //#include <google/protobuf/util/delimited_message_util.h>
 //#include <protos/generated/time_step.pb.h>
 
 namespace fs = std::filesystem;
 
+//static const int RType = 10;   //Number of types of robot, max = 10
 /****************************************/
 /****************************************/
 
-static const Real        EP_RADIUS        = 0.035f;
-static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);
-static const Real        EP_RAB_RANGE     = 0.8f;
+static const Real        EP_RADIUS        = 0.035f; //Radius of epuck
+static const Real        EP_AREA          = ARGOS_PI * Square(0.035f);   //area of epuck
+static const Real        EP_RAB_RANGE     = 0.8f;   //Communication range r_comm = 80cm
 // static const Real        EP_RAB_DATA_SIZE = Message::messageByteSize;
 static const std::string HL_CONTROLLER    = "el";
 static const std::string EP_CONTROLLER    = "ef";
@@ -39,7 +42,7 @@ static const std::string COMMAND_FILENAME  = "commands.csv";
 /****************************************/
 /****************************************/
 
-CExperimentLoopFunctions::CExperimentLoopFunctions() :
+CExperimentLoopFunctions::CExperimentLoopFunctions() :      //constructor
     m_pcFloor(NULL),
     m_pcRNG(NULL),
     m_bTaskExists(false),
@@ -150,11 +153,12 @@ void CExperimentLoopFunctions::PreStep() {
 
     // std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
 
-    UInt32 unFollowers1 = 0;
-    UInt32 unFollowers2 = 0;
+    UInt32 unFollowers1[RType] = {0};
+    UInt32 unFollowers2[RType] = {0};
     UInt32 unConnectors = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
-    m_mapRobotPerTask.clear(); // Used to store the number of e-pucks that have worked on each task in the previous timestep
+    for(int i=0; i<RType; ++i)
+        m_mapRobotPerTask[i].clear(); // Used to store the number of e-pucks that have worked on each task in the previous timestep
 
     /* Add existing task id to the map */
     CSpace::TMapPerType* m_cCTasks;
@@ -170,7 +174,8 @@ void CExperimentLoopFunctions::PreStep() {
             /* Initialize each task with zero e-pucks working on it */
             // CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
             CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-            m_mapRobotPerTask[cCTask.GetId()] = 0;
+            for(int i=0; i<RType; ++i)
+                m_mapRobotPerTask[i][cCTask.GetId()] = 0;
         }
     }
 
@@ -215,11 +220,19 @@ void CExperimentLoopFunctions::PreStep() {
                     cController.SetTaskId(cCTask.GetId());
                     UInt32 demand = cCTask.GetDemand();
                     cController.SetTaskDemand(demand);
+                    
                     cController.SetInitTaskDemand(cCTask.GetInitDemand());
-                    if(demand > 0) 
-                        cController.SetMinimumCount(cCTask.GetMinRobotNum());
-                    else
-                        cController.SetMinimumCount(0);
+                    if(demand > 0) {
+                        UInt32* temp =  cCTask.GetMinRobotNum();
+                        UInt32 min_r[RType];
+                        for (int i=0; i<RType; ++i)
+                            min_r[i] = temp[i];
+                        cController.SetMinimumCount(min_r);
+                    }
+                    else{
+                        UInt32 min_r[RType] = {0}; 
+                        cController.SetMinimumCount(min_r);
+                    }
                     leaderAtTask = true;
                     break;
                 }
@@ -231,7 +244,8 @@ void CExperimentLoopFunctions::PreStep() {
             cController.SetTaskId("");
             cController.SetTaskDemand(0);
             cController.SetInitTaskDemand(0);
-            cController.SetMinimumCount(0);
+            UInt32 min_r[RType] = {0};
+            cController.SetMinimumCount(min_r);
         }
     }
 
@@ -250,8 +264,8 @@ void CExperimentLoopFunctions::PreStep() {
             /* Count how many e-pucks are in each state */
             if( cController.GetRobotState() == RobotState::FOLLOWER ) {
                 // Count flock state
-                if( unTeamId == 1 ) ++unFollowers1;
-                else ++unFollowers2;
+                // if( unTeamId == 1 ) ++unFollowers1;
+                // else ++unFollowers2;
 
                 /* 
                 * Check whether the e-puck is working on a task
@@ -289,8 +303,48 @@ void CExperimentLoopFunctions::PreStep() {
                             //     break;
                             // }
                             if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
+                                int temp_var;
+                                temp_var = cController.GetRobotType();
+                                switch (temp_var)
+                                {
+                                    case 1:
+                                        m_mapRobotPerTask[0][cCTask.GetId()]++;
+                                        break;
+                                    case 2:
+                                        m_mapRobotPerTask[1][cCTask.GetId()]++;
+                                        break;
+                                    case 3:
+                                        m_mapRobotPerTask[2][cCTask.GetId()]++;
+                                        break;
+                                    case 4:
+                                        m_mapRobotPerTask[3][cCTask.GetId()]++;
+                                        break;
+                                    case 5:
+                                        m_mapRobotPerTask[4][cCTask.GetId()]++;
+                                        break;
+                                    case 6:
+                                        m_mapRobotPerTask[5][cCTask.GetId()]++;
+                                        break;
+                                    case 7:
+                                        m_mapRobotPerTask[6][cCTask.GetId()]++;
+                                        break;
+                                    case 8:
+                                        m_mapRobotPerTask[7][cCTask.GetId()]++;
+                                        break;
+                                    case 9:
+                                        m_mapRobotPerTask[8][cCTask.GetId()]++;
+                                        break;
+                                    case 10:
+                                        m_mapRobotPerTask[9][cCTask.GetId()]++;
+                                        break;
+                                    
+                                    default:
+                                        break;
+                                }
                                 
-                                m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
+                                if( unTeamId == 1 ) ++unFollowers1[temp_var-1];
+                                else ++unFollowers2[temp_var-1];
+                                //m_mapRobotPerTask[][cCTask.GetId()]++; // Increment robot working on this task
                                 break;
                             }
                         }
@@ -340,12 +394,31 @@ void CExperimentLoopFunctions::PreStep() {
                 continue; // Skip completed tasks
 
             /* Check if there is enough robots working on the task */
-            if(m_mapRobotPerTask[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
+            bool demand_met= true;
+            UInt32* temp =  cCTask.GetMinRobotNum();
+            UInt32 min_r[RType];
+            for(int i=0; i<RType; ++i){
+                min_r[i] = temp[i];
+            }
+            for(int i=0; i<RType; ++i){ 
+                if(m_mapRobotPerTask[i][cCTask.GetId()] >= min_r[i])
+                    ;
+                else {
+                    demand_met= false;
+                    break;
+                }
+            }
+            if(demand_met) {
                 if(currentDemand == 1) {
                     cCTask.SetDemand(0);
 
                     /* Add points scored */
-                    m_unPointsObtained += cCTask.GetMinRobotNum();
+                    UInt32* temp2 =  cCTask.GetMinRobotNum();
+                    UInt32 points=0;
+                    for(int i=0; i<RType; ++i){
+                        points += temp2[i];
+                    }
+                    m_unPointsObtained += points;
                     std::cout << "Scored " << (int)m_unPointsObtained << " !" << std::endl;
 
                     /* Move task out of arena */
@@ -355,7 +428,7 @@ void CExperimentLoopFunctions::PreStep() {
                     task_pos["x2"] = 1000;
                     task_pos["y1"] = 1000;
                     task_pos["y2"] = 1000;
-                    m_mapTaskPos[stoi(cCTask.GetId().substr(5))] = task_pos;
+                    m_mapTaskPos[stoi(cCTask.GetId().substr(5))] = task_pos;  //Changing the pos of completed task in map?
 
                     // std::cout << "Hiding " << cCTask.GetId() << std::endl;
 
@@ -376,7 +449,7 @@ void CExperimentLoopFunctions::PreStep() {
                         Real fWidthX = cNextTask.GetWidthX();
                         Real fWidthY = cNextTask.GetWidthY();
 
-                        for(UInt32 i = 0; i < 100; ++i) {
+                        for(UInt32 i = 0; i < 100; ++i) {   //MIGHT HAVE TO CHANGE
 
                             /* Get a random position */
                             CVector2 cCenter = CVector2(m_pcRNG->Uniform(cArenaSideX),  
@@ -434,8 +507,9 @@ void CExperimentLoopFunctions::PreStep() {
                     cCTask.SetDemand(currentDemand - 1);
                 }
             }
-
-            cCTask.SetCurrentRobotNum(m_mapRobotPerTask[cCTask.GetId()]);
+            for(int i=0; i<RType; ++i){
+                cCTask.SetCurrentRobotNum(m_mapRobotPerTask[i][cCTask.GetId()],i);
+            }
         }
     }
 
@@ -533,6 +607,7 @@ void CExperimentLoopFunctions::PreStep() {
         widget.SetGrabFrame(m_bFrameGrabbing);
     }
 }
+
 
 /****************************************/
 /****************************************/
@@ -691,8 +766,11 @@ std::string CExperimentLoopFunctions::GetCommandFilePath() {
 /****************************************/
 /****************************************/
 
-std::unordered_map<std::string, UInt32> CExperimentLoopFunctions::GetRobotPerTask() {
-    return m_mapRobotPerTask;
+std::unordered_map<std::string, UInt32>* CExperimentLoopFunctions::GetRobotPerTask() {
+    static std::unordered_map<std::string,UInt32> arr[RType];
+    for (int i=0; i<RType; ++i)
+        arr[i] = m_mapRobotPerTask[i];
+    return arr;
 }
 
 /****************************************/
@@ -714,7 +792,7 @@ void CExperimentLoopFunctions::InitRobots() {
 
     /* ID counts */
     UInt32 unNextLeaderId = 1;
-    UInt32 unNextRobotId = 1;
+    UInt32 unNextRobotId[RType] = {1};
     /* Get the teams node */
     TConfigurationNode& et_tree = GetNode(config, "teams");
     /* Go through the nodes (teams) */
@@ -744,22 +822,52 @@ void CExperimentLoopFunctions::InitRobots() {
         UInt32 unLeaders = 0;
 
         /* Number of robots to place */
-        UInt32 unRobots;
+        UInt32 unRobots[RType];
 
         if(itDistr->Value() == "team") {
             /* Distribution center */
             CVector2 cCenter;
+            const UInt32 m = 0;  // Default number of worker robots for each type
             GetNodeAttribute(tDistr, "center", cCenter);
             GetNodeAttribute(tDistr, "leader_num", unLeaders);
-            GetNodeAttribute(tDistr, "robot_num", unRobots);
+            for (int i =1; i<RType+1; ++i) {
+                std::string str = "robot_num" + std::to_string(i);
+                //GetNodeAttributeOrDefault(tDistr, "robot_num"+std::to_string(i), unRobots[i-1], m);
+                GetNodeAttributeOrDefault(tDistr, str, unRobots[i-1], m);
+        }
+
+            /* Same thing if default is not required*/
+
+            // GetNodeAttribute(tDistr, "center", cCenter);
+            // GetNodeAttribute(tDistr, "leader_num", unLeaders);
+            // GetNodeAttribute(tDistr, "robot_num1", unRobots[0]);
+            // GetNodeAttribute(tDistr, "robot_num2", unRobots[1]);
+            // GetNodeAttribute(tDistr, "robot_num3", unRobots[2]);
+            // GetNodeAttribute(tDistr, "robot_num4", unRobots[3]);
+            // GetNodeAttribute(tDistr, "robot_num5", unRobots[4]);
+            // GetNodeAttribute(tDistr, "robot_num6", unRobots[5]);
+            // GetNodeAttribute(tDistr, "robot_num7", unRobots[6]);
+            // GetNodeAttribute(tDistr, "robot_num8", unRobots[7]);
+            // GetNodeAttribute(tDistr, "robot_num9", unRobots[8]);
+            // GetNodeAttribute(tDistr, "robot_num10", unRobots[9]);
+
             /* Density of the robots */
             Real fDensity;
             GetNodeAttribute(tDistr, "density", fDensity);
+
+            /* Calculate total number of robots per team */
+            UInt32 TNorobots = 0;
+            for (int i =0; i<RType; ++i)
+                TNorobots += unRobots[i];
             /* Place robots */
-            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId);
+            PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId,TNorobots);
 
             unTotalLeaders += unLeaders;
-            unTotalWorkers += unRobots;
+            unTotalWorkers += TNorobots;
+            //unTotalWorkers += unRobots;
+            // for (int i =0; i<RType; ++i)
+            //     unTotalWorkers += unRobots[i];
+            //unTotalWorkers = accumulate(unRobots, unRobots+sizeof(unRobots), unTotalWorkers)
 
             /* Get the waypoints node */
             std::queue<CVector2> waypoints; // Queue to provide to the robot
@@ -789,67 +897,68 @@ void CExperimentLoopFunctions::InitRobots() {
 
             /* Update robot count */
             unNextLeaderId += unLeaders;
-            unNextRobotId += unRobots;
+            for(int i=0; i<RType; ++i)
+                unNextRobotId[0] += unRobots[i];
         }
-        else if(itDistr->Value() == "custom_team") {
+        // else if(itDistr->Value() == "custom_team") {
             
-            /* Get the robots node */
-            TConfigurationNode& er_tree = GetNode(tDistr, "robots");
-            /* Go through the nodes (robots) */
-            TConfigurationNodeIterator itRobot;
+        //     /* Get the robots node */
+        //     TConfigurationNode& er_tree = GetNode(tDistr, "robots");
+        //     /* Go through the nodes (robots) */
+        //     TConfigurationNodeIterator itRobot;
 
-            for(itRobot = itRobot.begin(&er_tree);
-                itRobot != itRobot.end();
-                ++itRobot) {
+        //     for(itRobot = itRobot.begin(&er_tree);
+        //         itRobot != itRobot.end();
+        //         ++itRobot) {
 
-                /* Get current node (robot) */
-                TConfigurationNode& tRobot = *itRobot;
-                /* Distribution center */
-                CVector2 cCenter;
-                GetNodeAttribute(tRobot, "position", cCenter);
-                std::string str_type;
-                GetNodeAttribute(tRobot, "type", str_type);
+        //         /* Get current node (robot) */
+        //         TConfigurationNode& tRobot = *itRobot;
+        //         /* Distribution center */
+        //         CVector2 cCenter;
+        //         GetNodeAttribute(tRobot, "position", cCenter);
+        //         std::string str_type;
+        //         GetNodeAttribute(tRobot, "type", str_type);
 
-                PlaceCustomPosition(cCenter, str_type, unNextLeaderId, unNextRobotId);
+        //         PlaceCustomPosition(cCenter, str_type, unNextLeaderId, unNextRobotId);
 
-                if(str_type == "leader")
-                    unLeaders++;
-                else if(str_type == "follower")
-                    unNextRobotId++;
-            }
+        //         if(str_type == "leader")
+        //             unLeaders++;
+        //         else if(str_type == "follower")
+        //             unNextRobotId++;
+        //     }
 
-            /* Get the waypoints node */
-            std::queue<CVector2> waypoints; // Queue to provide to the robot
-            TConfigurationNode& ew_tree = GetNode(tDistr, "waypoints");
-            /* Go through the nodes (waypoints) */
-            TConfigurationNodeIterator itWaypt;
-            for(itWaypt = itWaypt.begin(&ew_tree);
-                itWaypt != itWaypt.end();
-                ++itWaypt) {
+        //     /* Get the waypoints node */
+        //     std::queue<CVector2> waypoints; // Queue to provide to the robot
+        //     TConfigurationNode& ew_tree = GetNode(tDistr, "waypoints");
+        //     /* Go through the nodes (waypoints) */
+        //     TConfigurationNodeIterator itWaypt;
+        //     for(itWaypt = itWaypt.begin(&ew_tree);
+        //         itWaypt != itWaypt.end();
+        //         ++itWaypt) {
 
-                /* Get current node (waypoint) */
-                TConfigurationNode& tWaypt = *itWaypt;
-                /* Coordinate of waypoint */
-                CVector2 coord;
-                GetNodeAttribute(tWaypt, "coord", coord);
-                m_vecWaypointPos.push_back(coord);
-                waypoints.push(coord);
-            }
+        //         /* Get current node (waypoint) */
+        //         TConfigurationNode& tWaypt = *itWaypt;
+        //         /* Coordinate of waypoint */
+        //         CVector2 coord;
+        //         GetNodeAttribute(tWaypt, "coord", coord);
+        //         m_vecWaypointPos.push_back(coord);
+        //         waypoints.push(coord);
+        //     }
 
-            /* Get the newly created leader */
-            std::ostringstream cEPId;
-            cEPId.str("");
-            cEPId << "L" << unNextLeaderId;
-            CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
-            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
-            /* Set list of waypoints to leader */
-            cController.SetWaypoints(waypoints);
+        //     /* Get the newly created leader */
+        //     std::ostringstream cEPId;
+        //     cEPId.str("");
+        //     cEPId << "L" << unNextLeaderId;
+        //     CEPuckLeaderEntity& cEPuckLeader = dynamic_cast<CEPuckLeaderEntity&>(GetSpace().GetEntity(cEPId.str()));
+        //     CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+        //     /* Set list of waypoints to leader */
+        //     cController.SetWaypoints(waypoints);
 
-            /* Update robot count */
-            unNextLeaderId += unLeaders;
+        //     /* Update robot count */
+        //     unNextLeaderId += unLeaders;
 
-            // TODO: record the number of leader and worker robots
-        } 
+        //     // TODO: record the number of leader and worker robots
+        // } 
     }
 
     // if(m_bLogging) {
@@ -879,118 +988,221 @@ void CExperimentLoopFunctions::InitTasks() {
     /* ID counts */
     m_unNextTaskId = 1;
     /* Meta data */
-    UInt32 unHiddenTasks = 1;
-    UInt32 unInitTasks = 0;
+    //size_t unTotalTasks = 0;
+    //UInt32 unTaskDemand = 0; 
     m_unTotalTasks = 0;
-    m_unTaskDemand = 0; 
-    m_unPointsObtained = 0;
+    m_unTaskDemand = 0;
+    /* Get the teams node */
+    TConfigurationNode& ts_tree = GetNode(config, "tasks");
+    /* Go through the nodes (tasks) */
+    TConfigurationNodeIterator itDistr;
+    for(itDistr = itDistr.begin(&ts_tree);
+        itDistr != itDistr.end();
+        ++itDistr) {
 
-    m_bTaskExists = false;
-    m_bTaskComplete = true;
+        m_bTaskExists = true;   //
+        m_bTaskComplete = false;    //
 
-    // TODO: Check if task exists at all in argos file
+        // /* Get current node (task) */
+        // TConfigurationNode& tDistr = *itDistr;
+        // /* Task center */
+        // CVector2 cCenter;
+        // GetNodeAttribute(tDistr, "position", cCenter);
+        // /* Task radius */
+        // Real fRadius;
+        // GetNodeAttribute(tDistr, "radius", fRadius);
+        // /* Task demand */
+        // UInt32 unDemand;
+        // GetNodeAttribute(tDistr, "task_demand", unDemand);
+        // /* Minimum robot constraint */
+        // UInt32 unMinRobotNum;
+        // GetNodeAttribute(tDistr, "minimum_robot_num", unMinRobotNum);
+        // /* Maximum robot constraint */
+        // UInt32 unMaxRobotNum;
+        // GetNodeAttribute(tDistr, "maximum_robot_num", unMaxRobotNum);
+        
+        // /* Place Tasks */
+        // PlaceTask(cCenter, fRadius, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
 
-    for(UInt32 i = 1; i <= unHiddenTasks; ++i) {
+        // /* Update task count */
+        // m_unNextTaskId++;
 
-        // Pick random number, [0-5) so 5 items
-        CRange<UInt32> cIntRange = CRange<UInt32>(0,5);
-        UInt32 unChosen = m_pcRNG->Uniform(cIntRange);
-
-        // Set params according to num
-        // dimensions (length, height)
-        // demand
-        // min robot
-
-        /* Task dimensions */
-        Real fWidthX, fWidthY, fHeight;
+        /* Get current node (task) */
+        TConfigurationNode& tDistr = *itDistr;
+        /* Task center */
+        CVector2 cCenter;
+        GetNodeAttribute(tDistr, "position", cCenter);
+        /* Task width */
+        Real fWidthX;
+        GetNodeAttribute(tDistr, "width_x", fWidthX);
+        Real fWidthY;
+        GetNodeAttribute(tDistr, "width_y", fWidthY);
+        /* Task height */
+        Real fHeight;
+        GetNodeAttribute(tDistr, "height", fHeight);
         /* Task demand */
         UInt32 unDemand;
-        /* Min and Max robot constraint */
-        UInt32 unMinRobotNum;
-        UInt32 unMaxRobotNum = 100;
-
-        double factor = (300. - 50) / (12. - 1);
-
-        if(unChosen == 0) {
-            fWidthX = fWidthY = 0.4;
-            fHeight = 0.2;
-            unMinRobotNum = 1;
-            // demand = 50
-        } else if (unChosen == 1) {
-            fWidthX = fWidthY = 0.5;
-            fHeight = 0.25;
-            unMinRobotNum = 3;
-            // demand = 95
-        } else if (unChosen == 2) {
-            fWidthX = fWidthY = 0.6;
-            fHeight = 0.3;
-            unMinRobotNum = 6;
-            // demand = 163
-        } else if (unChosen == 3) {
-            fWidthX = fWidthY = 0.8;
-            fHeight = 0.35;
-            unMinRobotNum = 9;
-            // demand = 231
-        } else {
-            fWidthX = fWidthY = 1.0;
-            fHeight = 0.4;
-            unMinRobotNum = 12;
-            // demand = 300
+        GetNodeAttribute(tDistr, "task_demand", unDemand);
+        /* Maximum robot constraint */
+        UInt32 unMaxRobotNum;
+        GetNodeAttribute(tDistr, "max_robot_num", unMaxRobotNum);
+        /* Minimum robot constraint */
+        UInt32 unMinRobotNum[RType];
+        const UInt32 m = 0;
+        for (int i =1; i<RType+1; ++i) {
+                std::string str = "min_robot_num" + std::to_string(i);
+                //GetNodeAttributeOrDefault(tDistr, "min_robot_num"+std::to_string(i), unRobots[i-1], m);
+                GetNodeAttributeOrDefault(tDistr, str, unMinRobotNum[i-1], m);
         }
-        unDemand = (UInt32)floor((unMinRobotNum * factor) + (50 - factor));
-        // std::cout << "[LOG] req: " << (int)unMinRobotNum << ", demand: " << (int)unDemand << std::endl;
-
-        CVector2 cCenter = CVector2();
-        if(i <= unInitTasks) {
-            // Pick random position (CVector2)
-            cCenter = CVector2(m_pcRNG->Uniform(cArenaSideSplitX[i]),  
-                               m_pcRNG->Uniform(cArenaSideSplitY[i]));
-            m_unTotalTasks++;
-            m_unTaskDemand += unDemand;
-        } else {
-            // Place it out of sight
-            cCenter = CVector2(1000, 1000);
-        }
-
-        // PlaceTask
+        //for(int i=0; i<RType; ++i)
+        //    GetNodeAttributeOrDefault(tDistr, "min_robot_num1", unMinRobotNum[i], m);
+        
+        /* Place Tasks */
+        // PlaceRectangleTask(cCenter, fWidth, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
         PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
-
-        std::map<std::string, Real> task_pos;
-        task_pos["x1"] = cCenter.GetX() - fWidthX/2;
-        task_pos["x2"] = cCenter.GetX() + fWidthX/2;
-        task_pos["y1"] = cCenter.GetY() + fWidthY/2;
-        task_pos["y2"] = cCenter.GetY() - fWidthY/2;
-
-        m_mapTaskPos[m_unNextTaskId] = task_pos;
 
         /* Update task count */
         m_unNextTaskId++;
+
+        m_unTotalTasks++;
+        m_unTaskDemand += unDemand;
     }
 
     if(m_bLogging) {
-        /* Write to file */
+        // /* Write to file */
         // m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
         // m_cOutput << "TOTAL_TASKS," << (int)m_unTotalTasks << "\n";
         // m_cOutput << "TASK_DEMAND," << (int)m_unTaskDemand << "\n";
         // m_cOutput.close();
     }
 
-    // std::cout << "[LOG] Added tasks" << std::endl;
+    std::cout << "[LOG] Added tasks" << std::endl;
 }
+
+
+// void CExperimentLoopFunctions::InitTasks() {
+//     /*
+//     * Initialize tasks
+//     */
+
+//     std::cout << "[LOG] Adding tasks..." << std::endl;
+
+//     /* ID counts */
+//     m_unNextTaskId = 1;
+//     /* Meta data */
+//     UInt32 unHiddenTasks = 1;
+//     UInt32 unInitTasks = 0;
+//     m_unTotalTasks = 0;
+//     m_unTaskDemand = 0; 
+//     m_unPointsObtained = 0;
+
+//     m_bTaskExists = false;
+//     m_bTaskComplete = true;
+
+//     // TODO: Check if task exists at all in argos file
+
+//     for(UInt32 i = 1; i <= unHiddenTasks; ++i) {
+
+//         // Pick random number, [0-5) so 5 items
+//         CRange<UInt32> cIntRange = CRange<UInt32>(0,5);
+//         UInt32 unChosen = m_pcRNG->Uniform(cIntRange);
+
+//         // Set params according to num
+//         // dimensions (length, height)
+//         // demand
+//         // min robot
+
+//         /* Task dimensions */
+//         Real fWidthX, fWidthY, fHeight;
+//         /* Task demand */
+//         UInt32 unDemand;
+//         /* Min and Max robot constraint */
+//         UInt32 unMinRobotNum;
+//         UInt32 unMaxRobotNum = 100;
+
+//         double factor = (300. - 50) / (12. - 1);
+
+//         if(unChosen == 0) {
+//             fWidthX = fWidthY = 0.4;
+//             fHeight = 0.2;
+//             unMinRobotNum = 1;
+//             // demand = 50
+//         } else if (unChosen == 1) {
+//             fWidthX = fWidthY = 0.5;
+//             fHeight = 0.25;
+//             unMinRobotNum = 3;
+//             // demand = 95
+//         } else if (unChosen == 2) {
+//             fWidthX = fWidthY = 0.6;
+//             fHeight = 0.3;
+//             unMinRobotNum = 6;
+//             // demand = 163
+//         } else if (unChosen == 3) {
+//             fWidthX = fWidthY = 0.8;
+//             fHeight = 0.35;
+//             unMinRobotNum = 9;
+//             // demand = 231
+//         } else {
+//             fWidthX = fWidthY = 1.0;
+//             fHeight = 0.4;
+//             unMinRobotNum = 12;
+//             // demand = 300
+//         }
+//         unDemand = (UInt32)floor((unMinRobotNum * factor) + (50 - factor));
+//         // std::cout << "[LOG] req: " << (int)unMinRobotNum << ", demand: " << (int)unDemand << std::endl;
+
+//         CVector2 cCenter = CVector2();
+//         if(i <= unInitTasks) {
+//             // Pick random position (CVector2)
+//             cCenter = CVector2(m_pcRNG->Uniform(cArenaSideSplitX[i]),  
+//                                m_pcRNG->Uniform(cArenaSideSplitY[i]));
+//             m_unTotalTasks++;
+//             m_unTaskDemand += unDemand;
+//         } else {
+//             // Place it out of sight
+//             cCenter = CVector2(1000, 1000);
+//         }
+
+//         // PlaceTask
+//         PlaceRectangleTask(cCenter, fWidthX, fWidthY, fHeight, unDemand, unMinRobotNum, unMaxRobotNum, m_unNextTaskId);
+
+//         std::map<std::string, Real> task_pos;
+//         task_pos["x1"] = cCenter.GetX() - fWidthX/2;
+//         task_pos["x2"] = cCenter.GetX() + fWidthX/2;
+//         task_pos["y1"] = cCenter.GetY() + fWidthY/2;
+//         task_pos["y2"] = cCenter.GetY() - fWidthY/2;
+
+//         m_mapTaskPos[m_unNextTaskId] = task_pos;
+
+//         /* Update task count */
+//         m_unNextTaskId++;
+//     }
+
+//     if(m_bLogging) {
+//         /* Write to file */
+//         // m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+//         // m_cOutput << "TOTAL_TASKS," << (int)m_unTotalTasks << "\n";
+//         // m_cOutput << "TASK_DEMAND," << (int)m_unTaskDemand << "\n";
+//         // m_cOutput.close();
+//     }
+
+//     // std::cout << "[LOG] Added tasks" << std::endl;
+// }
 
 /****************************************/
 /****************************************/
 
 void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                             UInt32 un_leaders,
-                                            UInt32 un_robots,
+                                            UInt32 un_robots[RType],
                                             Real f_density,
                                             UInt32 un_leader_id_start,
-                                            UInt32 un_robot_id_start) {
+                                            UInt32 un_robot_id_start[RType],
+                                            UInt32 TNo_robots) {
 
     try {
         /* Calculate side of the region in which the robots are scattered */
-        Real fHalfSide = Sqrt((EP_AREA * un_robots) / f_density) / 2.0f;
+        Real fHalfSide = Sqrt((EP_AREA * TNo_robots) / f_density) / 2.0f;
         CRange<Real> cAreaRange(-fHalfSide, fHalfSide);
         /* Place robots */
         UInt32 unTrials;
@@ -1011,14 +1223,14 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                            CVector3(),
                                            CQuaternion(),
                                            EP_RAB_RANGE,
-                                           Message::messageByteSize,
+                                           Message::messageByteSize,    //TO EDIT
                                            "");
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
 
             /* Assign initial number of followers */
             CLeader& clController = dynamic_cast<CLeader&>(pcEPL->GetControllableEntity().GetController());
-            clController.SetFollowerCount(un_robots);
+            clController.SetFollowerCount(un_robots);      //might need to change UPDATE: Changed
 
             /* Try to place it in the arena */
             unTrials = 0;
@@ -1039,39 +1251,91 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         }
 
         /* For each robot */
-        for(size_t i = 0; i < un_robots; ++i) {
-            /* Make the id */
-            cEPId.str("");
-            cEPId << "F" << (i + un_robot_id_start);
-            /* Create the robot in the origin and add it to ARGoS space */
-            pcEP = new CEPuckEntity(cEPId.str(),
-                                    EP_CONTROLLER,
-                                    CVector3(),
-                                    CQuaternion(),
-                                    EP_RAB_RANGE,
-                                    Message::messageByteSize,
-                                    "");
-            AddEntity(*pcEP);
-            m_vecEntityID.push_back(cEPId.str());
+        for(size_t i = 0; i < RType; ++i) {
+            UInt8 robot_type = 0;
+            /* For each type of robots */
+            for(size_t j = 0; j < un_robots[i]; ++j){
+                
+                /* Make the id */
+                cEPId.str("");
+                switch (i)
+                {
+                    case 0:
+                        cEPId << "A" << (j + un_robot_id_start[i]);
+                        robot_type = 1;
+                        break;
+                    case 1:
+                        cEPId << "B" << (j + un_robot_id_start[i]);
+                        robot_type = 2;
+                        break;
+                    case 2:
+                        cEPId << "C" << (j + un_robot_id_start[i]);
+                        robot_type = 3;
+                        break;
+                    case 3:
+                        cEPId << "D" << (j + un_robot_id_start[i]);
+                        robot_type = 4;
+                        break;
+                    case 4:
+                        cEPId << "E" << (j + un_robot_id_start[i]);
+                        robot_type = 5;
+                        break;
+                    case 5:
+                        cEPId << "F" << (j + un_robot_id_start[i]);
+                        robot_type = 6;
+                        break;
+                    case 6:
+                        cEPId << "G" << (j + un_robot_id_start[i]);
+                        robot_type = 7;
+                        break;
+                    case 7:
+                        cEPId << "H" << (j + un_robot_id_start[i]);
+                        robot_type = 8;
+                        break;
+                    case 8:
+                        cEPId << "I" << (j + un_robot_id_start[i]);
+                        robot_type = 9;
+                        break;
+                    case 9:
+                        cEPId << "J" << (j + un_robot_id_start[i]);
+                        robot_type = 10;
+                        break;
+                    
+                    default:
+                        break;
+                }
+                //cEPId << "F" << (i + un_robot_id_start);
+                /* Create the robot in the origin and add it to ARGoS space */
+                pcEP = new CEPuckEntity(cEPId.str(),
+                                        EP_CONTROLLER,
+                                        CVector3(),
+                                        CQuaternion(),
+                                        EP_RAB_RANGE,
+                                        Message::messageByteSize,
+                                        "");
+                AddEntity(*pcEP);
+                m_vecEntityID.push_back(cEPId.str());
 
-            /* Assign initial team id */
-            CFollower& cfController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
-            cfController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
-            /* Try to place it in the arena */
-            unTrials = 0;
-            bool bDone;
-            do {
-                /* Choose a random position */
-                ++unTrials;
-                cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
-                           m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
-                           0.0f);
-                cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
-                                     CVector3::Z);
-                bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
-            } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
-            if(!bDone) {
-                THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+                /* Assign initial team id */
+                CFollower& cfController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
+                cfController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
+                cfController.SetRobotType(robot_type);      // Assign the type (species) of robot
+                /* Try to place it in the arena */
+                unTrials = 0;
+                bool bDone;
+                do {
+                    /* Choose a random position */
+                    ++unTrials;
+                    cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
+                                m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
+                                0.0f);
+                    cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                            CVector3::Z);
+                    bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+                } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
+                if(!bDone) {
+                    THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+                }
             }
         }
     } catch(CARGoSException& ex) {
@@ -1082,113 +1346,113 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
 /****************************************/
 /****************************************/
 
-void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
-                                                   std::string str_type,
-                                                   UInt32 un_leader_id_start,
-                                                   UInt32 un_robot_id_start) {
+// void CExperimentLoopFunctions::PlaceCustomPosition(const CVector2& c_center,
+//                                                    std::string str_type,
+//                                                    UInt32 un_leader_id_start,
+//                                                    UInt32 un_robot_id_start) {
 
-    try{
-        /* Place robot */
-        std::ostringstream cEPId;
-        CVector3 cEPPos;
-        CQuaternion cEPRot;
+//     try{
+//         /* Place robot */
+//         std::ostringstream cEPId;
+//         CVector3 cEPPos;
+//         CQuaternion cEPRot;
 
-        if(str_type == "leader") {
-            CEPuckLeaderEntity* pcEPL;
-            /* Make the id */
-            cEPId.str("");
-            cEPId << "L" << (un_leader_id_start);
-            /* Create the leader in the origin and add it to ARGoS space */
-            pcEPL = new CEPuckLeaderEntity(cEPId.str(),
-                                           HL_CONTROLLER,
-                                           CVector3(),
-                                           CQuaternion(),
-                                           EP_RAB_RANGE,
-                                           Message::messageByteSize,
-                                           "");
-            AddEntity(*pcEPL);
-            m_vecEntityID.push_back(cEPId.str());
+//         if(str_type == "leader") {
+//             CEPuckLeaderEntity* pcEPL;
+//             /* Make the id */
+//             cEPId.str("");
+//             cEPId << "L" << (un_leader_id_start);
+//             /* Create the leader in the origin and add it to ARGoS space */
+//             pcEPL = new CEPuckLeaderEntity(cEPId.str(),
+//                                            HL_CONTROLLER,
+//                                            CVector3(),
+//                                            CQuaternion(),
+//                                            EP_RAB_RANGE,
+//                                            Message::messageByteSize,
+//                                            "");
+//             AddEntity(*pcEPL);
+//             m_vecEntityID.push_back(cEPId.str());
 
-            /* Try to place it in the arena */
-            bool bDone;
-            /* Place on specified position */
-            cEPPos.Set(c_center.GetX(),
-                        c_center.GetY(),
-                        0.0f);
-            cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
-                                    CVector3::Z);
-            bDone = MoveEntity(pcEPL->GetEmbodiedEntity(), cEPPos, cEPRot);
+//             /* Try to place it in the arena */
+//             bool bDone;
+//             /* Place on specified position */
+//             cEPPos.Set(c_center.GetX(),
+//                         c_center.GetY(),
+//                         0.0f);
+//             cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+//                                     CVector3::Z);
+//             bDone = MoveEntity(pcEPL->GetEmbodiedEntity(), cEPPos, cEPRot);
 
-            if(!bDone) {
-                THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
-            }
-        }
-        else if(str_type == "follower") {
-            CEPuckEntity* pcEP;
-            /* Make the id */
-            cEPId.str("");
-            cEPId << "F" << (un_robot_id_start);
-            /* Create the robot in the origin and add it to ARGoS space */
-            pcEP = new CEPuckEntity(cEPId.str(),
-                                    EP_CONTROLLER,
-                                    CVector3(),
-                                    CQuaternion(),
-                                    EP_RAB_RANGE,
-                                    Message::messageByteSize,
-                                    "");
-            AddEntity(*pcEP);
-            m_vecEntityID.push_back(cEPId.str());
+//             if(!bDone) {
+//                 THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
+//             }
+//         }
+//         else if(str_type == "follower") {
+//             CEPuckEntity* pcEP;
+//             /* Make the id */
+//             cEPId.str("");
+//             cEPId << "F" << (un_robot_id_start);
+//             /* Create the robot in the origin and add it to ARGoS space */
+//             pcEP = new CEPuckEntity(cEPId.str(),
+//                                     EP_CONTROLLER,
+//                                     CVector3(),
+//                                     CQuaternion(),
+//                                     EP_RAB_RANGE,
+//                                     Message::messageByteSize,
+//                                     "");
+//             AddEntity(*pcEP);
+//             m_vecEntityID.push_back(cEPId.str());
 
-            /* Assign initial team id */
-            CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
-            cController.SetTeamID(un_leader_id_start);  // Assign teamID of team leader
+//             /* Assign initial team id */
+//             CFollower& cController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
+//             cController.SetTeamID(un_leader_id_start);  // Assign teamID of team leader
 
-            /* Try to place it in the arena */
-            bool bDone;
-            /* Place on specified position */
-            cEPPos.Set(c_center.GetX(),
-                        c_center.GetY(),
-                        0.0f);
-            cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
-                                    CVector3::Z);
-            bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
-        }
-    } catch(CARGoSException& ex) {
-        THROW_ARGOSEXCEPTION_NESTED("While placing robot in a custom position", ex);
-    }
-}
+//             /* Try to place it in the arena */
+//             bool bDone;
+//             /* Place on specified position */
+//             cEPPos.Set(c_center.GetX(),
+//                         c_center.GetY(),
+//                         0.0f);
+//             cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+//                                     CVector3::Z);
+//             bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+//         }
+//     } catch(CARGoSException& ex) {
+//         THROW_ARGOSEXCEPTION_NESTED("While placing robot in a custom position", ex);
+//     }
+// }
 
 /****************************************/
 /****************************************/
 
-void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
-                                         Real f_radius,
-                                         UInt32 un_demand,
-                                         UInt32 un_min_robot_num,
-                                         UInt32 un_max_robot_num,
-                                         UInt32 un_task_id_start) {
+// void CExperimentLoopFunctions::PlaceTask(const CVector2& c_center,
+//                                          Real f_radius,
+//                                          UInt32 un_demand,
+//                                          UInt32 un_min_robot_num,
+//                                          UInt32 un_max_robot_num,
+//                                          UInt32 un_task_id_start) {
 
-    try {
-        CCircleTaskEntity* pcCTS;
-        std::ostringstream cTSId;
+//     try {
+//         CCircleTaskEntity* pcCTS;
+//         std::ostringstream cTSId;
 
-        /* Make the id */
-        cTSId.str("");
-        cTSId << "task_" << un_task_id_start;
-        /* Create the task and add it to ARGoS space */
-        pcCTS = new CCircleTaskEntity(cTSId.str(),
-                                      c_center,
-                                      f_radius,
-                                      un_demand,
-                                      un_min_robot_num,
-                                      un_max_robot_num);
-        AddEntity(*pcCTS);
-        m_vecEntityID.push_back(cTSId.str());
+//         /* Make the id */
+//         cTSId.str("");
+//         cTSId << "task_" << un_task_id_start;
+//         /* Create the task and add it to ARGoS space */
+//         pcCTS = new CCircleTaskEntity(cTSId.str(),
+//                                       c_center,
+//                                       f_radius,
+//                                       un_demand,
+//                                       un_min_robot_num,
+//                                       un_max_robot_num);
+//         AddEntity(*pcCTS);
+//         m_vecEntityID.push_back(cTSId.str());
 
-    } catch(CARGoSException& ex) {
-        THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
-    }
-}
+//     } catch(CARGoSException& ex) {
+//         THROW_ARGOSEXCEPTION_NESTED("While placing a task", ex);
+//     }
+// }
 
 /****************************************/
 /****************************************/
@@ -1198,7 +1462,7 @@ void CExperimentLoopFunctions::PlaceRectangleTask(const CVector2& c_center,
                                          Real f_width_y,
                                          Real f_height,
                                          UInt32 un_demand,
-                                         UInt32 un_min_robot_num,
+                                         UInt32 un_min_robot_num[RType],
                                          UInt32 un_max_robot_num,
                                          UInt32 un_task_id_start) {
 

@@ -61,7 +61,7 @@ struct RelayMsg {
     char type = 'H'; // H (heart-beat) or R (request-robot) or A (acknowledge)
     std::string from;
     UInt16 time;
-    std::string firstFollower; // First follower that received this message from a non-team robot
+    std::string firstFollower; // First follower that received this message from a non-team robot (connector)
     UInt8 follower_num; // Used in a heart-beat message. The number of followers the leader has.
     UInt8 task_min_num = 0; // Used in a heart-beat message. The minimum number of robots required to perform the task that the leader is on.
     UInt8 robot_num = 0; // Used in request-robot and acknowledge message. The number of robots the leader is requesting or sending.
@@ -89,7 +89,7 @@ struct RelayMsg {
 *       - teamID [1]
 * 
 * - (8)-(16) Hop count
-*   Prefix with number of messages (max 2) [1]
+*   Prefix with number of messages (max 2) [1]  //2 types of hop count
 *   - HopMsg [4] (teamID [1], count [1], ID [2])
 * 
 * - (17)-(29) Connection Message
@@ -102,7 +102,7 @@ struct RelayMsg {
 *
 *       - Exchanging ConnectionMsg between follower and connector:
 *           - Follower will send up to one request message (R)
-*           - Connector will send up to two approval messages (A)
+*           - Connector will send up to two approval messages (A) (since a new connector can join from all the teams, 2 in this case)
 * 
 * - (30)-(34) Shared Message
 * 

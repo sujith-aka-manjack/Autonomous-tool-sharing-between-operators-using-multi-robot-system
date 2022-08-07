@@ -16,7 +16,7 @@
 
 #ifndef FOLLOWER_H
 #define FOLLOWER_H
-
+#define RType 10
 /*
  * Include some necessary headers.
  */
@@ -157,6 +157,16 @@ public:
     * Set team ID.
     */
     virtual void SetTeamID(const UInt8 id);
+
+    /*
+    * Get robot type.
+    */
+    virtual UInt8 GetRobotType();
+
+    /*
+    * Set robot type.
+    */
+    virtual void SetRobotType(const UInt8 type);
 
     /*
     * Get robot state.
@@ -367,6 +377,9 @@ private:
 
     /* Current team ID, which is the number of the leader ID (e.g. L1 -> 1) */
     UInt8 teamID;
+
+    /* Type of the robot */ 
+    UInt8 RobotType;
 
     /* Outgoing message */
     CByteArray cbyte_msg;

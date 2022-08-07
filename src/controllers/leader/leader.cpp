@@ -5,6 +5,7 @@
 #include <utility/team_color.h>
 #include <algorithm>
 
+#define RType 10
 /****************************************/
 /****************************************/
 
@@ -182,7 +183,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     robotToSwitch = "";
     
     decremented = false;
-    robotsNeeded = 0;
+    robotsNeeded[RType] = {0};
     requestSent = false;
     acknowledgeSent = false;
     // requestReceived = false;
@@ -648,15 +649,19 @@ void CLeader::SetInitTaskDemand(const UInt32 un_init_demand) {
 /****************************************/
 /****************************************/
 
-UInt32 CLeader::GetMinimumCount() {
-    return robotsNeeded;
+UInt32* CLeader::GetMinimumCount() {
+    static UInt32 arr[RType];
+         for (int i=0; i<RType; ++i)
+            arr[i] = robotsNeeded[i];
+    return arr;
 }
 
 /****************************************/
 /****************************************/
 
-void CLeader::SetMinimumCount(const UInt32 un_min) {
-    robotsNeeded = un_min;
+void CLeader::SetMinimumCount(UInt32 un_min[]) {
+    for(int i=0;i<RType;++i)
+        robotsNeeded[i] = un_min[i];
 }
 
 /****************************************/
@@ -676,8 +681,9 @@ UInt32 CLeader::GetFollowerCount() {
 /****************************************/
 /****************************************/
 
-void CLeader::SetFollowerCount(const UInt32 un_count) {
-    currentFollowerCount = un_count;
+void CLeader::SetFollowerCount(const UInt32 un_count[RType]) {
+    for(int i =0; i<RType; ++i)
+        currentFollowerCount[i] = un_count[i];
 }
 
 /****************************************/

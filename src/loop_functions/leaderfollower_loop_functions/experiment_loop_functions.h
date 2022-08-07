@@ -7,8 +7,11 @@
 #include <argos3/core/utility/math/rng.h>
 
 #include <unordered_map>
+#include <map>
 
 using namespace argos;
+
+static const UInt32 RType = 10;   //Number of types of robot, max = 10
 
 class CExperimentLoopFunctions : public CLoopFunctions {
 
@@ -25,7 +28,7 @@ public:
    virtual void PostStep();
    virtual bool IsLogging();
    virtual std::string GetCommandFilePath();
-   virtual std::unordered_map<std::string, UInt32> GetRobotPerTask();
+   virtual std::unordered_map<std::string, UInt32>* GetRobotPerTask();
    virtual UInt32 GetCurrentPoints();
 
 private:
@@ -41,11 +44,11 @@ private:
    UInt32 m_unNextTaskId;
    UInt32 m_unTotalTasks;
    UInt32 m_unTaskDemand;
-   UInt32 m_unPointsObtained;
+   UInt32 m_unPointsObtained = 0;
    // std::vector<std::unordered_map<std::string,UInt32>> m_vecTaskDemand;
    std::map<UInt32, std::map<std::string, Real>> m_mapTaskPos;
    /* Number of robots working on each task in the current timestep */
-   std::unordered_map<std::string,UInt32> m_mapRobotPerTask;
+   std::unordered_map<std::string,UInt32> m_mapRobotPerTask[RType];
 
    CRange<Real> cArenaSideSplitX[4] = {
                                        CRange<Real>(0.5f, 1.45f), // TEMPORARY: hard coded arena size
@@ -87,10 +90,11 @@ private:
    /* Distribute a leader-robot team */
    void PlaceCluster(const CVector2& c_center,
                      UInt32 un_leaders,
-                     UInt32 un_robots,
+                     UInt32 un_robots[RType],
                      Real f_density,
                      UInt32 un_leader_id_start,
-                     UInt32 un_robot_id_start);
+                     UInt32 un_robot_id_start[RType],
+                     UInt32 TNo_robots);
 
    void PlaceCustomPosition(const CVector2& c_center,
                             std::string str_type,
@@ -111,9 +115,18 @@ private:
                   Real f_width_y,
                   Real f_height,
                   UInt32 un_demand,
-                  UInt32 un_min_robot_num,
+                  UInt32 un_min_robot_num[RType],
                   UInt32 un_max_robot_num,
                   UInt32 un_task_id_start);
+
+   // void PlaceRectangleTask(const CVector2& c_center,
+   //                Real f_width,
+   //                Real f_height,
+   //                UInt32 un_demand,
+   //                UInt32 un_min_robot_num,
+   //                UInt32 un_max_robot_num,
+   //                UInt32 un_task_id_start);
+
 };
 
 #endif

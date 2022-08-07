@@ -100,13 +100,28 @@
     <!-- Distribute leaders and followers. Leaders move towards waypoints. -->
     <!-- Currently only 1 leader supported per team -->
     <teams>
-      <team leader_num="1" robot_num="5" center="0.2,0.0" density="0.3">
+      <team leader_num="1"  center="0.2,0.0" density="0.3" robot_num1="3" robot_num2="3" robot_num3="2" robot_num4="0" robot_num5="0" robot_num6="0" robot_num7="0" robot_num8="0" robot_num9="0" robot_num10="0">
         <waypoint coord="1.5,0.0" /> 
+        <waypoint coord="1.0,-1.5" /> 
+        <waypoint coord="1.0,1.0" /> 
+        <!-- Defining goal locations. move to others after completion of task-->
       </team>
-      <team leader_num="1" robot_num="5" center="-0.2,0.0" density="0.3">
-        <waypoint coord="-1.5,0.0" />
+      <team leader_num="1" center="-0.2,0.0" density="0.3" robot_num1="2" robot_num2="2" robot_num3="4" robot_num4="0" robot_num5="0" robot_num6="0" robot_num7="0" robot_num8="0" robot_num9="0" robot_num10="0">
+        <waypoint coord="-0.5,0.0" />
+        <waypoint coord="-1.5,-1.5" />
+        <waypoint coord="-1.5,1.5" />
       </team>
     </teams>
+
+    <!-- Tasks that the teams must complete -->
+    <tasks>
+      <task position="1.5, 0" width_x="1" width_y="1" height="0.6" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+      <task position="-0.5, 0" width_x="0.8" width_y="0.8" height="0.8" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+      <task position="1.0, -1.5" width_x="0.8" width_y="0.8" height="0.8" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+      <task position="-1.5, -1.5" width_x="0.6" width_y="0.6" height="1" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+      <task position="1.0, 1.0" width_x="0.6" width_y="0.6" height="1" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+      <task position="-1.5, 1.5" width_x="1" width_y="1" height="0.6" max_robot_num="100" task_demand="100" min_robot_num1="1" min_robot_num2="1" min_robot_num3="1" min_robot_num4="0" min_robot_num5="0" min_robot_num6="0" min_robot_num7="0" min_robot_num8="0" min_robot_num9="0" min_robot_num10="0"/>
+    </tasks>
   </loop_functions>
 
   <!-- *********************** -->

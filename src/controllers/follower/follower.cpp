@@ -6,6 +6,7 @@
 #include <utility/team_color.h>
 #include <algorithm>
 
+#define RType 10
 /****************************************/
 /****************************************/
 
@@ -336,6 +337,17 @@ void CFollower::SetTeamID(const UInt8 id) {
 
 /****************************************/
 /****************************************/
+
+UInt8 CFollower::GetRobotType(){
+    return RobotType;
+}
+
+/****************************************/
+/****************************************/
+
+void CFollower::SetRobotType(const UInt8 type){
+    RobotType = type;
+ }
 
 RobotState CFollower::GetRobotState() {
     return currentState;

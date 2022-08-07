@@ -69,7 +69,8 @@
         "valarray": "cpp",
         "filesystem": "cpp",
         "codecvt": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "variant": "cpp"
     },
     "python.pythonPath": "/home/genki/GIT/argos-sct/.venv/bin/python",
     "files.watcherExclude": {
