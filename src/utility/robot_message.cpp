@@ -15,8 +15,8 @@ void Message::SetTeamCount(size_t num_team) {
     /*
     * size = fixed data + number of array messages + team count * (HopMsg + ConnectionMsg + TeamsNearby + RelayMsg) + Connections + End;
     */
-
-    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 10) + 60 + 1;
+    //messageByteSize = 173;
+    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 37) + 60 + 1;      // =173
     // std::cout << int(messageByteSize) << std::endl;
 }
 
@@ -28,6 +28,7 @@ Message::Message() {
 }
 
 /****************************************/
+//Reading the contents of the message packet 
 /****************************************/
 
 Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
@@ -76,7 +77,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         
         hops[tmpTeamID] = hop;
     }
-    index += (teamCount - msg_num) * 4;
+    index += (teamCount - msg_num) * 4;     // =0
 
     /* Connection Message */
     msg_num = packet.Data[index++];
@@ -108,7 +109,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
 
         cmsg.push_back(conMsg);
     }
-    index += (teamCount - msg_num) * 6;
+    index += (teamCount - msg_num) * 6; // =0
     
     /* Shared Message */
     std::string robotID;
@@ -138,7 +139,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
     for(size_t j = 0; j < msg_num; j++) {
         nearbyTeams.push_back(packet.Data[index++]);
     }
-    index += (teamCount - msg_num) * 1;
+    index += (teamCount - msg_num) * 1; // =0
 
     /* Relay Message */
     msg_num = packet.Data[index++];
@@ -172,14 +173,16 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
             relayMsg.firstFollower = robotID;
         } else
             index += 2;
-
-        relayMsg.follower_num = packet.Data[index++];
-        relayMsg.task_min_num = packet.Data[index++];
-        relayMsg.robot_num = packet.Data[index++];
+        for(int i=0; i<RType; ++i)
+            relayMsg.follower_num[i] = packet.Data[index++];
+        for(int i=0; i<RType; ++i)
+            relayMsg.task_min_num[i] = packet.Data[index++];
+        for(int i=0; i<RType; ++i)
+            relayMsg.robot_num[i] = packet.Data[index++];
 
         rmsg.push_back(relayMsg);
     }
-    index += (teamCount - msg_num) * 10;
+    index += (teamCount - msg_num) * 37;
 
     /* Connections */
     while(packet.Data[index] != 255) {    // Check if data exists
@@ -209,7 +212,7 @@ CByteArray Message::GetCByteArray() {
     size_t index = 0;
 
     /* Sender State */
-    arr[index++] = static_cast<UInt8>(state);
+    arr[index++] = static_cast<UInt8>(state);   // 0,1,2, or 3
 
     /* Sender ID */
     arr[index++] = stoi(ID.substr(1));
@@ -296,12 +299,15 @@ CByteArray Message::GetCByteArray() {
         } else
             index += 2;
 
-        arr[index++] = relayMsg.follower_num;
-        arr[index++] = relayMsg.task_min_num;
-        arr[index++] = relayMsg.robot_num;
+        for(int i=0; i<RType; ++i)
+            arr[index++] = relayMsg.follower_num[i];
+        for(int i=0; i<RType; ++i)
+            arr[index++] = relayMsg.task_min_num[i];
+        for(int i=0; i<RType; ++i)
+            arr[index++] = relayMsg.robot_num[i];
     }
     // Skip if not all bytes are used
-    index += (teamCount - rmsg.size()) * 10;
+    index += (teamCount - rmsg.size()) * 37;
 
     /* Connections */
     for(size_t i = 0; i < connections.size(); i++) {
@@ -402,10 +408,16 @@ void Message::Print() {
                   << ", from: " << relayMsg.from
                   << ", time: " << relayMsg.time
                   << ", firstFollower: " << relayMsg.firstFollower
-                  << ", follower_num: " << relayMsg.follower_num
-                  << ", task_min_num: " << relayMsg.task_min_num
-                  << ", robot_num: " << relayMsg.robot_num
-                  << std::endl;
+                  << ", follower_num: ";
+        for(int i=0; i<RType; ++i)
+            std::cout << relayMsg.follower_num[i] << ", ";
+        std::cout << "task_min_num: ";
+        for(int i=0; i<RType; ++i)
+            std::cout << relayMsg.task_min_num[i] << ", ";
+        std::cout << "robot_num: " ;
+        for(int i=0; i<RType; ++i)
+            std::cout << relayMsg.robot_num[i] << ", ";
+        std::cout << std::endl;
     }
 
     std::cout << "connections: ";

@@ -40,7 +40,10 @@
                            ki="0"
                            kd="0" 
                            thres_range="0.1" />
-        <team_flocking target_distance="15"
+        <!-- target distance - dist b/w each robots in team -->
+        <!-- min_leader_robot_dist  - max dist from leader and follower -->
+        <!-- tspe_thres  - dist b/w connector and team -->
+        <team_flocking target_distance="15"     
                        gain="1000"
                        exponent="2" />
         <team_distance min_leader_robot_distance="75"

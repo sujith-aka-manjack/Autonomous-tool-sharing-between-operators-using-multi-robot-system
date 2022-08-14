@@ -191,12 +191,12 @@ public:
     /*
     * Sets the number of followers to request to the other team.
     */
-    virtual void SetRobotsToRequest(const UInt32 un_robots);
+    virtual void SetRobotsToRequest(const UInt32 un_robots[RType]);
 
     /*
     * Sets the number of followers to send to the other team.
     */
-    virtual void SetRobotsToSend(const UInt32 un_robots);
+    virtual void SetRobotsToSend(const UInt32 un_robots[]);
 
     /*
     * Get the next waypoint in the queue.
@@ -251,12 +251,12 @@ public:
     /*
     * Get the minimum number of robots needed for the other leader's current task.
     */ 
-    virtual UInt32 GetOtherMinimumCount();
+    virtual UInt32* GetOtherMinimumCount();
 
     /*
     * Get the current number of followers in the team.
     */
-    virtual UInt32 GetFollowerCount();
+    virtual UInt32* GetFollowerCount();
 
     /*
     * Sets the current number of followers in the team.
@@ -267,7 +267,7 @@ public:
     * Get the current number of followers in the other leader's team.
     * negative value means there is no info of other leader's follower count.
     */
-    virtual SInt32 GetOtherFollowerCount();
+    virtual SInt32* GetOtherFollowerCount();
 
     /*
     * Get team ID.
@@ -485,6 +485,7 @@ private:
     bool isSendingRobots;
     size_t beatReceived, beatSent;
     std::string switchCandidate; // Robot that the leader could choose to switch to the other team
+    UInt8 switchCandidateType;
     bool decremented;
 
     // std::map<std::string, std::map<std::string, UInt32>> otherLeaderInfo; // DELETE: Map to store information received from the other leader (followers, robotsNeeded)

@@ -6,7 +6,7 @@
 
 #ifndef ROBOT_MESSAGE_H
 #define ROBOT_MESSAGE_H
-
+#define RType 10
 /*
  * Include some necessary headers.
  */
@@ -61,20 +61,22 @@ struct RelayMsg {
     char type = 'H'; // H (heart-beat) or R (request-robot) or A (acknowledge)
     std::string from;
     UInt16 time;
+    //std::map<UInt8,std::string> firstFollower;
+    //std::string firstFollower[RType];
     std::string firstFollower; // First follower that received this message from a non-team robot (connector)
-    UInt8 follower_num; // Used in a heart-beat message. The number of followers the leader has.
-    UInt8 task_min_num = 0; // Used in a heart-beat message. The minimum number of robots required to perform the task that the leader is on.
-    UInt8 robot_num = 0; // Used in request-robot and acknowledge message. The number of robots the leader is requesting or sending.
+    UInt8 follower_num[RType]; // Used in a heart-beat message. The number of followers the leader has.
+    UInt8 task_min_num[RType] = {0}; // Used in a heart-beat message. The minimum number of robots required to perform the task that the leader is on.
+    UInt8 robot_num[RType] = {0}; // Used in request-robot and acknowledge message. The number of robots the leader is requesting or sending.
 };
 
-// static const UInt32 MESSAGE_BYTE_SIZE = 119;
+// static const UInt32 MESSAGE_BYTE_SIZE = 173;
 
 /* 
 * Structure to store incoming data received from other robots 
 * 
 * The raw messages are assumed to arrive in the following data structure:
 * 
-* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(58) |      (59)-(118)       | (119) |
+* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(112) |      (113)-(172)       | (173) |
 * -----------------------------------------------------------------------------------------------------------------------------------------------
 * | Sender | Sender | Sender  | Leader |   Team    | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
 * | State  |   ID   | Team ID | Signal |  Switch   |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
@@ -83,7 +85,7 @@ struct RelayMsg {
 * - (4) Leader Signal
 *   - Leader    : task signal [1]
 * 
-* - (5)-(7) Team Switch Signal
+* - (5)-(7) Team Switch Signal  - only for leader
 *   - Leader informs a follower to join another team
 *       - robotID [2]
 *       - teamID [1]
@@ -112,18 +114,19 @@ struct RelayMsg {
 *       - Share information about the shortest distance to the other team (only when no connector is detected)
 *           - shareDist    : Upstream (Follower to Leader) 
 * 
-* - (35)-(37) Teams Nearby
+* - (35)-(37) Teams Nearby      // only for connector, which all teams it can see directly may be empty
 *   Prefix with number of teams nearby (max 2) [1]
 *   - teamID [1]
 * 
 *       - Used by connectors to determine whether other connectors can switch to a follower
 * 
-* - (38)-(58) Relay Message
+* - (38)-(112) Relay Message
 *   Prefix with number of messages (max 2) [1]
-*   - RelayMsg [10] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [1], task_min_num [1]. robot_num [1])
+*   - RelayMsg [37] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [10], task_min_num [10]. robot_num [10])
 * 
 *       - Message sent by a leader to other leaders
 * 
+    Connection msg - The robots an agent can see
 */
 class Message {
 
