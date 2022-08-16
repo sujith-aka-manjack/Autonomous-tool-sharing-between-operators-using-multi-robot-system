@@ -11,7 +11,7 @@
 
 using namespace argos;
 
-static const UInt32 RType = 10;   //Number of types of robot, max = 10
+#define RType 10   //Number of types of robot, max = 10
 
 class CExperimentLoopFunctions : public CLoopFunctions {
 

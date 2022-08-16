@@ -154,7 +154,9 @@ void CExperimentLoopFunctions::PreStep() {
     // std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
 
     UInt32 unFollowers1[RType] = {0};
+    std::fill_n(unFollowers1, RType, 0);
     UInt32 unFollowers2[RType] = {0};
+    std::fill_n(unFollowers2, RType, 0);
     UInt32 unConnectors = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
     for(int i=0; i<RType; ++i)
@@ -372,7 +374,7 @@ void CExperimentLoopFunctions::PreStep() {
         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
 
-        if(cController.GetId() == "L1")
+        if(cController.GetId() == "L1")                         //Give more info of the followers
             cController.SetFollowerCount(unFollowers1);
         else if(cController.GetId() == "L2")
             cController.SetFollowerCount(unFollowers2);
@@ -792,7 +794,8 @@ void CExperimentLoopFunctions::InitRobots() {
 
     /* ID counts */
     UInt32 unNextLeaderId = 1;
-    UInt32 unNextRobotId[RType] = {1};
+    UInt32 unNextRobotId[RType];
+    std::fill_n(unNextRobotId, RType, 1);
     /* Get the teams node */
     TConfigurationNode& et_tree = GetNode(config, "teams");
     /* Go through the nodes (teams) */
@@ -801,6 +804,8 @@ void CExperimentLoopFunctions::InitRobots() {
     size_t unTeamCount = 0;
     size_t unTotalLeaders = 0;
     size_t unTotalWorkers = 0;
+
+    //std::cout << "[LOG] step 2..." << std::endl;
 
     /* Set the number of teams in the experiment */
     for(itDistr = itDistr.begin(&et_tree);
@@ -811,10 +816,14 @@ void CExperimentLoopFunctions::InitRobots() {
     }
     Message::SetTeamCount(unTeamCount);
 
+    //std::cout << "[LOG] step 3..." << std::endl;
+
     for(itDistr = itDistr.begin(&et_tree);
         itDistr != itDistr.end();
         ++itDistr) {
-        
+
+        //std::cout << "[LOG] step 4..." << std::endl;
+
         /* Get current node (team/custom_team) */
         TConfigurationNode& tDistr = *itDistr;
 
@@ -830,11 +839,16 @@ void CExperimentLoopFunctions::InitRobots() {
             const UInt32 m = 0;  // Default number of worker robots for each type
             GetNodeAttribute(tDistr, "center", cCenter);
             GetNodeAttribute(tDistr, "leader_num", unLeaders);
+
+            //std::cout << "[LOG] step 5..." << std::endl;
+
             for (int i =1; i<RType+1; ++i) {
                 std::string str = "robot_num" + std::to_string(i);
                 //GetNodeAttributeOrDefault(tDistr, "robot_num"+std::to_string(i), unRobots[i-1], m);
                 GetNodeAttributeOrDefault(tDistr, str, unRobots[i-1], m);
-        }
+            }
+
+        
 
             /* Same thing if default is not required*/
 
@@ -859,8 +873,15 @@ void CExperimentLoopFunctions::InitRobots() {
             UInt32 TNorobots = 0;
             for (int i =0; i<RType; ++i)
                 TNorobots += unRobots[i];
+            //std::cout << "[LOG] step 6..." << std::endl;
+            //std::cout << RType << std::endl;
+            //for(int i=0; i<RType; ++i)
+            //    std::cout << cCenter << ", " << unLeaders << ", " << unRobots[i] << ", " << fDensity << ", " << unNextLeaderId << ", " << unNextRobotId[i] << ", " << TNorobots << ", " << std::endl;
+        
             /* Place robots */
             PlaceCluster(cCenter, unLeaders, unRobots, fDensity, unNextLeaderId, unNextRobotId,TNorobots);
+
+            //std::cout << "[LOG] step 7..." << std::endl;
 
             unTotalLeaders += unLeaders;
             unTotalWorkers += TNorobots;
@@ -873,9 +894,14 @@ void CExperimentLoopFunctions::InitRobots() {
             std::queue<CVector2> waypoints; // Queue to provide to the robot
             /* Go through the nodes (waypoints) */
             TConfigurationNodeIterator itWaypt;
+
+            //std::cout << "[LOG] step 8..." << std::endl;
+
             for(itWaypt = itWaypt.begin(&tDistr);
                 itWaypt != itWaypt.end();
                 ++itWaypt) {
+
+                //std::cout << "[LOG] step 9..." << std::endl;
 
                 /* Get current node (waypoint) */
                 TConfigurationNode& tWaypt = *itWaypt;
@@ -885,6 +911,8 @@ void CExperimentLoopFunctions::InitRobots() {
                 m_vecWaypointPos.push_back(coord);
                 waypoints.push(coord);
             }
+
+            //std::cout << "[LOG] step 10..." << std::endl;
 
             /* Get the newly created leader */
             std::ostringstream cEPId;
@@ -898,7 +926,7 @@ void CExperimentLoopFunctions::InitRobots() {
             /* Update robot count */
             unNextLeaderId += unLeaders;
             for(int i=0; i<RType; ++i)
-                unNextRobotId[0] += unRobots[i];
+                unNextRobotId[i] += unRobots[i];
         }
         // else if(itDistr->Value() == "custom_team") {
             
@@ -1207,13 +1235,17 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         /* Place robots */
         UInt32 unTrials;
         CEPuckLeaderEntity* pcEPL;
+        //CEPuckLeaderEntity* temp;
         CEPuckEntity* pcEP;
         std::ostringstream cEPId;
         CVector3 cEPPos;
         CQuaternion cEPRot;
 
+        //std::cout << "[LOG] step 11..." << std::endl;
+
         /* For each leader */ // CURRENTLY ONLY ONE LEADER PER TEAM IS SUPPORTED
         for(size_t i = 0; i < un_leaders; ++i) {
+
             /* Make the id */
             cEPId.str("");
             cEPId << "L" << (i + un_leader_id_start);
@@ -1223,14 +1255,17 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                            CVector3(),
                                            CQuaternion(),
                                            EP_RAB_RANGE,
-                                           Message::messageByteSize,    //TO EDIT
-                                           "");
+                                           Message::messageByteSize, "");   //TO EDIT
+                                           //"");
+
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
+
 
             /* Assign initial number of followers */
             CLeader& clController = dynamic_cast<CLeader&>(pcEPL->GetControllableEntity().GetController());
             clController.SetFollowerCount(un_robots);      //might need to change UPDATE: Changed
+
 
             /* Try to place it in the arena */
             unTrials = 0;
@@ -1238,18 +1273,22 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             do {
                 /* Choose a random position */
                 ++unTrials;
+                
                 cEPPos.Set(m_pcRNG->Uniform(cAreaRange) + c_center.GetX(),
                            m_pcRNG->Uniform(cAreaRange) + c_center.GetY(),
                            0.0f);
-                cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
+                                cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
                                      CVector3::Z);
                 bDone = MoveEntity(pcEPL->GetEmbodiedEntity(), cEPPos, cEPRot);
+
+                
+
             } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
             if(!bDone) {
                 THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
             }
         }
-
+        
         /* For each robot */
         for(size_t i = 0; i < RType; ++i) {
             UInt8 robot_type = 0;
@@ -1304,6 +1343,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                     default:
                         break;
                 }
+                //std::cout << "[LOG] step 18..." << std::endl;
                 //cEPId << "F" << (i + un_robot_id_start);
                 /* Create the robot in the origin and add it to ARGoS space */
                 pcEP = new CEPuckEntity(cEPId.str(),
@@ -1313,14 +1353,17 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                         EP_RAB_RANGE,
                                         Message::messageByteSize,
                                         "");
+                
                 AddEntity(*pcEP);
                 m_vecEntityID.push_back(cEPId.str());
 
+                
                 /* Assign initial team id */
                 CFollower& cfController = dynamic_cast<CFollower&>(pcEP->GetControllableEntity().GetController());
                 cfController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
                 cfController.SetRobotType(robot_type);      // Assign the type (species) of robot
                 /* Try to place it in the arena */
+
                 unTrials = 0;
                 bool bDone;
                 do {
@@ -1332,6 +1375,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                     cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE),
                                             CVector3::Z);
                     bDone = MoveEntity(pcEP->GetEmbodiedEntity(), cEPPos, cEPRot);
+                    
                 } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
                 if(!bDone) {
                     THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());

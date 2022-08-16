@@ -196,7 +196,7 @@ public:
     /*
     * Sets the number of followers to send to the other team.
     */
-    virtual void SetRobotsToSend(const UInt32 un_robots[]);
+    virtual void SetRobotsToSend(const UInt32 un_robots[RType]);
 
     /*
     * Get the next waypoint in the queue.
@@ -246,7 +246,7 @@ public:
     /* 
     * Sets the minimum number of robots needed for the current task.
     */
-    virtual void SetMinimumCount(UInt32 un_min[]);
+    virtual void SetMinimumCount( UInt32 un_min[]);
 
     /*
     * Get the minimum number of robots needed for the other leader's current task.

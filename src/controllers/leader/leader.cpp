@@ -162,7 +162,9 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentInitTaskDemand = 0;
 
     numOtherTaskRequire[RType] = {0};    // might need to change
+    std::fill_n(numOtherTaskRequire, RType, 0);
     numOtherFollower[RType] = {-1};      // might need to change
+    std::fill_n(numOtherFollower, RType, -1);
 
     shareToTeam = "";
     initStepTimer = 0;
@@ -175,9 +177,13 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatSent = 0;
 
     numRobotsToSend[RType] = {0};            //
+    std::fill_n(numRobotsToSend, RType, 0);
     numRobotsRemainingToSend[RType] = {0};   //
+    std::fill_n(numRobotsRemainingToSend, RType, 0);
     numRobotsToRequest[RType] = {0};         //
-    numRobotsRequested[RType] = {0};       //
+    std::fill_n(numRobotsToRequest, RType, 0);
+    //numRobotsRequested[RType] = {0};       //
+    std::fill_n(numRobotsRequested, RType, 0);
     isSendingRobots = false;
     switchCandidate = "";
     robotToSwitch = "";
@@ -185,6 +191,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     
     decremented = false;
     robotsNeeded[RType] = {0};
+    std::fill_n(robotsNeeded, RType, 0);
     requestSent = false;
     acknowledgeSent = false;
     // requestReceived = false;
@@ -577,19 +584,30 @@ void CLeader::SetRobotsToRequest(const UInt32 un_robots[]) {
 /****************************************/
 
 void CLeader::SetRobotsToSend(const UInt32 un_robots[]) {
+    int currentTotalFollower = 0;
     for(int i=0; i<RType; ++i){
-        std::cout << "[" << this->GetId() << "] Received " << un_robots[i] << " robots of type " << i+1 <<" to send from user" << std::endl;
-
-        if(currentFollowerCount[i] <= 1) {
-            std::cout << "{" << this->GetId() << "}[LOG] Cannot send if robots <= 1. Robot type= " << i+1 << std::endl;
-            continue;
+        currentTotalFollower += currentFollowerCount[i];
+    }
+    for(int i=0; i<RType; ++i){
+        if(un_robots[i] !=0)
+            std::cout << "[" << this->GetId() << "] Received request from user to send" << un_robots[i] << " robots of type " << i+1 << std::endl;
+        
+        
+        if(currentTotalFollower <= 1) {
+            std::cout << "{" << this->GetId() << "}[LOG] Cannot send if robots <= 1." << std::endl;
+            break;
         } else if(currentFollowerCount[i] <= un_robots[i]) { // If robots to send exceed current team size, send all followers
-            numRobotsToSend[i] = currentFollowerCount[i] - 1;
+
+            if(currentTotalFollower > currentFollowerCount[i])
+                numRobotsToSend[i] = currentFollowerCount[i];
+            else
+                numRobotsToSend[i] = currentFollowerCount[i] - 1; // Keep one follower and send the rest
         } else {
             numRobotsToSend[i] = un_robots[i];
         }
 
         numRobotsRemainingToSend[i] = numRobotsToSend[i];
+        currentTotalFollower -= numRobotsToSend[i];
     }
 }
 
@@ -799,8 +817,20 @@ void CLeader::Update() {
 
     /* If there are no followers in the team, cancel sending the */
     /* remaining number of robots                                */
-    for(int i=0; i<RType; ++i) {
-        if(numRobotsToSend[i] > 0 && currentFollowerCount[i] == 0) {
+
+    // for(int i=0; i<RType; ++i) {
+    //     if(numRobotsToSend[i] > 0 && currentFollowerCount[i] == 0) {
+    //         numRobotsToSend[i] = 0;
+    //         numRobotsRemainingToSend[i] = 0;
+    //     }
+    // }
+
+    int currentTotalFollower = 0;
+    for(int i=0; i<RType; ++i){
+        currentTotalFollower += currentFollowerCount[i];
+    }
+    if(currentTotalFollower == 0){                                                            
+        for(int i=0; i<RType; ++i) {
             numRobotsToSend[i] = 0;
             numRobotsRemainingToSend[i] = 0;
         }
@@ -1008,7 +1038,7 @@ void CLeader::CheckHeartBeat() {
                         for(int i=0; i<RType; ++i){
                             numRobotsRequested[i] = beat.robot_num[i];
                         // std::cout << "{" << this->GetId() << "} [REQUEST] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
-                            std::cout << "{" << this->GetId() << "}[REQUEST] Received request to send " << numRobotsRequested[i] << " robots" << std::endl;
+                            std::cout << "{" << this->GetId() << "}[REQUEST] Received request to send " << numRobotsRequested[i] << " robots of type:" << i+1 << std::endl;
                         }
 
                         // DEBUG
