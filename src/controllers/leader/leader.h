@@ -498,6 +498,8 @@ private:
     /* Timer to count the number of messages to send before sending the next robot */
     size_t robotLastSentTime;
 
+    size_t request_start_time;
+
     /* Team switch variables */
     int numRobotsToSend[RType];
     int numRobotsRemainingToSend[RType];
@@ -507,6 +509,7 @@ private:
     UInt8 teamToJoin;
     bool requestSent;
     bool acknowledgeSent;
+    bool request_required;
 
     /* Flag to indicate trigerring of uncontrollable events */
     bool receivedMessage, receivedRelay, receivedRequest, inputStart, inputStop, inputMessage;
@@ -527,6 +530,7 @@ private:
 
     size_t sendDuration;
     size_t sendRobotDelay;
+    size_t RequestDelay;
 
     /* SCT yaml path */
     std::string m_strSCTPath;

@@ -258,7 +258,7 @@ CByteArray Message::GetCByteArray() {
         arr[index++] = stoi(conMsg.to.substr(1));
         arr[index++] = conMsg.toTeam;
     }
-    // Skip if not all bytes are used
+    // Skip if not all bytes are used or delete if size is more than team number. right now its = 4
     index += (teamCount - cmsg.size()) * 6;
 
     /* Shared Message */

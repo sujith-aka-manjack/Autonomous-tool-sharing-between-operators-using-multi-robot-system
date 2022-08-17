@@ -140,6 +140,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "timeout"), "send_robot_delay", sendRobotDelay);
         /* SCT Model */
         GetNodeAttribute(GetNode(t_node, "SCT"), "path", m_strSCTPath);
+        GetNodeAttribute(GetNode(t_node, "timeout"), "request_delay", RequestDelay);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -161,14 +162,15 @@ void CLeader::Init(TConfigurationNode& t_node) {
     currentTaskDemand = 0;
     currentInitTaskDemand = 0;
 
-    numOtherTaskRequire[RType] = {0};    // might need to change
+    //numOtherTaskRequire[RType] = {0};    // might need to change
     std::fill_n(numOtherTaskRequire, RType, 0);
-    numOtherFollower[RType] = {-1};      // might need to change
+    //numOtherFollower[RType] = {-1};      // might need to change
     std::fill_n(numOtherFollower, RType, -1);
 
     shareToTeam = "";
     initStepTimer = 0;
     robotLastSentTime = 0;
+    request_start_time = 0;
     acceptID = "";
 
     lastSent = -1;
@@ -176,11 +178,11 @@ void CLeader::Init(TConfigurationNode& t_node) {
     beatReceived = 0;
     beatSent = 0;
 
-    numRobotsToSend[RType] = {0};            //
+    //numRobotsToSend[RType] = {0};            //
     std::fill_n(numRobotsToSend, RType, 0);
-    numRobotsRemainingToSend[RType] = {0};   //
+    //numRobotsRemainingToSend[RType] = {0};   //
     std::fill_n(numRobotsRemainingToSend, RType, 0);
-    numRobotsToRequest[RType] = {0};         //
+    //numRobotsToRequest[RType] = {0};         //
     std::fill_n(numRobotsToRequest, RType, 0);
     //numRobotsRequested[RType] = {0};       //
     std::fill_n(numRobotsRequested, RType, 0);
@@ -190,10 +192,11 @@ void CLeader::Init(TConfigurationNode& t_node) {
     //switchCandidateType = 1;
     
     decremented = false;
-    robotsNeeded[RType] = {0};
+    //robotsNeeded[RType] = {0};
     std::fill_n(robotsNeeded, RType, 0);
     requestSent = false;
     acknowledgeSent = false;
+    request_required = false;
     // requestReceived = false;
 
     // TEMP: hard coded team to join (Assuming two teams)
@@ -336,6 +339,8 @@ void CLeader::ControlStep() {
     /*------------------------*/
     Update();
 
+    //std::cout << "Robot delay:" << sendRobotDelay << std::endl;
+
     /*--------------------*/
     /* Run SCT controller */
     /*--------------------*/
@@ -417,6 +422,7 @@ void CLeader::ControlStep() {
                 //std::cout << "dist: " << dist << std::endl;
 
                 /* If current task is completed, move to the next one */
+                // Why not and used?
                 if(dist > m_sWaypointTrackingParams.thresRange || currentTaskDemand == 0) {
                     
                     //std::cout << "[LOG] Moving to next task" << std::endl;
@@ -857,6 +863,7 @@ void CLeader::Update() {
                     // signal = false;
                     waypoints.pop(); // Delete waypoint from queue
                     requestSent = false; // Set to false since it has finished the task.
+                    request_required = false;
                 }/*  else
                     signal = true; */
             }
@@ -870,6 +877,7 @@ void CLeader::Update() {
 }
 
 /****************************************/
+//Check if atleast one follower is near the leader 
 /****************************************/
 
 bool CLeader::IsNearRobot() {
@@ -896,6 +904,7 @@ bool CLeader::IsNearRobot() {
 }
 
 /****************************************/
+//Reply to request from follower to become a connector if there is no connector 
 /****************************************/
 
 void CLeader::ReplyToRequest() {
@@ -941,6 +950,7 @@ void CLeader::ReplyToRequest() {
 }
 
 /****************************************/
+//Get the first connector ID
 /****************************************/
 
 void CLeader::SetConnectorToRelay() {
@@ -953,13 +963,14 @@ void CLeader::SetConnectorToRelay() {
         if(hopInfo[teamID].count == 1) {
 
             /* Send info of connector found */
-            shareToTeam = msg.ID;
+            shareToTeam = msg.ID;           // This ID is full 2 char - F1
             foundFirstConnector = true;
             break;
         }
     }
 
     /* If the first connector is not nearby, check which it should relay upstream */
+    // When there is no connector - when teams are near each other
     if( !foundFirstConnector ) {
         if( !teamMsgs.empty() ) {
 
@@ -1014,7 +1025,7 @@ void CLeader::CheckHeartBeat() {
                     if(msg.state == RobotState::LEADER)
                         receivedMessage = true;
                     else
-                        receivedRelay = true;
+                        receivedRelay = true;       //This is not being used
 
                     decremented = false;
 
@@ -1037,8 +1048,10 @@ void CLeader::CheckHeartBeat() {
                         // }
                         for(int i=0; i<RType; ++i){
                             numRobotsRequested[i] = beat.robot_num[i];
+                            if(numRobotsRequested[i]!= 0){
                         // std::cout << "{" << this->GetId() << "} [REQUEST] Received request from " << beat.from << " to send " << numRobotsRequested << " robots" << std::endl;
                             std::cout << "{" << this->GetId() << "}[REQUEST] Received request to send " << numRobotsRequested[i] << " robots of type:" << i+1 << std::endl;
+                            }
                         }
 
                         // DEBUG
@@ -1065,7 +1078,7 @@ void CLeader::CheckHeartBeat() {
                     } else if(beat.type == 'A') {
                         // std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
                         for(int i=0; i<RType; ++i)
-                            std::cout << "{" << this->GetId() << "}[SEND] " << i+1 << " robot type: " << beat.robot_num[i] << " robots are heading this way!" << std::endl;
+                            std::cout << "{" << this->GetId() << "}[SEND] " << beat.robot_num[i] << " robots of type" << i+1 << "are heading this way!" << std::endl;
                     }
 
                     switchCandidate = ""; // Reset candidate follower to switch
@@ -1378,7 +1391,15 @@ void CLeader::Callback_Message(void* data) {
 
     
     // DEBUG (Auto request)
-    if( !m_bSelected && !requestSent) {
+    if(!request_required)
+    for(int i=0; i<RType; ++i){
+        if(robotsNeeded[i] - currentFollowerCount[i] > 0) { 
+            request_start_time = initStepTimer;
+            request_required = true;
+            break;
+        }
+    }
+    if( !m_bSelected && !requestSent && (initStepTimer - request_start_time)>RequestDelay) {
         for(int i=0; i<RType; ++i){
             //if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
             if(robotsNeeded[i] - currentFollowerCount[i] > 0) {    
@@ -1386,6 +1407,7 @@ void CLeader::Callback_Message(void* data) {
                 beat.robot_num[i] = robotsNeeded[i] - currentFollowerCount[i];
                 std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num[i] << " robots of type " <<i+1 << std::endl;
                 requestSent = true;
+                //request_required = false;
             }
         }
     }
@@ -1403,7 +1425,8 @@ void CLeader::Callback_Message(void* data) {
         if(numRobotsToRequest[i]> 0) {
             beat.type = 'R';
             beat.robot_num[i] = numRobotsToRequest[i];
-            std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num[i] << " robots of type " <<i+1 << std::endl;
+            if(beat.robot_num[i] != 0)
+                std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num[i] << " robots of type " <<i+1 << std::endl;
             // std::cout << "[" << this->GetId() << "] Requested for " << beat.robot_num << " robots" << std::endl;
             numRobotsToRequest[i] = 0;
         }
@@ -1431,7 +1454,8 @@ void CLeader::Callback_Message(void* data) {
         for(int i=0; i<RType; ++i){
             beat.type = 'A';
             beat.robot_num[i] = numRobotsToSend[i];
-            std::cout << "{" << this->GetId() << "}[SEND] Sending " << numRobotsToSend[i] << " robots of type " <<i+1 << std::endl;
+            if(beat.robot_num[i] != 0)
+                std::cout << "{" << this->GetId() << "}[SEND] Sending " << numRobotsToSend[i] << " robots of type " <<i+1 << std::endl;
             acknowledgeSent = true;
         }
     } 
@@ -1506,12 +1530,12 @@ void CLeader::Callback_Exchange(void* data) {
 
 /* Callback functions (Uncontrollable events) */
 
-unsigned char CLeader::Check__Message(void* data) {
+unsigned char CLeader::Check__Message(void* data) {     
     // std::cout << "Event: " << receivedMessage << " - _message" << std::endl;
     return receivedMessage;
 }
 
-unsigned char CLeader::Check__Relay(void* data) {
+unsigned char CLeader::Check__Relay(void* data) {       // NOT USED
     // std::cout << "Event: " << receivedRelay << " - _relay" << std::endl;
     return receivedRelay;
 }
