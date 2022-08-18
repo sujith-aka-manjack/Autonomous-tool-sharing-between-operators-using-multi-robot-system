@@ -371,7 +371,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
                      numFont);
             }
             else{
-               cText << cTask.GetCurrentRobotNum(i+1) << " / " << *(cTask.GetMinRobotNum()+i+1);
+               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i+1);
                 DrawText(CVector3(x_pos+0.1, y_pos-(0.05*1.5*(i)), 0.01),
                      cText.str(),
                      CColor::WHITE,

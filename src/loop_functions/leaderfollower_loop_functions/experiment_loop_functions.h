@@ -93,7 +93,7 @@ private:
                      UInt32 un_robots[RType],
                      Real f_density,
                      UInt32 un_leader_id_start,
-                     UInt32 un_robot_id_start[RType],
+                     UInt32 un_robot_id_start,
                      UInt32 TNo_robots);
 
    void PlaceCustomPosition(const CVector2& c_center,

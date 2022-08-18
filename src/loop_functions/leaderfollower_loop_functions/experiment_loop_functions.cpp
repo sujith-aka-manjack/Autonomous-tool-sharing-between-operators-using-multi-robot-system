@@ -277,7 +277,7 @@ void CExperimentLoopFunctions::PreStep() {
                 CVector2 cPos = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
                                          cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
 
-                /* Leaeder's location */
+                /* Leader's location */
                 std::ostringstream cLeaderId;
                 cLeaderId.str("");
                 cLeaderId << "L" << unTeamId;
@@ -307,42 +307,43 @@ void CExperimentLoopFunctions::PreStep() {
                             if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
                                 int temp_var;
                                 temp_var = cController.GetRobotType();
-                                switch (temp_var)
-                                {
-                                    case 1:
-                                        m_mapRobotPerTask[0][cCTask.GetId()]++;
-                                        break;
-                                    case 2:
-                                        m_mapRobotPerTask[1][cCTask.GetId()]++;
-                                        break;
-                                    case 3:
-                                        m_mapRobotPerTask[2][cCTask.GetId()]++;
-                                        break;
-                                    case 4:
-                                        m_mapRobotPerTask[3][cCTask.GetId()]++;
-                                        break;
-                                    case 5:
-                                        m_mapRobotPerTask[4][cCTask.GetId()]++;
-                                        break;
-                                    case 6:
-                                        m_mapRobotPerTask[5][cCTask.GetId()]++;
-                                        break;
-                                    case 7:
-                                        m_mapRobotPerTask[6][cCTask.GetId()]++;
-                                        break;
-                                    case 8:
-                                        m_mapRobotPerTask[7][cCTask.GetId()]++;
-                                        break;
-                                    case 9:
-                                        m_mapRobotPerTask[8][cCTask.GetId()]++;
-                                        break;
-                                    case 10:
-                                        m_mapRobotPerTask[9][cCTask.GetId()]++;
-                                        break;
+                                m_mapRobotPerTask[temp_var-1][cCTask.GetId()]++;
+                                // switch (temp_var)
+                                // {
+                                //     case 1:
+                                //         m_mapRobotPerTask[0][cCTask.GetId()]++;
+                                //         break;
+                                //     case 2:
+                                //         m_mapRobotPerTask[1][cCTask.GetId()]++;
+                                //         break;
+                                //     case 3:
+                                //         m_mapRobotPerTask[2][cCTask.GetId()]++;
+                                //         break;
+                                //     case 4:
+                                //         m_mapRobotPerTask[3][cCTask.GetId()]++;
+                                //         break;
+                                //     case 5:
+                                //         m_mapRobotPerTask[4][cCTask.GetId()]++;
+                                //         break;
+                                //     case 6:
+                                //         m_mapRobotPerTask[5][cCTask.GetId()]++;
+                                //         break;
+                                //     case 7:
+                                //         m_mapRobotPerTask[6][cCTask.GetId()]++;
+                                //         break;
+                                //     case 8:
+                                //         m_mapRobotPerTask[7][cCTask.GetId()]++;
+                                //         break;
+                                //     case 9:
+                                //         m_mapRobotPerTask[8][cCTask.GetId()]++;
+                                //         break;
+                                //     case 10:
+                                //         m_mapRobotPerTask[9][cCTask.GetId()]++;
+                                //         break;
                                     
-                                    default:
-                                        break;
-                                }
+                                //     default:
+                                //         break;
+                                // }
                                 
                                 if( unTeamId == 1 ) ++unFollowers1[temp_var-1];
                                 else ++unFollowers2[temp_var-1];
@@ -403,14 +404,18 @@ void CExperimentLoopFunctions::PreStep() {
                 min_r[i] = temp[i];
             }
             for(int i=0; i<RType; ++i){ 
-                if(m_mapRobotPerTask[i][cCTask.GetId()] >= min_r[i])
-                    ;
-                else {
+                if(m_mapRobotPerTask[i][cCTask.GetId()] < min_r[i]){
                     demand_met= false;
                     break;
                 }
+                // else {
+                //     demand_met= false;
+                //     break;
+                // }
             }
+            
             if(demand_met) {
+                //std::cerr << "[" << cCTask.GetId() << "] Demand_met: "  << demand_met << std::endl;
                 if(currentDemand == 1) {
                     cCTask.SetDemand(0);
 
@@ -421,8 +426,8 @@ void CExperimentLoopFunctions::PreStep() {
                         points += temp2[i];
                     }
                     m_unPointsObtained += points;
-                    std::cout << "Scored " << (int)m_unPointsObtained << " !" << std::endl;
-
+                    //std::cout << "Scored " << (int)m_unPointsObtained << " !" << std::endl;
+                    std::cerr << "Scored " << (int)m_unPointsObtained << " !" << std::endl;
                     /* Move task out of arena */
                     // cCTask.SetPosition(CVector2(1000,1000));
                     // std::map<std::string, Real> task_pos;
@@ -794,8 +799,8 @@ void CExperimentLoopFunctions::InitRobots() {
 
     /* ID counts */
     UInt32 unNextLeaderId = 1;
-    UInt32 unNextRobotId[RType];
-    std::fill_n(unNextRobotId, RType, 1);
+    UInt32 unNextRobotId = 1;
+    //std::fill_n(unNextRobotId, RType, 1);
     /* Get the teams node */
     TConfigurationNode& et_tree = GetNode(config, "teams");
     /* Go through the nodes (teams) */
@@ -926,7 +931,7 @@ void CExperimentLoopFunctions::InitRobots() {
             /* Update robot count */
             unNextLeaderId += unLeaders;
             for(int i=0; i<RType; ++i)
-                unNextRobotId[i] += unRobots[i];
+                unNextRobotId += unRobots[i];
         }
         // else if(itDistr->Value() == "custom_team") {
             
@@ -1225,7 +1230,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                             UInt32 un_robots[RType],
                                             Real f_density,
                                             UInt32 un_leader_id_start,
-                                            UInt32 un_robot_id_start[RType],
+                                            UInt32 un_robot_id_start,
                                             UInt32 TNo_robots) {
 
     try {
@@ -1261,7 +1266,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             AddEntity(*pcEPL);
             m_vecEntityID.push_back(cEPId.str());
 
-
+            //std::cout << "Adding entity " << cEPId.str() << std::endl;
             /* Assign initial number of followers */
             CLeader& clController = dynamic_cast<CLeader&>(pcEPL->GetControllableEntity().GetController());
             clController.SetFollowerCount(un_robots);      //might need to change UPDATE: Changed
@@ -1290,60 +1295,62 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
         }
         
         /* For each robot */
+        //std::cout << "Next Follower no: " <<  un_robot_id_start << std::endl;
         for(size_t i = 0; i < RType; ++i) {
-            UInt8 robot_type = 0;
+            UInt8 robot_type;
             /* For each type of robots */
+            
             for(size_t j = 0; j < un_robots[i]; ++j){
-                
-                /* Make the id */
                 cEPId.str("");
+                cEPId << "F" << (j + un_robot_id_start);
+                /* Make the id */
                 switch (i)
                 {
                     case 0:
-                        cEPId << "A" << (j + un_robot_id_start[i]);
+                        //cEPId << "A" << (j + un_robot_id_start[i]);
                         robot_type = 1;
                         break;
                     case 1:
-                        cEPId << "B" << (j + un_robot_id_start[i]);
+                        //cEPId << "B" << (j + un_robot_id_start[i]);
                         robot_type = 2;
                         break;
                     case 2:
-                        cEPId << "C" << (j + un_robot_id_start[i]);
+                        //cEPId << "C" << (j + un_robot_id_start[i]);
                         robot_type = 3;
                         break;
                     case 3:
-                        cEPId << "D" << (j + un_robot_id_start[i]);
+                        //cEPId << "D" << (j + un_robot_id_start[i]);
                         robot_type = 4;
                         break;
                     case 4:
-                        cEPId << "E" << (j + un_robot_id_start[i]);
+                        //cEPId << "E" << (j + un_robot_id_start[i]);
                         robot_type = 5;
                         break;
                     case 5:
-                        cEPId << "F" << (j + un_robot_id_start[i]);
+                        //cEPId << "F" << (j + un_robot_id_start[i]);
                         robot_type = 6;
                         break;
                     case 6:
-                        cEPId << "G" << (j + un_robot_id_start[i]);
+                        //cEPId << "G" << (j + un_robot_id_start[i]);
                         robot_type = 7;
                         break;
                     case 7:
-                        cEPId << "H" << (j + un_robot_id_start[i]);
+                        //cEPId << "H" << (j + un_robot_id_start[i]);
                         robot_type = 8;
                         break;
                     case 8:
-                        cEPId << "I" << (j + un_robot_id_start[i]);
+                        //cEPId << "I" << (j + un_robot_id_start[i]);
                         robot_type = 9;
                         break;
                     case 9:
-                        cEPId << "J" << (j + un_robot_id_start[i]);
+                        //cEPId << "J" << (j + un_robot_id_start[i]);
                         robot_type = 10;
                         break;
                     
                     default:
                         break;
                 }
-                //std::cout << "[LOG] step 18..." << std::endl;
+                //std::cout << "Adding entity " << cEPId.str() << std::endl;
                 //cEPId << "F" << (i + un_robot_id_start);
                 /* Create the robot in the origin and add it to ARGoS space */
                 pcEP = new CEPuckEntity(cEPId.str(),
@@ -1379,8 +1386,9 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
                 if(!bDone) {
                     THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
-                }
+                }                
             }
+            un_robot_id_start += un_robots[i];
         }
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);

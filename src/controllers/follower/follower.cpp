@@ -1427,8 +1427,8 @@ void CFollower::SetConnectorToRelay() {
         }
     } else // If no downstream exists, send nothing
         shareToTeam = "";
-    std::cout <<  "[L" << teamID << "] Tail end connector shared to team is:" << shareToTeam << std::endl;
-    std::cout << "[L" << teamID << "] Tail end connector shared to leader is:" << shareToLeader << std::endl;
+    //std::cout <<  "[L" << teamID << "] Tail end connector shared to team is:" << shareToTeam << std::endl;
+    //std::cout << "[L" << teamID << "] Tail end connector shared to leader is:" << shareToLeader << std::endl;
 }
 
 /****************************************/
