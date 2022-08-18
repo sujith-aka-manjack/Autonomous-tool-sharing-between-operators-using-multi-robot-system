@@ -6,7 +6,7 @@
 #include <utility/team_color.h>
 #include <algorithm>
 
-#define RType 10
+//#define RType 10
 /****************************************/
 /****************************************/
 
@@ -40,7 +40,7 @@ int direction(CVector2 a, CVector2 b, CVector2 c) {
       return 0;     //colinear
    else if(val < 0)
       return 2;    //anti-clockwise direction
-      return 1;    //clockwise direction
+      return 1;    //clockwise direction if val>0
 }
 
 bool isIntersect(CVector2 move, CVector2 start, CVector2 end) {
@@ -724,7 +724,7 @@ void CFollower::Update() {
             if( !connectionCandidate.Empty() )
                 minDist = connectionCandidate.direction.Length(); // Set its own distance to a follower in the other team
             
-            for(const auto& msg : teamMsgs) {
+            for(const auto& msg : teamMsgs) {       //IS THIS REQUIRED? - Yes
                 auto hopInfo = msg.hops;
                 if(hopInfo[teamID].count > hopCountToLeader) {
                     if(msg.shareDist < minDist)
@@ -769,7 +769,7 @@ void CFollower::Update() {
         //     //std::cout << "ID: " << it.second.ID << std::endl;
         // }
 
-        CheckRequests();
+        CheckRequests();  //Checking and accepting requests from followers to be connectors
 
         UpdateHopCounts();
 
@@ -948,6 +948,7 @@ void CFollower::Update() {
 }
 
 /****************************************/
+//Get the follower hop count, leader signal, robotToSwitch and teamToJoin
 /****************************************/
 
 void CFollower::GetLeaderInfo() {
@@ -1000,6 +1001,7 @@ void CFollower::GetLeaderInfo() {
 }
 
 /****************************************/
+//msg from the closest non-team robot (Connector or follower)
 /****************************************/
 
 Message CFollower::GetClosestNonTeam() {
@@ -1046,6 +1048,7 @@ bool CFollower::IsClosestToRobot(const Message& msg) {
     Real myDist = msg.direction.Length();
 
     /* If the team has identified the next connector to connect to, check if it is the same */
+    //If connectors are present
     if( !shareToTeam.empty() ) {
         if(msg.ID != shareToTeam)
             return false;
@@ -1180,6 +1183,7 @@ void CFollower::CheckRequests() {
 }
 
 /****************************************/
+//Relay R upstream to follower and A from leader to downstream
 /****************************************/
 
 void CFollower::SetCMsgsToRelay() {
@@ -1357,6 +1361,7 @@ void CFollower::SetLeaderMsgToRelay(const RobotState state) {
 }
 
 /****************************************/
+//Find the first connector
 /****************************************/
 
 void CFollower::SetConnectorToRelay() {
@@ -1422,6 +1427,8 @@ void CFollower::SetConnectorToRelay() {
         }
     } else // If no downstream exists, send nothing
         shareToTeam = "";
+    std::cout <<  "[L" << teamID << "] Tail end connector shared to team is:" << shareToTeam << std::endl;
+    std::cout << "[L" << teamID << "] Tail end connector shared to leader is:" << shareToLeader << std::endl;
 }
 
 /****************************************/

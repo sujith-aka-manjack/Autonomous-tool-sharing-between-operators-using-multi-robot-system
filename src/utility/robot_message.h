@@ -6,7 +6,7 @@
 
 #ifndef ROBOT_MESSAGE_H
 #define ROBOT_MESSAGE_H
-#define RType 10
+#define RType 5
 /*
  * Include some necessary headers.
  */
@@ -76,7 +76,7 @@ struct RelayMsg {
 * 
 * The raw messages are assumed to arrive in the following data structure:
 * 
-* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(112) |      (113)-(172)       | (173) |
+* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(82) |      (83)-(142)       | (143) |
 * -----------------------------------------------------------------------------------------------------------------------------------------------
 * | Sender | Sender | Sender  | Leader |   Team    | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
 * | State  |   ID   | Team ID | Signal |  Switch   |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
@@ -122,7 +122,7 @@ struct RelayMsg {
 * 
 * - (38)-(112) Relay Message
 *   Prefix with number of messages (max 2) [1]
-*   - RelayMsg [37] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [10], task_min_num [10]. robot_num [10])
+*   - RelayMsg [22] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [5], task_min_num [5]. robot_num [5])
 * 
 *       - Message sent by a leader to other leaders
 * 

@@ -12,6 +12,7 @@
 
 #ifndef MANUALCONTROL_QTUSER_FUNCTIONS_H
 #define MANUALCONTROL_QTUSER_FUNCTIONS_H
+#define RType 5
 
 #include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_user_functions.h>
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>

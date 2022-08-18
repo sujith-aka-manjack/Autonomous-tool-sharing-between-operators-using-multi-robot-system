@@ -153,9 +153,9 @@ void CExperimentLoopFunctions::PreStep() {
 
     // std::cout << "TIME: " << GetSpace().GetSimulationClock() << std::endl;
 
-    UInt32 unFollowers1[RType] = {0};
+    UInt32 unFollowers1[RType];
     std::fill_n(unFollowers1, RType, 0);
-    UInt32 unFollowers2[RType] = {0};
+    UInt32 unFollowers2[RType];
     std::fill_n(unFollowers2, RType, 0);
     UInt32 unConnectors = 0;
     std::unordered_map<std::string,CVector2> leaderPos;
@@ -223,7 +223,7 @@ void CExperimentLoopFunctions::PreStep() {
                     UInt32 demand = cCTask.GetDemand();
                     cController.SetTaskDemand(demand);
                     
-                    cController.SetInitTaskDemand(cCTask.GetInitDemand());
+                    cController.SetInitTaskDemand(cCTask.GetInitDemand());  //NOT REQUIRED
                     if(demand > 0) {
                         UInt32* temp =  cCTask.GetMinRobotNum();
                         UInt32 min_r[RType];

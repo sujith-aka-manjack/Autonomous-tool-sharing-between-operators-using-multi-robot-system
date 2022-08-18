@@ -177,8 +177,47 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
     */
    try {
       CFollower& cController = dynamic_cast<CFollower&>(c_entity.GetControllableEntity().GetController());
-
-      std::string text = c_entity.GetId().c_str();
+      // CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+      //std::string text = c_entity.GetId().c_str();
+      std::string text;
+      UInt8 temp = cController.GetRobotType();
+      switch (temp)
+      {
+         case 1:
+               text = "A" + cController.GetId().substr(1);
+               break;
+         case 2:
+               text = "B" + cController.GetId().substr(1);
+               break;
+         case 3:
+               text = "C" + cController.GetId().substr(1);
+               break;
+         case 4:
+               text = "D" + cController.GetId().substr(1);
+               break;
+         case 5:
+               text = "E" + cController.GetId().substr(1);
+               break;
+         case 6:
+               text = "F" + cController.GetId().substr(1);
+               break;
+         case 7:
+               text = "G" + cController.GetId().substr(1);
+               break;
+         case 8:
+               text = "H" + cController.GetId().substr(1);
+               break;
+         case 9:
+               text = "I" + cController.GetId().substr(1);
+               break;
+         case 10:
+               text = "J" + cController.GetId().substr(1);
+               break;
+         
+         default:
+               break;
+      }
+      //std::string text = cController.GetId();
 
       /* For connector, draw the hop count to each team */
       if(cController.GetRobotState() == RobotState::CONNECTOR) {
@@ -293,23 +332,56 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          cText.str("");
          // cText << ceil(cTask.GetDemand() / 10);
          cText << cTask.GetDemand();
-         QFont taskFont("Helvetica [Cronyx]", 40, QFont::Bold);
+         QFont taskFont("Helvetica [Cronyx]", 30, QFont::Bold);
          // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
          //          cText.str(),
          //          CColor::BLACK,
          //          taskFont);
-         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-0.1, 0.01),
+         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()+0.1, 0.01),
                   cText.str(),
                   CColor::BLACK,
                   taskFont);
 
+         QFont numFont("Helvetica [Cronyx]", 15);
          cText.str("");
-         cText << cTask.GetCurrentRobotNum() << " / " << cTask.GetMinRobotNum();
-         QFont numFont("Helvetica [Cronyx]", 20);
-         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-0.25, 0.01),
-                  cText.str(),
-                  CColor::BLACK,
-                  numFont);
+         // UInt32 temp1[RType];
+         // std::fill_n(temp1, RType, 0);
+         // for(int i=0; i<RType; ++i)
+         //    temp1[i]= cTask.GetCurrentRobotNum(i);
+         // //UInt32* temp1 =  cTask.GetCurrentRobotNum();
+         // UInt32* temp2 =  cTask.GetMinRobotNum();
+         // // static UInt32 val1[RType];
+         // // static UInt32 val2[RType];
+         // // for (int i=0; i<RType; ++i){
+         // //       val1[i] = temp1[i];
+         // //       val2[i] = temp2[i];
+         // // }
+         // for(int i=0; i<RType; ++i)
+         //    // cText << val1[1] << " / " << val2[1] << ", ";
+         //   cText << temp1[i] << " / " << *(cTask.GetMinRobotNum()+i) << ", ";
+         Real x_pos = pos.GetX();
+         Real y_pos = pos.GetY();
+         for(int i=0; i<RType; ++i){     //Only for odd no of robot types
+            cText.str("");
+            if(i%2==0){
+               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i) << ",   ";
+                DrawText(CVector3(x_pos-0.3, y_pos-(0.05*1.5*(i+1)), 0.01),
+                     cText.str(),
+                     CColor::WHITE,
+                     numFont);
+            }
+            else{
+               cText << cTask.GetCurrentRobotNum(i+1) << " / " << *(cTask.GetMinRobotNum()+i+1);
+                DrawText(CVector3(x_pos+0.1, y_pos-(0.05*1.5*(i)), 0.01),
+                     cText.str(),
+                     CColor::WHITE,
+                     numFont);
+            }
+         //    DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-(0.05*1.5*(i+1)), 0.01),
+         //             cText.str(),
+         //             CColor::BLACK,
+         //             numFont);
+         }
       }
    }
 }

@@ -16,7 +16,8 @@ void Message::SetTeamCount(size_t num_team) {
     * size = fixed data + number of array messages + team count * (HopMsg + ConnectionMsg + TeamsNearby + RelayMsg) + Connections + End;
     */
     //messageByteSize = 173;
-    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 37) + 60 + 1;      // =173
+    //messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 37) + 60 + 1;      // =173
+    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 22) + 60 + 1;      // =143
     // std::cout << int(messageByteSize) << std::endl;
 }
 
@@ -182,7 +183,7 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
 
         rmsg.push_back(relayMsg);
     }
-    index += (teamCount - msg_num) * 37;
+    index += (teamCount - msg_num) * 22;
 
     /* Connections */
     while(packet.Data[index] != 255) {    // Check if data exists
@@ -307,7 +308,7 @@ CByteArray Message::GetCByteArray() {
             arr[index++] = relayMsg.robot_num[i];
     }
     // Skip if not all bytes are used
-    index += (teamCount - rmsg.size()) * 37;
+    index += (teamCount - rmsg.size()) * 22;
 
     /* Connections */
     for(size_t i = 0; i < connections.size(); i++) {

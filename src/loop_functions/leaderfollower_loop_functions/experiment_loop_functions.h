@@ -11,7 +11,7 @@
 
 using namespace argos;
 
-#define RType 10   //Number of types of robot, max = 10
+#define RType 5   //Number of types of robot, max = 10
 
 class CExperimentLoopFunctions : public CLoopFunctions {
 

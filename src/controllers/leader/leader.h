@@ -16,7 +16,7 @@
 
 #ifndef LEADER_H
 #define LEADER_H
-#define RType 10
+#define RType 5
 /*
  * Include some necessary headers.
  */

@@ -5,7 +5,7 @@
 #include <utility/team_color.h>
 #include <algorithm>
 
-#define RType 10
+//#define RType 10
 /****************************************/
 /****************************************/
 
