@@ -1230,6 +1230,7 @@ void CFollower::SetCMsgsToRelay() {
 }
 
 /****************************************/
+//Selecting which msg to relay per robot
 /****************************************/
 
 void CFollower::SetLeaderMsgToRelay(const RobotState state) {

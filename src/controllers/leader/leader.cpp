@@ -141,7 +141,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
         GetNodeAttribute(GetNode(t_node, "timeout"), "send_robot_delay", sendRobotDelay);
         /* SCT Model */
         GetNodeAttribute(GetNode(t_node, "SCT"), "path", m_strSCTPath);
-        GetNodeAttribute(GetNode(t_node, "timeout"), "request_delay", RequestDelay);
+        //GetNodeAttribute(GetNode(t_node, "timeout"), "request_delay", RequestDelay);
     }
     catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("Error parsing the controller parameters.", ex);
@@ -197,7 +197,7 @@ void CLeader::Init(TConfigurationNode& t_node) {
     std::fill_n(robotsNeeded, RType, 0);
     requestSent = false;
     acknowledgeSent = false;
-    request_required = false;
+    //request_required = false;
     // requestReceived = false;
 
     // TEMP: hard coded team to join (Assuming two teams)
@@ -350,8 +350,8 @@ void CLeader::ControlStep() {
     if(initStepTimer > 4)
         sct->run_step();    // Run the supervisor to get the next action
     
-    // std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
-    std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
+    //std::cout << "[" << this->GetId() << "] " << sct->get_current_state_string() << std::endl;
+    //std::cout << "[" << this->GetId() << "] Action: " << lastControllableAction << std::endl;
 
     /*-----------------------------*/
     /* Implement action to perform */
@@ -866,7 +866,7 @@ void CLeader::Update() {
                     // signal = false;
                     waypoints.pop(); // Delete waypoint from queue
                     requestSent = false; // Set to false since it has finished the task.
-                    request_required = false;
+                    //request_required = false;
                 }/*  else
                     signal = true; */
             }
@@ -1112,7 +1112,8 @@ void CLeader::CheckHeartBeat() {
                     } else if(beat.type == 'A') {
                         // std::cout << this->GetId() << " Received Acknowledge from " << beat.from << " who is sending " << beat.robot_num << std::endl;
                         for(int i=0; i<RType; ++i)
-                            std::cout << "{" << this->GetId() << "}[SEND] " << beat.robot_num[i] << " robots of type" << i+1 << "are heading this way!" << std::endl;
+                            if (beat.robot_num[i] != 0)
+                                std::cout << "{" << this->GetId() << "}[SEND] " << beat.robot_num[i] << " robots of type " << i+1 << " are heading this way!" << std::endl;
                     }
 
                     switchCandidate = ""; // Reset candidate follower to switch
@@ -1137,6 +1138,7 @@ void CLeader::CheckHeartBeat() {
                     if(numRobotsRemainingToSend[i]>0){
                         switchCandidate = cand[i];   //To change
                         switchCandidateType = i;
+                        //std::cout << "Candidate to switch: " << switchCandidate << std::endl;
                         break;
                     }
                 }
@@ -1434,15 +1436,16 @@ void CLeader::Callback_Message(void* data) {
 
     
     // DEBUG (Auto request)
-    if(!request_required)
-    for(int i=0; i<RType; ++i){
-        if(robotsNeeded[i] - currentFollowerCount[i] > 0) { 
-            request_start_time = initStepTimer;
-            request_required = true;
-            break;
-        }
-    }
-    if( !m_bSelected && !requestSent && (initStepTimer - request_start_time)>RequestDelay) {
+    // if(!request_required)
+    // for(int i=0; i<RType; ++i){
+    //     if(robotsNeeded[i] - currentFollowerCount[i] > 0) { 
+    //         request_start_time = initStepTimer;
+    //         request_required = true;
+    //         break;
+    //     }
+    // }
+    // if( !m_bSelected && !requestSent && (initStepTimer - request_start_time)>RequestDelay) {
+    if( !m_bSelected && !requestSent ) {
         for(int i=0; i<RType; ++i){
             //if(robotsNeeded - currentFollowerCount > 0 && !requestSent) {
             if(robotsNeeded[i] - currentFollowerCount[i] > 0) {    
@@ -1488,19 +1491,22 @@ void CLeader::Callback_Message(void* data) {
             break;
         }
     }
+    //std::cout << "{" << this->GetId() << "} temp_cond1 = " << temp_cond1 << std::endl;
     for(int i=0; i<RType; ++i){
         if(numRobotsRemainingToSend[i]!=0){
             temp_cond2 = false;
             break;
         }
     }
+    //std::cout << "{" << this->GetId() << "} temp_cond2 = " << temp_cond2 << std::endl;
     if(!acknowledgeSent && temp_cond1){
         for(int i=0; i<RType; ++i){
             beat.type = 'A';
             beat.robot_num[i] = numRobotsToSend[i];
-            if(beat.robot_num[i] != 0)
+            if(beat.robot_num[i] != 0){
                 std::cout << "{" << this->GetId() << "}[SEND] Sending " << numRobotsToSend[i] << " robots of type " <<i+1 << std::endl;
-                std::cout << "Sending " << switchCandidate << std::endl;
+                //std::cout << "Sending " << switchCandidate << std::endl;
+            }
             acknowledgeSent = true;
         }
     } 
@@ -1609,7 +1615,7 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 unsigned char CLeader::Check_InputExchange(void* data) {
     bool exchangeRobot = false;
     for(int i=0; i<RType; ++i)
-        if(numRobotsRemainingToSend[i] > 0 && !switchCandidate.empty()){
+        if(numRobotsRemainingToSend[i] > 0 && !switchCandidate.empty() && currentTaskDemand == 0){
             exchangeRobot = true;
             break;
         }

@@ -261,13 +261,16 @@ void CExperimentLoopFunctions::PreStep() {
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
         try {
             CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
-            UInt8 unTeamId = cController.GetTeamID();
+            // UInt8 unTeamId = cController.GetTeamID();
+            // UInt8 follower_type = cController.GetRobotType();
 
             /* Count how many e-pucks are in each state */
             if( cController.GetRobotState() == RobotState::FOLLOWER ) {
                 // Count flock state
-                // if( unTeamId == 1 ) ++unFollowers1;
-                // else ++unFollowers2;
+                UInt8 unTeamId = cController.GetTeamID();
+                UInt8 follower_type = cController.GetRobotType();
+                if( unTeamId == 1 ) ++unFollowers1[follower_type-1];
+                else ++unFollowers2[follower_type-1];
 
                 /* 
                 * Check whether the e-puck is working on a task
@@ -345,8 +348,8 @@ void CExperimentLoopFunctions::PreStep() {
                                 //         break;
                                 // }
                                 
-                                if( unTeamId == 1 ) ++unFollowers1[temp_var-1];
-                                else ++unFollowers2[temp_var-1];
+                                // if( unTeamId == 1 ) ++unFollowers1[temp_var-1];
+                                // else ++unFollowers2[temp_var-1];
                                 //m_mapRobotPerTask[][cCTask.GetId()]++; // Increment robot working on this task
                                 break;
                             }

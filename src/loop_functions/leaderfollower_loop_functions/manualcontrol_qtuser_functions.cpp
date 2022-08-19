@@ -312,7 +312,8 @@ void CManualControlQTUserFunctions::DrawInWorld() {
             DrawPolygon(CVector3(pos.GetX(), pos.GetY(), 0.001),
                         CQuaternion(),
                         points,
-                        CColor(255U, 128U, 128U, 255U));
+                        CColor(255U, 128U, 128U, 255U),
+                        false);
          } else {
             // DrawCircle(CVector3(pos.GetX(), pos.GetY(), 0.001),
             //          CQuaternion(),
@@ -324,7 +325,8 @@ void CManualControlQTUserFunctions::DrawInWorld() {
             DrawPolygon(CVector3(pos.GetX(), pos.GetY(), 0.001),
                         CQuaternion(),
                         points,
-                        CColor(128U, 255U, 128U, 255U));
+                        CColor(128U, 255U, 128U, 255U),
+                        false);
          }
          
          /* Draw task info */
@@ -367,14 +369,14 @@ void CManualControlQTUserFunctions::DrawInWorld() {
                cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i) << ",   ";
                 DrawText(CVector3(x_pos-0.3, y_pos-(0.05*1.5*(i+1)), 0.01),
                      cText.str(),
-                     CColor::WHITE,
+                     CColor::BLACK,
                      numFont);
             }
             else{
                cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i+1);
                 DrawText(CVector3(x_pos+0.1, y_pos-(0.05*1.5*(i)), 0.01),
                      cText.str(),
-                     CColor::WHITE,
+                     CColor::BLACK,
                      numFont);
             }
          //    DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-(0.05*1.5*(i+1)), 0.01),
