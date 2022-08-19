@@ -1271,7 +1271,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             CLeader& clController = dynamic_cast<CLeader&>(pcEPL->GetControllableEntity().GetController());
             clController.SetFollowerCount(un_robots);      //might need to change UPDATE: Changed
 
-
+            //std::cout << "[LOG] step 12..." << std::endl;
             /* Try to place it in the arena */
             unTrials = 0;
             bool bDone;
@@ -1293,7 +1293,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 THROW_ARGOSEXCEPTION("Can't place " << cEPId.str());
             }
         }
-        
+        //std::cout << "[LOG] step 13..." << std::endl;
         /* For each robot */
         //std::cout << "Next Follower no: " <<  un_robot_id_start << std::endl;
         for(size_t i = 0; i < RType; ++i) {
@@ -1353,6 +1353,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 //std::cout << "Adding entity " << cEPId.str() << std::endl;
                 //cEPId << "F" << (i + un_robot_id_start);
                 /* Create the robot in the origin and add it to ARGoS space */
+                // std::cout << "[LOG] step 14..." << std::endl;
                 pcEP = new CEPuckEntity(cEPId.str(),
                                         EP_CONTROLLER,
                                         CVector3(),
@@ -1361,8 +1362,10 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                                         Message::messageByteSize,
                                         "");
                 
+                // std::cout << "[LOG] step 15..." << std::endl;
                 AddEntity(*pcEP);
-                m_vecEntityID.push_back(cEPId.str());
+                // std::cout << "[LOG] step 16..." << std::endl;
+                // m_vecEntityID.push_back(cEPId.str());
 
                 
                 /* Assign initial team id */
@@ -1370,7 +1373,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
                 cfController.SetTeamID(un_leader_id_start);  // Assign teamID of first team leader
                 cfController.SetRobotType(robot_type);      // Assign the type (species) of robot
                 /* Try to place it in the arena */
-
+                // std::cout << "[LOG] step 16..." << std::endl;
                 unTrials = 0;
                 bool bDone;
                 do {
@@ -1390,6 +1393,7 @@ void CExperimentLoopFunctions::PlaceCluster(const CVector2& c_center,
             }
             un_robot_id_start += un_robots[i];
         }
+        
     } catch(CARGoSException& ex) {
         THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
     }

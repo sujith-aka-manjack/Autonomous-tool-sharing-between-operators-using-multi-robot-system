@@ -4,6 +4,7 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <utility/team_color.h>
 #include <algorithm>
+#include <string.h>
 
 //#define RType 10
 /****************************************/
@@ -467,7 +468,7 @@ void CLeader::ControlStep() {
     }
     
     /* Create new message to send */
-    Message msg = Message();
+    Message msg = Message(0);
 
     /* Set message content */
     msg.state = currentState;
@@ -514,7 +515,9 @@ void CLeader::ControlStep() {
         if(i >= 29)
             break;
     }
+    msg.type = 0;
 
+    //msg.Print(;)
     /* Convert message into CByteArray */
     cbyte_msg = msg.GetCByteArray();
 
@@ -1009,7 +1012,38 @@ void CLeader::CheckHeartBeat() {
     combinedMsgs.insert(std::end(combinedMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
     combinedMsgs.insert(std::end(combinedMsgs), std::begin(connectorMsgs), std::end(connectorMsgs));
 
+    std::string cand[RType];
+    // std::string tail_connector[RType];
+    // for(const auto& msg : connectorMsgs){
+    //     auto hopInfo = msg.hops;
+    //     if(hopInfo[teamID].count == 1)
+    //         ;
+    // }
+    // //if (std::find(connections.begin(), connections.end(), msg.ID) != connections.end())
+    // for(const auto& msg1 : teamMsgs) {
+    //     UInt8 temp_type = msg1.type;
+    //     for(const auto& msg2 : connectorMsgs){
+    //         if(msg2.ID == shareToTeam){
+
+    //         }
+
+    //     }    
+    //     //cand[temp_type-1] = 'F';
+    //     cand[temp_type-1] = msg1.ID;
+    //     //std::cout << "Type: " << temp_type << "    ID: " << msg.ID << "    cand: " << cand[temp_type-1] << std::endl;
+    // }
+
+    for(const auto& msg : teamMsgs) {
+        UInt8 temp_type = msg.type;
+        //cand[temp_type-1] = 'F';
+        cand[temp_type-1] = msg.ID;
+        //std::cout << "Type: " << temp_type << "    ID: " << msg.ID << "    cand: " << cand[temp_type-1] << std::endl;
+    }
+
+    
+
     for(const auto& msg : combinedMsgs) {
+        //std::cout << "Leader ID: " << teamID << "     ID: " << msg.ID << "   Type: " << msg.type << std::endl;
         for(const auto& beat : msg.rmsg) {
             if(beat.from != this->GetId()) { 
                 // if(this->GetId() == "L1")
@@ -1090,9 +1124,18 @@ void CLeader::CheckHeartBeat() {
                 //     switchCandidate = beat.firstFollower[];
                 //     // std::cout << this->GetId() << ": first follower to receive was " << beat.firstFollower << std::endl;
                 // }
+
+                // for(int i=0; i<RType; ++i){
+                //     if(numRobotsRemainingToSend[i]>0){
+                //         switchCandidate = beat.firstFollower;   //To change
+                //         switchCandidateType = i;
+                //         break;
+                //     }
+                // }
+
                 for(int i=0; i<RType; ++i){
                     if(numRobotsRemainingToSend[i]>0){
-                        switchCandidate = beat.firstFollower;   //To change
+                        switchCandidate = cand[i];   //To change
                         switchCandidateType = i;
                         break;
                     }
@@ -1427,6 +1470,7 @@ void CLeader::Callback_Message(void* data) {
             beat.robot_num[i] = numRobotsToRequest[i];
             if(beat.robot_num[i] != 0)
                 std::cout << "{" << this->GetId() << "}[REQUEST] Requesting " << beat.robot_num[i] << " robots of type " <<i+1 << std::endl;
+                
             // std::cout << "[" << this->GetId() << "] Requested for " << beat.robot_num << " robots" << std::endl;
             numRobotsToRequest[i] = 0;
         }
@@ -1456,6 +1500,7 @@ void CLeader::Callback_Message(void* data) {
             beat.robot_num[i] = numRobotsToSend[i];
             if(beat.robot_num[i] != 0)
                 std::cout << "{" << this->GetId() << "}[SEND] Sending " << numRobotsToSend[i] << " robots of type " <<i+1 << std::endl;
+                std::cout << "Sending " << switchCandidate << std::endl;
             acknowledgeSent = true;
         }
     } 

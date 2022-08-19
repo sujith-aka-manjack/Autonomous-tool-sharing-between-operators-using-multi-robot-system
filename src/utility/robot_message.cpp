@@ -17,7 +17,7 @@ void Message::SetTeamCount(size_t num_team) {
     */
     //messageByteSize = 173;
     //messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 37) + 60 + 1;      // =173
-    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 22) + 60 + 1;      // =143
+    messageByteSize = (7 + 5) + 4 + teamCount * (4 + 6 + 1 + 22) + 60 + 1 + 1;      // =144
     // std::cout << int(messageByteSize) << std::endl;
 }
 
@@ -26,6 +26,12 @@ void Message::SetTeamCount(size_t num_team) {
 
 Message::Message() {
 
+}
+
+
+
+Message::Message(UInt8 m) {
+    type = m;
 }
 
 /****************************************/
@@ -193,6 +199,15 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
         connections.push_back(robotID);
     }
 
+    // for(size_t i = 0; i < 29; i++) {
+    
+    //     std::string robotID;
+    //     robotID += (char)packet.Data[index++];            // First char of ID
+    //     robotID += std::to_string(packet.Data[index++]);
+    //     connections.push_back(robotID);
+    // }
+
+    type = packet.Data[142];
     // this->Print();
 
 }
@@ -312,6 +327,7 @@ CByteArray Message::GetCByteArray() {
 
     /* Connections */
     for(size_t i = 0; i < connections.size(); i++) {
+    // for(size_t i = 0; i < 29; i++) {
     
         //std::cout << allMsgs[i].ID << ", ";
 
@@ -324,6 +340,8 @@ CByteArray Message::GetCByteArray() {
         }
     }
 
+    //arr[index++] = type;
+    arr[142] = type;
     return arr;
 }
 
@@ -426,6 +444,8 @@ void Message::Print() {
         std::cout << connection << ",";
     }
     std::cout << std::endl;
+
+    std::cout << "Robot Type: " << type << std::endl;
 
 
 }

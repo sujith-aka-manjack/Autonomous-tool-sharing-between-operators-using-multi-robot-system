@@ -647,6 +647,12 @@ void CFollower::ControlStep() {
             break;
     }
 
+    msg.type = RobotType;
+
+    //std::cout << "Robot type from follower.cpp: " << RobotType << std::endl;
+
+    //msg.Print();
+
     cbyte_msg = msg.GetCByteArray();
 
     /*--------------*/

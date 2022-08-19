@@ -141,6 +141,8 @@ class Message {
         /* Class constructor */
         Message();
 
+        Message(UInt8);
+
         Message(CCI_RangeAndBearingSensor::SPacket packet);
 
         virtual ~Message();
@@ -185,6 +187,8 @@ class Message {
 
         /* Connections */
         std::vector<std::string> connections;
+
+        UInt8 type;
 
 };
 
