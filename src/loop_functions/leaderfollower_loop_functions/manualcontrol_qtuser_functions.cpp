@@ -222,18 +222,19 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
       /* For connector, draw the hop count to each team */
       if(cController.GetRobotState() == RobotState::CONNECTOR) {
          std::map<UInt8,HopMsg> hops = cController.GetHops();
-
+         text += "(";
          for(const auto& it : hops) {
-            text += "(T" + std::to_string(it.first);
-            if( !it.second.ID.empty() ) {
-               text += "-" + it.second.ID;
-            } else {
-               text += "-__";
-            }
-            text += "-" + std::to_string(it.second.count) + ")";
+            //text += "(T" + std::to_string(it.first);
+            // if( !it.second.ID.empty() ) {
+            //    text += "(" + it.second.ID;
+            // } else {
+            //    text += "-__";
+            // }
+            text += "-" + std::to_string(it.second.count);
          }
+         text += ")";
       }
-
+      
       DrawText(CVector3(0.0, 0.0, 0.2),   // position
                text); // text
    } catch(CARGoSException& ex) {
@@ -251,7 +252,7 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck_leader
     */
-   QFont leaderFont("Helvetica [Cronyx]", 20, QFont::Bold);
+   QFont leaderFont("Helvetica [Cronyx]", 13, QFont::Bold);
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str(),
             CColor::BLACK,
@@ -344,7 +345,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
                   CColor::BLACK,
                   taskFont);
 
-         QFont numFont("Helvetica [Cronyx]", 15);
+         QFont numFont("Helvetica [Cronyx]", 15, QFont::Bold);
          cText.str("");
          // UInt32 temp1[RType];
          // std::fill_n(temp1, RType, 0);
@@ -373,7 +374,7 @@ void CManualControlQTUserFunctions::DrawInWorld() {
                      numFont);
             }
             else{
-               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i+1);
+               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i);
                 DrawText(CVector3(x_pos+0.1, y_pos-(0.05*1.5*(i)), 0.01),
                      cText.str(),
                      CColor::BLACK,

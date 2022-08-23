@@ -925,7 +925,8 @@ void CFollower::Update() {
                 }
 
                 // The followers of the two teams are close by. This robot is not needed.
-                if(minDist < separationThres - 10) {
+                //if(minDist < separationThres - 10) {
+                if(minDist < joiningThres) {
                     condF2 = true;
                 }
             }
@@ -940,14 +941,22 @@ void CFollower::Update() {
         }
 
         /* Check whether it has reached the other team */
+        //connectorMsgs
         for(const auto& msg : combinedMsgs) {
             if(msg.teamID == teamToJoin) {
-                if(msg.direction.Length() < 50) { // TODO: delete condition?
+                if(msg.direction.Length() < 15) { // TODO: delete condition?
                     nearLF = true;
                     // std::cout << "TEAM FOUND!" << std::endl;
                     break;
                 }
             }
+
+            // if (nearLF){
+            //     for(const auto& msg2 : connectorMsgs)
+            //         if(msg2.direction.Length() < 20)
+            //             nearLF = false;
+            //             break;
+            // }
         }
 
     }
@@ -1708,7 +1717,7 @@ void CFollower::Travel() {
     CVector2 robotForce    = GetRobotRepulsionVector(repulseMsgs);
     CVector2 obstacleForce = GetObstacleRepulsionVector();
 
-    CVector2 sumForce      = teamWeight * travelForce + 0.3 * robotForce + 0.5 * obstacleWeight*obstacleForce;
+    CVector2 sumForce      = 1 * teamWeight * travelForce + 0.5 * robotForce + 0.5 * obstacleWeight*obstacleForce;
 
     /* Set Wheel Speed */
     if(travelForce.Length() > 0.0f)
@@ -1733,7 +1742,7 @@ CVector2 CFollower::GetChainTravelVector() {
     {
         return m1.hops[property].count > m2.hops[property].count;
     };
-
+    
     std::vector<Message> sortedConnectorMsgs(connectorMsgs);
     std::sort(sortedConnectorMsgs.begin(), sortedConnectorMsgs.end(), sortRuleLambda);
 
@@ -1743,6 +1752,17 @@ CVector2 CFollower::GetChainTravelVector() {
 
     /* Find the next connector to move towards */
     Message nextConnector;
+
+    std::vector<Message> newMsgs2(otherLeaderMsgs);
+    if(!otherLeaderMsgs.empty())
+            for(auto& msg3 : newMsgs2){
+                if(msg3.teamID != teamToJoin){
+                    nextConnector = msg3;
+                    break;
+                }
+            }
+
+
     for(auto& msg : sortedConnectorMsgs) {
         if(nextConnector.Empty())
             nextConnector = msg;
@@ -1755,7 +1775,7 @@ CVector2 CFollower::GetChainTravelVector() {
                 CVector2 margin = msg.direction;
                 margin.Rotate(CRadians::PI_OVER_TWO);
                 margin.Normalize();
-                margin *= 20;
+                margin *= 25;
                 CVector2 target = msg.direction + margin;
 
                 /* Check whether its movement will cross a connection between connectors */
@@ -1786,9 +1806,32 @@ CVector2 CFollower::GetChainTravelVector() {
 
                 if(noIntersection)
                     nextConnector = msg;
+                    //break;
             }
         }
     }
+
+    //if(nextConnector.hops[property].count == 0){
+    std::vector<Message> newMsgs(otherLeaderMsgs);
+    newMsgs.insert(std::end(newMsgs), std::begin(otherTeamMsgs), std::end(otherTeamMsgs));
+    if(!newMsgs.empty())
+        for(auto& msg2 : newMsgs)
+            if(msg2.teamID == teamToJoin){
+                nextConnector = msg2;
+                break;
+            }
+
+    // if(sortedConnectorMsgs.empty()){
+    //     std::vector<Message> newMsgs2(otherLeaderMsgs);
+    //     // nextConnector = newMsgs2[0];
+    //     if(!otherLeaderMsgs.empty())
+    //         for(auto& msg3 : newMsgs2){
+    //         if(msg3.teamID != teamToJoin){
+    //             nextConnector = msg3;
+    //             break;
+    //         }
+    //     }
+    // }
 
     // std::cout << "Next connector: " << nextConnector.ID << std::endl;
 
@@ -1803,7 +1846,7 @@ CVector2 CFollower::GetChainTravelVector() {
 
     if(margin.Length() > 0) {
         margin.Normalize();
-        margin *= 20;
+        margin *= 25;
     }
 
     resVec = nextConnector.direction + margin;

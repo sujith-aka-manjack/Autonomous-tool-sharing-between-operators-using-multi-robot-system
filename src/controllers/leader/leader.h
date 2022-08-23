@@ -531,6 +531,7 @@ private:
     size_t sendDuration;
     size_t sendRobotDelay;
     size_t RequestDelay;
+    size_t ResendDelay;
 
     /* SCT yaml path */
     std::string m_strSCTPath;
