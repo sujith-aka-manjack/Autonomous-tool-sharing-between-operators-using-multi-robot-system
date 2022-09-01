@@ -192,11 +192,29 @@ Message::Message(CCI_RangeAndBearingSensor::SPacket packet) {
     index += (teamCount - msg_num) * 22;
 
     /* Connections */
-    while(packet.Data[index] != 255) {    // Check if data exists
+    // while(packet.Data[index] != 255) {    // Check if data exists
+    //     std::string robotID;
+    //     robotID += (char)packet.Data[index++];            // First char of ID
+    //     robotID += std::to_string(packet.Data[index++]);  // ID number
+    //     connections.push_back(robotID);
+    // }
+
+    for(size_t i = 0; i < 30; i++) {
+    // for(size_t i = 0; i < 29; i++) {
+    
+        //std::cout << allMsgs[i].ID << ", ";
         std::string robotID;
         robotID += (char)packet.Data[index++];            // First char of ID
         robotID += std::to_string(packet.Data[index++]);  // ID number
         connections.push_back(robotID);
+
+        // arr[index++] = connections[i][0];    // First character of ID
+        // arr[index++] = stoi(connections[i].substr(1));    // ID number
+
+        if(i >= 29){
+            // std::cerr << "[" << ID << "] max connections reached" << std::endl;
+            break;
+        }
     }
 
     // for(size_t i = 0; i < 29; i++) {
@@ -335,7 +353,7 @@ CByteArray Message::GetCByteArray() {
         arr[index++] = stoi(connections[i].substr(1));    // ID number
 
         if(i >= 29){
-            std::cerr << "[" << ID << "] max connections reached" << std::endl;
+            // std::cerr << "[" << ID << "] max connections reached" << std::endl;
             break;
         }
     }

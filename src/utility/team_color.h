@@ -18,11 +18,16 @@ using namespace argos;
 
 /* Team colors */
 std::unordered_map<UInt8, CColor> teamColor = {
-                                                {1, CColor::BLUE},
-                                                {2, CColor::ORANGE},
-                                                {3, CColor::GREEN},
-                                                {4, CColor::MAGENTA},
-                                                {5, CColor::WHITE},
+                                                {1, CColor::ORANGE},
+                                                {2, CColor::BLUE},
+                                                {3, CColor::BROWN},
+                                                {4, CColor::GRAY30},
+                                                {5, CColor::PURPLE},
+                                                {6, CColor::RED},
+                                                {7, CColor::GRAY50},
+                                                {8, CColor::MAGENTA},
+                                                {9, CColor::BLACK},
+                                                {10, CColor::GREEN},
                                               };
 
 #endif

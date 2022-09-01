@@ -1038,8 +1038,11 @@ void CLeader::CheckHeartBeat() {
     for(const auto& msg : teamMsgs) {
         UInt8 temp_type = msg.type;
         int temp_mindist = msg.direction.Length();
+        // if((temp_mindist > temp_dist[temp_type-1]) && (temp_mindist <= 70))
         if(temp_mindist > temp_dist[temp_type-1])
             cand[temp_type-1] = msg.ID;
+        // if(temp_mindist > 60)
+        //     break;
         //std::cout << "Type: " << temp_type << "    ID: " << msg.ID << "    cand: " << cand[temp_type-1] << std::endl;
     }
 
@@ -1143,7 +1146,7 @@ void CLeader::CheckHeartBeat() {
                     if(numRobotsRemainingToSend[i]>0){
                         switchCandidate = cand[i];   //To change
                         switchCandidateType = i;
-                        //std::cout << "Candidate to switch: " << switchCandidate << std::endl;
+                        // std::cout << "Candidate to switch: " << switchCandidate << std::endl;
                         break;
                     }
                 }
@@ -1585,7 +1588,7 @@ void CLeader::Callback_Exchange(void* data) {
         }
 
     } else {
-        std::cerr << "[" << this->GetId() << "] switchCandidate is empty" << std::endl;
+        // std::cerr << "[" << this->GetId() << "] switchCandidate is empty" << std::endl;
     }
 }
 
@@ -1628,7 +1631,8 @@ unsigned char CLeader::Check_InputMessage(void* data) {
 unsigned char CLeader::Check_InputExchange(void* data) {
     bool exchangeRobot = false;
     for(int i=0; i<RType; ++i)
-        if(numRobotsRemainingToSend[i] > 0 && !switchCandidate.empty() && currentTaskDemand == 0){
+        // if(numRobotsRemainingToSend[i] > 0 && !switchCandidate.empty() && ((currentTaskDemand == 0) || ((currentTaskDemand == currentInitTaskDemand) && teamID == 2))){
+        if(numRobotsRemainingToSend[i] > 0 && !switchCandidate.empty() && (currentTaskDemand == 0)){
             exchangeRobot = true;
             break;
         }

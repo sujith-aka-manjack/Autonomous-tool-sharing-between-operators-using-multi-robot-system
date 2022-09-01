@@ -3,6 +3,9 @@
 #include <argos3/core/simulator/simulator.h>
 #include <argos3/plugins/simulator/entities/rab_equipped_entity.h>
 #include <controllers/follower/follower.h>
+#include <utility/team_color.h>
+
+#define RType2 5
 
 /****************************************/
 /****************************************/
@@ -181,37 +184,48 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
       //std::string text = c_entity.GetId().c_str();
       std::string text;
       UInt8 temp = cController.GetRobotType();
+      CColor Cl;
       switch (temp)
       {
          case 1:
                text = "A" + cController.GetId().substr(1);
+               Cl = CColor::ORANGE;
                break;
          case 2:
                text = "B" + cController.GetId().substr(1);
+               Cl = CColor::BLUE;
                break;
          case 3:
                text = "C" + cController.GetId().substr(1);
+               Cl = CColor::BROWN;
                break;
          case 4:
                text = "D" + cController.GetId().substr(1);
+               Cl = CColor::GRAY30;
                break;
          case 5:
                text = "E" + cController.GetId().substr(1);
+               Cl = CColor::PURPLE;
                break;
          case 6:
                text = "F" + cController.GetId().substr(1);
+               Cl = CColor::RED;
                break;
          case 7:
                text = "G" + cController.GetId().substr(1);
+               Cl = CColor::GRAY50;
                break;
          case 8:
                text = "H" + cController.GetId().substr(1);
+               Cl = CColor::MAGENTA;
                break;
          case 9:
                text = "I" + cController.GetId().substr(1);
+               Cl = CColor::BLACK;
                break;
          case 10:
                text = "J" + cController.GetId().substr(1);
+               Cl = CColor::GREEN;
                break;
          
          default:
@@ -221,6 +235,7 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
 
       /* For connector, draw the hop count to each team */
       if(cController.GetRobotState() == RobotState::CONNECTOR) {
+         Cl = CColor::BLACK;
          std::map<UInt8,HopMsg> hops = cController.GetHops();
          text += "(";
          for(const auto& it : hops) {
@@ -236,7 +251,7 @@ void CManualControlQTUserFunctions::Draw(CEPuckEntity& c_entity) {
       }
       
       DrawText(CVector3(0.0, 0.0, 0.2),   // position
-               text); // text
+               text, Cl); // text
    } catch(CARGoSException& ex) {
       THROW_ARGOSEXCEPTION_NESTED("While casting robot as a follower", ex);
    } catch(const std::bad_cast& e) {
@@ -252,10 +267,10 @@ void CManualControlQTUserFunctions::Draw(CEPuckLeaderEntity& c_entity) {
     * See also the description in
     * $ argos3 -q e-puck_leader
     */
-   QFont leaderFont("Helvetica [Cronyx]", 13, QFont::Bold);
+   QFont leaderFont("Helvetica [Cronyx]", 15, QFont::Bold);
    DrawText(CVector3(0.0, 0.0, 0.2),   // position
             c_entity.GetId().c_str(),
-            CColor::BLACK,
+            CColor::RED,
             leaderFont); // text
 }
 
@@ -335,17 +350,17 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          cText.str("");
          // cText << ceil(cTask.GetDemand() / 10);
          cText << cTask.GetDemand();
-         QFont taskFont("Helvetica [Cronyx]", 30, QFont::Bold);
+         QFont taskFont("Helvetica [Cronyx]", 25, QFont::Bold);
          // DrawText(CVector3(pos.GetX(), pos.GetY()+cTask.GetRadius()/2, 0.01),
          //          cText.str(),
          //          CColor::BLACK,
          //          taskFont);
-         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()+0.1, 0.01),
+         DrawText(CVector3(pos.GetX()-0.3, pos.GetY()+0.2, 0.01),
                   cText.str(),
                   CColor::BLACK,
                   taskFont);
 
-         QFont numFont("Helvetica [Cronyx]", 15, QFont::Bold);
+         QFont numFont("Helvetica [Cronyx]", 12, QFont::Bold);
          cText.str("");
          // UInt32 temp1[RType];
          // std::fill_n(temp1, RType, 0);
@@ -364,22 +379,29 @@ void CManualControlQTUserFunctions::DrawInWorld() {
          //   cText << temp1[i] << " / " << *(cTask.GetMinRobotNum()+i) << ", ";
          Real x_pos = pos.GetX();
          Real y_pos = pos.GetY();
-         for(int i=0; i<RType; ++i){     //Only for odd no of robot types
+         for(int i=0; i<RType2; ++i){     //Only for odd no of robot types
             cText.str("");
-            if(i%2==0){
-               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i) << ",   ";
-                DrawText(CVector3(x_pos-0.3, y_pos-(0.05*1.5*(i+1)), 0.01),
+            if(i<5){
+               cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i);
+                DrawText(CVector3(x_pos-0.3, y_pos + 0.15 -(0.125*(i+1)), 0.01),
                      cText.str(),
-                     CColor::BLACK,
+                     teamColor[i+1],
                      numFont);
             }
             else{
                cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i);
-                DrawText(CVector3(x_pos+0.1, y_pos-(0.05*1.5*(i)), 0.01),
+                DrawText(CVector3(x_pos, y_pos-(0.05*1.5*(i+1)), 0.01),
                      cText.str(),
-                     CColor::BLACK,
+                     teamColor[i+1],
                      numFont);
             }
+            // else{
+            //    cText << cTask.GetCurrentRobotNum(i) << " / " << *(cTask.GetMinRobotNum()+i);
+            //     DrawText(CVector3(x_pos+0.3, y_pos-(0.05*1.5*(i-1)), 0.01),
+            //          cText.str(),
+            //          CColor::BLACK,
+            //          numFont);
+            // }
          //    DrawText(CVector3(pos.GetX()-0.3, pos.GetY()-(0.05*1.5*(i+1)), 0.01),
          //             cText.str(),
          //             CColor::BLACK,

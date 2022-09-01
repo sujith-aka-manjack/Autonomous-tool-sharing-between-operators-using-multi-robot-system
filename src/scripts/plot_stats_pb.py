@@ -1,278 +1,211 @@
-from os import listdir, environ
-from os.path import isdir, join, splitext
-import numpy as np
-import matplotlib
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
-import time
-from collections import defaultdict
-
-from scripts.load_data import SimData
-
+import os
 import sys
 
-OUTPUT_DIR = join(environ['HOME'], 'GIT/argos-sct/results')
-BINARY_FILENAME = 'log_data.pb'
-COMMANDS_FILENAME = 'commands.csv'
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "protos", "generated")) # Path to compiled proto files
+import time_step_pb2
+from google.protobuf.internal.decoder import _DecodeVarint32
 
-def load_stats(dirPath):
-    print(dirPath)
-    all_dirs = [f for f in listdir(dirPath) if isdir(join(dirPath, f))]
-    all_dirs.sort()
+import pandas as pd
 
-    print('Parsing experiments ...')
+class SimData:
+    """Wrapper class for parsing protobuf experiment data."""
 
-    start_time = time.time()
-    stats = {}
+    def __init__(self, log_data_path, commands_path=''):
+        """Constructor"""
 
-    for trial_dir in all_dirs:
-        start_time_single = time.time()
+        # Data dict
+        self.data = {}
 
-        file = join(trial_dir, BINARY_FILENAME)
+        self.read_log_data(log_data_path)
 
-        scenario = splitext(file)[0]
-        s = SimData(join(dirPath, file))
-        stats[scenario] = s
+        # Add user comamnds if csv file exists
+        if commands_path:
+            self.read_commands(commands_path)
 
-        duration_single = round(time.time() - start_time_single, 3)
-        duration_total = round(time.time() - start_time, 3)
-        print('Loaded {0} in {1} s ({2} s)'.format(scenario, duration_single, duration_total))
+
+    def read_log_data(self, log_data_path):
+        """Parses a protobuf file with simulation logs."""
+
+        with open(log_data_path, 'rb') as f:
+            buf = f.read()
+            n = 0
+
+            # Read each timestep
+            while n < len(buf):
+                msg_len, new_pos = _DecodeVarint32(buf, n)
+                n = new_pos
+                msg_buf = buf[n:n+msg_len]
+                n += msg_len
+                read_data = time_step_pb2.TimeStep()
+                read_data.ParseFromString(msg_buf)
+
+                # Create an entry for the timestep
+                self.data[read_data.time] = {}
+                self.data[read_data.time]['log'] = read_data
+                self.data[read_data.time]['commands'] = [] # Create empty list of commands
+                
+            # Store experiment summary
+            if self.data:
+
+                # Total timesteps
+                self.totalTime = len(self.data)
+
+                # Points scored
+                self.totalPoints = self.data[self.totalTime]['log'].points
+
+                # Number of leaders and robots
+                leaderNames = []
+                teamNames = []
+                for robot in self.data[1]['log'].robots:
+                    if robot.state == time_step_pb2.Robot.LEADER:
+                        leaderNames.append(robot.name)
+                        teamNames.append(robot.teamID)
+
+                self.leaders = leaderNames
+                self.teams = teamNames
+                self.numLeaders = len(self.leaders)
+                self.numWorkers = len(self.data[1]['log'].robots) - self.numLeaders
+
+                # Number of tasks that appeared in the experiment
+                maxId = 0
+                for task in self.data[self.totalTime]['log'].tasks:
+                    id = int(task.name[5:])
+                    if id > maxId:
+                        maxId = id
+
+                self.numTasks = maxId
+
+
+    def read_commands(self, commands_path):
+        """Parses a csv file with user commands."""
+
+        df = pd.read_csv(commands_path)
+        # print(df.to_string())
+
+        self.users = set()
+
+        # iterate row
+            # append command (type, value, user, robot) to time
+
+        for ind in df.index:
+            command = {}
+
+            time = df['TIME'][ind]
+            command['time'] = time
+            command['type'] = df['COMMAND'][ind]
+            command['user'] = df['USER'][ind]
+            command['value'] = df['VALUE'][ind]
+
+            # Assume valid username is less than 8 characters
+            if len(str(command['user'])) < 8:
+                self.data[time]['commands'].append(command)
+                self.users.add(int(command['user']))
+
+            # print(self.data[time]['commands'])
+
+
+    def __getitem__(self, key):
+        return self.data[key]
     
-    duration = round(time.time() - start_time, 3)
-    print('Finished loading in {0} seconds'.format(duration))
-
-    return stats
-
-
-# def plot_overall_robot_states(stats, title=None, x_label=None, y_label=None, out_filename=None, y_limit=None):
-#     print('Plotting {0}'.format(out_filename))
-
-#     y1_total = []
-#     y2_total = []
-#     y3_total = []
-#     y4_total = []
-
-#     longestTime = 0
-#     for scenario, sim_data in stats.items():
-#         if sim_data.totalTime > longestTime:
-#             longestTime = sim_data.totalTime
-
-#     for scenario, sim_data in stats.items():
-#         y1 = []
-#         y2 = []
-#         y3 = []
-#         y4 = []
-
-#         for time, step in sim_data.data.items():
-#             # Counters
-#             num_followers_team1 = 0
-#             num_followers_team2 = 0
-#             num_connectors = 0
-#             num_travelers = 0
-
-#             for robot in step.robots:
-#                 if robot.state == 0: # FOLLOWER
-#                     if robot.teamID == 1:
-#                         num_followers_team1 += 1
-#                     elif robot.teamID == 2:
-#                         num_followers_team2 += 1
-#                 elif robot.state == 2: # CONNECTOR
-#                     num_connectors += 1
-#                 elif robot.state == 3: # TRAVELER
-#                     num_travelers += 1
-
-#             # Fill data for timestep 0
-#             # if time == 1:
-#             #     y1.append(num_followers_team1)
-#             #     y2.append(num_followers_team2)
-#             #     y3.append(num_connectors)
-#             #     y4.append(num_travelers)
-
-#             y1.append(num_followers_team1)
-#             y2.append(num_followers_team2)
-#             y3.append(num_connectors)
-#             y4.append(num_travelers)
-
-#             # print(y1)
-#             # print(y2)
-#             # print(y3)
-#             # print(y4)
-
-#             # sys.exit(0)
-
-#         y1_total.append(y1)
-#         y2_total.append(y2)
-#         y3_total.append(y3)
-#         y4_total.append(y4)
-
-#         # Fill empty timesteps with last value
-#         for states in [y1_total, y2_total, y3_total, y4_total]:
-#             for y in states:
-#                 if(len(y) < longestTime):
-#                     last_val = y[-1]
-#                     for i in range(0,longestTime - len(y)):
-#                         y.append(last_val)  
-
-#     y1_total = np.array(y1_total)
-#     y2_total = np.array(y2_total)
-#     y3_total = np.array(y3_total)
-#     y4_total = np.array(y4_total)
-
-#     print(y1_total.shape)
-#     print(len(y1_total[0]))
-#     print(len(y1_total[1]))
-#     print(len(y1_total[2]))
-
-#     # sys.exit(0)
-
-#     y1_mean = np.mean(y1_total, axis=0)
-#     y2_mean = np.mean(y2_total, axis=0)
-#     y3_mean = np.mean(y3_total, axis=0)
-#     y4_mean = np.mean(y4_total, axis=0)
-
-#     y1_min = np.min(y1_total, axis=0)
-#     y2_min = np.min(y2_total, axis=0)
-#     y3_min = np.min(y3_total, axis=0)
-#     y4_min = np.min(y4_total, axis=0)
-
-#     y1_max = np.max(y1_total, axis=0)
-#     y2_max = np.max(y2_total, axis=0)
-#     y3_max = np.max(y3_total, axis=0)
-#     y4_max = np.max(y4_total, axis=0)
-
-#     x = range(0, longestTime)
-#     x = [elem / 10 for elem in x]
-
-#     # print(y1_mean.shape)
-#     # print(y1_mean)
-#     # sys.exit(0)
-
-#     font = FontProperties()
-#     font.set_family('serif')
-#     font.set_name('Times New Roman')
-
-#     plt.figure(figsize=(8,3))
-
-#     # plotting the lines
-#     plt.plot(x, y1_mean, label = "Team 1 Follower")
-#     plt.plot(x, y2_mean, label = "Team 2 Follower")
-#     plt.plot(x, y3_mean, label = "Connector")
-#     if np.amax(y4_mean) > 0:
-#         plt.plot(x, y4_mean, label = "Traveler")
-
-#     # plt.title(title)
-#     plt.xlabel(x_label, fontsize=15, fontproperties=font)
-#     plt.ylabel(y_label, fontsize=15, fontproperties=font)
-
-#     plt.xticks(np.arange(0, sim_data.totalTime/10, 50), fontsize=14, fontproperties=font)
-#     # plt.yticks(np.arange(0, total_robots, 5), fontsize=12)
-#     plt.yticks(np.arange(0, 25, 5), fontsize=14, fontproperties=font)
-
-#     plt.xlim([0,360])
-#     plt.ylim([-0.5,17])
-
-#     if np.amax(y4_mean) > 0:
-#         num_col = 4
-#     else:
-#         num_col = 3
-
-#     font2 = FontProperties()
-#     font2.set_family('serif')
-#     font2.set_name('Times New Roman')
-#     font2.set_size(14)
-    
-#     plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc='lower left', ncol=num_col, frameon=False, prop=font2)
-
-#     ax = plt.gca()
-
-#     ax.spines['top'].set_visible(False)
-#     ax.spines['right'].set_visible(False)
-#     ax.spines['left'].set_linewidth(1)
-#     ax.spines['bottom'].set_linewidth(1)
-#     ax.tick_params(width=1)
-
-#     plt.axhline(y=0, linewidth=1, color='black', linestyle='--')
-
-#     # set_size(4.85, 3.4)
-
-#     plt.savefig('{}{}.pdf'.format(out_filename.split('.yaml')[0], '_mean'), bbox_inches='tight')
-
-#     plt.fill_between(x, y1_min, y1_max, alpha=0.2)
-#     plt.fill_between(x, y2_min, y2_max, alpha=0.2)
-#     plt.fill_between(x, y3_min, y3_max, alpha=0.2)
-#     if np.amax(y4_max) > 0:
-#         plt.fill_between(x, y4_min, y4_max, alpha=0.2)
-
-#     # plt.fill_between(x, y1_5, y1_95, alpha=0.2)
-#     # plt.fill_between(x, y2_5, y2_95, alpha=0.2)
-#     # plt.fill_between(x, y3_5, y3_95, alpha=0.2)
-#     # if np.amax(y4_95) > 0:
-#     #     plt.fill_between(x, y4_5, y4_95, alpha=0.2)
-
-#     plt.savefig(out_filename, bbox_inches='tight')
-#     plt.close()
-
-
-def main(argv):
-    stats = load_stats(argv)
-
-    num_experiments_success = 0
-
-    all_experiment_time = 0
-    all_message_sent = 0
-    all_message_received = 0
-
-    all_request_time = 0
-    all_robots_requested = 0
-    all_distance = 0
-
-    all_started_working_time = 0
-
-    all_final_connectors = 0
-
-    for scenario, data in stats.items():
-        print('\n-------- {} --------'.format(scenario))
-
-        # Completion time
-        finish_time = data.totalTime
-        print('finish time: {}'.format(finish_time))
-
-        # Task success
-        is_tasks_completed = True
-        for task in data[finish_time].tasks:
-            if task.demand > 0:
-                is_tasks_completed = False
-                break
-
-        if is_tasks_completed:
-            num_experiments_success += 1
-        print('success {}'.format(is_tasks_completed))
-
-        all_experiment_time += finish_time
-
-    print('\n-------- RESULT SUMMARY --------')
-
-    print('Number of successful experiments: {} of {}'.format(num_experiments_success, len(stats)))
-
-    if(num_experiments_success > 0):
-        average_completion_time = all_experiment_time / num_experiments_success   
-        print('Average Time: {} -> {}s'.format(average_completion_time, average_completion_time/10))
-    else:
-        print('Average Time: No trials succeeded')
-
-    # Plot overall stats
-    # scenario_name = dirPath.split('/')[-1]
-    # plot_filename = '{0}/{1}/overall_robot-states.pdf'.format(OUTPUT_DIR, scenario_name)
-    # plot_overall_robot_states(stats,
-    #                           title='Average number of robots in each team',
-    #                           x_label='Time (seconds)',
-    #                           y_label='Number of robots',
-    #                           out_filename=plot_filename)
-
 
 if __name__ == "__main__":
-    
-    dirPath = "/home/genki/GIT/argos-sct/results/user_study_scenario2/user_study_scenario2_033/"
-    main(dirPath)
+    log_data_path = '/home/genki/GIT/argos-sct/results/SHSB211/results_2022-07-12_15-35/user_study_scenario1/user_study_scenario1_002/log_data.pb'
+    # commands_path = '/home/genki/GIT/argos-sct/results/SHSB211/results_2022-07-12_15-35/user_study_scenario1/user_study_scenario1_002/commands.csv'
+    # s = SimData(log_data_path, commands_path=commands_path)
+    s = SimData(log_data_path)
+
+    print('Total time: {}'.format(s.totalTime))
+    print('Points: {}'.format(s.data[s.totalTime]['log'].points))
+    print('Number of leaders: {}'.format(s.numLeaders))
+    for leader in s.leaders:
+        print('\t{}'.format(leader))
+    print('Teams:')
+    for team in s.teams:
+        print('\t{}'.format(team))
+    print('Number of followers: {}'.format(s.numWorkers))
+    print('Number of tasks: {}'.format(s.numTasks))
+    print(type(s.data[s.totalTime]))
+
+    ########
+    # TEST #
+    ########
+
+    # Calculate each team's average distance traveled
+    import numpy as np
+
+    # List of leader names = []
+    teamNames = s.teams
+    # Average team position = {}
+    teamPosition = {}
+    # Total distance traveled = {}
+    distanceTraveled = {}
+    for team in s.teams:
+        distanceTraveled[team] = 0
+
+    # for each timestep
+        # for each team (loop by leader)
+            # calculate the new average x and y of both teams (leader and followers)
+            # if timestep != 1
+                # calculate the distance from the previous team average to the new team average and add it to the sum
+            # update previous team average
+
+    for time in range(1, s.totalTime+1):
+
+        # print('--------\ntime: {}'.format(time))
+
+        # Add robot positions into separate arrays
+        tempTeamPosition = {}
+        for team in s.teams:
+            tempTeamPosition[team] = []
+
+        # Add robot positions according to their teams
+        for robot in s.data[time]['log'].robots:
+            for team in s.teams:
+                if robot.teamID == team:
+                    tempTeamPosition[team].append([robot.position.x, robot.position.y])
+
+        newTeamPosition = {}
+
+        # Calculate the average team positions
+        for key, value in tempTeamPosition.items():
+            newTeamPosition[key] = np.average(np.array(value), axis=0)
+            # np.round(newTeamPosition[key], decimals=2, out=newTeamPosition[key])
+            # print('team {0} new pos: {1}'.format(key, newTeamPosition[key]))
+
+        if time != 1:
+            for team in s.teams:
+                # Calculate the distance traveled from the previous timestep
+                x1 = teamPosition[team][0]
+                y1 = teamPosition[team][1]
+                x2 = newTeamPosition[team][0]
+                y2 = newTeamPosition[team][1]
+                distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+                distanceTraveled[team] += distance
+
+                # print('team {0} dist: {1}'.format(team, distanceTraveled[team]))
+
+        teamPosition = newTeamPosition
+
+
+        # if time == 200:
+        #     sys.exit(0)
+
+    print('--------\nDistance traveled')
+    for team in s.teams:
+        print('team {0} dist: {1}'.format(team, distanceTraveled[team]))
+
+
+
+
+    # Number of robots sent
+    numRobotsSent = 0
+
+    for time in range(1, s.totalTime+1):
+        commands = s.data[time]['commands']
+        for command in commands:
+            if command['type'] == 'send':
+                numRobotsSent += int(command['value'])
+                print('sent {}'.format(command['value']))
+
+    print('Number of robots sent: {}'.format(numRobotsSent))
+        

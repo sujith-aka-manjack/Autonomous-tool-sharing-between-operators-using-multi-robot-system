@@ -32,8 +32,8 @@ static const Real        EP_RAB_RANGE     = 0.8f;   //Communication range r_comm
 // static const Real        EP_RAB_DATA_SIZE = Message::messageByteSize;
 static const std::string HL_CONTROLLER    = "el";
 static const std::string EP_CONTROLLER    = "ef";
-static const UInt32      MAX_PLACE_TRIALS = 20;
-static const UInt32      MAX_ROBOT_TRIALS = 20;
+static const UInt32      MAX_PLACE_TRIALS = 25;
+static const UInt32      MAX_ROBOT_TRIALS = 25;
 
 static const std::string BINARY_FILENAME   = "log_data.pb";
 static const std::string SUMMARY_FILENAME  = "summary.csv";
@@ -68,7 +68,7 @@ void CExperimentLoopFunctions::Init(TConfigurationNode& t_node) {
         /* Create a new RNG */
         m_pcRNG = CRandom::CreateRNG("argos");
         /* Get the output file name from XML */
-        GetNodeAttributeOrDefault(tChainFormation, "logging", m_bLogging, false);
+        GetNodeAttributeOrDefault(tChainFormation, "logging", m_bLogging, true);
         GetNodeAttributeOrDefault(tChainFormation, "out_path", m_strOutput, std::string("results/default/"));
         /* Set the frame grabbing settings */
         GetNodeAttributeOrDefault(tChainFormation, "frame_grabbing", m_bFrameGrabbing, false);
@@ -527,19 +527,70 @@ void CExperimentLoopFunctions::PreStep() {
     * Output stuff to file 
     */
 
-    // if(m_bLogging) {
+    if(m_bLogging) {
+
+
     //     /* Create new node for this timestep */
     //     TimeStep tData;
     //     tData.set_time(GetSpace().GetSimulationClock());
     //     tData.set_points(m_unPointsObtained);
+        static bool log_init = false;
+        static CVector2 pos_leader_current[2];
+        // std::fill_n(pos_leader_current, 2, CVector2());
+        static CVector2 pos_follower_current[100];
+        // std::fill_n(pos_follower_current, 100, CVector2());
+        static CVector2 pos_leader_prv[2];
+        // std::fill_n(pos_leader_prv, 2, CVector2());
+        static CVector2 pos_follower_prv[100];
+        // std::fill_n(pos_follower_prv, 100, CVector2());
+        static float dist_leader = 0;
+        static float dist_follower = 0;
+        int i = 0;
+        if (!log_init){
+            for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+            it != m_cEPuckLeaders.end();
+            ++it) {
 
+            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+            pos_leader_prv[i] = CVector2(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                 cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+            }
+            
+            i = 0;
+            for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
+            itEpuck != m_cEPucks.end();
+            ++itEpuck) {
+
+            CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
+            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+
+            pos_follower_prv[i] = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                 cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+            
+            
+            ++i;
+            }
+            log_init = true;
+        }
     //     /* Output leader info */
-    //     for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
-    //         it != m_cEPuckLeaders.end();
-    //         ++it) {
+        i = 0;
+        for(CSpace::TMapPerType::iterator it = m_cEPuckLeaders.begin();
+            it != m_cEPuckLeaders.end();
+            ++it) {
 
-    //         CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
-    //         CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+            CEPuckLeaderEntity& cEPuckLeader = *any_cast<CEPuckLeaderEntity*>(it->second);
+            CLeader& cController = dynamic_cast<CLeader&>(cEPuckLeader.GetControllableEntity().GetController());
+
+            pos_leader_current[i] = CVector2(cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                 cEPuckLeader.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+
+            dist_leader += (pos_leader_current[i]-pos_leader_prv[i]).Length();
+
+            pos_leader_prv[i] = pos_leader_current[i];
+            ++i;
+                                
 
     //         Robot* robot = tData.add_robots();
     //         robot->set_name(cEPuckLeader.GetId());
@@ -550,36 +601,51 @@ void CExperimentLoopFunctions::PreStep() {
     //         robot->set_totalsent((int)cController.GetTotalSent());
     //         robot->set_totalreceived((int)cController.GetTotalReceived());
     //         robot->set_action(cController.GetLastAction());
-    //     }
+        }
 
     //     /* Output follower info */
-    //     for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
-    //         itEpuck != m_cEPucks.end();
-    //         ++itEpuck) {
+        i = 0;
+        for(CSpace::TMapPerType::iterator itEpuck = m_cEPucks.begin();
+            itEpuck != m_cEPucks.end();
+            ++itEpuck) {
 
-    //         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
-    //         CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
+            CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(itEpuck->second);
+            CFollower& cController = dynamic_cast<CFollower&>(cEPuck.GetControllableEntity().GetController());
 
-    //         Robot* robot = tData.add_robots();
-    //         robot->set_name(cEPuck.GetId());
-    //         robot->set_teamid(cController.GetTeamID());
-    //         switch(cController.GetRobotState()) {
-    //             case RobotState::FOLLOWER:
-    //                 robot->set_state(Robot_State_FOLLOWER);
-    //                 break;
-    //             case RobotState::CONNECTOR:
-    //                 robot->set_state(Robot_State_CONNECTOR);
-    //                 break;
-    //             case RobotState::TRAVELER:
-    //                 robot->set_state(Robot_State_TRAVELER);
-    //                 break;
-    //             default:
-    //                 std::cerr << "Tried to log unknown state " << (int)cController.GetRobotState() << std::endl;
-    //                 break;
-    //         }
-    //         robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
-    //         robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
-    //     }
+            pos_follower_current[i] = CVector2(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                                 cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+
+            dist_follower += (pos_follower_current[i]-pos_follower_prv[i]).Length();
+            // std::cerr << "Follower " << i+1 << " position: " << pos_follower_current[i] << "   " << pos_follower_prv[i] << std::endl;
+            // std::cerr << "Follower distance: " << dist_follower << std::endl;
+            pos_follower_prv[i] = pos_follower_current[i];
+            
+            
+            ++i;
+            // Robot* robot = tData.add_robots();
+            // robot->set_name(cEPuck.GetId());
+            // robot->set_teamid(cController.GetTeamID());
+            // switch(cController.GetRobotState()) {
+            //     case RobotState::FOLLOWER:
+            //         robot->set_state(Robot_State_FOLLOWER);
+            //         break;
+            //     case RobotState::CONNECTOR:
+            //         robot->set_state(Robot_State_CONNECTOR);
+            //         break;
+            //     case RobotState::TRAVELER:
+            //         robot->set_state(Robot_State_TRAVELER);
+            //         break;
+            //     default:
+            //         std::cerr << "Tried to log unknown state " << (int)cController.GetRobotState() << std::endl;
+            //         break;
+            // }
+            // robot->mutable_position()->set_x(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetX());
+            // robot->mutable_position()->set_y(cEPuck.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+        }
+
+        if(GetSpace().GetSimulationClock()%100 == 0){
+            std::cerr << "Leader distance: " << dist_leader << "  Follower distance: " << dist_follower << std::endl;
+        }
 
     //     if(m_bTaskExists) {
 
@@ -607,7 +673,7 @@ void CExperimentLoopFunctions::PreStep() {
     //     m_cOutput.open(m_strBinaryFilePath.c_str(), std::ios::app | std::ios::binary);
     //     google::protobuf::util::SerializeDelimitedToOstream(tData, &m_cOutput);
     //     m_cOutput.close();
-    // }
+    }
 
     /* Grab frame */
     if(m_bFrameGrabbing) {
