@@ -76,10 +76,10 @@ struct RelayMsg {
 * 
 * The raw messages are assumed to arrive in the following data structure:
 * 
-* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(82) |      (83)-(142)       | (143) |
+* |  (1)   |  (2)   |   (3)   |  (4)   |  (5)-(7)  | (8)-(16)  |  (17)-(29) | (30)-(34) | (35)-(37) | (38)-(82) |      (83)-(142)       | (143) | (144) |
 * -----------------------------------------------------------------------------------------------------------------------------------------------
-* | Sender | Sender | Sender  | Leader |   Team    | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      |  End  |
-* | State  |   ID   | Team ID | Signal |  Switch   |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | (255) |
+* | Sender | Sender | Sender  | Leader |   Team    | Hop count | Connection |  Shared   |   Teams   |   Relay   |      Connections      | Robot |  End  |
+* | State  |   ID   | Team ID | Signal |  Switch   |           |  Message   |  Message  |   Nearby  |  Message  | (2 bytes for ID x 30) | Type  | (255) |
 * 
 * 
 * - (4) Leader Signal
@@ -120,13 +120,15 @@ struct RelayMsg {
 * 
 *       - Used by connectors to determine whether other connectors can switch to a follower
 * 
-* - (38)-(112) Relay Message
+* - (38)-(82) Relay Message
 *   Prefix with number of messages (max 2) [1]
 *   - RelayMsg [22] (Type [1], Leader ID [2], time sent [2], first follower [2], follower_num [5], task_min_num [5]. robot_num [5])
 * 
 *       - Message sent by a leader to other leaders
 * 
-    Connection msg - The robots an agent can see
+    (83 - 142) Connection msg - The robots an agent can see
+    (143) Type [1]
+    (144) End
 */
 class Message {
 
