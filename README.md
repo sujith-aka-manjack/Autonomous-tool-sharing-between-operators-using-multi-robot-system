@@ -53,4 +53,4 @@ To modify the message structure, edit ```robot_message.h``` and ```robot_message
 
 ## Updates
 
-The original program was created by Genki Miyauchi (ACSE, The University of Sheffield). This is limited to a homogenous robot system. The program have been modified to incorporate the heterogenous system
+The original program was created by Genki Miyauchi (ACSE, The University of Sheffield). This is limited to a homogenous robot system. The program have been modified to incorporate the heterogenous system. Loading plugins may not be required. So if loading them causes an error, ignore it
