@@ -1,0 +1,25 @@
+{% if 1 == 1 %}
+	<h2>Iniciando teste de cache</h2> 
+{% end %}
+
+
+{% cache live=10,'static' %}
+	{% for i=0,cases1 %}
+Esta eh a linha {{i}} de {{cases1}} linhas
+	{% end %}
+{% end %}
+
+{% cache live=10,'static' %}
+	IGNORADO, POIS O CACHE SETADO NO BLOCO ANTERIOR SUBSTITUI ISTO
+{% end %}
+
+{% for i=0,cases1 %}
+	{% cache live=3,'block2',i %}
+	U LALALA {{i}}
+	{% end %}
+{% end %}
+
+Lista de chaves:
+{% cachekey %}
+
+Finalizado teste
