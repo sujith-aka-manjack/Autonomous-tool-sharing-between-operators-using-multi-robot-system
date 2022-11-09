@@ -50,3 +50,7 @@ To modify the text that appears above the leader and follower, edit ```manualcon
 For code that needs to be executed before, after or in every timestep, edit ```experiment_loop_functions.h``` and ```experiment_loop_functions.cpp``` in ```src/loop_functions/leaderfollower_loopfunctions/```
 
 To modify the message structure, edit ```robot_message.h``` and ```robot_message.cpp``` in ```src/utility/```.
+
+## Updates
+
+The original program was created by Genki Miyauchi (ACSE, The University of Sheffield). This is limited to a homogenous robot system. The program have been modified to incorporate the heterogenous system
