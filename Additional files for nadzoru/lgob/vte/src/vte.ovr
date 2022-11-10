@@ -1,0 +1,29 @@
+include('vte.def')
+
+-- please fix me! (we should not ignore some parameters)
+defOverride('vte_terminal_fork_command_full', [[
+	luaL_checktype(L, 1, LUA_TUSERDATA);
+	Object* obj = lua_touserdata(L, 1);
+	
+	char* argv[] = {0, NULL};
+	argv[0] = (char*)lua_tostring(L, 4);
+	
+	GPid pid;
+	gboolean res = vte_terminal_fork_command_full(
+		obj->pointer,
+        lua_tointeger(L, 2),
+        lua_tostring (L, 3),
+        argv, NULL,
+        lua_tointeger(L, 5),
+        NULL,
+        NULL,
+        &pid,
+        NULL
+    );
+    
+    lua_pushboolean(L, res);
+    lua_pushinteger(L, pid);
+    return 2;
+]])
+
+fixVersion('vte_terminal_set_opacity', '0.13.3')

@@ -1,0 +1,9 @@
+include('gtksourceview.def')
+
+undef{
+    'gtk_source_completion_words_new',
+    'gtk_source_completion_words_register',
+    'gtk_source_completion_words_unregister',
+    'gtk_source_mark_attributes_render_icon',
+    'gtk_source_completion_words_get_type'
+}

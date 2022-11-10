@@ -1,0 +1,3720 @@
+defLib = 'Poppler'
+defName = 'poppler'
+
+defClass('PopplerAnnot',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerAnnotCircle',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotFileAttachment',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotFreeText',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotLine',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotMarkup',
+	{
+		parent = 'PopplerAnnot'
+	}
+)
+
+defClass('PopplerAnnotMovie',
+	{
+		parent = 'PopplerAnnot'
+	}
+)
+
+defClass('PopplerAnnotScreen',
+	{
+		parent = 'PopplerAnnot'
+	}
+)
+
+defClass('PopplerAnnotSquare',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotText',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAnnotTextMarkup',
+	{
+		parent = 'PopplerAnnotMarkup'
+	}
+)
+
+defClass('PopplerAttachment',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerDocument',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerFontInfo',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerFormField',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerLayer',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerMedia',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerMovie',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerPSFile',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerPage',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerStructureElement',
+	{
+		parent = 'GObject'
+	}
+)
+
+defClass('PopplerAction',
+	{
+		
+	}
+)
+
+defClass('PopplerActionAny',
+	{
+		
+	}
+)
+
+defClass('PopplerActionGotoDest',
+	{
+		
+	}
+)
+
+defClass('PopplerActionGotoRemote',
+	{
+		
+	}
+)
+
+defClass('PopplerActionJavascript',
+	{
+		
+	}
+)
+
+defClass('PopplerActionLaunch',
+	{
+		
+	}
+)
+
+defClass('PopplerActionLayer',
+	{
+		
+	}
+)
+
+defClass('PopplerActionMovie',
+	{
+		
+	}
+)
+
+defClass('PopplerActionNamed',
+	{
+		
+	}
+)
+
+defClass('PopplerActionOCGState',
+	{
+		
+	}
+)
+
+defClass('PopplerActionRendition',
+	{
+		
+	}
+)
+
+defClass('PopplerActionUri',
+	{
+		
+	}
+)
+
+defClass('PopplerAnnotCalloutLine',
+	{
+		
+	}
+)
+
+defClass('PopplerAnnotMapping',
+	{
+		
+	}
+)
+
+defClass('PopplerColor',
+	{
+		
+	}
+)
+
+defClass('PopplerDest',
+	{
+		
+	}
+)
+
+defClass('PopplerFontsIter',
+	{
+		
+	}
+)
+
+defClass('PopplerFormFieldMapping',
+	{
+		
+	}
+)
+
+defClass('PopplerImageMapping',
+	{
+		
+	}
+)
+
+defClass('PopplerIndexIter',
+	{
+		
+	}
+)
+
+defClass('PopplerLayersIter',
+	{
+		
+	}
+)
+
+defClass('PopplerLinkMapping',
+	{
+		
+	}
+)
+
+defClass('PopplerPageTransition',
+	{
+		
+	}
+)
+
+defClass('PopplerPoint',
+	{
+		
+	}
+)
+
+defClass('PopplerQuadrilateral',
+	{
+		
+	}
+)
+
+defClass('PopplerRectangle',
+	{
+		
+	}
+)
+
+defClass('PopplerStructureElementIter',
+	{
+		
+	}
+)
+
+defClass('PopplerTextAttributes',
+	{
+		
+	}
+)
+
+defClass('PopplerTextSpan',
+	{
+		
+	}
+)
+
+defFunction('poppler_action_copy',
+	{
+		class = 'PopplerAction',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_action_free',
+	{
+		class = 'PopplerAction',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_get_type',
+	{
+		class = 'PopplerAnnot',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_get_annot_type',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotType none'
+	}
+)
+
+defFunction('poppler_annot_get_color',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_get_contents',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_get_flags',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotFlag none'
+	}
+)
+
+defFunction('poppler_annot_get_modified',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_get_name',
+	{
+		class = 'PopplerAnnot',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_get_page_index',
+	{
+		class = 'PopplerAnnot',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_annot_get_rectangle',
+	{
+		class = 'PopplerAnnot',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_set_color',
+	{
+		class = 'PopplerAnnot',
+		since = '0.16',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_set_contents',
+	{
+		class = 'PopplerAnnot',
+		since = '0.12',
+		args = {'GObject* none', 'char* none'}
+	}
+)
+
+defFunction('poppler_annot_set_flags',
+	{
+		class = 'PopplerAnnot',
+		since = '0.22',
+		args = {'GObject* none', 'enum PopplerAnnotFlag none'}
+	}
+)
+
+defFunction('poppler_annot_set_rectangle',
+	{
+		class = 'PopplerAnnot',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_callout_line_new',
+	{
+		class = 'PopplerAnnotCalloutLine',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_callout_line_copy',
+	{
+		class = 'PopplerAnnotCalloutLine',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_callout_line_free',
+	{
+		class = 'PopplerAnnotCalloutLine',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_circle_get_type',
+	{
+		class = 'PopplerAnnotCircle',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_circle_new',
+	{
+		class = 'PopplerAnnotCircle',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_circle_get_interior_color',
+	{
+		class = 'PopplerAnnotCircle',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_circle_set_interior_color',
+	{
+		class = 'PopplerAnnotCircle',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_file_attachment_get_type',
+	{
+		class = 'PopplerAnnotFileAttachment',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_file_attachment_get_attachment',
+	{
+		class = 'PopplerAnnotFileAttachment',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_file_attachment_get_name',
+	{
+		class = 'PopplerAnnotFileAttachment',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_free_text_get_type',
+	{
+		class = 'PopplerAnnotFreeText',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_free_text_get_callout_line',
+	{
+		class = 'PopplerAnnotFreeText',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_free_text_get_quadding',
+	{
+		class = 'PopplerAnnotFreeText',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotFreeTextQuadding none'
+	}
+)
+
+defFunction('poppler_annot_line_get_type',
+	{
+		class = 'PopplerAnnotLine',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_line_new',
+	{
+		class = 'PopplerAnnotLine',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'struct* none', 'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_line_set_vertices',
+	{
+		class = 'PopplerAnnotLine',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_mapping_new',
+	{
+		class = 'PopplerAnnotMapping',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_mapping_copy',
+	{
+		class = 'PopplerAnnotMapping',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_mapping_free',
+	{
+		class = 'PopplerAnnotMapping',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_markup_get_type',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_date',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_markup_get_external_data',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotExternalDataType none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_label',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_markup_get_opacity',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_popup_is_open',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_popup_rectangle',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.12',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_reply_to',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotMarkupReplyType none'
+	}
+)
+
+defFunction('poppler_annot_markup_get_subject',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_markup_has_popup',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_annot_markup_set_label',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.16',
+		args = {'GObject* none', 'char* none'}
+	}
+)
+
+defFunction('poppler_annot_markup_set_opacity',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.16',
+		args = {'GObject* none', 'double none'}
+	}
+)
+
+defFunction('poppler_annot_markup_set_popup',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.16',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_markup_set_popup_is_open',
+	{
+		class = 'PopplerAnnotMarkup',
+		since = '0.16',
+		args = {'GObject* none', 'boolean none'}
+	}
+)
+
+defFunction('poppler_annot_movie_get_type',
+	{
+		class = 'PopplerAnnotMovie',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_movie_get_movie',
+	{
+		class = 'PopplerAnnotMovie',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'GObject* none'
+	}
+)
+
+defFunction('poppler_annot_movie_get_title',
+	{
+		class = 'PopplerAnnotMovie',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_screen_get_type',
+	{
+		class = 'PopplerAnnotScreen',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_screen_get_action',
+	{
+		class = 'PopplerAnnotScreen',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'struct* none'
+	}
+)
+
+defFunction('poppler_annot_square_get_type',
+	{
+		class = 'PopplerAnnotSquare',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_square_new',
+	{
+		class = 'PopplerAnnotSquare',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_square_get_interior_color',
+	{
+		class = 'PopplerAnnotSquare',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_annot_square_set_interior_color',
+	{
+		class = 'PopplerAnnotSquare',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_annot_text_get_type',
+	{
+		class = 'PopplerAnnotText',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_text_new',
+	{
+		class = 'PopplerAnnotText',
+		constructor = true,
+		since = '0.16',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_text_get_icon',
+	{
+		class = 'PopplerAnnotText',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_annot_text_get_is_open',
+	{
+		class = 'PopplerAnnotText',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_annot_text_get_state',
+	{
+		class = 'PopplerAnnotText',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerAnnotTextState none'
+	}
+)
+
+defFunction('poppler_annot_text_set_icon',
+	{
+		class = 'PopplerAnnotText',
+		since = '0.16',
+		args = {'GObject* none', 'char* none'}
+	}
+)
+
+defFunction('poppler_annot_text_set_is_open',
+	{
+		class = 'PopplerAnnotText',
+		since = '0.16',
+		args = {'GObject* none', 'boolean none'}
+	}
+)
+
+defFunction('poppler_annot_text_markup_get_type',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_annot_text_markup_new_highlight',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'unhandled none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_text_markup_new_squiggly',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'unhandled none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_text_markup_new_strikeout',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'unhandled none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_text_markup_new_underline',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'unhandled none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_annot_text_markup_get_quadrilaterals',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		since = '0.26',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_annot_text_markup_set_quadrilaterals',
+	{
+		class = 'PopplerAnnotTextMarkup',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled none'}
+	}
+)
+
+defFunction('poppler_attachment_get_type',
+	{
+		class = 'PopplerAttachment',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_attachment_save',
+	{
+		class = 'PopplerAttachment',
+		since = '0.18',
+		args = {'GObject* none', 'const char* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_attachment_save_to_callback',
+	{
+		class = 'PopplerAttachment',
+		since = '0.18',
+		args = {'GObject* none', 'callback none', 'void* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_color_new',
+	{
+		class = 'PopplerColor',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_color_copy',
+	{
+		class = 'PopplerColor',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_color_free',
+	{
+		class = 'PopplerColor',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_dest_copy',
+	{
+		class = 'PopplerDest',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_dest_free',
+	{
+		class = 'PopplerDest',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_document_get_type',
+	{
+		class = 'PopplerDocument',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_document_new_from_data',
+	{
+		class = 'PopplerDocument',
+		constructor = true,
+		since = '0.18',
+		args = {'char* none', 'int none', 'const char* none', 'GError** full'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_new_from_file',
+	{
+		class = 'PopplerDocument',
+		constructor = true,
+		since = '0.18',
+		args = {'const char* none', 'const char* none', 'GError** full'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_new_from_gfile',
+	{
+		class = 'PopplerDocument',
+		constructor = true,
+		since = '0.22',
+		args = {'GObject* none', 'const char* none', 'GObject* none', 'GError** full'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_new_from_stream',
+	{
+		class = 'PopplerDocument',
+		constructor = true,
+		since = '0.22',
+		args = {'GObject* none', 'goffset none', 'const char* none', 'GObject* none', 'GError** full'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_find_dest',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'char* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_document_get_attachments',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_document_get_author',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_creation_date',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'unsigned long none'
+	}
+)
+
+defFunction('poppler_document_get_creator',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_form_field',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'int none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_get_id',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		args = {'GObject* none', 'char** full', 'char** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_document_get_keywords',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_metadata',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_modification_date',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'unsigned long none'
+	}
+)
+
+defFunction('poppler_document_get_n_attachments',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'unsigned int none'
+	}
+)
+
+defFunction('poppler_document_get_n_pages',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_document_get_page',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'int none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_get_page_by_label',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'const char* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_document_get_page_layout',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerPageLayout none'
+	}
+)
+
+defFunction('poppler_document_get_page_mode',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerPageMode none'
+	}
+)
+
+defFunction('poppler_document_get_pdf_version',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		args = {'GObject* none', 'unsigned int* full', 'unsigned int* full'}
+	}
+)
+
+defFunction('poppler_document_get_pdf_version_string',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_permissions',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerPermissions none'
+	}
+)
+
+defFunction('poppler_document_get_producer',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_subject',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_get_title',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_document_has_attachments',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_document_is_linearized',
+	{
+		class = 'PopplerDocument',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_document_save',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'const char* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_document_save_a_copy',
+	{
+		class = 'PopplerDocument',
+		since = '0.18',
+		args = {'GObject* none', 'const char* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_error_quark',
+	{
+		since = '0.18',
+		ret = 'guint32 none'
+	}
+)
+
+defFunction('poppler_font_info_get_type',
+	{
+		class = 'PopplerFontInfo',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_font_info_new',
+	{
+		class = 'PopplerFontInfo',
+		constructor = true,
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_font_info_free',
+	{
+		class = 'PopplerFontInfo',
+		since = '0.18',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_font_info_scan',
+	{
+		class = 'PopplerFontInfo',
+		since = '0.18',
+		args = {'GObject* none', 'int none', 'struct** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_fonts_iter_copy',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_fonts_iter_free',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_fonts_iter_get_encoding',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.20',
+		args = {'struct* none'},
+		ret = 'const char* none'
+	}
+)
+
+defFunction('poppler_fonts_iter_get_file_name',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'const char* none'
+	}
+)
+
+defFunction('poppler_fonts_iter_get_font_type',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'enum PopplerFontType none'
+	}
+)
+
+defFunction('poppler_fonts_iter_get_full_name',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'const char* none'
+	}
+)
+
+defFunction('poppler_fonts_iter_get_name',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'const char* none'
+	}
+)
+
+defFunction('poppler_fonts_iter_get_substitute_name',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.20',
+		args = {'struct* none'},
+		ret = 'const char* none'
+	}
+)
+
+defFunction('poppler_fonts_iter_is_embedded',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_fonts_iter_is_subset',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_fonts_iter_next',
+	{
+		class = 'PopplerFontsIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_get_type',
+	{
+		class = 'PopplerFormField',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_form_field_button_get_button_type',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerFormButtonType none'
+	}
+)
+
+defFunction('poppler_form_field_button_get_state',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_button_set_state',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'boolean none'}
+	}
+)
+
+defFunction('poppler_form_field_choice_can_select_multiple',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_choice_commit_on_change',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_choice_do_spell_check',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_choice_get_choice_type',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerFormChoiceType none'
+	}
+)
+
+defFunction('poppler_form_field_choice_get_item',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'int none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_choice_get_n_items',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_form_field_choice_get_text',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_choice_is_editable',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_choice_is_item_selected',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'int none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_choice_select_item',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'int none'}
+	}
+)
+
+defFunction('poppler_form_field_choice_set_text',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'char* none'}
+	}
+)
+
+defFunction('poppler_form_field_choice_toggle_item',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'int none'}
+	}
+)
+
+defFunction('poppler_form_field_choice_unselect_all',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_form_field_get_action',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* none'
+	}
+)
+
+defFunction('poppler_form_field_get_field_type',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerFormFieldType none'
+	}
+)
+
+defFunction('poppler_form_field_get_font_size',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_form_field_get_id',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_form_field_get_mapping_name',
+	{
+		class = 'PopplerFormField',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_get_name',
+	{
+		class = 'PopplerFormField',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_get_partial_name',
+	{
+		class = 'PopplerFormField',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_is_read_only',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_text_do_scroll',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_text_do_spell_check',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_text_get_max_len',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_form_field_text_get_text',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_form_field_text_get_text_type',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'enum PopplerFormTextType none'
+	}
+)
+
+defFunction('poppler_form_field_text_is_password',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_text_is_rich_text',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_form_field_text_set_text',
+	{
+		class = 'PopplerFormField',
+		since = '0.18',
+		args = {'GObject* none', 'char* none'}
+	}
+)
+
+defFunction('poppler_form_field_mapping_new',
+	{
+		class = 'PopplerFormFieldMapping',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_form_field_mapping_copy',
+	{
+		class = 'PopplerFormFieldMapping',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_form_field_mapping_free',
+	{
+		class = 'PopplerFormFieldMapping',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_image_mapping_new',
+	{
+		class = 'PopplerImageMapping',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_image_mapping_copy',
+	{
+		class = 'PopplerImageMapping',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_image_mapping_free',
+	{
+		class = 'PopplerImageMapping',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_index_iter_new',
+	{
+		class = 'PopplerIndexIter',
+		constructor = true,
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_index_iter_copy',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_index_iter_free',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_index_iter_get_action',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_index_iter_get_child',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_index_iter_is_open',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_index_iter_next',
+	{
+		class = 'PopplerIndexIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_layer_get_type',
+	{
+		class = 'PopplerLayer',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_layer_get_radio_button_group_id',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_layer_get_title',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_layer_hide',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_layer_is_parent',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_layer_is_visible',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_layer_show',
+	{
+		class = 'PopplerLayer',
+		since = '0.12',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_layers_iter_new',
+	{
+		class = 'PopplerLayersIter',
+		constructor = true,
+		since = '0.12',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_layers_iter_copy',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_layers_iter_free',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.12',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_layers_iter_get_child',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.12',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_layers_iter_get_layer',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.12',
+		args = {'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_layers_iter_get_title',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.12',
+		args = {'struct* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_layers_iter_next',
+	{
+		class = 'PopplerLayersIter',
+		since = '0.12',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_link_mapping_new',
+	{
+		class = 'PopplerLinkMapping',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_link_mapping_copy',
+	{
+		class = 'PopplerLinkMapping',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_link_mapping_free',
+	{
+		class = 'PopplerLinkMapping',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_media_get_type',
+	{
+		class = 'PopplerMedia',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_media_get_filename',
+	{
+		class = 'PopplerMedia',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_media_get_mime_type',
+	{
+		class = 'PopplerMedia',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_media_is_embedded',
+	{
+		class = 'PopplerMedia',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_media_save',
+	{
+		class = 'PopplerMedia',
+		since = '0.14',
+		args = {'GObject* none', 'const char* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_media_save_to_callback',
+	{
+		class = 'PopplerMedia',
+		since = '0.14',
+		args = {'GObject* none', 'callback none', 'void* none', 'GError** full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_movie_get_type',
+	{
+		class = 'PopplerMovie',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_movie_get_filename',
+	{
+		class = 'PopplerMovie',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_movie_need_poster',
+	{
+		class = 'PopplerMovie',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_movie_show_controls',
+	{
+		class = 'PopplerMovie',
+		since = '0.14',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_ps_file_get_type',
+	{
+		class = 'PopplerPSFile',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_ps_file_new',
+	{
+		class = 'PopplerPSFile',
+		constructor = true,
+		since = '0.18',
+		args = {'GObject* none', 'const char* none', 'int none', 'int none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_ps_file_free',
+	{
+		class = 'PopplerPSFile',
+		since = '0.18',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_ps_file_set_duplex',
+	{
+		class = 'PopplerPSFile',
+		since = '0.18',
+		args = {'GObject* none', 'boolean none'}
+	}
+)
+
+defFunction('poppler_ps_file_set_paper_size',
+	{
+		class = 'PopplerPSFile',
+		since = '0.18',
+		args = {'GObject* none', 'double none', 'double none'}
+	}
+)
+
+defFunction('poppler_page_get_type',
+	{
+		class = 'PopplerPage',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_page_free_annot_mapping',
+	{
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_page_free_form_field_mapping',
+	{
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_page_free_image_mapping',
+	{
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_page_free_link_mapping',
+	{
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_page_free_text_attributes',
+	{
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_page_selection_region_free',
+	{
+		since = '0.18',
+		args = {'struct* none'},
+		deprecated = '0.16'
+	}
+)
+
+defFunction('poppler_page_add_annot',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none', 'GObject* none'}
+	}
+)
+
+defFunction('poppler_page_find_text',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'const char* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_find_text_with_options',
+	{
+		class = 'PopplerPage',
+		since = '0.22',
+		args = {'GObject* none', 'const char* none', 'enum PopplerFindFlags none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_annot_mapping',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_crop_box',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_page_get_duration',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_page_get_form_field_mapping',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_image',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'int none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_image_mapping',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_index',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_page_get_label',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		accessorSince = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_page_get_link_mapping',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_selected_region',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none', 'double none', 'enum PopplerSelectionStyle none', 'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_selected_text',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none', 'enum PopplerSelectionStyle none', 'struct* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_page_get_selection_region',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'double none', 'enum PopplerSelectionStyle none', 'struct* none'},
+		ret = 'struct* full',
+		deprecated = '0.16'
+	}
+)
+
+defFunction('poppler_page_get_size',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'double* full', 'double* full'}
+	}
+)
+
+defFunction('poppler_page_get_text',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_page_get_text_attributes',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_text_attributes_for_area',
+	{
+		class = 'PopplerPage',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_text_for_area',
+	{
+		class = 'PopplerPage',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_page_get_text_layout',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none', 'unhandled container', 'unsigned int* full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_page_get_text_layout_for_area',
+	{
+		class = 'PopplerPage',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none', 'unhandled container', 'unsigned int* full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_page_get_thumbnail',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_get_thumbnail_size',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'int* full', 'int* full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_page_get_transition',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_remove_annot',
+	{
+		class = 'PopplerPage',
+		since = '0.22',
+		args = {'GObject* none', 'GObject* none'}
+	}
+)
+
+defFunction('poppler_page_render',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_page_render_for_printing',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_page_render_for_printing_with_options',
+	{
+		class = 'PopplerPage',
+		since = '0.16',
+		args = {'GObject* none', 'struct* none', 'enum PopplerPrintFlags none'}
+	}
+)
+
+defFunction('poppler_page_render_selection',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'struct* none', 'struct* none', 'struct* none', 'enum PopplerSelectionStyle none', 'struct* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_page_render_to_ps',
+	{
+		class = 'PopplerPage',
+		since = '0.18',
+		args = {'GObject* none', 'GObject* none'}
+	}
+)
+
+defFunction('poppler_page_transition_new',
+	{
+		class = 'PopplerPageTransition',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_transition_copy',
+	{
+		class = 'PopplerPageTransition',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_page_transition_free',
+	{
+		class = 'PopplerPageTransition',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_point_new',
+	{
+		class = 'PopplerPoint',
+		constructor = true,
+		since = '0.26',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_point_copy',
+	{
+		class = 'PopplerPoint',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_point_free',
+	{
+		class = 'PopplerPoint',
+		since = '0.26',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_quadrilateral_new',
+	{
+		class = 'PopplerQuadrilateral',
+		constructor = true,
+		since = '0.26',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_quadrilateral_copy',
+	{
+		class = 'PopplerQuadrilateral',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_quadrilateral_free',
+	{
+		class = 'PopplerQuadrilateral',
+		since = '0.26',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_rectangle_new',
+	{
+		class = 'PopplerRectangle',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_rectangle_copy',
+	{
+		class = 'PopplerRectangle',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_rectangle_free',
+	{
+		class = 'PopplerRectangle',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_structure_element_get_type',
+	{
+		class = 'PopplerStructureElement',
+		since = '9999.9999',
+		ret = 'gsize none'
+	}
+)
+
+defFunction('poppler_structure_element_get_abbreviation',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.18',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_actual_text',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_alt_text',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_background_color',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_baseline_shift',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_block_align',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureBlockAlign none'
+	}
+)
+
+defFunction('poppler_structure_element_get_border_color',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_border_style',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_border_thickness',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled full'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_bounding_box',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_color',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_column_count',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'unsigned int none'
+	}
+)
+
+defFunction('poppler_structure_element_get_column_gaps',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unsigned int* full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_column_widths',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unsigned int* full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_end_indent',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_form_description',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_form_role',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureFormRole none'
+	}
+)
+
+defFunction('poppler_structure_element_get_form_state',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureFormState none'
+	}
+)
+
+defFunction('poppler_structure_element_get_glyph_orientation',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureGlyphOrientation none'
+	}
+)
+
+defFunction('poppler_structure_element_get_height',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_id',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_inline_align',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureInlineAlign none'
+	}
+)
+
+defFunction('poppler_structure_element_get_kind',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureElementKind none'
+	}
+)
+
+defFunction('poppler_structure_element_get_language',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_line_height',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_list_numbering',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureListNumbering none'
+	}
+)
+
+defFunction('poppler_structure_element_get_padding',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_page',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'int none'
+	}
+)
+
+defFunction('poppler_structure_element_get_placement',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructurePlacement none'
+	}
+)
+
+defFunction('poppler_structure_element_get_ruby_align',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureRubyAlign none'
+	}
+)
+
+defFunction('poppler_structure_element_get_ruby_position',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureRubyPosition none'
+	}
+)
+
+defFunction('poppler_structure_element_get_space_after',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_space_before',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_start_indent',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_table_border_style',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_table_column_span',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'unsigned int none'
+	}
+)
+
+defFunction('poppler_structure_element_get_table_headers',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'}
+	}
+)
+
+defFunction('poppler_structure_element_get_table_padding',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unhandled full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_table_row_span',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'unsigned int none'
+	}
+)
+
+defFunction('poppler_structure_element_get_table_scope',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureTableScope none'
+	}
+)
+
+defFunction('poppler_structure_element_get_table_summary',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_text',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'enum PopplerStructureGetTextFlags none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_align',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureTextAlign none'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_decoration_color',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_decoration_thickness',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_decoration_type',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureTextDecoration none'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_indent',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_text_spans',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none', 'unsigned int* full'}
+	}
+)
+
+defFunction('poppler_structure_element_get_title',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'char* full'
+	}
+)
+
+defFunction('poppler_structure_element_get_width',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'double none'
+	}
+)
+
+defFunction('poppler_structure_element_get_writing_mode',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'enum PopplerStructureWritingMode none'
+	}
+)
+
+defFunction('poppler_structure_element_is_block',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_is_content',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_is_grouping',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_is_inline',
+	{
+		class = 'PopplerStructureElement',
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_structure_element_iter_new',
+	{
+		class = 'PopplerStructureElementIter',
+		constructor = true,
+		since = '0.26',
+		args = {'GObject* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_structure_element_iter_copy',
+	{
+		class = 'PopplerStructureElementIter',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_structure_element_iter_free',
+	{
+		class = 'PopplerStructureElementIter',
+		since = '0.26',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_structure_element_iter_get_child',
+	{
+		class = 'PopplerStructureElementIter',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_structure_element_iter_get_element',
+	{
+		class = 'PopplerStructureElementIter',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'GObject* full'
+	}
+)
+
+defFunction('poppler_structure_element_iter_next',
+	{
+		class = 'PopplerStructureElementIter',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_text_attributes_new',
+	{
+		class = 'PopplerTextAttributes',
+		constructor = true,
+		since = '0.18',
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_text_attributes_copy',
+	{
+		class = 'PopplerTextAttributes',
+		since = '0.18',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_text_attributes_free',
+	{
+		class = 'PopplerTextAttributes',
+		since = '0.18',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_text_span_copy',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'struct* full'
+	}
+)
+
+defFunction('poppler_text_span_free',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'}
+	}
+)
+
+defFunction('poppler_text_span_get_color',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none', 'struct* none'}
+	}
+)
+
+defFunction('poppler_text_span_get_font_name',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_text_span_get_text',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'char* none'
+	}
+)
+
+defFunction('poppler_text_span_is_bold_font',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_text_span_is_fixed_width_font',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_text_span_is_serif_font',
+	{
+		class = 'PopplerTextSpan',
+		since = '0.26',
+		args = {'struct* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_date_parse',
+	{
+		since = '0.12',
+		args = {'char* none', 'unsigned long* none'},
+		ret = 'boolean none'
+	}
+)
+
+defFunction('poppler_error_quark',
+	{
+		since = '0.18',
+		ret = 'guint32 none'
+	}
+)
+
+defFunction('poppler_get_backend',
+	{
+		since = '0.18',
+		ret = 'enum PopplerBackend none'
+	}
+)
+
+defFunction('poppler_get_version',
+	{
+		since = '0.18',
+		ret = 'const char* none'
+	}
+)
+
+defEnum('PopplerActionLayerAction',
+	{
+		['POPPLER_ACTION_LAYER_ON'] = 0,
+		['POPPLER_ACTION_LAYER_TOGGLE'] = 2,
+		['POPPLER_ACTION_LAYER_OFF'] = 1
+	}
+)
+
+defEnum('PopplerActionMovieOperation',
+	{
+		['POPPLER_ACTION_MOVIE_RESUME'] = 2,
+		['POPPLER_ACTION_MOVIE_PAUSE'] = 1,
+		['POPPLER_ACTION_MOVIE_STOP'] = 3,
+		['POPPLER_ACTION_MOVIE_PLAY'] = 0
+	}
+)
+
+defEnum('PopplerActionType',
+	{
+		['POPPLER_ACTION_NAMED'] = 6,
+		['POPPLER_ACTION_NONE'] = 1,
+		['POPPLER_ACTION_GOTO_DEST'] = 2,
+		['POPPLER_ACTION_RENDITION'] = 8,
+		['POPPLER_ACTION_GOTO_REMOTE'] = 3,
+		['POPPLER_ACTION_LAUNCH'] = 4,
+		['POPPLER_ACTION_JAVASCRIPT'] = 10,
+		['POPPLER_ACTION_OCG_STATE'] = 9,
+		['POPPLER_ACTION_MOVIE'] = 7,
+		['POPPLER_ACTION_URI'] = 5,
+		['POPPLER_ACTION_UNKNOWN'] = 0
+	}
+)
+
+defEnum('PopplerAnnotExternalDataType',
+	{
+		['POPPLER_ANNOT_EXTERNAL_DATA_MARKUP_UNKNOWN'] = 1,
+		['POPPLER_ANNOT_EXTERNAL_DATA_MARKUP_3D'] = 0
+	}
+)
+
+defEnum('PopplerAnnotFlag',
+	{
+		['POPPLER_ANNOT_FLAG_NO_ROTATE'] = 16,
+		['POPPLER_ANNOT_FLAG_PRINT'] = 4,
+		['POPPLER_ANNOT_FLAG_UNKNOWN'] = 0,
+		['POPPLER_ANNOT_FLAG_LOCKED_CONTENTS'] = 512,
+		['POPPLER_ANNOT_FLAG_NO_ZOOM'] = 8,
+		['POPPLER_ANNOT_FLAG_TOGGLE_NO_VIEW'] = 256,
+		['POPPLER_ANNOT_FLAG_HIDDEN'] = 2,
+		['POPPLER_ANNOT_FLAG_LOCKED'] = 128,
+		['POPPLER_ANNOT_FLAG_READ_ONLY'] = 64,
+		['POPPLER_ANNOT_FLAG_NO_VIEW'] = 32,
+		['POPPLER_ANNOT_FLAG_INVISIBLE'] = 1
+	}
+)
+
+defEnum('PopplerAnnotFreeTextQuadding',
+	{
+		['POPPLER_ANNOT_FREE_TEXT_QUADDING_LEFT_JUSTIFIED'] = 0,
+		['POPPLER_ANNOT_FREE_TEXT_QUADDING_RIGHT_JUSTIFIED'] = 2,
+		['POPPLER_ANNOT_FREE_TEXT_QUADDING_CENTERED'] = 1
+	}
+)
+
+defEnum('PopplerAnnotMarkupReplyType',
+	{
+		['POPPLER_ANNOT_MARKUP_REPLY_TYPE_GROUP'] = 1,
+		['POPPLER_ANNOT_MARKUP_REPLY_TYPE_R'] = 0
+	}
+)
+
+defEnum('PopplerAnnotTextState',
+	{
+		['POPPLER_ANNOT_TEXT_STATE_NONE'] = 6,
+		['POPPLER_ANNOT_TEXT_STATE_ACCEPTED'] = 2,
+		['POPPLER_ANNOT_TEXT_STATE_UNKNOWN'] = 7,
+		['POPPLER_ANNOT_TEXT_STATE_COMPLETED'] = 5,
+		['POPPLER_ANNOT_TEXT_STATE_CANCELLED'] = 4,
+		['POPPLER_ANNOT_TEXT_STATE_REJECTED'] = 3,
+		['POPPLER_ANNOT_TEXT_STATE_UNMARKED'] = 1,
+		['POPPLER_ANNOT_TEXT_STATE_MARKED'] = 0
+	}
+)
+
+defEnum('PopplerAnnotType',
+	{
+		['POPPLER_ANNOT_LINE'] = 4,
+		['POPPLER_ANNOT_POPUP'] = 16,
+		['POPPLER_ANNOT_FILE_ATTACHMENT'] = 17,
+		['POPPLER_ANNOT_CARET'] = 14,
+		['POPPLER_ANNOT_POLYGON'] = 7,
+		['POPPLER_ANNOT_MOVIE'] = 19,
+		['POPPLER_ANNOT_SOUND'] = 18,
+		['POPPLER_ANNOT_WATERMARK'] = 24,
+		['POPPLER_ANNOT_POLY_LINE'] = 8,
+		['POPPLER_ANNOT_UNDERLINE'] = 10,
+		['POPPLER_ANNOT_STAMP'] = 13,
+		['POPPLER_ANNOT_CIRCLE'] = 6,
+		['POPPLER_ANNOT_LINK'] = 2,
+		['POPPLER_ANNOT_SQUARE'] = 5,
+		['POPPLER_ANNOT_TRAP_NET'] = 23,
+		['POPPLER_ANNOT_INK'] = 15,
+		['POPPLER_ANNOT_3D'] = 25,
+		['POPPLER_ANNOT_SCREEN'] = 21,
+		['POPPLER_ANNOT_UNKNOWN'] = 0,
+		['POPPLER_ANNOT_PRINTER_MARK'] = 22,
+		['POPPLER_ANNOT_WIDGET'] = 20,
+		['POPPLER_ANNOT_STRIKE_OUT'] = 12,
+		['POPPLER_ANNOT_HIGHLIGHT'] = 9,
+		['POPPLER_ANNOT_SQUIGGLY'] = 11,
+		['POPPLER_ANNOT_FREE_TEXT'] = 3,
+		['POPPLER_ANNOT_TEXT'] = 1
+	}
+)
+
+defEnum('PopplerBackend',
+	{
+		['POPPLER_BACKEND_SPLASH'] = 1,
+		['POPPLER_BACKEND_UNKNOWN'] = 0,
+		['POPPLER_BACKEND_CAIRO'] = 2
+	}
+)
+
+defEnum('PopplerDestType',
+	{
+		['POPPLER_DEST_FIT'] = 2,
+		['POPPLER_DEST_FITV'] = 4,
+		['POPPLER_DEST_FITH'] = 3,
+		['POPPLER_DEST_XYZ'] = 1,
+		['POPPLER_DEST_FITR'] = 5,
+		['POPPLER_DEST_NAMED'] = 9,
+		['POPPLER_DEST_FITBH'] = 7,
+		['POPPLER_DEST_UNKNOWN'] = 0,
+		['POPPLER_DEST_FITBV'] = 8,
+		['POPPLER_DEST_FITB'] = 6
+	}
+)
+
+defEnum('PopplerError',
+	{
+		['POPPLER_ERROR_ENCRYPTED'] = 1,
+		['POPPLER_ERROR_OPEN_FILE'] = 2,
+		['POPPLER_ERROR_DAMAGED'] = 4,
+		['POPPLER_ERROR_BAD_CATALOG'] = 3,
+		['POPPLER_ERROR_INVALID'] = 0
+	}
+)
+
+defEnum('PopplerFindFlags',
+	{
+		['POPPLER_FIND_WHOLE_WORDS_ONLY'] = 4,
+		['POPPLER_FIND_BACKWARDS'] = 2,
+		['POPPLER_FIND_DEFAULT'] = 0,
+		['POPPLER_FIND_CASE_SENSITIVE'] = 1
+	}
+)
+
+defEnum('PopplerFontType',
+	{
+		['POPPLER_FONT_TYPE_TYPE1COT'] = 3,
+		['POPPLER_FONT_TYPE_TYPE3'] = 4,
+		['POPPLER_FONT_TYPE_CID_TYPE0COT'] = 9,
+		['POPPLER_FONT_TYPE_CID_TYPE2'] = 10,
+		['POPPLER_FONT_TYPE_TYPE1'] = 1,
+		['POPPLER_FONT_TYPE_UNKNOWN'] = 0,
+		['POPPLER_FONT_TYPE_TYPE1C'] = 2,
+		['POPPLER_FONT_TYPE_CID_TYPE2OT'] = 11,
+		['POPPLER_FONT_TYPE_CID_TYPE0C'] = 8,
+		['POPPLER_FONT_TYPE_TRUETYPE'] = 5,
+		['POPPLER_FONT_TYPE_CID_TYPE0'] = 7,
+		['POPPLER_FONT_TYPE_TRUETYPEOT'] = 6
+	}
+)
+
+defEnum('PopplerFormButtonType',
+	{
+		['POPPLER_FORM_BUTTON_CHECK'] = 1,
+		['POPPLER_FORM_BUTTON_PUSH'] = 0,
+		['POPPLER_FORM_BUTTON_RADIO'] = 2
+	}
+)
+
+defEnum('PopplerFormChoiceType',
+	{
+		['POPPLER_FORM_CHOICE_COMBO'] = 0,
+		['POPPLER_FORM_CHOICE_LIST'] = 1
+	}
+)
+
+defEnum('PopplerFormFieldType',
+	{
+		['POPPLER_FORM_FIELD_SIGNATURE'] = 4,
+		['POPPLER_FORM_FIELD_BUTTON'] = 1,
+		['POPPLER_FORM_FIELD_TEXT'] = 2,
+		['POPPLER_FORM_FIELD_UNKNOWN'] = 0,
+		['POPPLER_FORM_FIELD_CHOICE'] = 3
+	}
+)
+
+defEnum('PopplerFormTextType',
+	{
+		['POPPLER_FORM_TEXT_FILE_SELECT'] = 2,
+		['POPPLER_FORM_TEXT_NORMAL'] = 0,
+		['POPPLER_FORM_TEXT_MULTILINE'] = 1
+	}
+)
+
+defEnum('PopplerOrientation',
+	{
+		['POPPLER_ORIENTATION_PORTRAIT'] = 0,
+		['POPPLER_ORIENTATION_LANDSCAPE'] = 1,
+		['POPPLER_ORIENTATION_SEASCAPE'] = 3,
+		['POPPLER_ORIENTATION_UPSIDEDOWN'] = 2
+	}
+)
+
+defEnum('PopplerPageLayout',
+	{
+		['POPPLER_PAGE_LAYOUT_TWO_PAGE_RIGHT'] = 6,
+		['POPPLER_PAGE_LAYOUT_UNSET'] = 0,
+		['POPPLER_PAGE_LAYOUT_SINGLE_PAGE'] = 1,
+		['POPPLER_PAGE_LAYOUT_TWO_PAGE_LEFT'] = 5,
+		['POPPLER_PAGE_LAYOUT_TWO_COLUMN_RIGHT'] = 4,
+		['POPPLER_PAGE_LAYOUT_ONE_COLUMN'] = 2,
+		['POPPLER_PAGE_LAYOUT_TWO_COLUMN_LEFT'] = 3
+	}
+)
+
+defEnum('PopplerPageMode',
+	{
+		['POPPLER_PAGE_MODE_FULL_SCREEN'] = 4,
+		['POPPLER_PAGE_MODE_UNSET'] = 0,
+		['POPPLER_PAGE_MODE_USE_OC'] = 5,
+		['POPPLER_PAGE_MODE_USE_ATTACHMENTS'] = 6,
+		['POPPLER_PAGE_MODE_USE_THUMBS'] = 3,
+		['POPPLER_PAGE_MODE_USE_OUTLINES'] = 2,
+		['POPPLER_PAGE_MODE_NONE'] = 1
+	}
+)
+
+defEnum('PopplerPageTransitionAlignment',
+	{
+		['POPPLER_PAGE_TRANSITION_VERTICAL'] = 1,
+		['POPPLER_PAGE_TRANSITION_HORIZONTAL'] = 0
+	}
+)
+
+defEnum('PopplerPageTransitionDirection',
+	{
+		['POPPLER_PAGE_TRANSITION_OUTWARD'] = 1,
+		['POPPLER_PAGE_TRANSITION_INWARD'] = 0
+	}
+)
+
+defEnum('PopplerPageTransitionType',
+	{
+		['POPPLER_PAGE_TRANSITION_REPLACE'] = 0,
+		['POPPLER_PAGE_TRANSITION_FLY'] = 7,
+		['POPPLER_PAGE_TRANSITION_DISSOLVE'] = 5,
+		['POPPLER_PAGE_TRANSITION_PUSH'] = 8,
+		['POPPLER_PAGE_TRANSITION_UNCOVER'] = 10,
+		['POPPLER_PAGE_TRANSITION_SPLIT'] = 1,
+		['POPPLER_PAGE_TRANSITION_WIPE'] = 4,
+		['POPPLER_PAGE_TRANSITION_BLINDS'] = 2,
+		['POPPLER_PAGE_TRANSITION_BOX'] = 3,
+		['POPPLER_PAGE_TRANSITION_FADE'] = 11,
+		['POPPLER_PAGE_TRANSITION_COVER'] = 9,
+		['POPPLER_PAGE_TRANSITION_GLITTER'] = 6
+	}
+)
+
+defEnum('PopplerPermissions',
+	{
+		['POPPLER_PERMISSIONS_OK_TO_EXTRACT_CONTENTS'] = 32,
+		['POPPLER_PERMISSIONS_OK_TO_PRINT_HIGH_RESOLUTION'] = 128,
+		['POPPLER_PERMISSIONS_OK_TO_MODIFY'] = 2,
+		['POPPLER_PERMISSIONS_OK_TO_FILL_FORM'] = 16,
+		['POPPLER_PERMISSIONS_FULL'] = 255,
+		['POPPLER_PERMISSIONS_OK_TO_PRINT'] = 1,
+		['POPPLER_PERMISSIONS_OK_TO_COPY'] = 4,
+		['POPPLER_PERMISSIONS_OK_TO_ADD_NOTES'] = 8,
+		['POPPLER_PERMISSIONS_OK_TO_ASSEMBLE'] = 64
+	}
+)
+
+defEnum('PopplerPrintFlags',
+	{
+		['POPPLER_PRINT_DOCUMENT'] = 0,
+		['POPPLER_PRINT_ALL'] = 1,
+		['POPPLER_PRINT_STAMP_ANNOTS_ONLY'] = 2,
+		['POPPLER_PRINT_MARKUP_ANNOTS'] = 1
+	}
+)
+
+defEnum('PopplerSelectionStyle',
+	{
+		['POPPLER_SELECTION_WORD'] = 1,
+		['POPPLER_SELECTION_LINE'] = 2,
+		['POPPLER_SELECTION_GLYPH'] = 0
+	}
+)
+
+defEnum('PopplerStructureBlockAlign',
+	{
+		['POPPLER_STRUCTURE_BLOCK_ALIGN_JUSTIFY'] = 3,
+		['POPPLER_STRUCTURE_BLOCK_ALIGN_AFTER'] = 2,
+		['POPPLER_STRUCTURE_BLOCK_ALIGN_BEFORE'] = 0,
+		['POPPLER_STRUCTURE_BLOCK_ALIGN_MIDDLE'] = 1
+	}
+)
+
+defEnum('PopplerStructureBorderStyle',
+	{
+		['POPPLER_STRUCTURE_BORDER_STYLE_DOUBLE'] = 5,
+		['POPPLER_STRUCTURE_BORDER_STYLE_SOLID'] = 4,
+		['POPPLER_STRUCTURE_BORDER_STYLE_OUTSET'] = 8,
+		['POPPLER_STRUCTURE_BORDER_STYLE_INSET'] = 7,
+		['POPPLER_STRUCTURE_BORDER_STYLE_GROOVE'] = 6,
+		['POPPLER_STRUCTURE_BORDER_STYLE_HIDDEN'] = 1,
+		['POPPLER_STRUCTURE_BORDER_STYLE_NONE'] = 0,
+		['POPPLER_STRUCTURE_BORDER_STYLE_DOTTED'] = 2,
+		['POPPLER_STRUCTURE_BORDER_STYLE_DASHED'] = 3
+	}
+)
+
+defEnum('PopplerStructureElementKind',
+	{
+		['POPPLER_STRUCTURE_ELEMENT_NOTE'] = 9,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_6'] = 29,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_5'] = 28,
+		['POPPLER_STRUCTURE_ELEMENT_FORM'] = 50,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_FOOTER'] = 39,
+		['POPPLER_STRUCTURE_ELEMENT_INDEX'] = 20,
+		['POPPLER_STRUCTURE_ELEMENT_TOC'] = 18,
+		['POPPLER_STRUCTURE_ELEMENT_WARICHU_PUNCTUATION'] = 47,
+		['POPPLER_STRUCTURE_ELEMENT_FIGURE'] = 48,
+		['POPPLER_STRUCTURE_ELEMENT_FORMULA'] = 49,
+		['POPPLER_STRUCTURE_ELEMENT_ANNOT'] = 14,
+		['POPPLER_STRUCTURE_ELEMENT_NONSTRUCT'] = 17,
+		['POPPLER_STRUCTURE_ELEMENT_REFERENCE'] = 10,
+		['POPPLER_STRUCTURE_ELEMENT_OBJECT_REFERENCE'] = 1,
+		['POPPLER_STRUCTURE_ELEMENT_ARTICLE'] = 4,
+		['POPPLER_STRUCTURE_ELEMENT_CODE'] = 12,
+		['POPPLER_STRUCTURE_ELEMENT_SECTION'] = 5,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_HEADING'] = 36,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_1'] = 24,
+		['POPPLER_STRUCTURE_ELEMENT_LIST_ITEM'] = 31,
+		['POPPLER_STRUCTURE_ELEMENT_SPAN'] = 7,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING'] = 23,
+		['POPPLER_STRUCTURE_ELEMENT_RUBY_PUNCTUATION'] = 44,
+		['POPPLER_STRUCTURE_ELEMENT_RUBY_ANNOT_TEXT'] = 43,
+		['POPPLER_STRUCTURE_ELEMENT_DIV'] = 6,
+		['POPPLER_STRUCTURE_ELEMENT_CONTENT'] = 0,
+		['POPPLER_STRUCTURE_ELEMENT_DOCUMENT'] = 2,
+		['POPPLER_STRUCTURE_ELEMENT_LINK'] = 13,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE'] = 34,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_DATA'] = 37,
+		['POPPLER_STRUCTURE_ELEMENT_LIST_LABEL'] = 32,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_BODY'] = 40,
+		['POPPLER_STRUCTURE_ELEMENT_QUOTE'] = 8,
+		['POPPLER_STRUCTURE_ELEMENT_PRIVATE'] = 21,
+		['POPPLER_STRUCTURE_ELEMENT_BLOCKQUOTE'] = 15,
+		['POPPLER_STRUCTURE_ELEMENT_RUBY'] = 41,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_ROW'] = 35,
+		['POPPLER_STRUCTURE_ELEMENT_PARAGRAPH'] = 22,
+		['POPPLER_STRUCTURE_ELEMENT_CAPTION'] = 16,
+		['POPPLER_STRUCTURE_ELEMENT_TOC_ITEM'] = 19,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_2'] = 25,
+		['POPPLER_STRUCTURE_ELEMENT_RUBY_BASE_TEXT'] = 42,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_4'] = 27,
+		['POPPLER_STRUCTURE_ELEMENT_HEADING_3'] = 26,
+		['POPPLER_STRUCTURE_ELEMENT_LIST_BODY'] = 33,
+		['POPPLER_STRUCTURE_ELEMENT_PART'] = 3,
+		['POPPLER_STRUCTURE_ELEMENT_TABLE_HEADER'] = 38,
+		['POPPLER_STRUCTURE_ELEMENT_BIBENTRY'] = 11,
+		['POPPLER_STRUCTURE_ELEMENT_WARICHU_TEXT'] = 46,
+		['POPPLER_STRUCTURE_ELEMENT_LIST'] = 30,
+		['POPPLER_STRUCTURE_ELEMENT_WARICHU'] = 45
+	}
+)
+
+defEnum('PopplerStructureFormRole',
+	{
+		['POPPLER_STRUCTURE_FORM_ROLE_UNDEFINED'] = 0,
+		['POPPLER_STRUCTURE_FORM_ROLE_CHECKBOX'] = 4,
+		['POPPLER_STRUCTURE_FORM_ROLE_PUSH_BUTTON'] = 2,
+		['POPPLER_STRUCTURE_FORM_ROLE_TEXT_VALUE'] = 3,
+		['POPPLER_STRUCTURE_FORM_ROLE_RADIO_BUTTON'] = 1
+	}
+)
+
+defEnum('PopplerStructureFormState',
+	{
+		['POPPLER_STRUCTURE_FORM_STATE_ON'] = 0,
+		['POPPLER_STRUCTURE_FORM_STATE_NEUTRAL'] = 2,
+		['POPPLER_STRUCTURE_FORM_STATE_OFF'] = 1
+	}
+)
+
+defEnum('PopplerStructureGetTextFlags',
+	{
+		['POPPLER_STRUCTURE_GET_TEXT_NONE'] = 0,
+		['POPPLER_STRUCTURE_GET_TEXT_RECURSIVE'] = 1
+	}
+)
+
+defEnum('PopplerStructureGlyphOrientation',
+	{
+		['POPPLER_STRUCTURE_GLYPH_ORIENTATION_270'] = 3,
+		['POPPLER_STRUCTURE_GLYPH_ORIENTATION_AUTO'] = 0,
+		['POPPLER_STRUCTURE_GLYPH_ORIENTATION_90'] = 1,
+		['POPPLER_STRUCTURE_GLYPH_ORIENTATION_0'] = 0,
+		['POPPLER_STRUCTURE_GLYPH_ORIENTATION_180'] = 2
+	}
+)
+
+defEnum('PopplerStructureInlineAlign',
+	{
+		['POPPLER_STRUCTURE_INLINE_ALIGN_START'] = 0,
+		['POPPLER_STRUCTURE_INLINE_ALIGN_CENTER'] = 1,
+		['POPPLER_STRUCTURE_INLINE_ALIGN_END'] = 2
+	}
+)
+
+defEnum('PopplerStructureListNumbering',
+	{
+		['POPPLER_STRUCTURE_LIST_NUMBERING_DECIMAL'] = 4,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_CIRCLE'] = 2,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_UPPER_ROMAN'] = 5,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_DISC'] = 1,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_SQUARE'] = 3,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_LOWER_ROMAN'] = 6,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_UPPER_ALPHA'] = 7,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_LOWER_ALPHA'] = 8,
+		['POPPLER_STRUCTURE_LIST_NUMBERING_NONE'] = 0
+	}
+)
+
+defEnum('PopplerStructurePlacement',
+	{
+		['POPPLER_STRUCTURE_PLACEMENT_BEFORE'] = 2,
+		['POPPLER_STRUCTURE_PLACEMENT_BLOCK'] = 0,
+		['POPPLER_STRUCTURE_PLACEMENT_INLINE'] = 1,
+		['POPPLER_STRUCTURE_PLACEMENT_END'] = 4,
+		['POPPLER_STRUCTURE_PLACEMENT_START'] = 3
+	}
+)
+
+defEnum('PopplerStructureRubyAlign',
+	{
+		['POPPLER_STRUCTURE_RUBY_ALIGN_END'] = 2,
+		['POPPLER_STRUCTURE_RUBY_ALIGN_START'] = 0,
+		['POPPLER_STRUCTURE_RUBY_ALIGN_JUSTIFY'] = 3,
+		['POPPLER_STRUCTURE_RUBY_ALIGN_DISTRIBUTE'] = 4,
+		['POPPLER_STRUCTURE_RUBY_ALIGN_CENTER'] = 1
+	}
+)
+
+defEnum('PopplerStructureRubyPosition',
+	{
+		['POPPLER_STRUCTURE_RUBY_POSITION_BEFORE'] = 0,
+		['POPPLER_STRUCTURE_RUBY_POSITION_WARICHU'] = 2,
+		['POPPLER_STRUCTURE_RUBY_POSITION_INLINE'] = 3,
+		['POPPLER_STRUCTURE_RUBY_POSITION_AFTER'] = 1
+	}
+)
+
+defEnum('PopplerStructureTableScope',
+	{
+		['POPPLER_STRUCTURE_TABLE_SCOPE_COLUMN'] = 1,
+		['POPPLER_STRUCTURE_TABLE_SCOPE_ROW'] = 0,
+		['POPPLER_STRUCTURE_TABLE_SCOPE_BOTH'] = 2
+	}
+)
+
+defEnum('PopplerStructureTextAlign',
+	{
+		['POPPLER_STRUCTURE_TEXT_ALIGN_END'] = 2,
+		['POPPLER_STRUCTURE_TEXT_ALIGN_START'] = 0,
+		['POPPLER_STRUCTURE_TEXT_ALIGN_JUSTIFY'] = 3,
+		['POPPLER_STRUCTURE_TEXT_ALIGN_CENTER'] = 1
+	}
+)
+
+defEnum('PopplerStructureTextDecoration',
+	{
+		['POPPLER_STRUCTURE_TEXT_DECORATION_UNDERLINE'] = 1,
+		['POPPLER_STRUCTURE_TEXT_DECORATION_LINETHROUGH'] = 3,
+		['POPPLER_STRUCTURE_TEXT_DECORATION_NONE'] = 0,
+		['POPPLER_STRUCTURE_TEXT_DECORATION_OVERLINE'] = 2
+	}
+)
+
+defEnum('PopplerStructureWritingMode',
+	{
+		['POPPLER_STRUCTURE_WRITING_MODE_LR_TB'] = 0,
+		['POPPLER_STRUCTURE_WRITING_MODE_RL_TB'] = 1,
+		['POPPLER_STRUCTURE_WRITING_MODE_TB_RL'] = 2
+	}
+)
+
+defEnum('PopplerViewerPreferences',
+	{
+		['POPPLER_VIEWER_PREFERENCES_HIDE_MENUBAR'] = 2,
+		['POPPLER_VIEWER_PREFERENCES_FIT_WINDOW'] = 8,
+		['POPPLER_VIEWER_PREFERENCES_HIDE_WINDOWUI'] = 4,
+		['POPPLER_VIEWER_PREFERENCES_DIRECTION_RTL'] = 64,
+		['POPPLER_VIEWER_PREFERENCES_DISPLAY_DOC_TITLE'] = 32,
+		['POPPLER_VIEWER_PREFERENCES_UNSET'] = 0,
+		['POPPLER_VIEWER_PREFERENCES_HIDE_TOOLBAR'] = 1,
+		['POPPLER_VIEWER_PREFERENCES_CENTER_WINDOW'] = 16
+	}
+)
+

@@ -1,0 +1,19 @@
+include('webkit.def')
+
+undef{
+    'webkit_check_version'
+}
+
+undefPattern('webkit_dom_.-')
+
+-- Redefine skipClass! WebKit doesn't follows the naming convention
+
+function skipClass(name, class)
+    if class then
+        local class = class:sub(6)
+        name = name:sub(6)
+        return name:gsub(camelToC(class), ""):sub(3)
+    else
+        return name:sub(8)
+    end
+end

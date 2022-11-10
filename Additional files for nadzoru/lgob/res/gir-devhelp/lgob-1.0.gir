@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+
+<repository version="1.2"
+            xmlns="http://www.gtk.org/introspection/core/1.0"
+            xmlns:c="http://www.gtk.org/introspection/c/1.0"
+            xmlns:glib="http://www.gtk.org/introspection/glib/1.0">
+    <namespace name="lgob" version="1.0">
+        <alias name="boolean" c:type="gboolean">
+            <type name="boolean"/>
+        </alias>
+        
+        <alias name="pointer" c:type="gpointer">
+            <type name="void*"/>
+        </alias>
+        
+        <alias name="constpointer" c:type="gconstpointer">
+            <type name="void*"/>
+        </alias>
+        
+        <alias name="char" c:type="gchar">
+            <type name="char"/>
+        </alias>
+        
+        <alias name="char" c:type="const gchar">
+            <type name="char"/>
+        </alias>
+        
+        <alias name="uchar" c:type="guchar">
+            <type name="unsigned char"/>
+        </alias>
+        
+        <alias name="int" c:type="gint">
+            <type name="int"/>
+        </alias>
+        
+        <alias name="int32" c:type="gint32">
+             <type name="long"/>
+        </alias>
+        
+        <alias name="int32" c:type="int32">
+             <type name="long"/>
+        </alias>
+        
+        <alias name="uint" c:type="guint">
+             <type name="unsigned int"/>
+        </alias>
+        
+        <alias name="uint16" c:type="uint16">
+            <type name="guint16"/>
+        </alias>
+        
+        <alias name="uint32" c:type="uint32">
+            <type name="guint32"/>
+        </alias>
+        
+        <alias name="uint64" c:type="uint64">
+            <type name="guint64"/>
+        </alias>
+        
+        <alias name="short" c:type="gshort">
+            <type name="short"/>
+        </alias>
+        
+        <alias name="ushort" c:type="gushort">
+            <type name="unsigned short"/>
+        </alias>
+        
+        <alias name="long" c:type="glong">
+            <type name="long"/>
+        </alias>
+        
+        <alias name="ulong" c:type="gulong">
+            <type name="unsigned long"/>
+        </alias>
+        
+        <alias name="float" target="float" c:type="gfloat">
+            <type name="float"/>
+        </alias>
+        
+        <alias name="double" target="double" c:type="gdouble">
+            <type name="double"/>
+        </alias>
+        
+        <alias name="GdkAtom" c:type="GdkAtom">
+            <type name="ptraslong"/>
+        </alias>
+        
+        <alias name="GType" c:type="GType">
+            <type name="unsigned long"/>
+        </alias>
+        
+        <alias name="time_t" c:type="time_t">
+            <type name="unsigned long"/>
+        </alias>
+    </namespace>
+</repository>
