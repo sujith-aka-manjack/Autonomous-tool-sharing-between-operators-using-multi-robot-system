@@ -1,0 +1,10 @@
+num_events: 10
+num_supervisors: 5
+events: [ EV_pressStop,EV_stop,EV_respond,EV_pressStart,EV_start,EV__requestL,EV_message,EV_inputMessage,EV_exchange,EV_inputExchange ]
+ev_shared: [ 0,1,1,0,1,1,1,0,1,0 ]
+ev_controllable: [ 0,1,1,0,1,0,1,0,1,0 ]
+sup_events: [ [ 1,1,1,1,1,0,0,0,0,0 ],[ 1,1,1,1,1,0,0,0,0,0 ],[ 0,1,1,0,1,1,0,0,0,0 ],[ 0,0,0,0,0,0,1,1,1,1 ],[ 0,0,0,0,0,0,1,1,1,1 ] ]
+sup_init_state: [ 0,0,0,0,0 ]
+sup_current_state: [ 0,0,0,0,0 ]
+sup_data_pos: [ 0,29,58,81,104 ]
+sup_data: [ 4,EV_pressStop,0,0,EV_stop,0,0,EV_respond,0,0,EV_pressStart,0,1,5,EV_pressStop,0,1,EV_stop,0,1,EV_respond,0,1,EV_pressStart,0,1,EV_start,0,0,4,EV_pressStop,0,1,EV_respond,0,0,EV_pressStart,0,0,EV_start,0,0,5,EV_pressStop,0,1,EV_stop,0,0,EV_respond,0,1,EV_pressStart,0,1,EV_start,0,1,3,EV_start,0,0,EV__requestL,0,1,EV_stop,0,0,4,EV_start,0,1,EV_respond,0,0,EV__requestL,0,1,EV_stop,0,1,3,EV_inputMessage,0,1,EV_exchange,0,0,EV_inputExchange,0,0,4,EV_message,0,0,EV_inputMessage,0,1,EV_exchange,0,1,EV_inputExchange,0,1,3,EV_message,0,0,EV_inputMessage,0,0,EV_inputExchange,0,1,4,EV_message,0,1,EV_inputMessage,0,1,EV_exchange,0,0,EV_inputExchange,0,1 ]
