@@ -1,0 +1,29 @@
+include('atk.def')
+
+fixVersion('atk_get_version', '1.20')
+fixVersion('atk_misc_get_instance', '1.14')
+fixVersion('atk_misc_get_type', '1.14')
+fixVersion('atk_misc_threads_enter', '1.14')
+fixVersion('atk_misc_threads_leave', '1.14')
+fixVersion('atk_relation_remove_target', '1.26')
+
+undef{
+    'atk_state_set_add_states',
+    'atk_misc_get_instance',
+    'atk_state_set_contains_states',
+    'atk_socket_embed',
+    'AtkPlug',
+    'AtkSocket',
+    '_AtkRegistry',
+    'atk_relation_remove_target',
+    'atk_get_version',
+	'atk_object_get_object_locale',
+	'atk_get_minor_version',
+	'atk_get_micro_version',
+	'atk_get_major_version',
+	'atk_get_interface_age',
+	'atk_get_binary_age',
+	'atk_document_get_page_count',
+	'atk_document_get_current_page_number',
+	'atk_object_peek_parent',
+}
