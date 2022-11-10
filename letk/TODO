@@ -1,9 +1,0 @@
-Bug 1
-
-Fix reuse of Template
-
-str  = Template( ctx )
-str2 = Template( ctx )
-str2 is empty
-
---------------------------------------------------------------------------------
