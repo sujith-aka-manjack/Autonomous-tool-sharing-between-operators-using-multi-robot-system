@@ -1,5 +1,16 @@
 # ARGoS SCT Swap
 
+## Introduction
+
+A mobile, ground-based, heterogeneous swarm system to carry and deliver tools between two operators moving in an environment.
+Each type of robot carries a unique set of tools
+Robots deliver tools to the operators autonomously
+Robots maintains a communication network between the two operators by forming a dynamic chain.
+Builds on the work by Miyauchi et al (2021)
+
+![image](https://user-images.githubusercontent.com/108937589/200979084-5ec74038-0ab4-4ce2-ad30-fa4e0803e993.png)
+
+
 ## Installation
 
 ### Install ARGoS
